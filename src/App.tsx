@@ -46,6 +46,7 @@ function App() {
   const [editingInstanceId, setEditingInstanceId] = useState<string | null>(null);
   const [isSyncModalOpen, setIsSyncModalOpen] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
 
   // Custom card builder states
   const [customBank, setCustomBank] = useState('');
@@ -542,23 +543,35 @@ function App() {
         {activeTab === 'cards' && (
           <section className="space-y-6">
             <div className="bg-slate-900/30 border border-slate-850 rounded-xl p-4 sm:p-6">
-              <div className="flex items-center justify-between mb-4">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-5">
                 <h3 className="text-sm font-bold text-white flex items-center gap-2">
                   <CreditCard className="w-4 h-4 text-amber-500" />
                   Credit Card Inventory
                 </h3>
-                <button
-                  onClick={() => setIsCreateModalOpen(true)}
-                  className="flex items-center gap-1 bg-gradient-to-tr from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-550 text-white font-bold px-3 py-1.5 rounded-lg text-xs transition active:scale-95 shadow-md shadow-purple-500/10"
-                >
-                  <Plus className="w-3.5 h-3.5 stroke-[3]" />
-                  Create Custom Card
-                </button>
+                <div className="flex items-center gap-2.5 flex-wrap">
+                  <input
+                    type="text"
+                    placeholder="🔍 Search card or bank name..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="bg-slate-950 border border-slate-800 focus:border-purple-500 text-slate-200 text-xs rounded-xl px-3.5 py-2 focus:outline-none w-60 font-medium"
+                  />
+                  <button
+                    onClick={() => setIsCreateModalOpen(true)}
+                    className="flex items-center gap-1 bg-gradient-to-tr from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-550 text-white font-bold px-3 py-2 rounded-lg text-xs transition active:scale-95 shadow-md shadow-purple-500/10"
+                  >
+                    <Plus className="w-3.5 h-3.5 stroke-[3]" />
+                    Create Custom Card
+                  </button>
+                </div>
               </div>
               
               <div className="space-y-8">
                 {(['Amex', 'Chase', 'Capital One'] as const).map((bankName) => {
-                  const bankCards = CARDS_DB.filter((c) => c.bank === bankName);
+                  const bankCards = CARDS_DB.filter((c) => c.bank === bankName).filter((c) =>
+                    c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                    c.bank.toLowerCase().includes(searchQuery.toLowerCase())
+                  );
                   if (bankCards.length === 0) return null;
 
                   return (
@@ -667,18 +680,28 @@ function App() {
                 })}
 
                 {/* Custom Card Instances List */}
-                {ownedCards.filter((c) => c.templateId === 'custom').length > 0 && (
-                  <div className="space-y-3.5 border-t border-slate-900 pt-6">
-                    <div className="flex items-center gap-2 border-b border-slate-900 pb-2">
-                      <div className="w-2 h-2 rounded-full bg-purple-500" />
-                      <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400">Custom Cards</h4>
-                      <span className="text-[10px] text-slate-600 font-semibold ml-auto">
-                        {ownedCards.filter((c) => c.templateId === 'custom').length} active cards
-                      </span>
-                    </div>
+                {(() => {
+                  const customCards = ownedCards
+                    .filter((c) => c.templateId === 'custom')
+                    .filter((c) =>
+                      c.customName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                      (c.bank || '').toLowerCase().includes(searchQuery.toLowerCase())
+                    );
 
-                    <div className="grid sm:grid-cols-2 gap-4">
-                      {ownedCards.filter((c) => c.templateId === 'custom').map((instance) => {
+                  if (customCards.length === 0) return null;
+
+                  return (
+                    <div className="space-y-3.5 border-t border-slate-900 pt-6">
+                      <div className="flex items-center gap-2 border-b border-slate-900 pb-2">
+                        <div className="w-2 h-2 rounded-full bg-purple-500" />
+                        <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400">Custom Cards</h4>
+                        <span className="text-[10px] text-slate-600 font-semibold ml-auto">
+                          {customCards.length} active cards
+                        </span>
+                      </div>
+
+                      <div className="grid sm:grid-cols-2 gap-4">
+                        {customCards.map((instance) => {
                         const customColor = instance.color || 'from-purple-950/50 to-slate-950';
                         
                         return (
@@ -776,9 +799,10 @@ function App() {
                       })}
                     </div>
                   </div>
-                )}
-              </div>
+                );
+              })()}
             </div>
+          </div>
 
             {/* Portability tools */}
             <div className="bg-slate-900/20 border border-slate-900 rounded-xl p-5">
