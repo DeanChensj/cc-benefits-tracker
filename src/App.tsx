@@ -578,11 +578,16 @@ function App() {
             )}
 
             {currentDate.getMonth() !== new Date().getMonth() || currentDate.getFullYear() !== new Date().getFullYear() ? (
-              <span className={`inline-flex items-center gap-1 px-2.5 py-1 text-[10px] font-bold text-amber-400 bg-amber-500/10 border rounded-lg animate-pulse ${
-                themeClass('border-amber-500/25', 'border-amber-500/40')
-              }`}>
-                ⚠️ Simulated Sandbox
-              </span>
+              <button
+                onClick={() => setCurrentDate(new Date())}
+                className={`inline-flex items-center gap-1.5 px-2.5 py-1 text-[10px] font-bold text-amber-400 bg-amber-500/10 border rounded-lg cursor-pointer hover:bg-amber-500/20 transition active:scale-95 duration-200 animate-pulse ${
+                  themeClass('border-amber-500/25 hover:border-amber-500/55', 'border-amber-500/40 hover:border-amber-500/70')
+                }`}
+                title="Click to Reset simulated month back to Today"
+              >
+                <span>⚠️ Simulated Sandbox</span>
+                <RefreshCw className="w-3 h-3 animate-spin-slow" />
+              </button>
             ) : null}
 
             <div className={`flex items-center rounded-lg p-1 text-xs font-medium border ${
@@ -605,15 +610,6 @@ function App() {
               >
                 ▶
               </button>
-              {currentDate.getMonth() !== new Date().getMonth() || currentDate.getFullYear() !== new Date().getFullYear() ? (
-                <button 
-                  onClick={() => setCurrentDate(new Date())}
-                  className={`mx-1 p-1 rounded transition ${themeClass('hover:bg-slate-800 text-amber-500', 'hover:bg-slate-305 text-amber-600')}`}
-                  title="Reset to Today"
-                >
-                  <RefreshCw className="w-3.5 h-3.5" />
-                </button>
-              ) : null}
             </div>
           </div>
         </div>
