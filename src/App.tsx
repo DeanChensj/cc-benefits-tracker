@@ -986,7 +986,7 @@ function App() {
         {/* TAB 3: MY CARDS MANAGER */}
         {activeTab === 'cards' && (
           <section className="space-y-6 animate-fade-in">
-            {/* 1. MY WALLET (我的卡包 - Active Cards) */}
+            {/* 1. MY WALLET (Active Cards) */}
             <div className={`border rounded-xl p-4 sm:p-6 transition duration-300 ${
               themeClass('bg-slate-900/30 border-slate-850', 'bg-white border-slate-200 shadow-sm')
             }`}>
@@ -1152,7 +1152,7 @@ function App() {
                               <div className="flex justify-between items-center text-[9px] font-semibold text-slate-350">
                                 <span>Fee: ${cardFee}</span>
                                 <span className={isRecouped ? 'text-amber-300 font-bold tracking-wide' : ''}>
-                                  {isRecouped ? '🎉 Recouped! (已回本)' : `Recouped: $${recouped} (${Math.round((recouped / cardFee) * 100)}%)`}
+                                  {isRecouped ? '🎉 Recouped!' : `Recouped: $${recouped} (${Math.round((recouped / cardFee) * 100)}%)`}
                                 </span>
                               </div>
                             </div>
@@ -1233,14 +1233,14 @@ function App() {
               )}
             </div>
 
-            {/* 2. ADD CARD LIBRARY (卡片模板库柜台) */}
+            {/* 2. ADD CARD LIBRARY */}
             <div className={`border rounded-xl p-4 sm:p-6 transition duration-300 ${
               themeClass('bg-slate-900/30 border-slate-850', 'bg-white border-slate-200 shadow-sm')
             }`}>
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5 pb-3 border-b border-dashed border-slate-200/60 dark:border-slate-800/60">
                 <h3 className={`text-xs font-bold uppercase tracking-wider flex items-center gap-2 ${themeClass('text-slate-400', 'text-slate-555')}`}>
                   <Plus className="w-4 h-4 text-amber-500" />
-                  Add New Cards (卡片模板库)
+                  Add New Cards (Templates)
                 </h3>
                 <div className="flex items-center gap-2">
                   <input
