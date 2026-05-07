@@ -7,7 +7,7 @@ export interface OwnedCardInstance {
   id: string; // Unique instance ID (e.g. inst_171500000)
   templateId: string; // References the static CARDS_DB card id, or 'custom'
   customName: string; // User's label (e.g. "Amex Gold - Player 2")
-  anniversaryMonth: string; // '01'-'12'
+  cardOpenDate: string; // Precise card opened date 'YYYY-MM-DD'
   bank?: string; // Custom bank name for custom cards
   color?: string; // Custom gradient classes for custom cards
   customBenefits?: Benefit[]; // Custom benefits for custom cards
@@ -22,18 +22,19 @@ export interface CardStore {
   addCustomCard: (card: Omit<OwnedCardInstance, 'id'>) => void;
   removeCard: (instanceId: string) => void;
   renameCard: (instanceId: string, customName: string) => void;
-  setAnniversaryMonth: (instanceId: string, month: string) => void;
+  setCardOpenDate: (instanceId: string, dateStr: string) => void;
   toggleBenefit: (logKey: string) => void;
   resetAll: () => void;
 }
 
 // Helper to generate log key based on reset period and current date
 export const getLogKey = (
-  resetPeriod: 'monthly' | 'semi-annual' | 'annual-calendar' | 'annual-anniversary',
+  resetPeriod: 'monthly' | 'semi-annual' | 'annual-calendar' | 'annual-anniversary' | 'fixed',
   instanceId: string, // Unique instance ID
   benefitId: string,
   currentDate: Date,
-  anniversaryMonthStr?: string // '01' to '12'
+  cardOpenDateStr?: string, // 'YYYY-MM-DD'
+  expirationDateStr?: string // 'YYYY-MM-DD' for fixed benefits
 ): string => {
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth() + 1; // 1-12
@@ -51,10 +52,29 @@ export const getLogKey = (
       return `${year}:${instanceId}:${benefitId}`;
 
     case 'annual-anniversary':
-      const annMonth = parseInt(anniversaryMonthStr || '01', 10);
-      // If current month is less than anniversary month, the period started in the previous calendar year
-      const periodStartYear = month < annMonth ? year - 1 : year;
-      return `${periodStartYear}-anniversary:${instanceId}:${benefitId}`;
+      if (cardOpenDateStr) {
+        const openDate = new Date(cardOpenDateStr + 'T00:00:00');
+        const currentAnniv = new Date(year, openDate.getMonth(), openDate.getDate());
+        
+        let start: Date;
+        let end: Date;
+
+        if (currentDate < currentAnniv) {
+          start = new Date(year - 1, openDate.getMonth(), openDate.getDate());
+          end = currentAnniv;
+        } else {
+          start = currentAnniv;
+          end = new Date(year + 1, openDate.getMonth(), openDate.getDate());
+        }
+
+        const startStr = start.toISOString().split('T')[0];
+        const endStr = end.toISOString().split('T')[0];
+        return `anniv:${startStr}:${endStr}:${instanceId}:${benefitId}`;
+      }
+      return `${year}-anniversary:${instanceId}:${benefitId}`;
+
+    case 'fixed':
+      return `fixed:${instanceId}:${benefitId}:${expirationDateStr || 'no-date'}`;
 
     default:
       return `${year}-${month}:${instanceId}:${benefitId}`;
@@ -73,13 +93,13 @@ export const useCardStore = create<CardStore>()(
           if (!template) return state;
 
           const uniqueId = `inst_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
-          const currentMonth = (new Date().getMonth() + 1).toString().padStart(2, '0');
+          const todayStr = new Date().toISOString().split('T')[0];
 
           const newInstance: OwnedCardInstance = {
             id: uniqueId,
             templateId,
             customName: template.name,
-            anniversaryMonth: currentMonth,
+            cardOpenDate: todayStr,
           };
 
           return {
@@ -118,10 +138,10 @@ export const useCardStore = create<CardStore>()(
           ),
         })),
 
-      setAnniversaryMonth: (instanceId, month) =>
+      setCardOpenDate: (instanceId, dateStr) =>
         set((state) => ({
           ownedCards: state.ownedCards.map((c) =>
-            c.id === instanceId ? { ...c, anniversaryMonth: month } : c
+            c.id === instanceId ? { ...c, cardOpenDate: dateStr } : c
           ),
         })),
 

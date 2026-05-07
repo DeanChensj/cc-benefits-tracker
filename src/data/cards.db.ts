@@ -3,15 +3,16 @@ export interface Benefit {
   name: string;
   description: string;
   value: number;
-  resetPeriod: 'monthly' | 'annual-calendar' | 'annual-anniversary' | 'semi-annual';
+  resetPeriod: 'monthly' | 'semi-annual' | 'annual-calendar' | 'annual-anniversary' | 'fixed';
   category: 'dining' | 'travel' | 'shopping' | 'entertainment' | 'other';
+  expirationDate?: string; // e.g., '2026-12-31' (only for 'fixed' resetPeriod)
 }
 
 export interface CardTemplate {
   id: string;
   name: string;
   bank: 'Amex' | 'Chase' | 'Capital One' | 'Other';
-  color: string; // Hex or Tailwind color class
+  color: string; // Tailwind gradient classes
   benefits: Benefit[];
 }
 
@@ -50,7 +51,7 @@ export const CARDS_DB: CardTemplate[] = [
         id: 'amex-plat-uber',
         name: 'Uber Cash',
         description: '$15/month ($35 in Dec) for Uber or Uber Eats',
-        value: 15, // Will handle Dec $35 dynamically in logic if needed, or keep standard
+        value: 15,
         resetPeriod: 'monthly',
         category: 'dining'
       },
@@ -84,6 +85,30 @@ export const CARDS_DB: CardTemplate[] = [
         description: '$200/year credit on Fine Hotels + Resorts / HC',
         value: 200,
         resetPeriod: 'annual-calendar',
+        category: 'travel'
+      }
+    ]
+  },
+  {
+    id: 'amex-hilton-aspire',
+    name: 'Amex Hilton Aspire',
+    bank: 'Amex',
+    color: 'from-indigo-900 via-violet-950 to-slate-950',
+    benefits: [
+      {
+        id: 'aspire-resort',
+        name: 'Hilton Resort Credit',
+        description: '$200 resort credit semi-annually (Jan-Jun, Jul-Dec)',
+        value: 200,
+        resetPeriod: 'semi-annual',
+        category: 'travel'
+      },
+      {
+        id: 'aspire-fnr',
+        name: 'Free Night Reward',
+        description: 'Annual Hilton Free Night Reward certificate after anniversary',
+        value: 250,
+        resetPeriod: 'annual-anniversary',
         category: 'travel'
       }
     ]

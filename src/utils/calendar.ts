@@ -63,14 +63,25 @@ export const downloadICSFile = (ownedCards: OwnedCardInstance[]) => {
         // Dec 15th every year
         dtstart = new Date(now.getFullYear(), 11, 15);
         rrule = 'RRULE:FREQ=YEARLY';
+      } else if (benefit.resetPeriod === 'fixed') {
+        const exp = new Date(benefit.expirationDate || now);
+        // Set alert 10 days before expiration Date
+        dtstart = new Date(exp.getTime() - 10 * 24 * 60 * 60 * 1000);
+        rrule = '';
       } else {
         // annual-anniversary
-        const anniversaryMonth = parseInt(cardInstance.anniversaryMonth, 10); // 1-12
-        
-        // Reminder is set 10 days before the anniversary month ends
-        dtstart = new Date(now.getFullYear(), anniversaryMonth - 1, 20);
+        const openDate = new Date(cardInstance.cardOpenDate + 'T00:00:00');
+        const annivMonth = openDate.getMonth(); // 0-11
+        const annivDay = openDate.getDate(); // 1-31
+
+        // Target anniversary date in the current calendar year
+        const annivThisYear = new Date(now.getFullYear(), annivMonth, annivDay);
+        dtstart = new Date(annivThisYear.getTime() - 10 * 24 * 60 * 60 * 1000);
+
         if (dtstart < now) {
-          dtstart.setFullYear(dtstart.getFullYear() + 1);
+          // If the reminder date this year has already passed, schedule for next year
+          const annivNextYear = new Date(now.getFullYear() + 1, annivMonth, annivDay);
+          dtstart = new Date(annivNextYear.getTime() - 10 * 24 * 60 * 60 * 1000);
         }
         rrule = 'RRULE:FREQ=YEARLY';
       }

@@ -27,7 +27,7 @@ function App() {
     addCustomCard,
     removeCard, 
     renameCard,
-    setAnniversaryMonth, 
+    setCardOpenDate, 
     toggleBenefit, 
     resetAll 
   } = useCardStore();
@@ -44,13 +44,14 @@ function App() {
   const [customBank, setCustomBank] = useState('');
   const [customCardName, setCustomCardName] = useState('');
   const [customColor, setCustomColor] = useState('from-purple-600 to-indigo-900');
-  const [customAnniversaryMonth, setCustomAnniversaryMonth] = useState('01');
+  const [customCardOpenDate, setCustomCardOpenDate] = useState(new Date().toISOString().split('T')[0]);
   const [newBenefits, setNewBenefits] = useState<{
     name: string;
     value: number;
-    resetPeriod: 'monthly' | 'semi-annual' | 'annual-calendar' | 'annual-anniversary';
+    resetPeriod: 'monthly' | 'semi-annual' | 'annual-calendar' | 'annual-anniversary' | 'fixed';
     category: 'dining' | 'travel' | 'shopping' | 'entertainment' | 'other';
     description: string;
+    expirationDate?: string;
   }[]>([{ name: '', value: 0, resetPeriod: 'monthly', category: 'dining', description: '' }]);
 
   const currentMonthStr = currentDate.toLocaleString('default', { month: 'long' });
@@ -85,14 +86,32 @@ function App() {
         cardInstance.id,
         benefit.id,
         currentDate,
-        cardInstance.anniversaryMonth
+        cardInstance.cardOpenDate,
+        benefit.expirationDate
       );
       const isUsed = !!logs[logKey];
+
+      // Dynamically compute precision date-level expiration for anniversary benefits
+      let resolvedExpirationDate = benefit.expirationDate;
+      if (benefit.resetPeriod === 'annual-anniversary' && cardInstance.cardOpenDate) {
+        const openDate = new Date(cardInstance.cardOpenDate + 'T00:00:00');
+        const year = currentDate.getFullYear();
+        const currentAnniv = new Date(year, openDate.getMonth(), openDate.getDate());
+        
+        const expirationDate = currentDate < currentAnniv 
+          ? currentAnniv 
+          : new Date(year + 1, openDate.getMonth(), openDate.getDate());
+          
+        resolvedExpirationDate = expirationDate.toISOString().split('T')[0];
+      }
 
       activeBenefits.push({
         cardInstance,
         template,
-        benefit,
+        benefit: {
+          ...benefit,
+          expirationDate: resolvedExpirationDate
+        },
         logKey,
         isUsed,
       });
@@ -104,7 +123,17 @@ function App() {
   const resolvedValue = activeBenefits
     .filter((ab) => ab.isUsed)
     .reduce((sum, ab) => sum + ab.benefit.value, 0);
-  const pendingValue = totalPotentialValue - resolvedValue;
+
+  const expiredValue = activeBenefits
+    .filter((ab) => 
+      !ab.isUsed && 
+      ab.benefit.resetPeriod === 'fixed' && 
+      ab.benefit.expirationDate && 
+      new Date(ab.benefit.expirationDate + 'T00:00:00') < currentDate
+    )
+    .reduce((sum, ab) => sum + ab.benefit.value, 0);
+
+  const pendingValue = totalPotentialValue - resolvedValue - expiredValue;
 
   // Filtered benefits for view
   const filteredBenefits = activeBenefits.filter((ab) => {
@@ -112,6 +141,34 @@ function App() {
     if (filterCategory !== 'all' && ab.benefit.category !== filterCategory) return false;
     return true;
   });
+
+  // Scientific urgency sorting
+  const getUrgencyScore = (ab: ActiveBenefit): number => {
+    if (ab.isUsed) return 10000; // Checked is lowest priority
+    
+    const isExpired = ab.benefit.resetPeriod === 'fixed' && 
+      ab.benefit.expirationDate && 
+      new Date(ab.benefit.expirationDate + 'T00:00:00') < currentDate;
+      
+    if (isExpired) return 9000; // Expired is second lowest priority
+    
+    if (ab.benefit.resetPeriod === 'fixed' && ab.benefit.expirationDate) {
+      const expTime = new Date(ab.benefit.expirationDate + 'T00:00:00').getTime();
+      const curTime = currentDate.getTime();
+      const daysLeft = Math.ceil((expTime - curTime) / (1000 * 60 * 60 * 24));
+      return daysLeft; // Urgency score is number of days left (lower is higher priority)
+    }
+    
+    if (ab.benefit.resetPeriod === 'monthly') {
+      const lastDay = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate();
+      const daysLeft = lastDay - currentDate.getDate();
+      return daysLeft + 15; // Base urgency + offset slightly below near-term fixed expirations
+    }
+    
+    return 200; // Other cyclical benefits have standard priority
+  };
+
+  const sortedBenefits = [...filteredBenefits].sort((a, b) => getUrgencyScore(a) - getUrgencyScore(b));
 
   // Export JSON backup
   const exportBackup = () => {
@@ -373,50 +430,97 @@ function App() {
               </div>
             ) : (
               <div className="space-y-3">
-                {filteredBenefits.map(({ cardInstance, benefit, logKey, isUsed }) => (
-                  <div
-                    key={logKey}
-                    onClick={() => toggleBenefit(logKey)}
-                    className={`group flex items-center justify-between p-4 rounded-xl border cursor-pointer transition duration-200 ${
-                      isUsed
-                        ? 'bg-slate-950 border-slate-900 opacity-50'
-                        : 'bg-slate-900/40 border-slate-850/80 hover:border-slate-700 hover:bg-slate-900'
-                    }`}
-                  >
-                    <div className="flex items-center gap-3.5 pr-4">
-                      <div className={`w-6 h-6 flex items-center justify-center rounded-lg border transition-colors duration-200 ${
-                        isUsed 
-                          ? 'bg-emerald-500 border-emerald-500 text-slate-950' 
-                          : 'border-slate-700 group-hover:border-slate-500 bg-slate-950/50 text-transparent'
-                      }`}>
-                        <CheckCircle2 className="w-4 h-4 stroke-[3]" />
-                      </div>
+                {sortedBenefits.map(({ cardInstance, benefit, logKey, isUsed }) => {
+                  const isExpired = !isUsed && benefit.resetPeriod === 'fixed' && 
+                    benefit.expirationDate && 
+                    new Date(benefit.expirationDate + 'T00:00:00') < currentDate;
 
-                      <div>
-                        <div className="flex flex-wrap items-center gap-2">
-                          <span className={`text-sm font-semibold ${isUsed ? 'line-through text-slate-550' : 'text-slate-100'}`}>
-                            {benefit.name}
-                          </span>
-                          <span className={`text-[10px] px-2 py-0.5 rounded font-bold tracking-wide bg-slate-800 text-slate-300 border border-slate-700`}>
-                            {cardInstance.customName}
-                          </span>
+                  let daysLeft = 0;
+                  if (benefit.resetPeriod === 'fixed' && benefit.expirationDate) {
+                    const expTime = new Date(benefit.expirationDate + 'T00:00:00').getTime();
+                    const curTime = currentDate.getTime();
+                    daysLeft = Math.ceil((expTime - curTime) / (1000 * 60 * 60 * 24));
+                  }
+
+                  return (
+                    <div
+                      key={logKey}
+                      onClick={() => {
+                        if (isExpired) return; // Prevent clicking expired benefits
+                        toggleBenefit(logKey);
+                      }}
+                      className={`group flex items-center justify-between p-4 rounded-xl border transition duration-200 ${
+                        isExpired
+                          ? 'bg-slate-950 border-red-950/20 opacity-40 cursor-not-allowed'
+                          : isUsed
+                          ? 'bg-slate-950 border-slate-900 opacity-50 cursor-pointer'
+                          : 'bg-slate-900/40 border-slate-850/80 hover:border-slate-700 hover:bg-slate-900 cursor-pointer'
+                      }`}
+                    >
+                      <div className="flex items-center gap-3.5 pr-4">
+                        <div className={`w-6 h-6 flex items-center justify-center rounded-lg border transition-colors duration-200 ${
+                          isExpired
+                            ? 'border-red-900 bg-red-950/10 text-red-500'
+                            : isUsed 
+                            ? 'bg-emerald-500 border-emerald-500 text-slate-950' 
+                            : 'border-slate-700 group-hover:border-slate-500 bg-slate-950/50 text-transparent'
+                        }`}>
+                          {isExpired ? (
+                            <span className="text-[10px] font-bold">✕</span>
+                          ) : (
+                            <CheckCircle2 className="w-4 h-4 stroke-[3]" />
+                          )}
                         </div>
-                        <p className="text-xs text-slate-400 mt-1">{benefit.description}</p>
+
+                        <div>
+                          <div className="flex flex-wrap items-center gap-2">
+                            <span className={`text-sm font-semibold ${
+                              isExpired ? 'text-slate-500 line-through' :
+                              isUsed ? 'line-through text-slate-550' : 'text-slate-100'
+                            }`}>
+                              {benefit.name}
+                            </span>
+                            <span className={`text-[10px] px-2 py-0.5 rounded font-bold tracking-wide bg-slate-800 text-slate-300 border border-slate-700`}>
+                              {cardInstance.customName}
+                            </span>
+                            
+                            {isExpired ? (
+                              <span className="text-[9px] font-bold bg-red-550/10 text-red-400 border border-red-500/20 px-1.5 py-0.2 rounded">Expired</span>
+                            ) : benefit.resetPeriod === 'fixed' && benefit.expirationDate && (
+                              <span className={`text-[9px] font-bold border px-1.5 py-0.2 rounded ${
+                                daysLeft <= 5 
+                                  ? 'bg-red-550/10 text-red-400 border-red-500/30 animate-pulse' 
+                                  : 'bg-amber-500/10 text-amber-400 border-amber-500/20'
+                              }`}>
+                                {daysLeft <= 0 ? 'Expires today' : `Expires in ${daysLeft}d`}
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-xs text-slate-400 mt-1">
+                            {benefit.description}
+                            {benefit.resetPeriod === 'fixed' && benefit.expirationDate && (
+                              <span className="text-slate-500 block mt-0.5">
+                                Expiration deadline: {benefit.expirationDate}
+                              </span>
+                            )}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="text-right flex flex-col items-end justify-center shrink-0">
+                        <span className={`text-base font-bold ${isExpired || isUsed ? 'text-slate-500' : 'text-white'}`}>
+                          ${benefit.value}
+                        </span>
+                        <span className="text-[9px] uppercase tracking-wider text-slate-500 font-bold mt-0.5">
+                          {benefit.resetPeriod === 'monthly' ? 'Monthly' :
+                           benefit.resetPeriod === 'semi-annual' ? 'Semi-Annual' :
+                           benefit.resetPeriod === 'annual-calendar' ? 'Annual (Cal)' :
+                           benefit.resetPeriod === 'annual-anniversary' ? 'Annual (Anniv)' : 'Fixed Expiration'}
+                        </span>
                       </div>
                     </div>
-
-                    <div className="text-right flex flex-col items-end justify-center shrink-0">
-                      <span className={`text-base font-bold ${isUsed ? 'text-slate-500' : 'text-white'}`}>
-                        ${benefit.value}
-                      </span>
-                      <span className="text-[9px] uppercase tracking-wider text-slate-500 font-bold mt-0.5">
-                        {benefit.resetPeriod === 'monthly' ? 'Monthly' :
-                         benefit.resetPeriod === 'semi-annual' ? 'Semi-Annual' :
-                         benefit.resetPeriod === 'annual-calendar' ? 'Annual (Cal)' : 'Annual (Anniv)'}
-                      </span>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </section>
@@ -509,22 +613,14 @@ function App() {
 
                               <div className="flex items-center justify-between gap-2 pt-1">
                                 <label className="text-[10px] font-medium text-slate-400">
-                                  Anniversary Month:
+                                  Card Opened Date:
                                 </label>
-                                <select
-                                  value={instance.anniversaryMonth}
-                                  onChange={(e) => setAnniversaryMonth(instance.id, e.target.value)}
-                                  className="bg-slate-950 border border-slate-800 text-slate-300 text-[11px] rounded px-2 py-0.5 focus:outline-none cursor-pointer"
-                                >
-                                  {Array.from({ length: 12 }, (_, i) => {
-                                    const m = (i + 1).toString().padStart(2, '0');
-                                    return (
-                                      <option key={m} value={m}>
-                                        {new Date(2026, i, 1).toLocaleString('default', { month: 'short' })}
-                                      </option>
-                                    );
-                                  })}
-                                </select>
+                                <input
+                                  type="date"
+                                  value={instance.cardOpenDate}
+                                  onChange={(e) => setCardOpenDate(instance.id, e.target.value)}
+                                  className="bg-slate-950 border border-slate-800 text-slate-350 text-[11px] rounded px-2.5 py-0.5 focus:outline-none cursor-pointer font-medium"
+                                />
                               </div>
                             </div>
                           ))}
@@ -554,7 +650,7 @@ function App() {
                                   customName: `${instance.customName} (Copy)`,
                                   bank: instance.bank,
                                   color: instance.color,
-                                  anniversaryMonth: instance.anniversaryMonth,
+                                  cardOpenDate: instance.cardOpenDate,
                                   customBenefits: (instance.customBenefits || []).map((b) => ({
                                     ...b,
                                     id: `benefit_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
@@ -619,22 +715,14 @@ function App() {
 
                       <div className="mt-3 pt-3 border-t border-slate-900/80 flex items-center justify-between gap-2">
                         <label className="text-[10px] font-medium text-slate-400">
-                          Anniversary Month:
+                          Card Opened Date:
                         </label>
-                        <select
-                          value={instance.anniversaryMonth}
-                          onChange={(e) => setAnniversaryMonth(instance.id, e.target.value)}
-                          className="bg-slate-950 border border-slate-800 text-slate-300 text-[11px] rounded px-2 py-0.5 focus:outline-none cursor-pointer"
-                        >
-                          {Array.from({ length: 12 }, (_, i) => {
-                            const m = (i + 1).toString().padStart(2, '0');
-                            return (
-                              <option key={m} value={m}>
-                                {new Date(2026, i, 1).toLocaleString('default', { month: 'short' })}
-                              </option>
-                            );
-                          })}
-                        </select>
+                        <input
+                          type="date"
+                          value={instance.cardOpenDate}
+                          onChange={(e) => setCardOpenDate(instance.id, e.target.value)}
+                          className="bg-slate-950 border border-slate-800 text-slate-350 text-[11px] rounded px-2.5 py-0.5 focus:outline-none cursor-pointer font-medium"
+                        />
                       </div>
                     </div>
                   );
@@ -780,7 +868,7 @@ function App() {
                 customName: customCardName.trim(),
                 bank: customBank.trim() || 'Custom',
                 color: customColor,
-                anniversaryMonth: customAnniversaryMonth,
+                cardOpenDate: customCardOpenDate,
                 customBenefits: preparedBenefits,
               });
 
@@ -788,7 +876,7 @@ function App() {
               setCustomBank('');
               setCustomCardName('');
               setCustomColor('from-purple-600 to-indigo-900');
-              setCustomAnniversaryMonth('01');
+              setCustomCardOpenDate(new Date().toISOString().split('T')[0]);
               setNewBenefits([{ name: '', value: 0, resetPeriod: 'monthly', category: 'dining', description: '' }]);
               setIsCreateModalOpen(false);
             }} className="space-y-4">
@@ -820,21 +908,14 @@ function App() {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">Anniversary Month (周年)</label>
-                  <select
-                    value={customAnniversaryMonth}
-                    onChange={(e) => setCustomAnniversaryMonth(e.target.value)}
+                  <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">Card Opened Date (开卡日)</label>
+                  <input
+                    type="date"
+                    required
+                    value={customCardOpenDate}
+                    onChange={(e) => setCustomCardOpenDate(e.target.value)}
                     className="w-full bg-slate-950 border border-slate-800 focus:border-purple-500 text-slate-300 text-xs rounded-xl px-3 py-2.5 focus:outline-none font-medium cursor-pointer"
-                  >
-                    {Array.from({ length: 12 }, (_, i) => {
-                      const m = (i + 1).toString().padStart(2, '0');
-                      return (
-                        <option key={m} value={m}>
-                          {new Date(2026, i, 1).toLocaleString('default', { month: 'long' })}
-                        </option>
-                      );
-                    })}
-                  </select>
+                  />
                 </div>
 
                 <div>
@@ -927,6 +1008,9 @@ function App() {
                             onChange={(e) => {
                               const updated = [...newBenefits];
                               updated[idx].resetPeriod = e.target.value as any;
+                              if (e.target.value === 'fixed' && !updated[idx].expirationDate) {
+                                updated[idx].expirationDate = new Date().toISOString().split('T')[0];
+                              }
                               setNewBenefits(updated);
                             }}
                             className="w-full bg-slate-900 border border-slate-850 text-slate-300 text-[11px] rounded-lg px-2 py-1 focus:outline-none cursor-pointer"
@@ -935,6 +1019,7 @@ function App() {
                             <option value="semi-annual">Semi-Annual</option>
                             <option value="annual-calendar">Annual (Calendar)</option>
                             <option value="annual-anniversary">Annual (Anniversary)</option>
+                            <option value="fixed">Fixed Expiration Date</option>
                           </select>
                         </div>
 
@@ -957,6 +1042,23 @@ function App() {
                           </select>
                         </div>
                       </div>
+
+                      {benefit.resetPeriod === 'fixed' && (
+                        <div className="pt-1.5">
+                          <label className="block text-[9px] font-semibold text-slate-500 mb-0.5">Expiration Date (到期日)</label>
+                          <input
+                            type="date"
+                            required
+                            value={benefit.expirationDate || ''}
+                            onChange={(e) => {
+                              const updated = [...newBenefits];
+                              updated[idx].expirationDate = e.target.value;
+                              setNewBenefits(updated);
+                            }}
+                            className="w-full bg-slate-900 border border-slate-850 text-slate-300 text-xs rounded-lg px-2.5 py-1.5 focus:outline-none font-medium cursor-pointer"
+                          />
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
