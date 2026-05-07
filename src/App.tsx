@@ -3,8 +3,9 @@ import { CARDS_DB } from './data/cards.db';
 import type { CardTemplate, Benefit } from './data/cards.db';
 import { useCardStore, getLogKey } from './store/useCardStore';
 import type { OwnedCardInstance } from './store/useCardStore';
-import { downloadICSFile } from './utils/calendar';
 import { SpentAssistant } from './components/SpentAssistant';
+import { CalendarSyncModal } from './components/CalendarSyncModal';
+import { CreateCardModal } from './components/CreateCardModal';
 import { 
   CreditCard, 
   Calendar, 
@@ -54,20 +55,6 @@ function App() {
   const [isSyncModalOpen, setIsSyncModalOpen] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-
-  // Custom card builder states
-  const [customBank, setCustomBank] = useState('');
-  const [customCardName, setCustomCardName] = useState('');
-  const [customColor, setCustomColor] = useState('from-purple-600 to-indigo-900');
-  const [customCardOpenDate, setCustomCardOpenDate] = useState(getLocalDateString());
-  const [newBenefits, setNewBenefits] = useState<{
-    name: string;
-    value: number;
-    resetPeriod: 'monthly' | 'semi-annual' | 'annual-calendar' | 'annual-anniversary' | 'fixed';
-    category: 'dining' | 'travel' | 'shopping' | 'entertainment' | 'other';
-    description: string;
-    expirationDate?: string;
-  }[]>([{ name: '', value: 0, resetPeriod: 'monthly', category: 'dining', description: '' }]);
 
   const currentMonthStr = currentDate.toLocaleString('default', { month: 'long' });
   const currentYear = currentDate.getFullYear();
@@ -519,9 +506,9 @@ function App() {
                       }}
                       className={`group flex items-center justify-between p-4 rounded-xl border transition duration-200 ${
                         isExpired
-                          ? themeClass('bg-slate-950 border-red-955/10 opacity-40 cursor-not-allowed', 'bg-red-50/30 border-red-200/50 opacity-60 cursor-not-allowed')
+                          ? themeClass('bg-slate-955 border-red-955/10 opacity-40 cursor-not-allowed', 'bg-red-50/30 border-red-200/50 opacity-60 cursor-not-allowed')
                           : isUsed
-                          ? themeClass('bg-slate-950 border-slate-900 opacity-50 cursor-pointer', 'bg-slate-100/70 border-slate-200/70 opacity-60 cursor-pointer')
+                          ? themeClass('bg-slate-955 border-slate-900 opacity-50 cursor-pointer', 'bg-slate-100/70 border-slate-200/70 opacity-60 cursor-pointer')
                           : themeClass('bg-slate-900/40 border-slate-850/80 hover:border-slate-700 hover:bg-slate-900 cursor-pointer', 'bg-white border-slate-200/90 hover:border-slate-300 hover:bg-slate-50/50 cursor-pointer shadow-[0_2px_6px_rgba(15,23,42,0.02)] hover:shadow-[0_4px_10px_rgba(15,23,42,0.045)]')
                       }`}
                     >
@@ -531,7 +518,7 @@ function App() {
                             ? 'border-red-900 bg-red-950/10 text-red-500'
                             : isUsed 
                             ? 'bg-emerald-500 border-emerald-500 text-slate-950' 
-                            : themeClass('border-slate-700 group-hover:border-slate-500 bg-slate-950/50 text-transparent', 'border-slate-250 group-hover:border-slate-350 bg-white text-transparent')
+                            : themeClass('border-slate-700 group-hover:border-slate-500 bg-slate-955/50 text-transparent', 'border-slate-250 group-hover:border-slate-350 bg-white text-transparent')
                         }`}>
                           {isExpired ? (
                             <span className="text-[10px] font-bold">✕</span>
@@ -602,7 +589,7 @@ function App() {
             <div className={`border rounded-xl p-4 sm:p-6 transition duration-300 ${
               themeClass('bg-slate-900/30 border-slate-850', 'bg-white border-slate-200 shadow-sm')
             }`}>
-              <div className="flex items-center justify-between mb-4">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-5">
                 <h3 className={`text-sm font-bold flex items-center gap-2 ${themeClass('text-white', 'text-slate-800')}`}>
                   <CreditCard className="w-4 h-4 text-amber-500" />
                   Credit Card Inventory
@@ -680,11 +667,11 @@ function App() {
 
                               {instances.length > 0 && (
                                 <div className={`mt-3 pt-3 border-t space-y-3 ${themeClass('border-slate-900', 'border-slate-200')}`}>
-                                  <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Active Instances ({instances.length})</p>
+                                  <p className="text-[10px] font-bold uppercase tracking-wider text-slate-550">Active Instances ({instances.length})</p>
                                   
                                   {instances.map((instance) => (
                                     <div key={instance.id} className={`p-2.5 rounded-lg border space-y-2 ${
-                                      themeClass('bg-slate-900/50 border-slate-850/60', 'bg-white border-slate-200 shadow-inner')
+                                      themeClass('bg-slate-900/50 border-slate-855/60', 'bg-white border-slate-200 shadow-inner')
                                     }`}>
                                       <div className="flex items-center justify-between gap-2">
                                         {editingInstanceId === instance.id ? (
@@ -700,7 +687,7 @@ function App() {
                                             }}
                                             autoFocus
                                             className={`border text-xs rounded px-2 py-1 font-semibold focus:outline-none w-full ${
-                                              themeClass('bg-slate-950 border-amber-500/50 text-slate-200', 'bg-slate-50 border-purple-500 text-slate-850')
+                                              themeClass('bg-slate-955 border-amber-500/50 text-slate-200', 'bg-slate-50 border-purple-500 text-slate-850')
                                             }`}
                                           />
                                         ) : (
@@ -724,14 +711,14 @@ function App() {
                                       </div>
 
                                       <div className="flex items-center justify-between gap-2 pt-1">
-                                        <label className="text-[10px] font-medium text-slate-500">
+                                        <label className="text-[10px] font-medium text-slate-550">
                                           Card Opened Date:
                                         </label>
                                         <input
                                           type="date"
                                           value={instance.cardOpenDate}
                                           onChange={(e) => setCardOpenDate(instance.id, e.target.value)}
-                                          className={`border text-[11px] rounded px-2 py-0.5 focus:outline-none cursor-pointer font-medium ${
+                                          className={`border text-[11px] rounded px-2.5 py-0.5 focus:outline-none cursor-pointer font-medium ${
                                             themeClass('bg-slate-955 border-slate-800 text-slate-350', 'bg-white border-slate-250 text-slate-750')
                                           }`}
                                         />
@@ -798,14 +785,14 @@ function App() {
                                           })),
                                         });
                                       }}
-                                      className="p-1 text-purple-400 hover:text-purple-300 hover:bg-purple-550/10 rounded transition active:scale-90 cursor-pointer"
+                                      className="p-1 text-purple-400 hover:text-purple-300 hover:bg-purple-555/10 rounded transition active:scale-90 cursor-pointer"
                                       title="Duplicate custom card instance"
                                     >
                                       <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
                                     </button>
                                     <button
                                       onClick={() => removeCard(instance.id)}
-                                      className="p-1 text-red-400 hover:text-red-500 hover:bg-red-550/10 rounded transition cursor-pointer"
+                                      className="p-1 text-red-400 hover:text-red-500 hover:bg-red-555/10 rounded transition cursor-pointer"
                                       title="Delete custom card"
                                     >
                                       <Trash2 className="w-3.5 h-3.5" />
@@ -826,7 +813,7 @@ function App() {
                                     }}
                                     autoFocus
                                     className={`border text-xs rounded px-2 py-1 font-semibold focus:outline-none w-full mt-2 ${
-                                      themeClass('bg-slate-950 border-purple-500/50 text-slate-200', 'bg-white border-purple-500 text-slate-800')
+                                      themeClass('bg-slate-955 border-purple-500/50 text-slate-200', 'bg-white border-purple-500 text-slate-800')
                                     }`}
                                   />
                                 ) : (
@@ -836,11 +823,11 @@ function App() {
                                     title="Click to rename"
                                   >
                                     {instance.customName}
-                                    <Edit3 className="w-3 h-3 text-slate-450 shrink-0" />
+                                    <Edit3 className="w-3.5 h-3.5 text-slate-450 shrink-0" />
                                   </h4>
                                 )}
 
-                                <p className="text-xs text-slate-400 mt-1">
+                                <p className="text-xs text-slate-450 mt-1">
                                   {(instance.customBenefits || []).length} perks (Total: ${(instance.customBenefits || []).reduce((s, b) => s + b.value, 0)}/yr)
                                 </p>
 
@@ -867,7 +854,7 @@ function App() {
                                   value={instance.cardOpenDate}
                                   onChange={(e) => setCardOpenDate(instance.id, e.target.value)}
                                   className={`border text-[11px] rounded px-2.5 py-0.5 focus:outline-none cursor-pointer font-medium ${
-                                    themeClass('bg-slate-955 border-slate-800 text-slate-350', 'bg-white/40 border-purple-400/25 text-white')
+                                    themeClass('bg-slate-955 border-slate-800 text-slate-355', 'bg-white/40 border-purple-400/25 text-white')
                                   }`}
                                 />
                               </div>
@@ -893,14 +880,14 @@ function App() {
                     themeClass('bg-slate-900 hover:bg-slate-855 border-slate-800 text-slate-300', 'bg-white hover:bg-slate-100 border-slate-250 text-slate-600 shadow-sm')
                   }`}
                 >
-                  <Download className="w-3.5 h-3.5 text-slate-500" />
+                  <Download className="w-3.5 h-3.5 text-slate-505" />
                   Export JSON Backup
                 </button>
 
                 <label className={`flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-lg border cursor-pointer transition ${
                   themeClass('bg-slate-900 hover:bg-slate-855 border-slate-800 text-slate-300', 'bg-white hover:bg-slate-100 border-slate-250 text-slate-600 shadow-sm')
                 }`}>
-                  <Upload className="w-3.5 h-3.5 text-slate-500" />
+                  <Upload className="w-3.5 h-3.5 text-slate-505" />
                   Restore Backup
                   <input
                     type="file"
@@ -929,354 +916,22 @@ function App() {
         )}
       </main>
 
-      {/* Calendar Sync Modal Overlay */}
-      {isSyncModalOpen && (
-        <div className="fixed inset-0 bg-slate-950/85 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in">
-          <div 
-            className={`border rounded-2xl max-w-md w-full p-6 shadow-2xl relative animate-scale-up transition-colors duration-300 ${
-              themeClass('bg-slate-900 border-slate-800 text-slate-100', 'bg-white border-slate-200 text-slate-800')
-            }`}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex items-center gap-3 mb-4">
-              <div className="p-2 bg-amber-500/10 rounded-lg text-amber-500">
-                <Calendar className="w-6 h-6" />
-              </div>
-              <div>
-                <h3 className={`text-base font-bold ${themeClass('text-white', 'text-slate-900')}`}>Calendar Reminders Sync</h3>
-                <p className={`text-xs ${themeClass('text-slate-400', 'text-slate-500')}`}>Export and import events to your native calendars</p>
-              </div>
-            </div>
+      {/* Calendar Sync Modal */}
+      <CalendarSyncModal 
+        isOpen={isSyncModalOpen} 
+        onClose={() => setIsSyncModalOpen(false)} 
+        ownedCards={ownedCards}
+        theme={theme}
+      />
 
-            <p className={`text-xs leading-relaxed mb-5 ${themeClass('text-slate-300', 'text-slate-600')}`}>
-              We will bundle all active tracked card perks and their respective renewal schedules into a single standard calendar subscription file.
-            </p>
-
-            <button
-              onClick={() => {
-                downloadICSFile(ownedCards);
-              }}
-              className="w-full flex items-center justify-center gap-2 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold py-3 px-4 rounded-xl text-sm transition active:scale-[0.98] shadow-lg shadow-amber-500/10 mb-6 cursor-pointer"
-            >
-              <Download className="w-4 h-4 stroke-[3]" />
-              1. Download Calendar File (.ics)
-            </button>
-
-            <div className={`space-y-4 border-t pt-4 ${themeClass('border-slate-800', 'border-slate-200')}`}>
-              <h4 className={`text-[10px] font-bold uppercase tracking-wider ${themeClass('text-slate-500', 'text-slate-400')}`}>How to Import (如何导入):</h4>
-              
-              <div className="space-y-2.5">
-                <div className="text-xs">
-                  <p className={`font-semibold ${themeClass('text-slate-200', 'text-slate-800')}`}>🍎 Apple Calendar / iOS / Mac:</p>
-                  <p className={`mt-0.5 text-[11px] ${themeClass('text-slate-400', 'text-slate-500')}`}>Just double-click or drag-and-drop the downloaded file into the Calendar app. All reminders sync automatically!</p>
-                </div>
-
-                <div className="text-xs">
-                  <p className={`font-semibold ${themeClass('text-slate-200', 'text-slate-800')}`}>🤖 Google Calendar (谷歌日历网页版):</p>
-                  <p className={`mt-0.5 text-[11px] ${themeClass('text-slate-400', 'text-slate-500')}`}>
-                    1. Open <a href="https://calendar.google.com" target="_blank" className="text-purple-600 dark:text-amber-400 hover:underline font-medium">Google Calendar</a>. <br />
-                    2. Go to <span className={`font-medium ${themeClass('text-slate-300', 'text-slate-700')}`}>Settings (Gear icon)</span> &rarr; <span className={`font-medium ${themeClass('text-slate-300', 'text-slate-700')}`}>Import & Export</span>. <br />
-                    3. Select and upload the downloaded `.ics` file. Done!
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <button
-              onClick={() => setIsSyncModalOpen(false)}
-              className={`w-full mt-6 font-semibold py-2 rounded-lg text-xs transition cursor-pointer ${
-                themeClass('bg-slate-800 hover:bg-slate-750 text-slate-300', 'bg-slate-100 hover:bg-slate-200 text-slate-600')
-              }`}
-            >
-              Close
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Create Custom Card Modal Overlay */}
-      {isCreateModalOpen && (
-        <div className="fixed inset-0 bg-slate-950/85 backdrop-blur-sm flex items-center justify-center z-50 p-4 overflow-y-auto">
-          <div 
-            className={`border rounded-2xl max-w-lg w-full p-6 shadow-2xl relative my-8 animate-scale-up transition-colors duration-300 ${
-              themeClass('bg-slate-900 border-slate-800 text-slate-100', 'bg-white border-slate-200 text-slate-800')
-            }`}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex items-center gap-3 mb-5">
-              <div className="p-2 bg-purple-500/10 rounded-lg text-purple-400">
-                <CreditCard className="w-6 h-6" />
-              </div>
-              <div>
-                <h3 className={`text-base font-bold ${themeClass('text-white', 'text-slate-900')}`}>Create Custom Credit Card</h3>
-                <p className={`text-xs ${themeClass('text-slate-400', 'text-slate-500')}`}>Add your long-tail credit cards and custom perks</p>
-              </div>
-            </div>
-
-            <form onSubmit={(e) => {
-              e.preventDefault();
-              if (!customCardName.trim()) {
-                alert('Please enter a card name.');
-                return;
-              }
-
-              const preparedBenefits = newBenefits
-                .filter((b) => b.name.trim() !== '')
-                .map((b) => ({
-                  ...b,
-                  id: `benefit_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
-                  value: Number(b.value) || 0,
-                }));
-
-              addCustomCard({
-                templateId: 'custom',
-                customName: customCardName.trim(),
-                bank: customBank.trim() || 'Custom',
-                color: customColor,
-                cardOpenDate: customCardOpenDate,
-                customBenefits: preparedBenefits,
-              });
-
-              // Reset states
-              setCustomBank('');
-              setCustomCardName('');
-              setCustomColor('from-purple-600 to-indigo-900');
-              setCustomCardOpenDate(getLocalDateString());
-              setNewBenefits([{ name: '', value: 0, resetPeriod: 'monthly', category: 'dining', description: '' }]);
-              setIsCreateModalOpen(false);
-            }} className="space-y-4 text-xs">
-              
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className={`block text-[10px] font-bold uppercase tracking-wider mb-1 ${themeClass('text-slate-400', 'text-slate-500')}`}>Bank Name (银行)</label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="e.g. Bilt, Citi"
-                    value={customBank}
-                    onChange={(e) => setCustomBank(e.target.value)}
-                    className={`w-full border text-xs rounded-xl px-3 py-2.5 focus:outline-none font-medium ${
-                      themeClass('bg-slate-950 border-slate-800 focus:border-purple-500 text-slate-200', 'bg-slate-50 border-slate-250 focus:border-purple-500 text-slate-800 shadow-inner')
-                    }`}
-                  />
-                </div>
-                <div>
-                  <label className={`block text-[10px] font-bold uppercase tracking-wider mb-1 ${themeClass('text-slate-400', 'text-slate-500')}`}>Card Name (卡名)</label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="e.g. Mastercard, Custom Cash"
-                    value={customCardName}
-                    onChange={(e) => setCustomCardName(e.target.value)}
-                    className={`w-full border text-xs rounded-xl px-3 py-2.5 focus:outline-none font-medium ${
-                      themeClass('bg-slate-950 border-slate-800 focus:border-purple-500 text-slate-200', 'bg-slate-50 border-slate-250 focus:border-purple-500 text-slate-800 shadow-inner')
-                    }`}
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className={`block text-[10px] font-bold uppercase tracking-wider mb-1 ${themeClass('text-slate-400', 'text-slate-500')}`}>Card Opened Date (开卡日)</label>
-                  <input
-                    type="date"
-                    required
-                    value={customCardOpenDate}
-                    onChange={(e) => setCustomCardOpenDate(e.target.value)}
-                    className={`w-full border text-xs rounded-xl px-3 py-2.5 focus:outline-none font-medium cursor-pointer ${
-                      themeClass('bg-slate-955 border-slate-800 text-slate-300', 'bg-slate-50 border-slate-250 text-slate-750 focus:border-purple-500')
-                    }`}
-                  />
-                </div>
-
-                <div>
-                  <label className={`block text-[10px] font-bold uppercase tracking-wider mb-1.5 ${themeClass('text-slate-400', 'text-slate-500')}`}>Card Color (卡片配色)</label>
-                  <div className="flex gap-1.5 items-center pt-1">
-                    {[
-                      { class: 'from-purple-600 to-indigo-900', label: 'Violet' },
-                      { class: 'from-teal-500 to-cyan-800', label: 'Lagoon' },
-                      { class: 'from-rose-600 to-red-900', label: 'Lava' },
-                      { class: 'from-emerald-600 to-green-900', label: 'Emerald' },
-                      { class: 'from-slate-750 to-slate-900', label: 'Steel' }
-                    ].map((c) => (
-                      <button
-                        key={c.class}
-                        type="button"
-                        onClick={() => setCustomColor(c.class)}
-                        className={`w-5 h-5 rounded-full bg-gradient-to-tr ${c.class} border transition cursor-pointer ${
-                          customColor === c.class ? 'border-white scale-110 ring-2 ring-purple-500/30' : 'border-transparent opacity-70 hover:opacity-100'
-                        }`}
-                        title={c.label}
-                      />
-                    ))}
-                  </div>
-                </div>
-              </div>
-
-              {/* Dynamic Benefits Builder Section */}
-              <div className={`border-t pt-4 mt-4 space-y-3 ${themeClass('border-slate-850', 'border-slate-200')}`}>
-                <div className="flex items-center justify-between mb-2">
-                  <h4 className={`text-[10px] font-bold uppercase tracking-wider ${themeClass('text-slate-400', 'text-slate-500')}`}>Card Benefits ({newBenefits.length})</h4>
-                  <button
-                    type="button"
-                    onClick={() => setNewBenefits([...newBenefits, { name: '', value: 0, resetPeriod: 'monthly', category: 'dining', description: '' }])}
-                    className="flex items-center gap-1 text-[10px] font-bold text-purple-500 hover:text-purple-400 transition cursor-pointer"
-                  >
-                    <Plus className="w-3 h-3 stroke-[3]" />
-                    Add Perk (添加福利)
-                  </button>
-                </div>
-
-                <div className="space-y-3 max-h-[180px] overflow-y-auto pr-1.5 scrollbar-thin">
-                  {newBenefits.map((benefit, idx) => (
-                    <div key={idx} className={`p-3 rounded-xl border space-y-2.5 relative ${
-                      themeClass('bg-slate-950 border-slate-850/80', 'bg-slate-50 border-slate-200')
-                    }`}>
-                      {newBenefits.length > 1 && (
-                        <button
-                          type="button"
-                          onClick={() => setNewBenefits(newBenefits.filter((_, i) => i !== idx))}
-                          className="absolute top-2.5 right-2.5 text-slate-500 hover:text-red-400 transition cursor-pointer"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
-                      )}
-
-                      <div className="grid grid-cols-3 gap-2">
-                        <div className="col-span-2">
-                          <label className="block text-[9px] font-semibold text-slate-500 mb-0.5">Perk Name</label>
-                          <input
-                            type="text"
-                            placeholder="e.g. Rent Day Credit"
-                            value={benefit.name}
-                            onChange={(e) => {
-                              const updated = [...newBenefits];
-                              updated[idx].name = e.target.value;
-                              setNewBenefits(updated);
-                            }}
-                            className={`w-full border text-xs rounded-lg px-2.5 py-1.5 focus:outline-none font-medium ${
-                              themeClass('bg-slate-900 border-slate-850 text-slate-200', 'bg-white border-slate-250 text-slate-800')
-                            }`}
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-[9px] font-semibold text-slate-500 mb-0.5">Value ($)</label>
-                          <input
-                            type="number"
-                            placeholder="5"
-                            value={benefit.value || ''}
-                            onChange={(e) => {
-                              const updated = [...newBenefits];
-                              updated[idx].value = Number(e.target.value);
-                              setNewBenefits(updated);
-                            }}
-                            className={`w-full border text-xs rounded-lg px-2.5 py-1.5 focus:outline-none font-bold ${
-                              themeClass('bg-slate-900 border-slate-850 text-slate-200', 'bg-white border-slate-250 text-slate-800')
-                            }`}
-                          />
-                        </div>
-                      </div>
-
-                      <div className="grid grid-cols-2 gap-2">
-                        <div>
-                          <label className="block text-[9px] font-semibold text-slate-500 mb-0.5">Reset Period</label>
-                          <select
-                            value={benefit.resetPeriod}
-                            onChange={(e) => {
-                              const updated = [...newBenefits];
-                              updated[idx].resetPeriod = e.target.value as any;
-                              if (e.target.value === 'fixed' && !updated[idx].expirationDate) {
-                                updated[idx].expirationDate = getLocalDateString();
-                              }
-                              setNewBenefits(updated);
-                            }}
-                            className={`w-full border text-[11px] rounded-lg px-2 py-1 focus:outline-none cursor-pointer ${
-                              themeClass('bg-slate-900 border-slate-850 text-slate-300', 'bg-white border-slate-250 text-slate-700')
-                            }`}
-                          >
-                            <option value="monthly">Monthly</option>
-                            <option value="semi-annual">Semi-Annual</option>
-                            <option value="annual-calendar">Annual (Calendar)</option>
-                            <option value="annual-anniversary">Annual (Anniversary)</option>
-                            <option value="fixed">Fixed Expiration Date</option>
-                          </select>
-                        </div>
-
-                        <div>
-                          <label className="block text-[9px] font-semibold text-slate-500 mb-0.5">Category</label>
-                          <select
-                            value={benefit.category}
-                            onChange={(e) => {
-                              const updated = [...newBenefits];
-                              updated[idx].category = e.target.value as any;
-                              setNewBenefits(updated);
-                            }}
-                            className={`w-full border text-[11px] rounded-lg px-2 py-1 focus:outline-none cursor-pointer ${
-                              themeClass('bg-slate-900 border-slate-850 text-slate-300', 'bg-white border-slate-250 text-slate-700')
-                            }`}
-                          >
-                            <option value="dining">Dining</option>
-                            <option value="travel">Travel</option>
-                            <option value="shopping">Shopping</option>
-                            <option value="entertainment">Entertainment</option>
-                            <option value="other">Other</option>
-                          </select>
-                        </div>
-                      </div>
-
-                      {benefit.resetPeriod === 'fixed' && (
-                        <div className="pt-1.5">
-                          <label className="block text-[9px] font-semibold text-slate-500 mb-0.5">Expiration Date (到期日)</label>
-                          <input
-                            type="date"
-                            required
-                            value={benefit.expirationDate || ''}
-                            onChange={(e) => {
-                              const updated = [...newBenefits];
-                              updated[idx].expirationDate = e.target.value;
-                              setNewBenefits(updated);
-                            }}
-                            className={`w-full border text-xs rounded-lg px-2.5 py-1.5 focus:outline-none font-medium cursor-pointer ${
-                              themeClass('bg-slate-900 border-slate-850 text-slate-300', 'bg-white border-slate-250 text-slate-850')
-                            }`}
-                          />
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div className={`flex gap-3 pt-4 border-t mt-4 ${themeClass('border-slate-850', 'border-slate-200')}`}>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setIsCreateModalOpen(false);
-                    setNewBenefits([{ name: '', value: 0, resetPeriod: 'monthly', category: 'dining', description: '' }]);
-                  }}
-                  className={`w-1/3 font-semibold py-2.5 rounded-xl text-xs transition cursor-pointer ${
-                    themeClass('bg-slate-800 hover:bg-slate-750 text-slate-300', 'bg-slate-100 hover:bg-slate-200 text-slate-600')
-                  }`}
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="w-2/3 bg-gradient-to-tr from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-550 text-white font-bold py-2.5 rounded-xl text-xs transition active:scale-[0.98] cursor-pointer shadow-md shadow-purple-500/10"
-                >
-                  Create & Save Card
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-      
-      {/* Footer */}
-      <footer className={`text-center py-8 text-xs border-t mt-12 ${themeClass('text-slate-600 border-slate-950', 'text-slate-500 border-slate-200')}`}>
-        <p>No account. No passwords. Purely local & safe.</p>
-        <p className="mt-1">Click to check off, click custom name to rename.</p>
-      </footer>
+      {/* Create Custom Card Modal */}
+      <CreateCardModal 
+        isOpen={isCreateModalOpen} 
+        onClose={() => setIsCreateModalOpen(false)} 
+        theme={theme}
+        addCustomCard={addCustomCard}
+        getLocalDateString={getLocalDateString}
+      />
 
       {/* SpentAssistant AI Drawer */}
       <SpentAssistant remainingBenefits={remainingBenefits} theme={theme} />
