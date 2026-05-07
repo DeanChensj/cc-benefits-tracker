@@ -11,7 +11,6 @@ import { AddOfferModal } from './components/AddOfferModal';
 import { Toast } from './components/Toast';
 import { DeleteConfirmModal } from './components/DeleteConfirmModal';
 import { getLocalDateString, getDaysLeft, getUrgencyScore } from './utils/dateUtils';
-import type { ActiveBenefit } from './utils/dateUtils';
 import { loadGoogleGsiScript, requestGDriveToken, fetchUserEmail } from './utils/gdrive';
 import { 
   CreditCard, 
