@@ -10,6 +10,7 @@ import { CardDetailDrawer } from './components/CardDetailDrawer';
 import { AddOfferModal } from './components/AddOfferModal';
 import { Toast } from './components/Toast';
 import { DeleteConfirmModal } from './components/DeleteConfirmModal';
+import { ConfirmationModal } from './components/ConfirmationModal';
 import { getLocalDateString, getDaysLeft, getUrgencyScore } from './utils/dateUtils';
 import { loadGoogleGsiScript, requestGDriveToken, fetchUserEmail } from './utils/gdrive';
 import { 
@@ -79,6 +80,8 @@ function App() {
   const [showAdvancedSync, setShowAdvancedSync] = useState(false);
   const [addOfferInstanceId, setAddOfferInstanceId] = useState<string | null>(null);
   const [deleteCardInstanceId, setDeleteCardInstanceId] = useState<string | null>(null);
+  const [isGDriveDisconnectOpen, setIsGDriveDisconnectOpen] = useState(false);
+  const [isWipeDataOpen, setIsWipeDataOpen] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' | 'warning' } | null>(null);
 
   const showToast = (message: string, type: 'success' | 'error' | 'info' | 'warning' = 'success') => {
@@ -149,10 +152,13 @@ function App() {
   };
 
   const handleDisconnectGoogleDrive = () => {
-    if (confirm('Are you sure you want to disconnect and unlink Google Drive? Your local data will remain intact, but automated cloud synchronization will cease.')) {
-      setGDriveCredentials(null, null);
-      showToast('🚪 Unlinked Google Drive account successfully.', 'info');
-    }
+    setIsGDriveDisconnectOpen(true);
+  };
+
+  const handleConfirmDisconnectGoogleDrive = () => {
+    setGDriveCredentials(null, null);
+    showToast('🚪 Unlinked Google Drive account successfully.', 'info');
+    setIsGDriveDisconnectOpen(false);
   };
 
   const exportBackup = () => {
@@ -1347,12 +1353,8 @@ function App() {
                 </label>
 
                 <button
-                  onClick={() => {
-                    if (confirm('Are you absolutely sure you want to reset all card instances and checklist logs? This cannot be undone.')) {
-                      resetAll();
-                    }
-                  }}
-                  className={`flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-lg border transition ml-auto ${
+                  onClick={() => setIsWipeDataOpen(true)}
+                  className={`flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-lg border transition ml-auto cursor-pointer ${
                     themeClass('bg-red-555/10 hover:bg-red-555/20 border-red-500/20 text-red-400', 'bg-red-500/5 hover:bg-red-500/10 border-red-300/30 text-red-500 shadow-sm')
                   }`}
                 >
@@ -1419,6 +1421,36 @@ function App() {
 
       {/* SpentAssistant AI Drawer */}
       <SpentAssistant remainingBenefits={remainingBenefits} logs={logs} theme={theme} showToast={showToast} />
+
+      {/* Google Drive Disconnect Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={isGDriveDisconnectOpen}
+        title="Disconnect Google Drive?"
+        message="Are you sure you want to disconnect and unlink Google Drive? Your local data will remain intact, but automated cloud synchronization will cease."
+        confirmText="Disconnect"
+        cancelText="Cancel"
+        onConfirm={handleConfirmDisconnectGoogleDrive}
+        onCancel={() => setIsGDriveDisconnectOpen(false)}
+        theme={theme}
+        type="warning"
+      />
+
+      {/* Wipe App Data Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={isWipeDataOpen}
+        title="Wipe All App Data?"
+        message="Are you absolutely sure you want to reset all card instances and checklist logs? This action is permanent and cannot be undone."
+        confirmText="Wipe Data"
+        cancelText="Keep Data"
+        onConfirm={() => {
+          resetAll();
+          setIsWipeDataOpen(false);
+          showToast('🗑️ All card data and logs have been wiped.', 'warning');
+        }}
+        onCancel={() => setIsWipeDataOpen(false)}
+        theme={theme}
+        type="danger"
+      />
 
       {/* Premium Floating Toast Notification */}
       {toast && (

@@ -13,6 +13,8 @@ import {
   ExternalLink 
 } from 'lucide-react';
 
+import { ConfirmationModal } from './ConfirmationModal';
+
 interface RemainingBenefit {
   cardInstance: OwnedCardInstance;
   benefit: Benefit;
@@ -38,6 +40,7 @@ export function SpentAssistant({ remainingBenefits, logs, theme, showToast }: Sp
   const [isVerifying, setIsVerifying] = useState(false);
   const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
   const [inputMessage, setInputMessage] = useState('');
+  const [isDeleteKeyOpen, setIsDeleteKeyOpen] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   
   const chatEndRef = useRef<HTMLDivElement>(null);
@@ -107,11 +110,15 @@ export function SpentAssistant({ remainingBenefits, logs, theme, showToast }: Sp
 
   // Delete the saved Key
   const handleDeleteKey = () => {
-    if (confirm('Are you sure you want to delete your API key from this device?')) {
-      localStorage.removeItem('cc_tracker_gemini_apikey');
-      setSavedKey('');
-      setChatHistory([]);
-    }
+    setIsDeleteKeyOpen(true);
+  };
+
+  const handleConfirmDeleteKey = () => {
+    localStorage.removeItem('cc_tracker_gemini_apikey');
+    setSavedKey('');
+    setChatHistory([]);
+    setIsDeleteKeyOpen(false);
+    showToast?.('🗑️ Gemini API Key removed successfully.', 'warning');
   };
 
   // Compile Prompt and Call Gemini API
@@ -385,6 +392,19 @@ Guidelines:
           )}
         </div>
       )}
+
+      {/* Delete API Key Custom Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={isDeleteKeyOpen}
+        title="Delete API Key?"
+        message="Are you sure you want to delete your Gemini API key from this device? This action will disconnect the SpentAssistant AI recommendation chat."
+        confirmText="Delete Key"
+        cancelText="Keep Key"
+        onConfirm={handleConfirmDeleteKey}
+        onCancel={() => setIsDeleteKeyOpen(false)}
+        theme={theme}
+        type="danger"
+      />
     </>
   );
 }
