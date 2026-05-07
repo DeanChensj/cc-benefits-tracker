@@ -69,6 +69,7 @@ function App() {
   const [activeTab, setActiveTab] = useState<'todo' | 'all' | 'cards'>('todo');
   const [filterCategory, setFilterCategory] = useState<string>('all');
   const [sortBy, setSortBy] = useState<'urgency' | 'value-desc' | 'value-asc' | 'expiry'>('urgency');
+  const [filterCardInstanceId, setFilterCardInstanceId] = useState<string>('all');
   const [editingInstanceId, setEditingInstanceId] = useState<string | null>(null);
   const [isSyncModalOpen, setIsSyncModalOpen] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -270,6 +271,7 @@ function App() {
   const filteredBenefits = activeBenefits.filter((ab) => {
     if (activeTab === 'todo' && ab.isUsed && focusedLogKey !== ab.logKey) return false;
     if (filterCategory !== 'all' && ab.benefit.category !== filterCategory) return false;
+    if (filterCardInstanceId !== 'all' && ab.cardInstance.id !== filterCardInstanceId) return false;
     return true;
   });
 
@@ -657,9 +659,9 @@ function App() {
           <div className={`flex gap-1 p-1 rounded-xl self-start ${themeClass('bg-slate-900/80', 'bg-slate-200/60')}`}>
             <button
               onClick={() => setActiveTab('todo')}
-              className={`px-4 py-2 text-sm font-semibold rounded-lg transition ${
+              className={`px-4 py-2 text-sm font-semibold rounded-lg transition cursor-pointer ${
                 activeTab === 'todo'
-                  ? 'bg-amber-500 text-slate-950'
+                  ? 'bg-amber-500 text-slate-955'
                   : themeClass('text-slate-400 hover:text-white hover:bg-slate-855', 'text-slate-505 hover:text-slate-900 hover:bg-slate-300/30')
               }`}
             >
@@ -667,7 +669,7 @@ function App() {
             </button>
             <button
               onClick={() => setActiveTab('all')}
-              className={`px-4 py-2 text-sm font-semibold rounded-lg transition ${
+              className={`px-4 py-2 text-sm font-semibold rounded-lg transition cursor-pointer ${
                 activeTab === 'all'
                   ? 'bg-amber-500 text-slate-955'
                   : themeClass('text-slate-400 hover:text-white hover:bg-slate-855', 'text-slate-505 hover:text-slate-900 hover:bg-slate-300/30')
@@ -677,7 +679,7 @@ function App() {
             </button>
             <button
               onClick={() => setActiveTab('cards')}
-              className={`px-4 py-2 text-sm font-semibold rounded-lg transition ${
+              className={`px-4 py-2 text-sm font-semibold rounded-lg transition cursor-pointer ${
                 activeTab === 'cards'
                   ? 'bg-amber-500 text-slate-955'
                   : themeClass('text-slate-400 hover:text-white hover:bg-slate-855', 'text-slate-505 hover:text-slate-900 hover:bg-slate-300/30')
@@ -687,48 +689,81 @@ function App() {
             </button>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2">
-            {activeTab !== 'cards' && (
-              <>
-                <div className={`flex items-center gap-1 border rounded-lg px-2.5 py-1.5 text-xs transition duration-300 ${
-                  themeClass('bg-slate-900 border-slate-800', 'bg-white border-slate-200 shadow-sm')
-                }`}>
-                  <Filter className="w-3.5 h-3.5 text-slate-500" />
-                  <select
-                    value={filterCategory}
-                    onChange={(e) => setFilterCategory(e.target.value)}
-                    className={`bg-transparent border-none focus:outline-none cursor-pointer font-medium ${themeClass('text-slate-300', 'text-slate-700')}`}
-                  >
-                    <option value="all">All Categories</option>
-                    <option value="dining">Dining</option>
-                    <option value="travel">Travel</option>
-                    <option value="shopping">Shopping</option>
-                    <option value="entertainment">Entertainment</option>
-                    <option value="other">Other</option>
-                  </select>
-                </div>
+          {ownedCards.length > 0 && activeTab !== 'cards' && (
+            <div className={`text-xs font-bold uppercase tracking-wider px-3 py-1.5 rounded-lg border ${
+              themeClass('bg-slate-900/40 border-slate-900 text-slate-400', 'bg-slate-100 border-slate-200 text-slate-600')
+            }`}>
+              🏆 Recouped: <span className="text-emerald-500 font-extrabold">${resolvedValue}</span> / <span className={themeClass('text-white', 'text-slate-900')}>${totalPotentialValue}</span>
+            </div>
+          )}
+        </div>
 
-                <div className={`flex items-center gap-1.5 border rounded-lg px-2.5 py-1.5 text-xs transition duration-300 ${
-                  themeClass('bg-slate-900 border-slate-800', 'bg-white border-slate-200 shadow-sm')
-                }`}>
-                  <ArrowUpDown className="w-3.5 h-3.5 text-slate-500" />
-                  <select
-                    value={sortBy}
-                    onChange={(e) => setSortBy(e.target.value as any)}
-                    className={`bg-transparent border-none focus:outline-none cursor-pointer font-medium ${themeClass('text-slate-300', 'text-slate-700')}`}
-                  >
-                    <option value="urgency">Sort: Urgency</option>
-                    <option value="expiry">Sort: Expiration</option>
-                    <option value="value-desc">Sort: Value (High ➔ Low)</option>
-                    <option value="value-asc">Sort: Value (Low ➔ High)</option>
-                  </select>
-                </div>
-              </>
+        {/* Premium Glassmorphic Filters Control Panel */}
+        {activeTab !== 'cards' && (
+          <div className={`grid grid-cols-1 ${ownedCards.length > 0 ? 'sm:grid-cols-3' : 'sm:grid-cols-2'} gap-3 p-3 mb-6 rounded-2xl border backdrop-blur-md transition-all duration-300 ${
+            themeClass(
+              'bg-slate-900/30 border-slate-900/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.03)]',
+              'bg-white/70 border-slate-200/80 shadow-[0_8px_20px_rgba(15,23,42,0.035)]'
+            )
+          }`}>
+            {/* 1. Category Filter */}
+            <div className={`flex items-center gap-2.5 border rounded-xl px-3 py-2.5 text-xs transition ${
+              themeClass('bg-slate-955/40 border-slate-850 hover:border-slate-800 text-slate-300', 'bg-slate-50/80 border-slate-250/60 hover:border-slate-300 text-slate-700')
+            }`}>
+              <Filter className="w-4 h-4 text-slate-400 shrink-0" />
+              <select
+                value={filterCategory}
+                onChange={(e) => setFilterCategory(e.target.value)}
+                className="w-full bg-transparent outline-none border-none cursor-pointer font-semibold text-xs focus:ring-0"
+              >
+                <option value="all">All Categories</option>
+                <option value="dining">Dining</option>
+                <option value="travel">Travel</option>
+                <option value="shopping">Shopping</option>
+                <option value="entertainment">Entertainment</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+
+            {/* 2. Card Instance Filter */}
+            {ownedCards.length > 0 && (
+              <div className={`flex items-center gap-2.5 border rounded-xl px-3 py-2.5 text-xs transition ${
+                themeClass('bg-slate-955/40 border-slate-850 hover:border-slate-800 text-slate-300', 'bg-slate-50/80 border-slate-250/60 hover:border-slate-300 text-slate-700')
+              }`}>
+                <CreditCard className="w-4 h-4 text-slate-400 shrink-0" />
+                <select
+                  value={filterCardInstanceId}
+                  onChange={(e) => setFilterCardInstanceId(e.target.value)}
+                  className="w-full bg-transparent outline-none border-none cursor-pointer font-semibold text-xs focus:ring-0"
+                >
+                  <option value="all">All Cards</option>
+                  {ownedCards.map((card) => (
+                    <option key={card.id} value={card.id}>
+                      {card.customName}
+                    </option>
+                  ))}
+                </select>
+              </div>
             )}
 
-
+            {/* 3. Sort Selector */}
+            <div className={`flex items-center gap-2.5 border rounded-xl px-3 py-2.5 text-xs transition ${
+              themeClass('bg-slate-955/40 border-slate-850 hover:border-slate-800 text-slate-300', 'bg-slate-50/80 border-slate-250/60 hover:border-slate-300 text-slate-700')
+            }`}>
+              <ArrowUpDown className="w-4 h-4 text-slate-400 shrink-0" />
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value as any)}
+                className="w-full bg-transparent outline-none border-none cursor-pointer font-semibold text-xs focus:ring-0"
+              >
+                <option value="urgency">Sort: Urgency Score</option>
+                <option value="expiry">Sort: Expiration Date</option>
+                <option value="value-desc">Sort: Value (High ➔ Low)</option>
+                <option value="value-asc">Sort: Value (Low ➔ High)</option>
+              </select>
+            </div>
           </div>
-        </div>
+        )}
 
         {/* TABS 1 & 2: CHECKLIST VIEW */}
         {(activeTab === 'todo' || activeTab === 'all') && (
