@@ -66,7 +66,7 @@ export const CARDS_DB: CardTemplate[] = [
     id: 'amex-platinum',
     name: 'American Express Platinum',
     bank: 'Amex',
-    color: 'from-slate-600 via-slate-700 to-slate-900',
+    color: 'from-slate-400 via-slate-200 to-slate-600',
     annualFee: 895,
     officialUrl: 'https://www.americanexpress.com/us/credit-cards/card/platinum/',
     benefits: [
@@ -232,7 +232,7 @@ export const CARDS_DB: CardTemplate[] = [
     id: 'amex-biz-platinum',
     name: 'Amex Business Platinum',
     bank: 'Amex',
-    color: 'from-zinc-600 via-zinc-700 to-slate-900',
+    color: 'from-zinc-400 via-zinc-200 to-zinc-600',
     annualFee: 695,
     officialUrl: 'https://www.americanexpress.com/us/credit-cards/business/business-credit-cards/american-express-business-platinum-credit-card-amex/',
     benefits: [

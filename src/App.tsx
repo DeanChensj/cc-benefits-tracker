@@ -1282,25 +1282,37 @@ function App() {
                               themeClass('bg-slate-955 border-slate-900 hover:border-slate-850', 'bg-slate-50/50 border-slate-200 hover:border-slate-300 hover:bg-slate-50 shadow-sm')
                             }`}
                           >
-                            <div className="pb-2 flex-grow">
-                              <div className="flex items-center justify-between">
-                                <span className={`text-[9px] font-semibold uppercase tracking-wider ${themeClass('text-slate-500', 'text-slate-550')}`}>{card.bank}</span>
-                                <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wide ${
-                                  card.annualFee > 0 
-                                    ? themeClass('bg-slate-950 text-amber-400 border border-slate-850', 'bg-slate-100 text-purple-600 border border-slate-200')
-                                    : 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/10'
-                                }`}>
-                                  {card.annualFee > 0 ? `Fee: $${card.annualFee}` : 'No Fee'}
+                            <div className="flex gap-3.5 items-start flex-grow pb-2">
+                              {/* Mini CSS Metallic Vector Credit Card Preview */}
+                              <div className={`w-16 h-10 rounded-md bg-gradient-to-r ${card.color} shrink-0 relative shadow-md border border-white/10 overflow-hidden`}>
+                                {/* Chip */}
+                                <div className="w-2.5 h-2 bg-amber-400/30 border border-amber-400/20 rounded-sm absolute top-1.5 left-1.5" />
+                                {/* Generic Logo Watermark */}
+                                <div className="absolute bottom-1 right-1.5 text-[4px] font-black uppercase tracking-widest text-white/20 font-sans">
+                                  {card.bank}
+                                </div>
+                              </div>
+
+                              <div className="min-w-0 flex-grow">
+                                <div className="flex items-center justify-between gap-2 flex-wrap">
+                                  <span className={`text-[9px] font-semibold uppercase tracking-wider ${themeClass('text-slate-500', 'text-slate-550')}`}>{card.bank}</span>
+                                  <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wide ${
+                                    card.annualFee > 0 
+                                      ? themeClass('bg-slate-955 text-amber-400 border border-slate-850/80', 'bg-slate-100 text-purple-600 border border-slate-200')
+                                      : 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/10'
+                                  }`}>
+                                    {card.annualFee > 0 ? `Fee: $${card.annualFee}` : 'No Fee'}
+                                  </span>
+                                </div>
+                                <h4 className={`text-sm font-extrabold mt-1.5 ${themeClass('text-white', 'text-slate-900')}`}>{card.name}</h4>
+                                <p className={`text-[11px] mt-1.5 leading-relaxed font-medium ${themeClass('text-slate-405', 'text-slate-555')}`}>
+                                  Contains <span className="font-bold text-purple-500 dark:text-amber-400">{card.benefits.length}</span> built-in perks <br />
+                                  (Total value: <span className={`font-bold ${themeClass('text-white', 'text-slate-955')}`}>${card.benefits.reduce((s, b) => s + b.value, 0)}/yr</span>)
+                                </p>
+                                <span className="text-[9px] text-purple-500 dark:text-purple-455 font-bold mt-2.5 block animate-pulse">
+                                  🔍 Click card to view details
                                 </span>
                               </div>
-                              <h4 className={`text-base font-bold mt-1.5 ${themeClass('text-white', 'text-slate-900')}`}>{card.name}</h4>
-                              <p className={`text-xs mt-1.5 leading-relaxed ${themeClass('text-slate-400', 'text-slate-500')}`}>
-                                Contains <span className="font-bold text-purple-500 dark:text-amber-400">{card.benefits.length}</span> built-in benefits <br />
-                                (Total potential value: <span className={`font-bold ${themeClass('text-white', 'text-slate-955')}`}>${card.benefits.reduce((s, b) => s + b.value, 0)}/yr</span>)
-                              </p>
-                              <span className="text-[9px] text-purple-500 dark:text-purple-455 font-bold mt-3 block animate-pulse">
-                                🔍 Click card to view details
-                              </span>
                             </div>
 
                             <button
