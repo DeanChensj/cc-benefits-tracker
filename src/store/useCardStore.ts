@@ -202,7 +202,7 @@ export const useCardStore = create<CardStore>()(
       renameCard: (instanceId, customName) =>
         set((state) => {
           const nextCards = state.ownedCards.map((c) =>
-            c.id === instanceId ? { ...c, customName: customName.trim() || c.customName } : c
+            c.id === instanceId ? { ...c, customName: customName } : c
           );
           syncPushToCloud(state.gdriveToken, nextCards, state.logs);
 

@@ -1060,9 +1060,21 @@ function App() {
                               type="text"
                               value={instance.customName}
                               onChange={(e) => renameCard(instance.id, e.target.value)}
-                              onBlur={() => setEditingInstanceId(null)}
+                              onBlur={() => {
+                                const trimmed = instance.customName.trim();
+                                const template = CARDS_DB.find((t) => t.id === instance.templateId);
+                                const fallback = instance.templateId === 'custom' ? 'Custom Card' : (template?.name || 'Credit Card');
+                                renameCard(instance.id, trimmed || fallback);
+                                setEditingInstanceId(null);
+                              }}
                               onKeyDown={(e) => {
-                                if (e.key === 'Enter' || e.key === 'Escape') {
+                                if (e.key === 'Enter') {
+                                  const trimmed = instance.customName.trim();
+                                  const template = CARDS_DB.find((t) => t.id === instance.templateId);
+                                  const fallback = instance.templateId === 'custom' ? 'Custom Card' : (template?.name || 'Credit Card');
+                                  renameCard(instance.id, trimmed || fallback);
+                                  setEditingInstanceId(null);
+                                } else if (e.key === 'Escape') {
                                   setEditingInstanceId(null);
                                 }
                               }}
