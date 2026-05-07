@@ -3,9 +3,10 @@ export interface Benefit {
   name: string;
   description: string;
   value: number;
-  resetPeriod: 'monthly' | 'semi-annual' | 'annual-calendar' | 'annual-anniversary' | 'fixed';
+  resetPeriod: 'monthly' | 'quarterly' | 'semi-annual' | 'annual-calendar' | 'annual-anniversary' | 'fixed';
   category: 'dining' | 'travel' | 'shopping' | 'entertainment' | 'other';
   expirationDate?: string; // e.g., '2026-12-31' (only for 'fixed' resetPeriod)
+  spendingLimit?: number; // e.g., 1500 for CFF 5%, 6000 for BCP 6% (only for progressive limit perks)
 }
 
 export interface CardTemplate {
@@ -85,6 +86,79 @@ export const CARDS_DB: CardTemplate[] = [
         description: '$200/year credit on Fine Hotels + Resorts / HC',
         value: 200,
         resetPeriod: 'annual-calendar',
+        category: 'travel'
+      }
+    ]
+  },
+  {
+    id: 'amex-bcp',
+    name: 'Amex Blue Cash Preferred',
+    bank: 'Amex',
+    color: 'from-cyan-600 via-blue-800 to-slate-900',
+    benefits: [
+      {
+        id: 'bcp-groceries',
+        name: 'Supermarket 6%',
+        description: '6% cash back on U.S. supermarkets on up to $6,000 spend per year',
+        value: 360, // $6000 * 6%
+        resetPeriod: 'annual-calendar',
+        category: 'shopping',
+        spendingLimit: 6000
+      },
+      {
+        id: 'bcp-disney',
+        name: 'Disney Bundle Credit',
+        description: '$7/month statement credit for Disney Bundle ($84/yr)',
+        value: 7,
+        resetPeriod: 'monthly',
+        category: 'entertainment'
+      },
+      {
+        id: 'bcp-equinox',
+        name: 'Equinox Credit',
+        description: '$10/month statement credit for Equinox+',
+        value: 10,
+        resetPeriod: 'monthly',
+        category: 'entertainment'
+      }
+    ]
+  },
+  {
+    id: 'amex-delta-reserve',
+    name: 'Amex Delta SkyMiles Reserve',
+    bank: 'Amex',
+    color: 'from-blue-950 via-indigo-900 to-slate-950',
+    benefits: [
+      {
+        id: 'delta-reserve-companion',
+        name: 'First Class Companion Certificate',
+        description: 'Annual First Class, Delta Comfort+, or Main Cabin roundtrip companion certificate',
+        value: 450,
+        resetPeriod: 'annual-anniversary',
+        category: 'travel'
+      },
+      {
+        id: 'delta-reserve-stays',
+        name: 'Delta Stays Credit',
+        description: 'Up to $200/calendar year credit for prepaid Delta Stays hotel bookings',
+        value: 200,
+        resetPeriod: 'annual-calendar',
+        category: 'travel'
+      },
+      {
+        id: 'delta-reserve-resy',
+        name: 'Resy Credit',
+        description: 'Up to $240/year ($20 monthly statement credit) for Resy dining bookings',
+        value: 20,
+        resetPeriod: 'monthly',
+        category: 'dining'
+      },
+      {
+        id: 'delta-reserve-rideshare',
+        name: 'Rideshare Credit',
+        description: 'Up to $120/year ($10 monthly statement credit) for U.S. rideshare services',
+        value: 10,
+        resetPeriod: 'monthly',
         category: 'travel'
       }
     ]
@@ -212,6 +286,55 @@ export const CARDS_DB: CardTemplate[] = [
         name: 'Hotel Credit',
         description: '$50 annual credit for hotel stays booked through Chase Travel',
         value: 50,
+        resetPeriod: 'annual-anniversary',
+        category: 'travel'
+      }
+    ]
+  },
+  {
+    id: 'chase-freedom-flex',
+    name: 'Chase Freedom Flex',
+    bank: 'Chase',
+    color: 'from-sky-900 via-indigo-950 to-black',
+    benefits: [
+      {
+        id: 'cff-rotating',
+        name: '5% Rotating Category',
+        description: '5% cash back on rotating quarterly categories on up to $1,500 spend per quarter',
+        value: 75, // $1500 * 5%
+        resetPeriod: 'quarterly',
+        category: 'dining',
+        spendingLimit: 1500
+      },
+      {
+        id: 'cff-lyft',
+        name: 'Lyft Benefit',
+        description: '$10 monthly Lyft credit after taking 3 rides in a calendar month',
+        value: 10,
+        resetPeriod: 'monthly',
+        category: 'travel'
+      }
+    ]
+  },
+  {
+    id: 'chase-marriott-brilliant',
+    name: 'Chase Marriott Bonvoy Brilliant',
+    bank: 'Chase',
+    color: 'from-slate-900 via-zinc-900 to-black',
+    benefits: [
+      {
+        id: 'brilliant-dining',
+        name: 'Marriott Dining Credit',
+        description: 'Up to $300/year ($25 monthly worldwide dining statement credit)',
+        value: 25,
+        resetPeriod: 'monthly',
+        category: 'dining'
+      },
+      {
+        id: 'brilliant-fnr',
+        name: 'Annual Free Night (85K)',
+        description: 'Anniversary Free Night Certificate valid for stays up to 85,000 points',
+        value: 400,
         resetPeriod: 'annual-anniversary',
         category: 'travel'
       }

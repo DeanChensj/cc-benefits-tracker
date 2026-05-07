@@ -16,10 +16,12 @@ import {
 interface RemainingBenefit {
   cardInstance: OwnedCardInstance;
   benefit: Benefit;
+  logKey: string;
 }
 
 interface SpentAssistantProps {
   remainingBenefits: RemainingBenefit[];
+  logs: Record<string, boolean | number>;
   theme: 'dark' | 'light';
 }
 
@@ -28,7 +30,7 @@ interface ChatMessage {
   text: string;
 }
 
-export function SpentAssistant({ remainingBenefits, theme }: SpentAssistantProps) {
+export function SpentAssistant({ remainingBenefits, logs, theme }: SpentAssistantProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [apiKey, setApiKey] = useState('');
   const [savedKey, setSavedKey] = useState('');
@@ -47,6 +49,18 @@ export function SpentAssistant({ remainingBenefits, theme }: SpentAssistantProps
     }
   }, []);
 
+  // Reset welcome message when key is connected
+  useEffect(() => {
+    if (savedKey) {
+      setChatHistory([
+        { 
+          role: 'model', 
+          text: "✨ **SpentAssistant Online!** I have securely loaded your card portfolio and remaining benefits. Ask me anything! e.g., \"I am spending $150 on dinner tonight, what card should I use?\"" 
+        }
+      ]);
+    }
+  }, [savedKey]);
+
   // Auto-scroll to bottom of chat
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -60,7 +74,6 @@ export function SpentAssistant({ remainingBenefits, theme }: SpentAssistantProps
 
     setIsVerifying(true);
     try {
-      // Perform a test query
       const response = await fetch(
         `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${trimmedKey}`,
         {
@@ -81,12 +94,6 @@ export function SpentAssistant({ remainingBenefits, theme }: SpentAssistantProps
         localStorage.setItem('cc_tracker_gemini_apikey', trimmedKey);
         setSavedKey(trimmedKey);
         setApiKey('');
-        setChatHistory([
-          { 
-            role: 'model', 
-            text: '✨ **SpentAssistant Online!** I have securely loaded your card portfolio and remaining benefits. Ask me anything! e.g., "I am spending $150 on dinner tonight, what card should I use?"' 
-          }
-        ]);
       } else {
         throw new Error('Verification failed');
       }
@@ -119,11 +126,15 @@ export function SpentAssistant({ remainingBenefits, theme }: SpentAssistantProps
 
     try {
       // Assemble Card Context
-      const activeBenefitsText = remainingBenefits.map((ab) => 
-        `- [Remaining perk] ${ab.benefit.name} (Value: $${ab.benefit.value}, Category: ${ab.benefit.category}, Period: ${ab.benefit.resetPeriod}${
+      const activeBenefitsText = remainingBenefits.map((ab) => {
+        if (ab.benefit.spendingLimit) {
+          const spent = Number(logs[ab.logKey]) || 0;
+          return `- [Progressive Limit perk] ${ab.benefit.name} (Currently Spent: $${spent} / $${ab.benefit.spendingLimit}, Cashback value: $${ab.benefit.value}, Category: ${ab.benefit.category}, Period: ${ab.benefit.resetPeriod}) on card "${ab.cardInstance.customName}"`;
+        }
+        return `- [Remaining perk] ${ab.benefit.name} (Value: $${ab.benefit.value}, Category: ${ab.benefit.category}, Period: ${ab.benefit.resetPeriod}${
           ab.benefit.expirationDate ? `, Expiration: ${ab.benefit.expirationDate}` : ''
-        }) on card "${ab.cardInstance.customName}"`
-      );
+        }) on card "${ab.cardInstance.customName}"`;
+      });
 
       // Construct system prompt
       const systemPrompt = `You are SpentAssistant, an elite personal finance bot. Your goal is to analyze the user's card inventory and suggest the absolute best credit card strategy for their specific spending scenario.
@@ -131,7 +142,7 @@ export function SpentAssistant({ remainingBenefits, theme }: SpentAssistantProps
 Here is the user's current cards inventory with their UNUSED (REMAINING) active perks:
 ${activeBenefitsText.length > 0 ? activeBenefitsText.join('\n') : 'No remaining promotional card perks for this period.'}
 
-Also consider general常驻消费倍率 (Common multipliers) for standard cards if relevant:
+Also consider general multipliers for standard cards if relevant:
 - Amex Gold: 4x Dining, 4x U.S. Supermarkets.
 - Amex Platinum: 5x Flights.
 - Chase Sapphire Reserve: 3x Travel, 3x Dining.
@@ -140,10 +151,10 @@ Also consider general常驻消费倍率 (Common multipliers) for standard cards 
 Guidelines:
 1. Advise on the absolute best card to pull out of their wallet for the scenario.
 2. Prioritize using up remaining fixed-expiration perks, monthly statement credits, or travel credits first.
-3. If no perks apply, recommend the card with the highest常驻 multiplier points.
-4. Keep your response extremely concise, structured, and limited to 120 words. Make card names bold. format in clean markdown.`;
+3. If no perks apply, recommend the card with the highest multiplier points.
+4. Keep your response extremely concise, structured, and limited to 120 words. Make card names bold. Format in clean markdown.
+5. ALWAYS respond to the user in English.`;
 
-      // Direct pure-client-side fetch to Gemini
       const response = await fetch(
         `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${savedKey}`,
         {
@@ -171,7 +182,7 @@ Guidelines:
     } catch (err) {
       setChatHistory([
         ...updatedHistory,
-        { role: 'model', text: '❌ **API Connection Failed.** Please ensure your network is connected and your API key is still valid.' }
+        { role: 'model', text: "❌ **API Connection Failed.** Please ensure your network is connected and your API key is still valid." }
       ]);
     } finally {
       setIsGenerating(false);
@@ -183,7 +194,7 @@ Guidelines:
       {/* Floating Toggle Bubble */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="fixed bottom-6 right-6 bg-gradient-to-tr from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-550 text-white p-4 rounded-full shadow-2xl z-40 transition duration-300 active:scale-90 hover:rotate-6 flex items-center gap-1.5 font-semibold text-xs"
+        className="fixed bottom-6 right-6 bg-gradient-to-tr from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-550 text-white p-4 rounded-full shadow-2xl z-40 transition duration-300 active:scale-90 hover:rotate-6 flex items-center gap-1.5 font-semibold text-xs cursor-pointer"
       >
         <MessageSquare className="w-5 h-5 fill-white/10" />
         <span>AI Spending Assistant</span>
@@ -197,7 +208,7 @@ Guidelines:
           
           {/* Header */}
           <div className={`px-4 py-3 border-b flex items-center justify-between ${
-            theme === 'dark' ? 'bg-slate-950/60 border-slate-850' : 'bg-slate-100 border-slate-200'
+            theme === 'dark' ? 'bg-slate-955 border-slate-850' : 'bg-slate-100 border-slate-200'
           }`}>
             <div className="flex items-center gap-2">
               <Sparkles className="w-4 h-4 text-purple-400 animate-pulse" />
@@ -207,15 +218,15 @@ Guidelines:
               {savedKey && (
                 <button
                   onClick={handleDeleteKey}
-                  className="text-slate-500 hover:text-red-400 p-1 rounded transition"
-                  title="Delete API Key from Device"
+                  className="text-slate-505 hover:text-red-400 p-1 rounded transition cursor-pointer"
+                  title="Delete API Key"
                 >
                   <Trash2 className="w-3.5 h-3.5" />
                 </button>
               )}
               <button
                 onClick={() => setIsOpen(false)}
-                className="text-slate-400 hover:text-slate-605 p-1 rounded transition"
+                className="text-slate-400 hover:text-slate-600 p-1 rounded transition cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -232,18 +243,18 @@ Guidelines:
                     <Key className="w-5 h-5" />
                   </div>
                   <h4 className={`font-bold text-sm ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>Connect Gemini API</h4>
-                  <p className={`text-[11px] max-w-[240px] mx-auto leading-relaxed ${theme === 'dark' ? 'text-slate-400' : 'text-slate-500'}`}>
-                    Provide your Gemini Key to unlock the AI helper. Absolute privacy—stored strictly on this browser.
+                  <p className={`text-[11px] max-w-[240px] mx-auto leading-relaxed ${theme === 'dark' ? 'text-slate-400' : 'text-slate-505'}`}>
+                    Absolute privacy guarantee: Your key is stored strictly inside your browser's secure local storage. No server-side collection, requests are sent directly to Google.
                   </p>
                 </div>
 
-                <div className={`p-3 rounded-xl border space-y-2.5 ${theme === 'dark' ? 'bg-slate-950 border-slate-850' : 'bg-slate-50 border-slate-200'}`}>
+                <div className={`p-3 rounded-xl border space-y-2.5 ${theme === 'dark' ? 'bg-slate-955 border-slate-850' : 'bg-slate-50 border-slate-200'}`}>
                   <div className="flex items-center gap-1.5 text-[10px] font-semibold text-emerald-500">
                     <ShieldCheck className="w-3.5 h-3.5 shrink-0" />
                     <span>🔒 Privacy Shield Active</span>
                   </div>
-                  <p className={`text-[10px] leading-normal ${theme === 'dark' ? 'text-slate-500' : 'text-slate-600'}`}>
-                    Your key stays entirely in local sandbox storage. Requests are made directly from your device to Google APIs.
+                  <p className={`text-[10px] leading-normal ${theme === 'dark' ? 'text-slate-505' : 'text-slate-600'}`}>
+                    Your key and chat history stay 100% on your machine. Requests are executed directly via your browser client straight to Google's secure endpoint.
                   </p>
                 </div>
 
@@ -257,7 +268,7 @@ Guidelines:
                       onChange={(e) => setApiKey(e.target.value)}
                       className={`w-full border text-xs rounded-xl px-3 py-2.5 focus:outline-none font-mono placeholder:font-sans ${
                         theme === 'dark'
-                          ? 'bg-slate-950 border-slate-800 focus:border-purple-500 text-slate-200'
+                          ? 'bg-slate-955 border-slate-800 focus:border-purple-500 text-slate-200'
                           : 'bg-slate-50 border-slate-200 focus:border-purple-500 text-slate-800'
                       }`}
                     />
@@ -266,7 +277,7 @@ Guidelines:
                   <button
                     type="submit"
                     disabled={isVerifying}
-                    className="w-full bg-gradient-to-tr from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-550 text-white font-bold py-2.5 rounded-xl transition active:scale-[0.98] flex items-center justify-center gap-1.5"
+                    className="w-full bg-gradient-to-tr from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-550 text-white font-bold py-2.5 rounded-xl transition active:scale-[0.98] flex items-center justify-center gap-1.5 cursor-pointer"
                   >
                     {isVerifying ? (
                       <>
@@ -274,7 +285,7 @@ Guidelines:
                         Verifying Key...
                       </>
                     ) : (
-                      'Connect API Key'
+                      "Connect API Key"
                     )}
                   </button>
                 </form>
@@ -312,7 +323,7 @@ Guidelines:
                         
                         if (line.startsWith('- ')) {
                           return (
-                            <li key={lIdx} className={`list-disc list-inside ml-1 text-[11px] mt-1 ${theme === 'dark' ? 'text-slate-300' : 'text-slate-705'}`}>
+                            <li key={lIdx} className={`list-disc list-inside ml-1 text-[11px] mt-1 ${theme === 'dark' ? 'text-slate-300' : 'text-slate-700'}`}>
                               <span dangerouslySetInnerHTML={{ __html: line.substring(2).replace(boldRegex, '<strong>$1</strong>') }} />
                             </li>
                           );
@@ -333,7 +344,7 @@ Guidelines:
                 {isGenerating && (
                   <div className="flex justify-start">
                     <div className={`border p-3 rounded-xl rounded-bl-none flex items-center gap-1.5 ${
-                      theme === 'dark' ? 'bg-slate-950 border-slate-850 text-slate-400' : 'bg-slate-100 border-slate-200 text-slate-600'
+                      theme === 'dark' ? 'bg-slate-955 border-slate-850 text-slate-400' : 'bg-slate-100 border-slate-200 text-slate-600'
                     }`}>
                       <RefreshCw className="w-3.5 h-3.5 animate-spin text-purple-400" />
                       <span>Thinking...</span>
@@ -348,7 +359,7 @@ Guidelines:
           {/* Input bar */}
           {savedKey && (
             <form onSubmit={handleSendMessage} className={`p-3 border-t flex items-center gap-2 ${
-              theme === 'dark' ? 'bg-slate-950/60 border-slate-850' : 'bg-slate-100/80 border-slate-200'
+              theme === 'dark' ? 'bg-slate-955 border-slate-850' : 'bg-slate-100/80 border-slate-200'
             }`}>
               <input
                 type="text"
@@ -365,7 +376,7 @@ Guidelines:
               <button
                 type="submit"
                 disabled={!inputMessage.trim() || isGenerating}
-                className="p-2 bg-purple-600 hover:bg-purple-550 text-white rounded-xl transition disabled:opacity-45 disabled:hover:bg-purple-600 active:scale-95 shrink-0"
+                className="p-2 bg-purple-600 hover:bg-purple-550 text-white rounded-xl transition disabled:opacity-45 disabled:hover:bg-purple-600 active:scale-95 shrink-0 cursor-pointer"
               >
                 <Send className="w-4 h-4 fill-white/10" />
               </button>

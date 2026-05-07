@@ -15,8 +15,9 @@ export interface OwnedCardInstance {
 
 export interface CardStore {
   ownedCards: OwnedCardInstance[];
-  logs: Record<string, boolean>; // logKey -> isUsed
+  logs: Record<string, boolean | number>; // logKey -> boolean (resolved) or number (spent progress value)
   theme: 'dark' | 'light'; // App theme selection
+  language: 'zh' | 'en'; // App language selection
 
   // Actions
   addCard: (templateId: string) => void;
@@ -25,13 +26,15 @@ export interface CardStore {
   renameCard: (instanceId: string, customName: string) => void;
   setCardOpenDate: (instanceId: string, dateStr: string) => void;
   toggleBenefit: (logKey: string) => void;
+  updateProgressLog: (logKey: string, spent: number) => void; // Updates linear spent progress values
   toggleTheme: () => void;
+  toggleLanguage: () => void;
   resetAll: () => void;
 }
 
 // Helper to generate log key based on reset period and current date
 export const getLogKey = (
-  resetPeriod: 'monthly' | 'semi-annual' | 'annual-calendar' | 'annual-anniversary' | 'fixed',
+  resetPeriod: 'monthly' | 'quarterly' | 'semi-annual' | 'annual-calendar' | 'annual-anniversary' | 'fixed',
   instanceId: string, // Unique instance ID
   benefitId: string,
   currentDate: Date,
@@ -45,6 +48,10 @@ export const getLogKey = (
     case 'monthly':
       const monthStr = month.toString().padStart(2, '0');
       return `${year}-${monthStr}:${instanceId}:${benefitId}`;
+
+    case 'quarterly':
+      const quarter = Math.ceil(month / 3); // Q1, Q2, Q3, Q4
+      return `${year}-Q${quarter}:${instanceId}:${benefitId}`;
 
     case 'semi-annual':
       const half = month <= 6 ? 'H1' : 'H2';
@@ -88,8 +95,8 @@ export const useCardStore = create<CardStore>()(
     (set) => ({
       ownedCards: [],
       logs: {},
-      // Defaults to system light/dark preference dynamically
       theme: (typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: light)').matches) ? 'light' : 'dark',
+      language: (typeof navigator !== 'undefined' && navigator.language.startsWith('zh')) ? 'zh' : 'en',
 
       addCard: (templateId) =>
         set((state) => {
@@ -133,7 +140,7 @@ export const useCardStore = create<CardStore>()(
               acc[key] = state.logs[key];
             }
             return acc;
-          }, {} as Record<string, boolean>),
+          }, {} as Record<string, boolean | number>),
         })),
 
       renameCard: (instanceId, customName) =>
@@ -158,16 +165,28 @@ export const useCardStore = create<CardStore>()(
           },
         })),
 
+      updateProgressLog: (logKey, spent) =>
+        set((state) => ({
+          logs: {
+            ...state.logs,
+            [logKey]: Math.max(0, spent), // Ensure spend progress is non-negative
+          },
+        })),
+
       toggleTheme: () =>
         set((state) => ({
           theme: state.theme === 'dark' ? 'light' : 'dark',
+        })),
+
+      toggleLanguage: () =>
+        set((state) => ({
+          language: state.language === 'zh' ? 'en' : 'zh',
         })),
 
       resetAll: () =>
         set(() => ({
           ownedCards: [],
           logs: {},
-          // Do not reset the user's theme preference
         })),
     }),
     {

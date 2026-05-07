@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { CreditCard, Plus, Trash2 } from 'lucide-react';
 import type { OwnedCardInstance } from '../store/useCardStore';
 
-
 interface CreateCardModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -30,10 +29,11 @@ export function CreateCardModal({
   const [newBenefits, setNewBenefits] = useState<{
     name: string;
     value: number;
-    resetPeriod: 'monthly' | 'semi-annual' | 'annual-calendar' | 'annual-anniversary' | 'fixed';
+    resetPeriod: 'monthly' | 'quarterly' | 'semi-annual' | 'annual-calendar' | 'annual-anniversary' | 'fixed';
     category: 'dining' | 'travel' | 'shopping' | 'entertainment' | 'other';
     description: string;
     expirationDate?: string;
+    spendingLimit?: number;
   }[]>([{ name: '', value: 0, resetPeriod: 'monthly', category: 'dining', description: '' }]);
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -49,6 +49,7 @@ export function CreateCardModal({
         ...b,
         id: `benefit_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
         value: Number(b.value) || 0,
+        spendingLimit: b.spendingLimit ? Number(b.spendingLimit) : undefined
       }));
 
     addCustomCard({
@@ -70,7 +71,7 @@ export function CreateCardModal({
   };
 
   return (
-    <div className="fixed inset-0 bg-slate-950/50 dark:bg-slate-950/80 backdrop-blur-sm flex items-center justify-center z-50 p-4 overflow-y-auto animate-fade-in">
+    <div className="fixed inset-0 bg-slate-955/50 dark:bg-slate-955/80 backdrop-blur-sm flex items-center justify-center z-50 p-4 overflow-y-auto animate-fade-in">
       <div 
         className={`border rounded-2xl max-w-lg w-full p-6 shadow-2xl relative my-8 animate-scale-up transition-colors duration-300 ${
           themeClass('bg-slate-900 border-slate-800 text-slate-100', 'bg-white border-slate-200 text-slate-800')
@@ -91,7 +92,7 @@ export function CreateCardModal({
           
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className={`block text-[10px] font-bold uppercase tracking-wider mb-1 ${themeClass('text-slate-400', 'text-slate-555')}`}>Bank Name (银行)</label>
+              <label className={`block text-[10px] font-bold uppercase tracking-wider mb-1 ${themeClass('text-slate-400', 'text-slate-555')}`}>Bank Name</label>
               <input
                 type="text"
                 required
@@ -104,7 +105,7 @@ export function CreateCardModal({
               />
             </div>
             <div>
-              <label className={`block text-[10px] font-bold uppercase tracking-wider mb-1 ${themeClass('text-slate-400', 'text-slate-555')}`}>Card Name (卡名)</label>
+              <label className={`block text-[10px] font-bold uppercase tracking-wider mb-1 ${themeClass('text-slate-400', 'text-slate-555')}`}>Card Name</label>
               <input
                 type="text"
                 required
@@ -120,7 +121,7 @@ export function CreateCardModal({
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className={`block text-[10px] font-bold uppercase tracking-wider mb-1 ${themeClass('text-slate-400', 'text-slate-555')}`}>Card Opened Date (开卡日)</label>
+              <label className={`block text-[10px] font-bold uppercase tracking-wider mb-1 ${themeClass('text-slate-400', 'text-slate-555')}`}>Card Opened Date</label>
               <input
                 type="date"
                 required
@@ -133,7 +134,7 @@ export function CreateCardModal({
             </div>
 
             <div>
-              <label className={`block text-[10px] font-bold uppercase tracking-wider mb-1.5 ${themeClass('text-slate-400', 'text-slate-555')}`}>Card Color (卡片配色)</label>
+              <label className={`block text-[10px] font-bold uppercase tracking-wider mb-1.5 ${themeClass('text-slate-400', 'text-slate-555')}`}>Card Color</label>
               <div className="flex gap-1.5 items-center pt-1">
                 {[
                   { class: 'from-purple-600 to-indigo-900', label: 'Violet' },
@@ -159,38 +160,38 @@ export function CreateCardModal({
           {/* Dynamic Benefits Builder Section */}
           <div className={`border-t pt-4 mt-4 space-y-3 ${themeClass('border-slate-850', 'border-slate-200')}`}>
             <div className="flex items-center justify-between mb-2">
-              <h4 className={`text-[10px] font-bold uppercase tracking-wider ${themeClass('text-slate-400', 'text-slate-550')}`}>Card Benefits ({newBenefits.length})</h4>
+              <h4 className={`text-[10px] font-bold uppercase tracking-wider ${themeClass('text-slate-400', 'text-slate-550')}`}>Card Benefits</h4>
               <button
                 type="button"
                 onClick={() => setNewBenefits([...newBenefits, { name: '', value: 0, resetPeriod: 'monthly', category: 'dining', description: '' }])}
                 className="flex items-center gap-1 text-[10px] font-bold text-purple-500 hover:text-purple-400 transition cursor-pointer"
               >
                 <Plus className="w-3 h-3 stroke-[3]" />
-                Add Perk (添加福利)
+                Add Perk
               </button>
             </div>
 
             <div className="space-y-3 max-h-[180px] overflow-y-auto pr-1.5 scrollbar-thin">
               {newBenefits.map((benefit, idx) => (
                 <div key={idx} className={`p-3 rounded-xl border space-y-2.5 relative ${
-                  themeClass('bg-slate-950 border-slate-850/80', 'bg-slate-50 border-slate-200')
+                  themeClass('bg-slate-950 border-slate-855/80', 'bg-slate-50 border-slate-200')
                 }`}>
                   {newBenefits.length > 1 && (
                     <button
                       type="button"
                       onClick={() => setNewBenefits(newBenefits.filter((_, i) => i !== idx))}
-                      className="absolute top-2.5 right-2.5 text-slate-500 hover:text-red-400 transition cursor-pointer"
+                      className="absolute top-2.5 right-2.5 text-slate-505 hover:text-red-400 transition cursor-pointer"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
                   )}
 
-                  <div className="grid grid-cols-3 gap-2">
+                  <div className="grid grid-cols-4 gap-2">
                     <div className="col-span-2">
-                      <label className="block text-[9px] font-semibold text-slate-500 mb-0.5">Perk Name</label>
+                      <label className="block text-[9px] font-semibold text-slate-550 mb-0.5">Perk Name</label>
                       <input
                         type="text"
-                        placeholder="e.g. Rent Day Credit"
+                        placeholder="e.g. Supermarket 6%"
                         value={benefit.name}
                         onChange={(e) => {
                           const updated = [...newBenefits];
@@ -203,7 +204,7 @@ export function CreateCardModal({
                       />
                     </div>
                     <div>
-                      <label className="block text-[9px] font-semibold text-slate-500 mb-0.5">Value ($)</label>
+                      <label className="block text-[9px] font-semibold text-slate-555 mb-0.5">Value ($)</label>
                       <input
                         type="number"
                         placeholder="5"
@@ -218,11 +219,27 @@ export function CreateCardModal({
                         }`}
                       />
                     </div>
+                    <div>
+                      <label className="block text-[9px] font-semibold text-slate-550 mb-0.5" title="Leave blank for standard statement credits">Limit ($)</label>
+                      <input
+                        type="number"
+                        placeholder="Optional"
+                        value={benefit.spendingLimit || ''}
+                        onChange={(e) => {
+                          const updated = [...newBenefits];
+                          updated[idx].spendingLimit = e.target.value ? Number(e.target.value) : undefined;
+                          setNewBenefits(updated);
+                        }}
+                        className={`w-full border text-xs rounded-lg px-2 py-1.5 focus:outline-none font-medium ${
+                          themeClass('bg-slate-900 border-slate-855 text-slate-300', 'bg-white border-slate-250 text-slate-750')
+                        }`}
+                      />
+                    </div>
                   </div>
 
                   <div className="grid grid-cols-2 gap-2">
                     <div>
-                      <label className="block text-[9px] font-semibold text-slate-500 mb-0.5">Reset Period</label>
+                      <label className="block text-[9px] font-semibold text-slate-550 mb-0.5">Reset Period</label>
                       <select
                         value={benefit.resetPeriod}
                         onChange={(e) => {
@@ -238,6 +255,7 @@ export function CreateCardModal({
                         }`}
                       >
                         <option value="monthly">Monthly</option>
+                        <option value="quarterly">Quarterly</option>
                         <option value="semi-annual">Semi-Annual</option>
                         <option value="annual-calendar">Annual (Calendar)</option>
                         <option value="annual-anniversary">Annual (Anniversary)</option>
@@ -246,7 +264,7 @@ export function CreateCardModal({
                     </div>
 
                     <div>
-                      <label className="block text-[9px] font-semibold text-slate-500 mb-0.5">Category</label>
+                      <label className="block text-[9px] font-semibold text-slate-550 mb-0.5">Category</label>
                       <select
                         value={benefit.category}
                         onChange={(e) => {
@@ -269,7 +287,7 @@ export function CreateCardModal({
 
                   {benefit.resetPeriod === 'fixed' && (
                     <div className="pt-1.5">
-                      <label className="block text-[9px] font-semibold text-slate-500 mb-0.5">Expiration Date (到期日)</label>
+                      <label className="block text-[9px] font-semibold text-slate-550 mb-0.5">Expiration Date</label>
                       <input
                         type="date"
                         required

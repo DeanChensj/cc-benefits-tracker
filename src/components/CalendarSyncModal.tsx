@@ -28,11 +28,11 @@ export function CalendarSyncModal({ isOpen, onClose, ownedCards, theme }: Calend
           </div>
           <div>
             <h3 className={`text-base font-bold ${themeClass('text-white', 'text-slate-900')}`}>Calendar Reminders Sync</h3>
-            <p className={`text-xs ${themeClass('text-slate-400', 'text-slate-500')}`}>Export and import events to your native calendars</p>
+            <p className={`text-xs ${themeClass('text-slate-400', 'text-slate-505')}`}>Export and import events to your native calendars</p>
           </div>
         </div>
 
-        <p className={`text-xs leading-relaxed mb-5 ${themeClass('text-slate-300', 'text-slate-600')}`}>
+        <p className={`text-xs leading-relaxed mb-5 ${themeClass('text-slate-300', 'text-slate-650')}`}>
           We will bundle all active tracked card perks and their respective renewal schedules into a single standard calendar subscription file.
         </p>
 
@@ -47,7 +47,7 @@ export function CalendarSyncModal({ isOpen, onClose, ownedCards, theme }: Calend
         </button>
 
         <div className={`space-y-4 border-t pt-4 ${themeClass('border-slate-800', 'border-slate-200')}`}>
-          <h4 className={`text-[10px] font-bold uppercase tracking-wider ${themeClass('text-slate-500', 'text-slate-400')}`}>How to Import (如何导入):</h4>
+          <h4 className={`text-[10px] font-bold uppercase tracking-wider ${themeClass('text-slate-500', 'text-slate-400')}`}>How to Import:</h4>
           
           <div className="space-y-2.5">
             <div className="text-xs">
@@ -56,9 +56,9 @@ export function CalendarSyncModal({ isOpen, onClose, ownedCards, theme }: Calend
             </div>
 
             <div className="text-xs">
-              <p className={`font-semibold ${themeClass('text-slate-200', 'text-slate-800')}`}>🤖 Google Calendar (谷歌日历网页版):</p>
-              <p className={`mt-0.5 text-[11px] ${themeClass('text-slate-400', 'text-slate-500')}`}>
-                1. Open <a href="https://calendar.google.com" target="_blank" className="text-purple-600 dark:text-amber-400 hover:underline font-medium">Google Calendar</a>. <br />
+              <p className={`font-semibold ${themeClass('text-slate-200', 'text-slate-800')}`}>🤖 Google Calendar (Google Calendar Web):</p>
+              <p className={`mt-0.5 text-[11px] ${themeClass('text-slate-400', 'text-slate-505')}`}>
+                1. Open <a href="https://calendar.google.com" target="_blank" className="text-purple-605 dark:text-amber-400 hover:underline font-medium">Google Calendar</a>. <br />
                 2. Go to <span className={`font-medium ${themeClass('text-slate-300', 'text-slate-700')}`}>Settings (Gear icon)</span> &rarr; <span className={`font-medium ${themeClass('text-slate-300', 'text-slate-700')}`}>Import & Export</span>. <br />
                 3. Select and upload the downloaded `.ics` file. Done!
               </p>
@@ -72,7 +72,7 @@ export function CalendarSyncModal({ isOpen, onClose, ownedCards, theme }: Calend
             themeClass('bg-slate-800 hover:bg-slate-750 text-slate-300', 'bg-slate-100 hover:bg-slate-200 text-slate-600')
           }`}
         >
-          Close
+          Cancel
         </button>
       </div>
     </div>

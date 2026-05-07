@@ -42,6 +42,7 @@ function App() {
     renameCard,
     setCardOpenDate, 
     toggleBenefit, 
+    updateProgressLog,
     resetAll 
   } = useCardStore();
 
@@ -55,6 +56,7 @@ function App() {
   const [isSyncModalOpen, setIsSyncModalOpen] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [focusedLogKey, setFocusedLogKey] = useState<string | null>(null);
 
   const currentMonthStr = currentDate.toLocaleString('default', { month: 'long' });
   const currentYear = currentDate.getFullYear();
@@ -88,7 +90,9 @@ function App() {
         cardInstance.cardOpenDate,
         benefit.expirationDate
       );
-      const isUsed = !!logs[logKey];
+      const isUsed = benefit.spendingLimit
+        ? (Number(logs[logKey]) || 0) >= benefit.spendingLimit
+        : !!logs[logKey];
 
       // Dynamically compute precision date-level expiration for anniversary benefits
       let resolvedExpirationDate = benefit.expirationDate;
@@ -117,22 +121,34 @@ function App() {
     });
   });
 
+  // Helper to calculate resolved value dynamically (supports progressive spends & binary logs)
+  const getResolvedValue = (ab: ActiveBenefit): number => {
+    const logVal = logs[ab.logKey];
+    if (!logVal) return 0;
+    
+    if (ab.benefit.spendingLimit) {
+      const spent = Number(logVal) || 0;
+      const progressPercent = Math.min(spent / ab.benefit.spendingLimit, 1);
+      return Math.round((ab.benefit.value * progressPercent) * 100) / 100;
+    }
+    
+    return logVal === true ? ab.benefit.value : 0;
+  };
+
+  const getExpiredValue = (ab: ActiveBenefit): number => {
+    const isExpired = ab.benefit.resetPeriod === 'fixed' && 
+      ab.benefit.expirationDate && 
+      new Date(ab.benefit.expirationDate + 'T00:00:00') < currentDate;
+      
+    if (!isExpired) return 0;
+    return ab.benefit.value - getResolvedValue(ab);
+  };
+
   // Compute stats
   const totalPotentialValue = activeBenefits.reduce((sum, ab) => sum + ab.benefit.value, 0);
-  const resolvedValue = activeBenefits
-    .filter((ab) => ab.isUsed)
-    .reduce((sum, ab) => sum + ab.benefit.value, 0);
-
-  const expiredValue = activeBenefits
-    .filter((ab) => 
-      !ab.isUsed && 
-      ab.benefit.resetPeriod === 'fixed' && 
-      ab.benefit.expirationDate && 
-      new Date(ab.benefit.expirationDate + 'T00:00:00') < currentDate
-    )
-    .reduce((sum, ab) => sum + ab.benefit.value, 0);
-
-  const pendingValue = totalPotentialValue - resolvedValue - expiredValue;
+  const resolvedValue = Math.round(activeBenefits.reduce((sum, ab) => sum + getResolvedValue(ab), 0) * 100) / 100;
+  const expiredValue = Math.round(activeBenefits.reduce((sum, ab) => sum + getExpiredValue(ab), 0) * 100) / 100;
+  const pendingValue = Math.round((totalPotentialValue - resolvedValue - expiredValue) * 100) / 100;
 
   // Calculate actual remaining, non-expired active benefits for the AI SpentAssistant
   const remainingBenefits = activeBenefits.filter((ab) => {
@@ -145,7 +161,7 @@ function App() {
 
   // Filtered benefits for view
   const filteredBenefits = activeBenefits.filter((ab) => {
-    if (activeTab === 'todo' && ab.isUsed) return false;
+    if (activeTab === 'todo' && ab.isUsed && focusedLogKey !== ab.logKey) return false;
     if (filterCategory !== 'all' && ab.benefit.category !== filterCategory) return false;
     return true;
   });
@@ -487,7 +503,7 @@ function App() {
               <div className="space-y-3">
                 {sortedBenefits.map(({ cardInstance, benefit, logKey, isUsed }) => {
                   const isExpired = !isUsed && benefit.resetPeriod === 'fixed' && 
-                    benefit.expirationDate && 
+                    !!benefit.expirationDate && 
                     new Date(benefit.expirationDate + 'T00:00:00') < currentDate;
 
                   let daysLeft = 0;
@@ -497,14 +513,24 @@ function App() {
                     daysLeft = Math.ceil((expTime - curTime) / (1000 * 60 * 60 * 24));
                   }
 
+                  const isProgressive = !!benefit.spendingLimit;
+                  const spent = isProgressive ? (Number(logs[logKey]) || 0) : 0;
+                  const spentPercent = isProgressive ? Math.min((spent / (benefit.spendingLimit || 1)) * 100, 100) : 0;
+                  const cashbackEarned = isProgressive ? Math.round((benefit.value * Math.min(spent / (benefit.spendingLimit || 1), 1)) * 100) / 100 : 0;
+
                   return (
                     <div
                       key={logKey}
                       onClick={() => {
                         if (isExpired) return;
-                        toggleBenefit(logKey);
+                        if (isProgressive) {
+                          // Clicking progressive rows toggles between 0 and maximum limit
+                          updateProgressLog(logKey, spent > 0 ? 0 : (benefit.spendingLimit || 0));
+                        } else {
+                          toggleBenefit(logKey);
+                        }
                       }}
-                      className={`group flex items-center justify-between p-4 rounded-xl border transition duration-200 ${
+                      className={`group flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-xl border transition duration-200 gap-3 ${
                         isExpired
                           ? themeClass('bg-slate-955 border-red-955/10 opacity-40 cursor-not-allowed', 'bg-red-50/30 border-red-200/50 opacity-60 cursor-not-allowed')
                           : isUsed
@@ -512,8 +538,8 @@ function App() {
                           : themeClass('bg-slate-900/40 border-slate-850/80 hover:border-slate-700 hover:bg-slate-900 cursor-pointer', 'bg-white border-slate-200/90 hover:border-slate-300 hover:bg-slate-50/50 cursor-pointer shadow-[0_2px_6px_rgba(15,23,42,0.02)] hover:shadow-[0_4px_10px_rgba(15,23,42,0.045)]')
                       }`}
                     >
-                      <div className="flex items-center gap-3.5 pr-4">
-                        <div className={`w-6 h-6 flex items-center justify-center rounded-lg border transition-colors duration-200 ${
+                      <div className="flex items-center gap-3.5 pr-4 flex-grow">
+                        <div className={`w-6 h-6 flex items-center justify-center rounded-lg border transition-colors duration-200 shrink-0 ${
                           isExpired
                             ? 'border-red-900 bg-red-950/10 text-red-500'
                             : isUsed 
@@ -527,24 +553,24 @@ function App() {
                           )}
                         </div>
 
-                        <div>
+                        <div className="flex-grow min-w-0">
                           <div className="flex flex-wrap items-center gap-2">
-                            <span className={`text-sm font-semibold ${
+                            <span className={`text-sm font-semibold truncate ${
                               isExpired ? 'text-slate-400 line-through' :
                               isUsed ? 'line-through text-slate-450' : themeClass('text-slate-100', 'text-slate-800')
                             }`}>
                               {benefit.name}
                             </span>
-                            <span className={`text-[10px] px-2 py-0.5 rounded font-bold tracking-wide border ${
+                            <span className={`text-[10px] px-2 py-0.5 rounded font-bold tracking-wide border shrink-0 ${
                               themeClass('bg-slate-800 text-slate-300 border-slate-700', 'bg-slate-100 text-slate-600 border-slate-200')
                             }`}>
                               {cardInstance.customName}
                             </span>
                             
                             {isExpired ? (
-                              <span className="text-[9px] font-bold bg-red-550/10 text-red-500 border border-red-500/20 px-1.5 py-0.2 rounded">Expired</span>
+                              <span className="text-[9px] font-bold bg-red-550/10 text-red-500 border border-red-500/20 px-1.5 py-0.2 rounded shrink-0">Expired</span>
                             ) : benefit.resetPeriod === 'fixed' && benefit.expirationDate && (
-                              <span className={`text-[9px] font-bold border px-1.5 py-0.2 rounded ${
+                              <span className={`text-[9px] font-bold border px-1.5 py-0.2 rounded shrink-0 ${
                                 daysLeft <= 5 
                                   ? 'bg-red-550/10 text-red-500 border-red-500/30 animate-pulse' 
                                   : 'bg-amber-500/10 text-amber-600 border-amber-500/20'
@@ -555,25 +581,70 @@ function App() {
                           </div>
                           <p className={`text-xs mt-1 ${themeClass('text-slate-400', 'text-slate-500')}`}>
                             {benefit.description}
-                            {benefit.resetPeriod === 'fixed' && benefit.expirationDate && (
-                              <span className="text-slate-500 block mt-0.5">
-                                Expiration deadline: {benefit.expirationDate}
-                              </span>
-                            )}
                           </p>
+
+                          {/* Progressive Spent Progress Bar */}
+                          {isProgressive && (
+                            <div className="mt-2.5 max-w-md">
+                              <div className="h-1.5 w-full bg-slate-200/80 dark:bg-slate-800 rounded-full overflow-hidden">
+                                <div 
+                                  className={`h-full rounded-full bg-gradient-to-r ${
+                                    isUsed 
+                                      ? 'from-emerald-500 to-teal-500' 
+                                      : 'from-purple-500 to-indigo-500'
+                                  }`}
+                                  style={{ width: `${spentPercent}%` }}
+                                />
+                              </div>
+                              <div className="flex justify-between items-center mt-1 text-[9px] font-semibold text-slate-500 dark:text-slate-450">
+                                <span>Spent: ${spent} / ${benefit.spendingLimit}</span>
+                                <span className={isUsed ? 'text-emerald-500' : ''}>
+                                  Cashback: ${cashbackEarned} / ${benefit.value} ({Math.round((benefit.value / (benefit.spendingLimit || 1)) * 100)}%)
+                                </span>
+                              </div>
+                            </div>
+                          )}
                         </div>
                       </div>
 
-                      <div className="text-right flex flex-col items-end justify-center shrink-0">
-                        <span className={`text-base font-bold ${isExpired || isUsed ? 'text-slate-500' : themeClass('text-white', 'text-slate-900')}`}>
-                          ${benefit.value}
-                        </span>
-                        <span className="text-[9px] uppercase tracking-wider text-slate-550 font-bold mt-0.5">
-                          {benefit.resetPeriod === 'monthly' ? 'Monthly' :
-                           benefit.resetPeriod === 'semi-annual' ? 'Semi-Annual' :
-                           benefit.resetPeriod === 'annual-calendar' ? 'Annual (Cal)' :
-                           benefit.resetPeriod === 'annual-anniversary' ? 'Annual (Anniv)' : 'Fixed Expiration'}
-                        </span>
+                      <div className="flex items-center gap-3.5 shrink-0 justify-end sm:justify-start">
+                        {/* Interactive Numerical Spent Input Box */}
+                        {isProgressive && (
+                          <div 
+                            className="flex items-center gap-1" 
+                            onClick={(e) => e.stopPropagation()} // Prevent row click toggle
+                          >
+                            <span className="text-[10px] font-bold text-slate-500">$</span>
+                            <input
+                              type="number"
+                              disabled={isExpired}
+                              placeholder="0"
+                              value={logs[logKey] !== undefined && logs[logKey] !== false ? String(logs[logKey]) : ''}
+                              onFocus={() => setFocusedLogKey(logKey)}
+                              onBlur={() => setFocusedLogKey(null)}
+                              onChange={(e) => {
+                                const val = Number(e.target.value);
+                                updateProgressLog(logKey, val);
+                              }}
+                              className={`w-16 border text-center text-xs rounded px-1.5 py-0.5 focus:outline-none font-mono font-bold transition ${
+                                themeClass('bg-slate-950 border-slate-850 text-white focus:border-purple-500', 'bg-slate-100 border-slate-250 text-slate-900 focus:border-purple-500 shadow-inner')
+                              }`}
+                            />
+                          </div>
+                        )}
+
+                        <div className="text-right flex flex-col items-end justify-center min-w-[80px]">
+                          <span className={`text-base font-bold ${isExpired || isUsed ? 'text-slate-500' : themeClass('text-white', 'text-slate-900')}`}>
+                            ${benefit.value}
+                          </span>
+                          <span className="text-[9px] uppercase tracking-wider text-slate-550 font-bold mt-0.5">
+                            {benefit.resetPeriod === 'monthly' ? 'Monthly' :
+                             benefit.resetPeriod === 'quarterly' ? 'Quarterly' :
+                             benefit.resetPeriod === 'semi-annual' ? 'Semi-Annual' :
+                             benefit.resetPeriod === 'annual-calendar' ? 'Annual (Cal)' :
+                             benefit.resetPeriod === 'annual-anniversary' ? 'Annual (Anniv)' : 'Fixed Expir'}
+                          </span>
+                        </div>
                       </div>
                     </div>
                   );
@@ -884,7 +955,7 @@ function App() {
       />
 
       {/* SpentAssistant AI Drawer */}
-      <SpentAssistant remainingBenefits={remainingBenefits} theme={theme} />
+      <SpentAssistant remainingBenefits={remainingBenefits} logs={logs} theme={theme} />
     </div>
   );
 }
