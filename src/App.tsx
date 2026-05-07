@@ -79,6 +79,43 @@ function App() {
   const [isSyncDropdownOpen, setIsSyncDropdownOpen] = useState(false);
   const [showAdvancedSync, setShowAdvancedSync] = useState(false);
   const [addOfferInstanceId, setAddOfferInstanceId] = useState<string | null>(null);
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
+
+  const showToast = (message: string, type: 'success' | 'error' | 'info' = 'success') => {
+    setToast({ message, type });
+  };
+
+  useEffect(() => {
+    if (toast) {
+      const timer = setTimeout(() => setToast(null), 2800);
+      return () => clearTimeout(timer);
+    }
+  }, [toast]);
+
+  const handleAddCard = (templateId: string) => {
+    const template = CARDS_DB.find((t) => t.id === templateId);
+    const cardName = template ? template.name : 'Card';
+    addCard(templateId);
+    showToast(`🎉 Added ${cardName} to your Wallet!`);
+  };
+
+  const handleRemoveCard = (instanceId: string) => {
+    const instance = ownedCards.find((c) => c.id === instanceId);
+    if (!instance) return;
+    
+    const template = CARDS_DB.find((t) => t.id === instance.templateId);
+    const cardName = instance.templateId === 'custom' ? instance.customName : (template?.name || 'Card');
+    
+    if (confirm(`Are you sure you want to remove ${cardName} from your wallet? All checklist logs associated with this card instance will be permanently deleted.`)) {
+      removeCard(instanceId);
+      showToast(`🗑️ Removed ${cardName} from your Wallet`, 'info');
+    }
+  };
+
+  const handleAddCustomCard = (card: Omit<OwnedCardInstance, 'id'>) => {
+    addCustomCard(card);
+    showToast(`🎉 Created and added "${card.customName}" to your Wallet!`);
+  };
 
   const currentMonthStr = currentDate.toLocaleString('default', { month: 'long' });
   const currentYear = currentDate.getFullYear();
@@ -100,18 +137,18 @@ function App() {
       
       // Trigger first two-way sync
       await useCardStore.getState().syncWithGDrive();
-      alert('🎉 Successfully connected to your Google Drive! All cards and checklist logs are now securely synchronized.');
+      showToast('🎉 Connected and synchronized with Google Drive successfully!');
     } catch (err) {
       console.error(err);
       setSyncStatus('error');
-      alert('❌ Failed to connect to Google Drive. Please check your connection or try again.');
+      showToast('❌ Failed to connect to Google Drive. Please try again.', 'error');
     }
   };
 
   const handleDisconnectGoogleDrive = () => {
     if (confirm('Are you sure you want to disconnect and unlink Google Drive? Your local data will remain intact, but automated cloud synchronization will cease.')) {
       setGDriveCredentials(null, null);
-      alert('Logged out successfully.');
+      showToast('🚪 Unlinked Google Drive account successfully.', 'info');
     }
   };
 
@@ -130,6 +167,7 @@ function App() {
     document.body.appendChild(downloadAnchor);
     downloadAnchor.click();
     downloadAnchor.remove();
+    showToast('💾 Backup exported successfully!', 'info');
   };
 
   const importBackup = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -144,12 +182,12 @@ function App() {
               ownedCards: parsed.ownedCards,
               logs: parsed.logs
             });
-            alert('🎉 Backup restored successfully!');
+            showToast('🎉 Backup restored successfully!');
           } else {
-            alert('❌ Invalid backup file structure.');
+            showToast('❌ Invalid backup file structure.', 'error');
           }
         } catch (err) {
-          alert('❌ Failed to parse backup file.');
+          showToast('❌ Failed to parse backup file.', 'error');
         }
       };
     }
@@ -1018,7 +1056,7 @@ function App() {
                               {instance.templateId === 'custom' ? (
                                 <button
                                   onClick={() => {
-                                    addCustomCard({
+                                    handleAddCustomCard({
                                       templateId: 'custom',
                                       customName: `${instance.customName} (Copy)`,
                                       bank: instance.bank,
@@ -1038,7 +1076,7 @@ function App() {
                                 </button>
                               ) : (
                                 <button
-                                  onClick={() => addCard(instance.templateId)}
+                                  onClick={() => handleAddCard(instance.templateId)}
                                   className="p-1 text-slate-400 hover:text-white hover:bg-white/10 rounded transition cursor-pointer active:scale-90"
                                   title="Add another instance"
                                 >
@@ -1046,7 +1084,7 @@ function App() {
                                 </button>
                               )}
                               <button
-                                onClick={() => removeCard(instance.id)}
+                                onClick={() => handleRemoveCard(instance.id)}
                                 className="p-1 text-red-400 hover:text-red-350 hover:bg-red-550/10 rounded transition cursor-pointer"
                                 title="Delete card instance"
                               >
@@ -1261,7 +1299,7 @@ function App() {
                             <button
                               onClick={(e) => {
                                 e.stopPropagation(); // Prevent modal drawer trigger
-                                addCard(card.id);
+                                handleAddCard(card.id);
                               }}
                               className="w-full mt-4 flex items-center justify-center gap-1 bg-gradient-to-tr from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-550 text-white font-bold py-2.5 rounded-xl text-xs transition active:scale-[0.97] shadow shadow-purple-500/10 cursor-pointer"
                             >
@@ -1339,7 +1377,7 @@ function App() {
         isOpen={isCreateModalOpen} 
         onClose={() => setIsCreateModalOpen(false)} 
         theme={theme}
-        addCustomCard={addCustomCard}
+        addCustomCard={handleAddCustomCard}
         getLocalDateString={getLocalDateString}
       />
 
@@ -1348,7 +1386,7 @@ function App() {
         isOpen={!!activeTemplateDetail}
         card={activeTemplateDetail}
         onClose={() => setActiveTemplateDetail(null)}
-        onAdd={() => addCard(activeTemplateDetail ? activeTemplateDetail.id : '')}
+        onAdd={() => handleAddCard(activeTemplateDetail ? activeTemplateDetail.id : '')}
         theme={theme}
       />
 
@@ -1367,6 +1405,21 @@ function App() {
 
       {/* SpentAssistant AI Drawer */}
       <SpentAssistant remainingBenefits={remainingBenefits} logs={logs} theme={theme} />
+
+      {/* Premium Floating Toast Notification */}
+      {toast && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 pointer-events-none animate-slide-up">
+          <div className={`px-4 py-3 rounded-xl border text-xs font-bold flex items-center gap-2 shadow-2xl backdrop-blur-xl ${
+            toast.type === 'error'
+              ? themeClass('bg-red-950/90 border-red-500/30 text-red-200 shadow-red-950/20', 'bg-red-50/95 border-red-200 text-red-800 shadow-red-100')
+              : toast.type === 'info'
+              ? themeClass('bg-slate-900/90 border-slate-800 text-slate-300 shadow-slate-950/40', 'bg-slate-100/95 border-slate-200 text-slate-800 shadow-slate-200/50')
+              : themeClass('bg-emerald-950/90 border-emerald-500/30 text-emerald-200 shadow-emerald-950/20', 'bg-emerald-50/95 border-emerald-200 text-emerald-800 shadow-emerald-100')
+          }`}>
+            <span>{toast.message}</span>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
