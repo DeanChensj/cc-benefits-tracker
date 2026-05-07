@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { CARDS_DB } from './data/cards.db';
 import type { CardTemplate, Benefit } from './data/cards.db';
 import { useCardStore, getLogKey } from './store/useCardStore';
@@ -7,6 +7,7 @@ import { SpentAssistant } from './components/SpentAssistant';
 import { CalendarSyncModal } from './components/CalendarSyncModal';
 import { CreateCardModal } from './components/CreateCardModal';
 import { CardDetailDrawer } from './components/CardDetailDrawer';
+import { loadGoogleGsiScript, requestGDriveToken, fetchUserEmail } from './utils/gdrive';
 import { 
   CreditCard, 
   Calendar, 
@@ -21,7 +22,9 @@ import {
   Plus,
   Edit3,
   Sun,
-  Moon
+  Moon,
+  Cloud,
+  CloudOff
 } from 'lucide-react';
 
 const getLocalDateString = (date = new Date()): string => {
@@ -37,6 +40,12 @@ function App() {
     logs, 
     theme,
     toggleTheme,
+    gdriveEmail,
+    syncStatus,
+    lastSyncedTime,
+    setGDriveCredentials,
+    setSyncStatus,
+    syncWithGDrive,
     addCard, 
     addCustomCard,
     removeCard, 
@@ -59,9 +68,82 @@ function App() {
   const [searchQuery, setSearchQuery] = useState('');
   const [focusedLogKey, setFocusedLogKey] = useState<string | null>(null);
   const [activeTemplateDetail, setActiveTemplateDetail] = useState<CardTemplate | null>(null);
+  const [isSyncDropdownOpen, setIsSyncDropdownOpen] = useState(false);
 
   const currentMonthStr = currentDate.toLocaleString('default', { month: 'long' });
   const currentYear = currentDate.getFullYear();
+
+  // Load Google Identity Services script dynamically on mount
+  useEffect(() => {
+    loadGoogleGsiScript()
+      .then(() => console.log('Google GIS client successfully pre-loaded.'))
+      .catch((err) => console.error('Failed to load Google GIS Client library:', err));
+  }, []);
+
+  // Connection & Sync Handlers
+  const handleLinkGoogleDrive = async () => {
+    setSyncStatus('syncing');
+    try {
+      const token = await requestGDriveToken();
+      const email = await fetchUserEmail(token);
+      setGDriveCredentials(token, email);
+      
+      // Trigger first two-way sync
+      await useCardStore.getState().syncWithGDrive();
+      alert('🎉 Successfully connected to your Google Drive! All cards and checklist logs are now securely synchronized.');
+    } catch (err) {
+      console.error(err);
+      setSyncStatus('error');
+      alert('❌ Failed to connect to Google Drive. Please check your connection or try again.');
+    }
+  };
+
+  const handleDisconnectGoogleDrive = () => {
+    if (confirm('Are you sure you want to disconnect and unlink Google Drive? Your local data will remain intact, but automated cloud synchronization will cease.')) {
+      setGDriveCredentials(null, null);
+      alert('Logged out successfully.');
+    }
+  };
+
+  const exportBackup = () => {
+    const { ownedCards, logs } = useCardStore.getState();
+    const backupData = {
+      version: '1.0.0',
+      timestamp: new Date().toISOString(),
+      ownedCards,
+      logs
+    };
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(backupData, null, 2));
+    const downloadAnchor = document.createElement('a');
+    downloadAnchor.setAttribute("href", dataStr);
+    downloadAnchor.setAttribute("download", `cc-tracker-backup-${new Date().toISOString().split('T')[0]}.json`);
+    document.body.appendChild(downloadAnchor);
+    downloadAnchor.click();
+    downloadAnchor.remove();
+  };
+
+  const importBackup = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const fileReader = new FileReader();
+    if (e.target.files && e.target.files[0]) {
+      fileReader.readAsText(e.target.files[0], "UTF-8");
+      fileReader.onload = (event) => {
+        try {
+          const parsed = JSON.parse(event.target?.result as string);
+          if (parsed.ownedCards && parsed.logs) {
+            useCardStore.setState({
+              ownedCards: parsed.ownedCards,
+              logs: parsed.logs
+            });
+            alert('🎉 Backup restored successfully!');
+          } else {
+            alert('❌ Invalid backup file structure.');
+          }
+        } catch (err) {
+          alert('❌ Failed to parse backup file.');
+        }
+      };
+    }
+  };
 
   // Flat list of all active benefits based on instances
   interface ActiveBenefit {
@@ -92,6 +174,8 @@ function App() {
         cardInstance.cardOpenDate,
         benefit.expirationDate
       );
+      
+      // Progress evaluation for progressive benefits
       const isUsed = benefit.spendingLimit
         ? (Number(logs[logKey]) || 0) >= benefit.spendingLimit
         : !!logs[logKey];
@@ -146,7 +230,7 @@ function App() {
 
   const getExpiredValue = (ab: ActiveBenefit): number => {
     const isExpired = ab.benefit.resetPeriod === 'fixed' && 
-      ab.benefit.expirationDate && 
+      !!ab.benefit.expirationDate && 
       new Date(ab.benefit.expirationDate + 'T00:00:00') < currentDate;
       
     if (!isExpired) return 0;
@@ -164,7 +248,7 @@ function App() {
     if (ab.isUsed) return false;
     const isExpired = ab.benefit.resetPeriod === 'fixed' && 
       ab.benefit.expirationDate && 
-      new Date(ab.benefit.expirationDate + 'T00:00:00') < currentDate;
+      new Date(ab.benefit.expirationDate + 'T00:05:00') < currentDate;
     return !isExpired;
   });
 
@@ -203,86 +287,6 @@ function App() {
 
   const sortedBenefits = [...filteredBenefits].sort((a, b) => getUrgencyScore(a) - getUrgencyScore(b));
 
-  // Export JSON backup
-  const exportBackup = () => {
-    const backupData = {
-      ownedCards,
-      logs,
-    };
-    const blob = new Blob([JSON.stringify(backupData, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `cc_tracker_backup_${getLocalDateString()}.json`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-  };
-
-  // Import JSON backup
-  const importBackup = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = (evt) => {
-      try {
-        const parsed = JSON.parse(evt.target?.result as string);
-        
-        let importedCards: OwnedCardInstance[] = [];
-        let migratedLogs: Record<string, boolean> = { ...(parsed.logs || {}) };
-
-        if (parsed.ownedCards) {
-          importedCards = parsed.ownedCards;
-        } else if (parsed.ownedCardIds) {
-          const oldIdToInstanceIdMap: Record<string, string> = {};
-          
-          importedCards = (parsed.ownedCardIds || []).map((tid: string) => {
-            const template = CARDS_DB.find(c => c.id === tid);
-            const instanceId = `inst_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
-            oldIdToInstanceIdMap[tid] = instanceId;
-
-            return {
-              id: instanceId,
-              templateId: tid,
-              customName: template ? template.name : tid,
-              cardOpenDate: getLocalDateString()
-            };
-          });
-
-          migratedLogs = {};
-          Object.entries(parsed.logs || {}).forEach(([oldKey, val]) => {
-            const parts = oldKey.split(':');
-            if (parts.length === 3) {
-              const period = parts[0];
-              const oldCardId = parts[1];
-              const benefitId = parts[2];
-
-              if (oldIdToInstanceIdMap[oldCardId]) {
-                const newKey = `${period}:${oldIdToInstanceIdMap[oldCardId]}:${benefitId}`;
-                migratedLogs[newKey] = !!val;
-              } else {
-                migratedLogs[oldKey] = !!val;
-              }
-            } else {
-              migratedLogs[oldKey] = !!val;
-            }
-          });
-        }
-
-        useCardStore.setState({
-          ownedCards: importedCards,
-          logs: migratedLogs,
-        });
-        alert('Backup restored and migrated successfully!');
-      } catch (err) {
-        alert('Failed to read backup file.');
-      }
-    };
-    reader.readAsText(file);
-  };
-
   const adjustMonth = (amount: number) => {
     const nextDate = new Date(currentDate);
     nextDate.setMonth(nextDate.getMonth() + amount);
@@ -291,7 +295,7 @@ function App() {
 
   return (
     <div className={`min-h-screen font-sans selection:bg-amber-500 selection:text-slate-900 transition-colors duration-300 ${
-      themeClass('bg-slate-950 text-slate-100 border-slate-900', 'bg-slate-50 text-slate-800 border-slate-200')
+      themeClass('bg-slate-955 text-slate-100 border-slate-900', 'bg-slate-50 text-slate-800 border-slate-200')
     }`}>
       {/* Header */}
       <header className={`border-b backdrop-blur-md sticky top-0 z-10 px-4 py-4 transition-colors duration-300 ${
@@ -313,7 +317,115 @@ function App() {
             </div>
           </div>
 
-          <div className="flex items-center gap-3 self-end sm:self-auto">
+          <div className="flex items-center gap-3 self-end sm:self-auto animate-fade-in">
+            {/* Google Drive Cloud Sync Widget */}
+            <div className="relative">
+              <button
+                onClick={() => setIsSyncDropdownOpen(!isSyncDropdownOpen)}
+                className={`p-2 rounded-xl border transition duration-300 active:scale-90 cursor-pointer ${
+                  syncStatus === 'synced'
+                    ? themeClass('bg-emerald-500/10 border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/15', 'bg-green-50 border-green-200 text-green-600 hover:bg-green-100 shadow-sm')
+                    : syncStatus === 'syncing'
+                    ? themeClass('bg-purple-500/10 border-purple-500/30 text-purple-400 animate-pulse', 'bg-purple-50 border-purple-200 text-purple-600 shadow-sm')
+                    : syncStatus === 'error'
+                    ? themeClass('bg-red-500/10 border-red-500/30 text-red-400 hover:bg-red-500/15', 'bg-red-50 border-red-200 text-red-600 hover:bg-red-100 shadow-sm')
+                    : themeClass('bg-slate-900 border-slate-800 hover:bg-slate-800 text-slate-400', 'bg-white border-slate-250 hover:bg-slate-100 text-slate-500 shadow-sm')
+                }`}
+                title="Google Drive Cloud Sync"
+              >
+                {syncStatus === 'synced' ? (
+                  <Cloud className="w-4 h-4" />
+                ) : (
+                  <CloudOff className="w-4 h-4" />
+                )}
+              </button>
+
+              {isSyncDropdownOpen && (
+                <div className={`absolute right-0 mt-2 w-64 border rounded-xl p-4 shadow-2xl z-50 animate-scale-up flex flex-col gap-3 ${
+                  themeClass('bg-slate-900/95 border-slate-800 text-slate-200 backdrop-blur-xl shadow-slate-950/50', 'bg-white/95 border-slate-200 text-slate-800 backdrop-blur-xl shadow-slate-300/30')
+                }`}>
+                  <div className="flex items-start gap-2.5">
+                    <div className={`p-2 rounded-lg shrink-0 ${
+                      syncStatus === 'synced' 
+                        ? 'bg-green-500/10 text-green-500' 
+                        : syncStatus === 'syncing' 
+                        ? 'bg-purple-500/10 text-purple-500 animate-pulse'
+                        : syncStatus === 'error'
+                        ? 'bg-red-500/10 text-red-500'
+                        : themeClass('bg-slate-950 text-slate-400', 'bg-slate-100 text-slate-505')
+                    }`}>
+                      {syncStatus === 'synced' ? (
+                        <Cloud className="w-4.5 h-4.5" />
+                      ) : (
+                        <CloudOff className="w-4.5 h-4.5" />
+                      )}
+                    </div>
+                    <div className="space-y-0.5 text-left min-w-0">
+                      <h5 className={`font-bold text-xs ${themeClass('text-white', 'text-slate-900')}`}>
+                        Google Drive Sync
+                      </h5>
+                      <p className={`text-[10px] leading-normal ${themeClass('text-slate-400', 'text-slate-550')}`}>
+                        {syncStatus === 'synced' 
+                          ? 'Automatic backup is active.'
+                          : 'Private sandboxed appData cloud backup.'}
+                      </p>
+                    </div>
+                  </div>
+
+                  {syncStatus === 'synced' && (
+                    <div className={`p-2 rounded bg-slate-955/40 dark:bg-slate-950/60 border text-[10px] text-left space-y-1 ${
+                      themeClass('border-slate-850 text-slate-400', 'border-slate-200 text-slate-600')
+                    }`}>
+                      <p className="truncate font-medium">Account: {gdriveEmail}</p>
+                      <p className="opacity-80">Last synced: {lastSyncedTime || 'Just now'}</p>
+                    </div>
+                  )}
+
+                  <div className="flex flex-col gap-2 pt-1 border-t border-dashed border-slate-200/40 dark:border-slate-800/40">
+                    {syncStatus === 'synced' ? (
+                      <>
+                        <button
+                          onClick={() => {
+                            syncWithGDrive();
+                            setIsSyncDropdownOpen(false);
+                          }}
+                          className="w-full bg-gradient-to-tr from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-550 text-white font-bold py-2 rounded-lg text-[10px] transition active:scale-95 shadow shadow-purple-500/10 cursor-pointer"
+                        >
+                          Force Sync Now
+                        </button>
+                        <button
+                          onClick={() => {
+                            handleDisconnectGoogleDrive();
+                            setIsSyncDropdownOpen(false);
+                          }}
+                          className={`w-full text-center font-bold text-[10px] py-1.5 rounded-lg border transition cursor-pointer ${
+                            themeClass('bg-slate-800 hover:bg-slate-750 border-slate-750 text-slate-300', 'bg-slate-50 hover:bg-slate-100 border-slate-200 text-slate-600')
+                          }`}
+                        >
+                          Disconnect Account
+                        </button>
+                      </>
+                    ) : syncStatus === 'syncing' ? (
+                      <div className="flex items-center justify-center gap-1.5 py-2 text-[10px] font-bold text-purple-500 animate-pulse">
+                        <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                        <span>Syncing...</span>
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => {
+                          handleLinkGoogleDrive();
+                          setIsSyncDropdownOpen(false);
+                        }}
+                        className="w-full bg-gradient-to-tr from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-550 text-white font-bold py-2 rounded-lg text-[10px] transition active:scale-95 shadow shadow-purple-500/10 cursor-pointer"
+                      >
+                        Connect Google Drive
+                      </button>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+
             {/* Theme Toggle Button */}
             <button
               onClick={toggleTheme}
@@ -391,7 +503,7 @@ function App() {
           <div className={`border rounded-xl p-3 sm:p-4 transition duration-300 ${
             themeClass('bg-slate-900/50 border-slate-800/60', 'bg-white border-slate-200 shadow-sm')
           }`}>
-            <p className={`text-[10px] sm:text-xs font-medium uppercase tracking-wider flex items-center gap-1.5 ${themeClass('text-slate-400', 'text-slate-550')}`}>
+            <p className={`text-[10px] sm:text-xs font-medium uppercase tracking-wider flex items-center gap-1.5 ${themeClass('text-slate-400', 'text-slate-555')}`}>
               <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
               Resolved
             </p>
@@ -401,7 +513,7 @@ function App() {
           <div className={`border rounded-xl p-3 sm:p-4 transition duration-300 ${
             themeClass('bg-slate-900/50 border-slate-800/60', 'bg-white border-slate-200 shadow-sm')
           }`}>
-            <p className={`text-[10px] sm:text-xs font-medium uppercase tracking-wider flex items-center gap-1.5 ${themeClass('text-slate-400', 'text-slate-550')}`}>
+            <p className={`text-[10px] sm:text-xs font-medium uppercase tracking-wider flex items-center gap-1.5 ${themeClass('text-slate-400', 'text-slate-555')}`}>
               <Clock className="w-3.5 h-3.5 text-amber-500" />
               Remaining
             </p>
@@ -417,7 +529,7 @@ function App() {
               className={`px-4 py-2 text-sm font-semibold rounded-lg transition ${
                 activeTab === 'todo'
                   ? 'bg-amber-500 text-slate-950'
-                  : themeClass('text-slate-400 hover:text-white hover:bg-slate-850', 'text-slate-500 hover:text-slate-900 hover:bg-slate-300/30')
+                  : themeClass('text-slate-400 hover:text-white hover:bg-slate-855', 'text-slate-505 hover:text-slate-900 hover:bg-slate-300/30')
               }`}
             >
               To-Do ({activeBenefits.filter(b => !b.isUsed).length})
@@ -426,8 +538,8 @@ function App() {
               onClick={() => setActiveTab('all')}
               className={`px-4 py-2 text-sm font-semibold rounded-lg transition ${
                 activeTab === 'all'
-                  ? 'bg-amber-500 text-slate-950'
-                  : themeClass('text-slate-400 hover:text-white hover:bg-slate-850', 'text-slate-500 hover:text-slate-900 hover:bg-slate-300/30')
+                  ? 'bg-amber-500 text-slate-955'
+                  : themeClass('text-slate-400 hover:text-white hover:bg-slate-855', 'text-slate-505 hover:text-slate-900 hover:bg-slate-300/30')
               }`}
             >
               All Benefits ({activeBenefits.length})
@@ -436,8 +548,8 @@ function App() {
               onClick={() => setActiveTab('cards')}
               className={`px-4 py-2 text-sm font-semibold rounded-lg transition ${
                 activeTab === 'cards'
-                  ? 'bg-amber-500 text-slate-950'
-                  : themeClass('text-slate-400 hover:text-white hover:bg-slate-855', 'text-slate-500 hover:text-slate-900 hover:bg-slate-300/30')
+                  ? 'bg-amber-500 text-slate-955'
+                  : themeClass('text-slate-400 hover:text-white hover:bg-slate-855', 'text-slate-505 hover:text-slate-900 hover:bg-slate-300/30')
               }`}
             >
               My Cards ({ownedCards.length})
@@ -468,8 +580,8 @@ function App() {
             {ownedCards.length > 0 && (
               <button
                 onClick={() => setIsSyncModalOpen(true)}
-                className={`flex items-center gap-1.5 text-xs font-medium px-3 py-2 rounded-lg border transition active:scale-95 ${
-                  themeClass('bg-slate-900 hover:bg-slate-855 border-slate-800 text-slate-200', 'bg-white hover:bg-slate-100 border-slate-200 text-slate-700 shadow-sm')
+                className={`flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-lg border transition active:scale-95 cursor-pointer ${
+                  themeClass('bg-slate-900 hover:bg-slate-855 border-slate-800 text-slate-300', 'bg-white hover:bg-slate-100 border-slate-255 text-slate-600 shadow-sm')
                 }`}
                 title="Sync All Calendar Reminders"
               >
@@ -487,14 +599,14 @@ function App() {
               <div className={`text-center py-16 border border-dashed rounded-2xl p-8 ${
                 themeClass('bg-slate-900/20 border-slate-800', 'bg-slate-100/40 border-slate-200')
               }`}>
-                <CreditCard className="w-10 h-10 text-slate-500/60 mx-auto mb-4 stroke-[1.5]" />
+                <CreditCard className="w-10 h-10 text-slate-505/60 mx-auto mb-4 stroke-[1.5]" />
                 <h3 className={`text-lg font-semibold ${themeClass('text-slate-300', 'text-slate-800')}`}>No active cards</h3>
-                <p className="text-xs text-slate-500 max-w-xs mx-auto mt-1 leading-relaxed">
+                <p className="text-xs text-slate-505 max-w-xs mx-auto mt-1 leading-relaxed">
                   Choose which credit cards you hold to load their benefits. You can add the same card multiple times!
                 </p>
                 <button
                   onClick={() => setActiveTab('cards')}
-                  className="mt-4 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold px-4 py-2 rounded-lg text-xs transition shadow-md"
+                  className="mt-4 bg-amber-500 hover:bg-amber-600 text-slate-955 font-bold px-4 py-2 rounded-lg text-xs transition shadow-md cursor-pointer"
                 >
                   Manage My Cards
                 </button>
@@ -503,10 +615,10 @@ function App() {
               <div className={`text-center py-16 border rounded-2xl p-8 ${
                 themeClass('bg-slate-900/20 border-slate-800/40', 'bg-white border-slate-200 shadow-sm')
               }`}>
-                <CheckCircle2 className="w-10 h-10 text-emerald-500/50 mx-auto mb-4" />
+                <CheckCircle2 className="w-10 h-10 text-emerald-505/50 mx-auto mb-4" />
                 <h3 className={`text-lg font-semibold ${themeClass('text-slate-300', 'text-slate-800')}`}>All benefits resolved!</h3>
-                <p className="text-xs text-slate-500 max-w-xs mx-auto mt-1">
-                  Nice job! You have maximized all tracked credits for {currentMonthStr}.
+                <p className="text-xs text-slate-505 max-w-xs mx-auto mt-1">
+                  Nice job! You have maximized all tracked credits for this period.
                 </p>
               </div>
             ) : (
@@ -553,7 +665,7 @@ function App() {
                           isExpired
                             ? 'border-red-900 bg-red-950/10 text-red-500'
                             : isUsed 
-                            ? 'bg-emerald-500 border-emerald-500 text-slate-950' 
+                            ? 'bg-emerald-500 border-emerald-500 text-slate-955' 
                             : themeClass('border-slate-700 group-hover:border-slate-500 bg-slate-955/50 text-transparent', 'border-slate-250 group-hover:border-slate-350 bg-white text-transparent')
                         }`}>
                           {isExpired ? (
@@ -578,11 +690,11 @@ function App() {
                             </span>
                             
                             {isExpired ? (
-                              <span className="text-[9px] font-bold bg-red-550/10 text-red-500 border border-red-500/20 px-1.5 py-0.2 rounded shrink-0">Expired</span>
+                              <span className="text-[9px] font-bold bg-red-555/10 text-red-505 border border-red-505/20 px-1.5 py-0.2 rounded shrink-0">Expired</span>
                             ) : benefit.resetPeriod === 'fixed' && benefit.expirationDate && (
                               <span className={`text-[9px] font-bold border px-1.5 py-0.2 rounded shrink-0 ${
                                 daysLeft <= 5 
-                                  ? 'bg-red-550/10 text-red-500 border-red-500/30 animate-pulse' 
+                                  ? 'bg-red-555/10 text-red-505 border-red-505/30 animate-pulse' 
                                   : 'bg-amber-500/10 text-amber-600 border-amber-500/20'
                               }`}>
                                 {daysLeft <= 0 ? 'Expires today' : `Expires in ${daysLeft}d`}
@@ -606,9 +718,9 @@ function App() {
                                   style={{ width: `${spentPercent}%` }}
                                 />
                               </div>
-                              <div className="flex justify-between items-center mt-1 text-[9px] font-semibold text-slate-500 dark:text-slate-450">
+                              <div className="flex justify-between items-center mt-1 text-[9px] font-semibold text-slate-500 dark:text-slate-455">
                                 <span>Spent: ${spent} / ${benefit.spendingLimit}</span>
-                                <span className={isUsed ? 'text-emerald-500' : ''}>
+                                <span className={isUsed ? 'text-emerald-555' : ''}>
                                   Cashback: ${cashbackEarned} / ${benefit.value} ({Math.round((benefit.value / (benefit.spendingLimit || 1)) * 100)}%)
                                 </span>
                               </div>
@@ -624,7 +736,7 @@ function App() {
                             className="flex items-center gap-1" 
                             onClick={(e) => e.stopPropagation()} // Prevent row click toggle
                           >
-                            <span className="text-[10px] font-bold text-slate-500">$</span>
+                            <span className="text-[10px] font-bold text-slate-505">$</span>
                             <input
                               type="number"
                               disabled={isExpired}
@@ -637,17 +749,17 @@ function App() {
                                 updateProgressLog(logKey, val);
                               }}
                               className={`w-16 border text-center text-xs rounded px-1.5 py-0.5 focus:outline-none font-mono font-bold transition ${
-                                themeClass('bg-slate-950 border-slate-850 text-white focus:border-purple-500', 'bg-slate-100 border-slate-250 text-slate-900 focus:border-purple-500 shadow-inner')
+                                themeClass('bg-slate-955 border-slate-850 text-white focus:border-purple-500', 'bg-slate-100 border-slate-250 text-slate-905 focus:border-purple-500 shadow-inner')
                               }`}
                             />
                           </div>
                         )}
 
                         <div className="text-right flex flex-col items-end justify-center min-w-[80px]">
-                          <span className={`text-base font-bold ${isExpired || isUsed ? 'text-slate-500' : themeClass('text-white', 'text-slate-900')}`}>
+                          <span className={`text-base font-bold ${isExpired || isUsed ? 'text-slate-505' : themeClass('text-white', 'text-slate-905')}`}>
                             ${benefit.value}
                           </span>
-                          <span className="text-[9px] uppercase tracking-wider text-slate-550 font-bold mt-0.5">
+                          <span className="text-[9px] uppercase tracking-wider text-slate-555 font-bold mt-0.5">
                             {benefit.resetPeriod === 'monthly' ? 'Monthly' :
                              benefit.resetPeriod === 'quarterly' ? 'Quarterly' :
                              benefit.resetPeriod === 'semi-annual' ? 'Semi-Annual' :
@@ -672,7 +784,7 @@ function App() {
               themeClass('bg-slate-900/30 border-slate-850', 'bg-white border-slate-200 shadow-sm')
             }`}>
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-4 pb-2 border-b border-dashed border-slate-200/60 dark:border-slate-800/60">
-                <h3 className={`text-xs font-bold uppercase tracking-wider flex items-center gap-2 ${themeClass('text-slate-400', 'text-slate-500')}`}>
+                <h3 className={`text-xs font-bold uppercase tracking-wider flex items-center gap-2 ${themeClass('text-slate-400', 'text-slate-505')}`}>
                   <CreditCard className="w-4 h-4 text-purple-500" />
                   My Wallet ({ownedCards.length} active cards)
                 </h3>
@@ -683,7 +795,7 @@ function App() {
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className={`border text-xs rounded-xl px-3 py-1.5 focus:outline-none w-44 font-medium ${
-                      themeClass('bg-slate-955 border-slate-800 focus:border-purple-500 text-slate-200', 'bg-slate-50 border-slate-250 focus:border-purple-500 text-slate-800 shadow-inner')
+                      themeClass('bg-slate-955 border-slate-800 focus:border-purple-500 text-slate-200', 'bg-slate-50 border-slate-250 focus:border-purple-500 text-slate-805 shadow-inner')
                     }`}
                   />
                   <button
@@ -868,10 +980,21 @@ function App() {
               themeClass('bg-slate-900/30 border-slate-850', 'bg-white border-slate-200 shadow-sm')
             }`}>
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5 pb-3 border-b border-dashed border-slate-200/60 dark:border-slate-800/60">
-                <h3 className={`text-xs font-bold uppercase tracking-wider flex items-center gap-2 ${themeClass('text-slate-400', 'text-slate-550')}`}>
+                <h3 className={`text-xs font-bold uppercase tracking-wider flex items-center gap-2 ${themeClass('text-slate-400', 'text-slate-555')}`}>
                   <Plus className="w-4 h-4 text-amber-500" />
                   Add New Cards (卡片模板库)
                 </h3>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="text"
+                    placeholder="🔍 Search card templates..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className={`border text-xs rounded-xl px-3 py-1.5 focus:outline-none w-48 font-medium ${
+                      themeClass('bg-slate-950 border-slate-800 focus:border-purple-500 text-slate-200', 'bg-slate-50 border-slate-250 focus:border-purple-500 text-slate-800 shadow-inner')
+                    }`}
+                  />
+                </div>
               </div>
 
               <div className="space-y-8">
@@ -908,7 +1031,7 @@ function App() {
                             }`}
                           >
                             <div className="pb-2 flex-grow">
-                              <span className={`text-[9px] font-semibold uppercase ${themeClass('text-slate-500', 'text-slate-555')}`}>{card.bank}</span>
+                              <span className={`text-[9px] font-semibold uppercase ${themeClass('text-slate-505', 'text-slate-555')}`}>{card.bank}</span>
                               <h4 className={`text-base font-bold mt-0.5 ${themeClass('text-white', 'text-slate-900')}`}>{card.name}</h4>
                               <p className={`text-xs mt-1.5 leading-relaxed ${themeClass('text-slate-400', 'text-slate-500')}`}>
                                 Contains <span className="font-bold text-purple-500 dark:text-amber-400">{card.benefits.length}</span> built-in benefits <br />
@@ -943,6 +1066,7 @@ function App() {
               themeClass('bg-slate-900/20 border-slate-900', 'bg-white border-slate-200 shadow-sm')
             }`}>
               <h4 className={`text-xs font-bold uppercase tracking-wider mb-3 ${themeClass('text-slate-400', 'text-slate-600')}`}>Data Portability & Safety</h4>
+
               <div className="flex flex-wrap gap-3">
                 <button
                   onClick={exportBackup}
@@ -974,7 +1098,7 @@ function App() {
                     }
                   }}
                   className={`flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-lg border transition ml-auto ${
-                    themeClass('bg-red-550/10 hover:bg-red-550/20 border-red-500/20 text-red-400', 'bg-red-500/5 hover:bg-red-500/10 border-red-300/30 text-red-500 shadow-sm')
+                    themeClass('bg-red-555/10 hover:bg-red-555/20 border-red-500/20 text-red-400', 'bg-red-500/5 hover:bg-red-500/10 border-red-300/30 text-red-500 shadow-sm')
                   }`}
                 >
                   <Trash2 className="w-3.5 h-3.5" />
