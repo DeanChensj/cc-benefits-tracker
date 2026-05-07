@@ -4,6 +4,7 @@ import type { CardTemplate, Benefit } from './data/cards.db';
 import { useCardStore, getLogKey } from './store/useCardStore';
 import type { OwnedCardInstance } from './store/useCardStore';
 import { downloadICSFile } from './utils/calendar';
+import { SpentAssistant } from './components/SpentAssistant';
 import { 
   CreditCard, 
   Calendar, 
@@ -142,6 +143,15 @@ function App() {
     .reduce((sum, ab) => sum + ab.benefit.value, 0);
 
   const pendingValue = totalPotentialValue - resolvedValue - expiredValue;
+
+  // Calculate actual remaining, non-expired active benefits for the AI SpentAssistant
+  const remainingBenefits = activeBenefits.filter((ab) => {
+    if (ab.isUsed) return false;
+    const isExpired = ab.benefit.resetPeriod === 'fixed' && 
+      ab.benefit.expirationDate && 
+      new Date(ab.benefit.expirationDate + 'T00:00:00') < currentDate;
+    return !isExpired;
+  });
 
   // Filtered benefits for view
   const filteredBenefits = activeBenefits.filter((ab) => {
@@ -1166,6 +1176,9 @@ function App() {
         <p>No account. No passwords. Purely local & safe.</p>
         <p className="mt-1 text-slate-700">Click to check off, click custom name to rename.</p>
       </footer>
+
+      {/* SpentAssistant AI Drawer */}
+      <SpentAssistant remainingBenefits={remainingBenefits} />
     </div>
   );
 }
