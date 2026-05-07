@@ -1,72 +1,65 @@
-# 💳 CardPerks: Local-First Credit Card Benefit Tracker
+# 💳 Credit Card Benefits Tracker: Local-First Financial Sandbox
 
-A premium, absolute privacy, and zero-friction credit card benefit tracker. Zero account logins, zero database maintenance, and zero passwords. Everything is processed purely in your browser and stored safely in your local storage.
-
-[English Version](#english) | [中文版说明](#chinese)
+[中文版说明](./README.zh-CN.md) | English Version
 
 ---
 
-<a name="english"></a>
+A premium, absolute-privacy, and zero-friction personal credit card benefits tracker. Featuring **Zero Account Logins, Zero Password Databases, and 100% Client-Side Processing**. It runs entirely inside your browser sandboxed storage, fully fortified with dynamic OS preferences, high-end micro-animations, and a client-side AI SpentAssistant.
+
+---
 
 ## 🌟 Key Features
 
-*   **Absolute Privacy**: No email logins, no bank account synchronization (via Plaid), and no password requirements. Prevents any risk of bank account flags or bans.
-*   **Local-First Architecture**: All logs and active cards are persisted purely client-side using `Zustand` + `LocalStorage`.
-*   **Dynamic Cross-Month Rollover**: Static card rules (e.g. monthly $10 Uber Cash) merge dynamically with local logs to determine active statuses. Unused/used perks are reset automatically when calendar months/years advance—without any backend CRON jobs.
-*   **Native Calendar Sync**: Front-end generates standard RFC 5545 `.ics` subscription files on the fly. Easily import into Apple Calendar or Google Calendar for system-native push reminders.
-*   **Developer Time-Travel Debugger**: Built-in month/year simulator at the top lets you fast-forward time instantly to verify reset and rollover logic.
-*   **Data Portability**: Quick JSON backup exports and full data restore imports. You own 100% of your data.
+*   **Absolute Privacy & Offline-Capable**: No email logins, no net-banking link synchronization (via Plaid), and no password requirements. Zero risk of personal financial leaks or bank account wind-down flags.
+*   **Local-First Architecture**: All card instances and checklist resolution logs are persisted strictly client-side inside your browser's `Zustand` + `LocalStorage` sandbox.
+*   **Dynamic Cards Open Date & Precise Expirations**: Upgraded card anniversary tracking to precise day-level boundaries based on your exact card open date. The system handles monthly statement cycles, semi-annual limits, calendar resets, and precise cardmember anniversary boundaries (e.g. World of Hyatt FNR, Hilton Aspire FNR) automatically.
+*   **SpentAssistant AI (BYOK Mode)**: An elite, secure, browser-level AI spending assistant powered by the **Gemini 2.5 Flash** model. Paste your personal Gemini API key (safely stored in browser LocalStorage, never sent to intermediate servers) to instantly ask SpentAssistant where to spend (e.g. *"Kyoto hotel $350"* or *"Dining $100"*). It reads your remaining unused benefits context and points multiplier rates to advise you in real time!
+*   **Sleek "My Wallet" & "Card Library" Division**: The card manager is divided into an active, customizable personal **My Wallet** (your actual held cards at the top) and a grouped **Add Cards Library** (organized vertically by issuer banks: Amex, Chase, Capital One at the bottom) featuring dynamic **Instant Fuzzy Search** across both layers!
+*   **Apple-Style Day & Night Themes**: Seamless one-click toggle between a deep slate dark mode and a gentle paper-like light mode, complete with system OS preferences auto-matching and a smooth **300ms liquid cross-fade transition**.
+*   **Premium Shimmer & Dopamine Micro-Animations**: 
+    *   **Holographic Sweep**: Hover over any card template slot or custom card to see a skewed glossy high-light sweep across the card face, mimicking real brushed metal cards.
+    *   **Dopamine Check**: Resolving a perk triggers a snappy micro-bounce pop scale-up checkbox animation, giving you a satisfying visual reward.
+*   **Native Calendar Sync**: Generate standard RFC 5545 `.ics` files on the fly with a helpful guide. Easily import into Apple Calendar, Mac Calendar, or Google Calendar for native push notifications 10 days before credits expire.
+*   **Developer Time-Travel Sandbox**: Built-in Month/Year time traveler at the top lets you simulate future periods instantly to verify rollovers, resets, and next-year anniversary events.
 
 ---
 
-<a name="chinese"></a>
+## 🛠️ Tech Stack
 
-## 🌟 核心亮点
-
-*   **绝对隐私**：免注册、免密码、无需绑定网银账号密码（彻底告别 Plaid 等第三方授权导致的风控封号风险）。
-*   **本地优先 (Local-First)**：持卡配置和所有核销日志全部加密且同步存储在浏览器的 `LocalStorage` 中。
-*   **智能跨月/年重置**：前端利用“云端规则 + 本地日志”合并计算机制。时间跨入新月份/新周年时自动重置所有报销额度，完全不需要后端 CRON 定时任务。
-*   **原生系统日历订阅**：纯前端生成 `.ics` 标准日历格式订阅，一键导入 iPhone / Google 原生日历，由手机系统在每月 25 号准时推送过期提醒。
-*   **时间旅行调试器**：顶部内置时间快进工具，点击即可模拟跨月/跨年状态，调试核心逻辑更加爽快。
-*   **数据绝对控制权**：支持一键导出 JSON 格式备份与导入还原，换机无忧。
-
----
-
-## 🛠️ Tech Stack (技术栈)
-
-*   **Framework**: React 19 + Vite + TypeScript
-*   **Styling**: Tailwind CSS v4 (Latest compiler, CSS-only config)
+*   **Framework**: React + Vite + TypeScript (Strict modular imports)
+*   **Styling**: Tailwind CSS v4 (Latest compiler, dynamic dark theme overlays, zero runtime burden)
 *   **State Management**: Zustand + Persist Middleware
 *   **Icons**: Lucide React
 
 ---
 
-## 🚀 Quick Start (快速开始)
+## 🚀 Quick Start
 
-### 1. Install Dependencies (安装依赖)
+### 1. Install Dependencies
 ```bash
 npm install
 ```
 
-### 2. Start Development Server (启动开发服务器)
+### 2. Start Development Server
 ```bash
 npm run dev
 ```
-*   **English**: Once started, open your browser and navigate to **[http://localhost:5173/](http://localhost:5173/)** to view your dashboard.
-*   **中文**: 启动后，在浏览器中打开 **[http://localhost:5173/](http://localhost:5173/)** 即可访问你的个人福利大盘。
+Once started, open your browser and navigate to **[http://localhost:5173/](http://localhost:5173/)** to view your personal local sandbox.
 
-### 3. Production Build (生产静态打包)
+### 3. Production Build
 ```bash
 npm run build
 ```
-*   **English**: The compiled production static assets will be generated in the `dist/` directory, ready to be deployed to Vercel, Netlify, or GitHub Pages.
-*   **中文**: 打包生成的静态网页文件将输出到 `dist/` 目录中，可直接零成本部署至 Vercel, Netlify 或 GitHub Pages。
+The compiled production static assets will be generated in the `dist/` directory (ultra-lightweight ~257 kB, ready to be deployed to Vercel, Netlify, or GitHub Pages for free!).
 
 ---
 
-## 📂 Code Structure (代码结构)
+## 📂 Code Structure
 
-*   [`src/data/cards.db.ts`](./src/data/cards.db.ts): Static credit card database mapping (contains rules for Amex Gold, Platinum, CSR, Venture X).
-*   [`src/store/useCardStore.ts`](./src/store/useCardStore.ts): Zustand store handling persistent client-side state.
-*   [`src/utils/calendar.ts`](./src/utils/calendar.ts): iCal RFC 5545 calendar generation and file downloader.
-*   [`src/App.tsx`](./src/App.tsx): Sleek dark-theme interactive Dashboard.
+*   [`src/data/cards.db.ts`](./src/data/cards.db.ts): Static credit card database mapping (includes Amex Plat, Gold, Biz Plat, Delta, CSR, CSP, Hyatt, Marriott, IHG templates).
+*   [`src/store/useCardStore.ts`](./src/store/useCardStore.ts): Zustand core store handling persistent cards and transaction logs.
+*   [`src/utils/calendar.ts`](./src/utils/calendar.ts): iCal calendar builder and subscription file generator.
+*   [`src/components/SpentAssistant.tsx`](./src/components/SpentAssistant.tsx): Isolated secure SpentAssistant AI chat sidebar.
+*   [`src/components/CalendarSyncModal.tsx`](./src/components/CalendarSyncModal.tsx): Modular Apple/Google Calendar subscription guides popup.
+*   [`src/components/CreateCardModal.tsx`](./src/components/CreateCardModal.tsx): Modular custom card wizard and dynamic benefits constructor.
+*   [`src/App.tsx`](./src/App.tsx): High-end, transitions-smooth responsive local-first Dashboard.
