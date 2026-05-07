@@ -26,7 +26,8 @@ import {
   Moon,
   Cloud,
   CloudOff,
-  ArrowUpDown
+  ArrowUpDown,
+  ExternalLink
 } from 'lucide-react';
 
 const getLocalDateString = (date = new Date()): string => {
@@ -1053,9 +1054,22 @@ function App() {
                       >
                         <div className="pb-3">
                           <div className="flex items-center justify-between">
-                            <span className="text-[9px] font-bold bg-purple-500/15 text-purple-350 dark:text-purple-400 border border-purple-500/20 px-1.5 py-0.5 rounded-md uppercase tracking-wider">
-                              {instance.templateId === 'custom' ? (instance.bank || 'Custom') : (template?.bank || 'Standard')}
-                            </span>
+                            <div className="flex items-center gap-1.5">
+                              <span className="text-[9px] font-bold bg-purple-500/15 text-purple-350 dark:text-purple-400 border border-purple-500/20 px-1.5 py-0.5 rounded-md uppercase tracking-wider">
+                                {instance.templateId === 'custom' ? (instance.bank || 'Custom') : (template?.bank || 'Standard')}
+                              </span>
+                              {template?.officialUrl && (
+                                <a
+                                  href={template.officialUrl}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-white/60 hover:text-white transition active:scale-90 cursor-pointer"
+                                  title="View Official Application Details Page"
+                                >
+                                  <ExternalLink className="w-3 h-3 stroke-[2.5]" />
+                                </a>
+                              )}
+                            </div>
                             <div className="flex items-center gap-1.5">
                               {instance.templateId === 'custom' ? (
                                 <button
@@ -1289,8 +1303,17 @@ function App() {
                             }`}
                           >
                             <div className="pb-2 flex-grow">
-                              <span className={`text-[9px] font-semibold uppercase ${themeClass('text-slate-505', 'text-slate-555')}`}>{card.bank}</span>
-                              <h4 className={`text-base font-bold mt-0.5 ${themeClass('text-white', 'text-slate-900')}`}>{card.name}</h4>
+                              <div className="flex items-center justify-between">
+                                <span className={`text-[9px] font-semibold uppercase tracking-wider ${themeClass('text-slate-500', 'text-slate-550')}`}>{card.bank}</span>
+                                <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wide ${
+                                  card.annualFee > 0 
+                                    ? themeClass('bg-slate-950 text-amber-400 border border-slate-850', 'bg-slate-100 text-purple-600 border border-slate-200')
+                                    : 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/10'
+                                }`}>
+                                  {card.annualFee > 0 ? `Fee: $${card.annualFee}` : 'No Fee'}
+                                </span>
+                              </div>
+                              <h4 className={`text-base font-bold mt-1.5 ${themeClass('text-white', 'text-slate-900')}`}>{card.name}</h4>
                               <p className={`text-xs mt-1.5 leading-relaxed ${themeClass('text-slate-400', 'text-slate-500')}`}>
                                 Contains <span className="font-bold text-purple-500 dark:text-amber-400">{card.benefits.length}</span> built-in benefits <br />
                                 (Total potential value: <span className={`font-bold ${themeClass('text-white', 'text-slate-955')}`}>${card.benefits.reduce((s, b) => s + b.value, 0)}/yr</span>)

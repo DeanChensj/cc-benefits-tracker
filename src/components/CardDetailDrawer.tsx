@@ -1,4 +1,4 @@
-import { X, Plus, Info, Calendar, Heart } from 'lucide-react';
+import { X, Plus, Info, Calendar, Heart, ExternalLink } from 'lucide-react';
 import type { CardTemplate } from '../data/cards.db';
 
 interface CardDetailDrawerProps {
@@ -19,7 +19,7 @@ export function CardDetailDrawer({ isOpen, card, onClose, onAdd, theme }: CardDe
     // Backdrop overlay
     <div 
       onClick={onClose}
-      className="fixed inset-0 bg-slate-950/40 dark:bg-slate-950/75 backdrop-blur-[3px] z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 animate-fade-in"
+      className="fixed inset-0 bg-slate-955/40 dark:bg-slate-950/75 backdrop-blur-[3px] z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 animate-fade-in"
     >
       {/* Bottom Sheet (Mobile) & Centered Modal (Desktop) */}
       <div 
@@ -37,7 +37,7 @@ export function CardDetailDrawer({ isOpen, card, onClose, onAdd, theme }: CardDe
         <div className="px-5 py-3.5 flex items-center justify-between shrink-0 border-b border-dashed border-slate-200/60 dark:border-slate-800/60">
           <div>
             <span className={`text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded ${
-              themeClass('bg-slate-950/60 text-purple-400', 'bg-slate-100 text-purple-600')
+              themeClass('bg-slate-900/60 text-purple-400', 'bg-slate-100 text-purple-600')
             }`}>
               {card.bank} Card Template
             </span>
@@ -65,15 +65,35 @@ export function CardDetailDrawer({ isOpen, card, onClose, onAdd, theme }: CardDe
             </div>
             
             <div className="flex justify-between items-end pt-4">
-              <div>
-                <p className="text-[8px] font-bold uppercase tracking-widest opacity-50">Potential Value</p>
-                <p className="text-base font-black">${card.benefits.reduce((sum, b) => sum + b.value, 0)} / year</p>
+              <div className="flex gap-6">
+                <div>
+                  <p className="text-[8px] font-bold uppercase tracking-widest opacity-60">Potential Value</p>
+                  <p className="text-base font-black">${card.benefits.reduce((sum, b) => sum + b.value, 0)}/yr</p>
+                </div>
+                <div>
+                  <p className="text-[8px] font-bold uppercase tracking-widest opacity-60">Annual Fee</p>
+                  <p className="text-base font-black">${card.annualFee}/yr</p>
+                </div>
               </div>
-              <span className="text-[9px] font-bold uppercase bg-white/10 px-2 py-0.5 rounded border border-white/5">
+              <span className="text-[9px] font-bold uppercase bg-white/10 px-2 py-0.5 rounded border border-white/5 shrink-0">
                 {card.benefits.length} perks
               </span>
             </div>
           </div>
+
+          {card.officialUrl && (
+            <a
+              href={card.officialUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={`flex items-center justify-center gap-1.5 border rounded-xl py-2.5 text-[11px] font-bold transition cursor-pointer ${
+                themeClass('bg-slate-955/35 border-slate-850 hover:bg-slate-850 hover:border-slate-750 text-purple-400', 'bg-slate-50 border-slate-250/80 hover:bg-slate-100 hover:border-slate-300 text-purple-600 shadow-sm')
+              }`}
+            >
+              <ExternalLink className="w-3.5 h-3.5" />
+              <span>View Official Details & Apply Page</span>
+            </a>
+          )}
 
           {/* 📋 Built-in Perks List */}
           <div className="space-y-3">

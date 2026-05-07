@@ -16,6 +16,7 @@ export interface CardTemplate {
   color: string; // Tailwind gradient classes
   annualFee: number; // USD Annual Fee of the card
   benefits: Benefit[];
+  officialUrl?: string; // Official card application / detail landing page URL
 }
 
 export const CARDS_DB: CardTemplate[] = [
@@ -25,6 +26,7 @@ export const CARDS_DB: CardTemplate[] = [
     bank: 'Amex',
     color: 'from-amber-500 to-yellow-600',
     annualFee: 320,
+    officialUrl: 'https://www.americanexpress.com/us/credit-cards/card/gold-card/',
     benefits: [
       {
         id: 'amex-gold-uber',
@@ -65,7 +67,8 @@ export const CARDS_DB: CardTemplate[] = [
     name: 'American Express Platinum',
     bank: 'Amex',
     color: 'from-slate-600 via-slate-700 to-slate-900',
-    annualFee: 695,
+    annualFee: 895,
+    officialUrl: 'https://www.americanexpress.com/us/credit-cards/card/platinum/',
     benefits: [
       {
         id: 'amex-plat-uber',
@@ -118,8 +121,8 @@ export const CARDS_DB: CardTemplate[] = [
       {
         id: 'amex-plat-clear',
         name: 'CLEAR Plus Credit',
-        description: '$189/calendar year statement credit for CLEAR Plus membership',
-        value: 189,
+        description: '$199/calendar year statement credit for CLEAR Plus membership',
+        value: 199,
         resetPeriod: 'annual-calendar',
         category: 'travel'
       },
@@ -138,6 +141,14 @@ export const CARDS_DB: CardTemplate[] = [
         value: 100,
         resetPeriod: 'quarterly',
         category: 'dining'
+      },
+      {
+        id: 'amex-plat-equinox',
+        name: 'Equinox Credit',
+        description: 'Up to $300/year ($25 monthly statement credit) for Equinox membership or app',
+        value: 25,
+        resetPeriod: 'monthly',
+        category: 'entertainment'
       }
     ]
   },
@@ -147,6 +158,7 @@ export const CARDS_DB: CardTemplate[] = [
     bank: 'Amex',
     color: 'from-cyan-600 via-blue-800 to-slate-900',
     annualFee: 95,
+    officialUrl: 'https://www.americanexpress.com/us/credit-cards/card/blue-cash-preferred/',
     benefits: [
       {
         id: 'bcp-groceries',
@@ -222,6 +234,7 @@ export const CARDS_DB: CardTemplate[] = [
     bank: 'Amex',
     color: 'from-zinc-600 via-zinc-700 to-slate-900',
     annualFee: 695,
+    officialUrl: 'https://www.americanexpress.com/us/credit-cards/business/business-credit-cards/american-express-business-platinum-credit-card-amex/',
     benefits: [
       {
         id: 'biz-plat-dell',
@@ -255,6 +268,7 @@ export const CARDS_DB: CardTemplate[] = [
     bank: 'Amex',
     color: 'from-indigo-900 via-violet-950 to-slate-950',
     annualFee: 550,
+    officialUrl: 'https://www.americanexpress.com/us/credit-cards/card/hilton-honors-aspire/',
     benefits: [
       {
         id: 'aspire-resort',
@@ -271,6 +285,14 @@ export const CARDS_DB: CardTemplate[] = [
         value: 250,
         resetPeriod: 'annual-anniversary',
         category: 'travel'
+      },
+      {
+        id: 'aspire-flight',
+        name: 'Flight Credit',
+        description: 'Up to $200/year ($50 quarterly statement credit) for flight purchases made directly with airlines or amextravel.com',
+        value: 50,
+        resetPeriod: 'quarterly',
+        category: 'travel'
       }
     ]
   },
@@ -280,6 +302,7 @@ export const CARDS_DB: CardTemplate[] = [
     bank: 'Amex',
     color: 'from-blue-950 via-slate-900 to-red-950',
     annualFee: 350,
+    officialUrl: 'https://www.americanexpress.com/us/credit-cards/card/delta-skymiles-platinum-american-express-card/',
     benefits: [
       {
         id: 'delta-plat-companion',
@@ -321,6 +344,7 @@ export const CARDS_DB: CardTemplate[] = [
     bank: 'Chase',
     color: 'from-blue-700 to-indigo-900',
     annualFee: 550,
+    officialUrl: 'https://creditcards.chase.com/rewards-credit-cards/sapphire/reserve',
     benefits: [
       {
         id: 'csr-travel',
@@ -338,6 +362,7 @@ export const CARDS_DB: CardTemplate[] = [
     bank: 'Chase',
     color: 'from-blue-850 via-blue-950 to-slate-950',
     annualFee: 95,
+    officialUrl: 'https://creditcards.chase.com/rewards-credit-cards/sapphire/preferred',
     benefits: [
       {
         id: 'csp-hotel',
@@ -355,6 +380,7 @@ export const CARDS_DB: CardTemplate[] = [
     bank: 'Chase',
     color: 'from-sky-900 via-indigo-950 to-black',
     annualFee: 0,
+    officialUrl: 'https://creditcards.chase.com/cash-back-credit-cards/freedom/flex',
     benefits: [
       {
         id: 'cff-rotating',
@@ -375,37 +401,14 @@ export const CARDS_DB: CardTemplate[] = [
       }
     ]
   },
-  {
-    id: 'chase-marriott-brilliant',
-    name: 'Chase Marriott Bonvoy Brilliant',
-    bank: 'Chase',
-    color: 'from-slate-900 via-zinc-900 to-black',
-    annualFee: 650,
-    benefits: [
-      {
-        id: 'brilliant-dining',
-        name: 'Marriott Dining Credit',
-        description: 'Up to $300/year ($25 monthly worldwide dining statement credit)',
-        value: 25,
-        resetPeriod: 'monthly',
-        category: 'dining'
-      },
-      {
-        id: 'brilliant-fnr',
-        name: 'Annual Free Night (85K)',
-        description: 'Anniversary Free Night Certificate valid for stays up to 85,000 points',
-        value: 400,
-        resetPeriod: 'annual-anniversary',
-        category: 'travel'
-      }
-    ]
-  },
+
   {
     id: 'chase-hyatt',
     name: 'Chase World of Hyatt',
     bank: 'Chase',
     color: 'from-blue-600 via-sky-850 to-slate-950',
     annualFee: 95,
+    officialUrl: 'https://creditcards.chase.com/travel-credit-cards/world-of-hyatt-credit-card',
     benefits: [
       {
         id: 'hyatt-fnr',
@@ -423,6 +426,7 @@ export const CARDS_DB: CardTemplate[] = [
     bank: 'Chase',
     color: 'from-slate-900 via-indigo-950 to-black',
     annualFee: 95,
+    officialUrl: 'https://creditcards.chase.com/travel-credit-cards/marriott-bonvoy/boundless',
     benefits: [
       {
         id: 'marriott-fnr',
@@ -440,6 +444,7 @@ export const CARDS_DB: CardTemplate[] = [
     bank: 'Chase',
     color: 'from-amber-900 via-neutral-950 to-neutral-950',
     annualFee: 95,
+    officialUrl: 'https://creditcards.chase.com/travel-credit-cards/ihg-rewards-club/premier',
     benefits: [
       {
         id: 'ihg-fnr',
@@ -465,6 +470,7 @@ export const CARDS_DB: CardTemplate[] = [
     bank: 'Capital One',
     color: 'from-teal-600 to-emerald-800',
     annualFee: 395,
+    officialUrl: 'https://www.capitalone.com/credit-cards/venture-x/',
     benefits: [
       {
         id: 'vx-travel',
@@ -482,6 +488,7 @@ export const CARDS_DB: CardTemplate[] = [
     bank: 'Other',
     color: 'from-orange-500 via-red-500 to-orange-600',
     annualFee: 0,
+    officialUrl: 'https://www.discover.com/credit-cards/cashback/',
     benefits: [
       {
         id: 'discover-it-rotating',
