@@ -1,4 +1,5 @@
 import { CARDS_DB } from '../data/cards.db';
+import type { Benefit } from '../data/cards.db';
 import type { OwnedCardInstance } from '../store/useCardStore';
 
 // Format date to ICS format (YYYYMMDD or YYYYMMDDTHHMMSS)
@@ -26,11 +27,18 @@ export const downloadICSFile = (ownedCards: OwnedCardInstance[]) => {
   const now = new Date();
 
   ownedCards.forEach((cardInstance) => {
-    // Retrieve the static card template to get its benefits
-    const template = CARDS_DB.find((t) => t.id === cardInstance.templateId);
-    if (!template) return;
+    let benefits: Benefit[] = [];
 
-    template.benefits.forEach((benefit) => {
+    if (cardInstance.templateId === 'custom') {
+      benefits = cardInstance.customBenefits || [];
+    } else {
+      const template = CARDS_DB.find((t) => t.id === cardInstance.templateId);
+      if (template) {
+        benefits = template.benefits;
+      }
+    }
+
+    benefits.forEach((benefit) => {
       // Ensure unique UID per instance
       const uid = `${cardInstance.id}-${benefit.id}@cc-benefits-tracker`;
       const title = `💳 Use ${cardInstance.customName} - ${benefit.name}`;

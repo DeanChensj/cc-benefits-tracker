@@ -24,6 +24,7 @@ function App() {
     ownedCards, 
     logs, 
     addCard, 
+    addCustomCard,
     removeCard, 
     renameCard,
     setAnniversaryMonth, 
@@ -37,6 +38,20 @@ function App() {
   const [filterCategory, setFilterCategory] = useState<string>('all');
   const [editingInstanceId, setEditingInstanceId] = useState<string | null>(null);
   const [isSyncModalOpen, setIsSyncModalOpen] = useState(false);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+
+  // Custom card builder states
+  const [customBank, setCustomBank] = useState('');
+  const [customCardName, setCustomCardName] = useState('');
+  const [customColor, setCustomColor] = useState('from-purple-600 to-indigo-900');
+  const [customAnniversaryMonth, setCustomAnniversaryMonth] = useState('01');
+  const [newBenefits, setNewBenefits] = useState<{
+    name: string;
+    value: number;
+    resetPeriod: 'monthly' | 'semi-annual' | 'annual-calendar' | 'annual-anniversary';
+    category: 'dining' | 'travel' | 'shopping' | 'entertainment' | 'other';
+    description: string;
+  }[]>([{ name: '', value: 0, resetPeriod: 'monthly', category: 'dining', description: '' }]);
 
   const currentMonthStr = currentDate.toLocaleString('default', { month: 'long' });
   const currentYear = currentDate.getFullYear();
@@ -44,7 +59,7 @@ function App() {
   // Flat list of all active benefits based on instances
   interface ActiveBenefit {
     cardInstance: OwnedCardInstance;
-    template: CardTemplate;
+    template?: CardTemplate;
     benefit: Benefit;
     logKey: string;
     isUsed: boolean;
@@ -52,13 +67,22 @@ function App() {
 
   const activeBenefits: ActiveBenefit[] = [];
   ownedCards.forEach((cardInstance) => {
-    const template = CARDS_DB.find((t) => t.id === cardInstance.templateId);
-    if (!template) return;
+    let benefits: Benefit[] = [];
+    let template: CardTemplate | undefined;
 
-    template.benefits.forEach((benefit) => {
+    if (cardInstance.templateId === 'custom') {
+      benefits = cardInstance.customBenefits || [];
+    } else {
+      template = CARDS_DB.find((t) => t.id === cardInstance.templateId);
+      if (template) {
+        benefits = template.benefits;
+      }
+    }
+
+    benefits.forEach((benefit) => {
       const logKey = getLogKey(
         benefit.resetPeriod,
-        cardInstance.id, // Pass the unique instance ID
+        cardInstance.id,
         benefit.id,
         currentDate,
         cardInstance.anniversaryMonth
@@ -402,10 +426,19 @@ function App() {
         {activeTab === 'cards' && (
           <section className="space-y-6">
             <div className="bg-slate-900/30 border border-slate-850 rounded-xl p-4 sm:p-6">
-              <h3 className="text-sm font-bold text-white mb-4 flex items-center gap-2">
-                <CreditCard className="w-4 h-4 text-amber-500" />
-                Add Credit Card Templates
-              </h3>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                  <CreditCard className="w-4 h-4 text-amber-500" />
+                  Credit Card Inventory
+                </h3>
+                <button
+                  onClick={() => setIsCreateModalOpen(true)}
+                  className="flex items-center gap-1 bg-gradient-to-tr from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-550 text-white font-bold px-3 py-1.5 rounded-lg text-xs transition active:scale-95 shadow-md shadow-purple-500/10"
+                >
+                  <Plus className="w-3.5 h-3.5 stroke-[3]" />
+                  Create Custom Card
+                </button>
+              </div>
               
               <div className="grid sm:grid-cols-2 gap-4">
                 {CARDS_DB.map((card) => {
@@ -497,6 +530,112 @@ function App() {
                           ))}
                         </div>
                       )}
+                    </div>
+                  );
+                })}
+
+                {/* Custom Card Instances List */}
+                {ownedCards.filter((c) => c.templateId === 'custom').map((instance) => {
+                  const customColor = instance.color || 'from-purple-950/50 to-slate-950';
+                  
+                  return (
+                    <div 
+                      key={instance.id}
+                      className={`p-4 rounded-xl border flex flex-col justify-between transition bg-gradient-to-tr ${customColor} border-purple-900/30 hover:border-purple-800/50 shadow-lg shadow-purple-500/[0.02]`}
+                    >
+                      <div className="pb-3">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[9px] font-bold bg-purple-500/10 text-purple-400 border border-purple-500/20 px-1.5 py-0.5 rounded-md uppercase tracking-wider">{instance.bank || 'Custom'}</span>
+                          <div className="flex items-center gap-1.5">
+                            <button
+                              onClick={() => {
+                                addCustomCard({
+                                  templateId: 'custom',
+                                  customName: `${instance.customName} (Copy)`,
+                                  bank: instance.bank,
+                                  color: instance.color,
+                                  anniversaryMonth: instance.anniversaryMonth,
+                                  customBenefits: (instance.customBenefits || []).map((b) => ({
+                                    ...b,
+                                    id: `benefit_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
+                                  })),
+                                });
+                              }}
+                              className="p-1 text-purple-400 hover:text-purple-300 hover:bg-purple-550/10 rounded transition active:scale-90"
+                              title="Duplicate custom card instance"
+                            >
+                              <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
+                            </button>
+                            <button
+                              onClick={() => removeCard(instance.id)}
+                              className="p-1 text-red-400 hover:text-red-500 hover:bg-red-550/10 rounded transition"
+                              title="Delete custom card"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        </div>
+
+                        {editingInstanceId === instance.id ? (
+                          <input
+                            type="text"
+                            value={instance.customName}
+                            onChange={(e) => renameCard(instance.id, e.target.value)}
+                            onBlur={() => setEditingInstanceId(null)}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter' || e.key === 'Escape') {
+                                setEditingInstanceId(null);
+                              }
+                            }}
+                            autoFocus
+                            className="bg-slate-950 border border-purple-500/50 text-slate-200 text-xs rounded px-2 py-1 font-semibold focus:outline-none w-full mt-2"
+                          />
+                        ) : (
+                          <h4 
+                            onClick={() => setEditingInstanceId(instance.id)}
+                            className="text-base font-bold text-white mt-1.5 flex items-center gap-1 cursor-pointer hover:text-purple-400 transition"
+                            title="Click to rename"
+                          >
+                            {instance.customName}
+                            <Edit3 className="w-3 h-3 text-slate-500 shrink-0" />
+                          </h4>
+                        )}
+
+                        <p className="text-xs text-slate-400 mt-1">
+                          {(instance.customBenefits || []).length} perks (Total: ${(instance.customBenefits || []).reduce((s, b) => s + b.value, 0)}/yr)
+                        </p>
+
+                        {/* Custom benefits inline list */}
+                        <div className="mt-4 space-y-1.5">
+                          <p className="text-[9px] font-bold uppercase tracking-wider text-slate-500">Card Benefits</p>
+                          {(instance.customBenefits || []).map((b) => (
+                            <div key={b.id} className="flex items-center justify-between text-xs bg-slate-950/50 p-1.5 rounded border border-slate-900/80 text-slate-300">
+                              <span>{b.name}</span>
+                              <span className="font-bold text-white">${b.value}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className="mt-3 pt-3 border-t border-slate-900/80 flex items-center justify-between gap-2">
+                        <label className="text-[10px] font-medium text-slate-400">
+                          Anniversary Month:
+                        </label>
+                        <select
+                          value={instance.anniversaryMonth}
+                          onChange={(e) => setAnniversaryMonth(instance.id, e.target.value)}
+                          className="bg-slate-950 border border-slate-800 text-slate-300 text-[11px] rounded px-2 py-0.5 focus:outline-none cursor-pointer"
+                        >
+                          {Array.from({ length: 12 }, (_, i) => {
+                            const m = (i + 1).toString().padStart(2, '0');
+                            return (
+                              <option key={m} value={m}>
+                                {new Date(2026, i, 1).toLocaleString('default', { month: 'short' })}
+                              </option>
+                            );
+                          })}
+                        </select>
+                      </div>
                     </div>
                   );
                 })}
@@ -600,6 +739,248 @@ function App() {
             >
               Close
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* Create Custom Card Modal Overlay */}
+      {isCreateModalOpen && (
+        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center z-50 p-4 overflow-y-auto">
+          <div 
+            className="bg-slate-900 border border-slate-800 rounded-2xl max-w-lg w-full p-6 shadow-2xl relative my-8 animate-scale-up"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center gap-3 mb-5">
+              <div className="p-2 bg-purple-500/10 rounded-lg text-purple-400">
+                <CreditCard className="w-6 h-6" />
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-white">Create Custom Credit Card</h3>
+                <p className="text-xs text-slate-400">Add your long-tail credit cards and custom perks</p>
+              </div>
+            </div>
+
+            <form onSubmit={(e) => {
+              e.preventDefault();
+              if (!customCardName.trim()) {
+                alert('Please enter a card name.');
+                return;
+              }
+
+              const preparedBenefits = newBenefits
+                .filter((b) => b.name.trim() !== '')
+                .map((b) => ({
+                  ...b,
+                  id: `benefit_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
+                  value: Number(b.value) || 0,
+                }));
+
+              addCustomCard({
+                templateId: 'custom',
+                customName: customCardName.trim(),
+                bank: customBank.trim() || 'Custom',
+                color: customColor,
+                anniversaryMonth: customAnniversaryMonth,
+                customBenefits: preparedBenefits,
+              });
+
+              // Reset states
+              setCustomBank('');
+              setCustomCardName('');
+              setCustomColor('from-purple-600 to-indigo-900');
+              setCustomAnniversaryMonth('01');
+              setNewBenefits([{ name: '', value: 0, resetPeriod: 'monthly', category: 'dining', description: '' }]);
+              setIsCreateModalOpen(false);
+            }} className="space-y-4">
+              
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">Bank Name (银行)</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. Bilt, Citi"
+                    value={customBank}
+                    onChange={(e) => setCustomBank(e.target.value)}
+                    className="w-full bg-slate-950 border border-slate-800 focus:border-purple-500 text-slate-200 text-xs rounded-xl px-3 py-2.5 focus:outline-none font-medium"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">Card Name (卡名)</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. Mastercard, Custom Cash"
+                    value={customCardName}
+                    onChange={(e) => setCustomCardName(e.target.value)}
+                    className="w-full bg-slate-950 border border-slate-800 focus:border-purple-500 text-slate-200 text-xs rounded-xl px-3 py-2.5 focus:outline-none font-medium"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">Anniversary Month (周年)</label>
+                  <select
+                    value={customAnniversaryMonth}
+                    onChange={(e) => setCustomAnniversaryMonth(e.target.value)}
+                    className="w-full bg-slate-950 border border-slate-800 focus:border-purple-500 text-slate-300 text-xs rounded-xl px-3 py-2.5 focus:outline-none font-medium cursor-pointer"
+                  >
+                    {Array.from({ length: 12 }, (_, i) => {
+                      const m = (i + 1).toString().padStart(2, '0');
+                      return (
+                        <option key={m} value={m}>
+                          {new Date(2026, i, 1).toLocaleString('default', { month: 'long' })}
+                        </option>
+                      );
+                    })}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">Card Color (卡片配色)</label>
+                  <div className="flex gap-1.5 items-center">
+                    {[
+                      { class: 'from-purple-600 to-indigo-900', label: 'Violet' },
+                      { class: 'from-teal-500 to-cyan-800', label: 'Lagoon' },
+                      { class: 'from-rose-600 to-red-900', label: 'Lava' },
+                      { class: 'from-emerald-600 to-green-900', label: 'Emerald' },
+                      { class: 'from-slate-750 to-slate-900', label: 'Steel' }
+                    ].map((c) => (
+                      <button
+                        key={c.class}
+                        type="button"
+                        onClick={() => setCustomColor(c.class)}
+                        className={`w-5 h-5 rounded-full bg-gradient-to-tr ${c.class} border transition ${
+                          customColor === c.class ? 'border-white scale-110 ring-2 ring-purple-500/30' : 'border-transparent opacity-70 hover:opacity-100'
+                        }`}
+                        title={c.label}
+                      />
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Dynamic Benefits Builder Section */}
+              <div className="border-t border-slate-850 pt-4 mt-4 space-y-3">
+                <div className="flex items-center justify-between mb-2">
+                  <h4 className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Card Benefits ({newBenefits.length})</h4>
+                  <button
+                    type="button"
+                    onClick={() => setNewBenefits([...newBenefits, { name: '', value: 0, resetPeriod: 'monthly', category: 'dining', description: '' }])}
+                    className="flex items-center gap-1 text-[10px] font-bold text-purple-400 hover:text-purple-300 transition"
+                  >
+                    <Plus className="w-3 h-3 stroke-[3]" />
+                    Add Perk (添加福利)
+                  </button>
+                </div>
+
+                <div className="space-y-3 max-h-[180px] overflow-y-auto pr-1.5">
+                  {newBenefits.map((benefit, idx) => (
+                    <div key={idx} className="bg-slate-950 p-3 rounded-xl border border-slate-850/80 space-y-2.5 relative">
+                      {newBenefits.length > 1 && (
+                        <button
+                          type="button"
+                          onClick={() => setNewBenefits(newBenefits.filter((_, i) => i !== idx))}
+                          className="absolute top-2.5 right-2.5 text-slate-500 hover:text-red-400 transition"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      )}
+
+                      <div className="grid grid-cols-3 gap-2">
+                        <div className="col-span-2">
+                          <label className="block text-[9px] font-semibold text-slate-500 mb-0.5">Perk Name</label>
+                          <input
+                            type="text"
+                            placeholder="e.g. Rent Day Credit"
+                            value={benefit.name}
+                            onChange={(e) => {
+                              const updated = [...newBenefits];
+                              updated[idx].name = e.target.value;
+                              setNewBenefits(updated);
+                            }}
+                            className="w-full bg-slate-900 border border-slate-850 text-slate-200 text-xs rounded-lg px-2.5 py-1.5 focus:outline-none font-medium"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[9px] font-semibold text-slate-500 mb-0.5">Value ($)</label>
+                          <input
+                            type="number"
+                            placeholder="5"
+                            value={benefit.value || ''}
+                            onChange={(e) => {
+                              const updated = [...newBenefits];
+                              updated[idx].value = Number(e.target.value);
+                              setNewBenefits(updated);
+                            }}
+                            className="w-full bg-slate-900 border border-slate-850 text-slate-200 text-xs rounded-lg px-2.5 py-1.5 focus:outline-none font-bold"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-2">
+                        <div>
+                          <label className="block text-[9px] font-semibold text-slate-500 mb-0.5">Reset Period</label>
+                          <select
+                            value={benefit.resetPeriod}
+                            onChange={(e) => {
+                              const updated = [...newBenefits];
+                              updated[idx].resetPeriod = e.target.value as any;
+                              setNewBenefits(updated);
+                            }}
+                            className="w-full bg-slate-900 border border-slate-850 text-slate-300 text-[11px] rounded-lg px-2 py-1 focus:outline-none cursor-pointer"
+                          >
+                            <option value="monthly">Monthly</option>
+                            <option value="semi-annual">Semi-Annual</option>
+                            <option value="annual-calendar">Annual (Calendar)</option>
+                            <option value="annual-anniversary">Annual (Anniversary)</option>
+                          </select>
+                        </div>
+
+                        <div>
+                          <label className="block text-[9px] font-semibold text-slate-500 mb-0.5">Category</label>
+                          <select
+                            value={benefit.category}
+                            onChange={(e) => {
+                              const updated = [...newBenefits];
+                              updated[idx].category = e.target.value as any;
+                              setNewBenefits(updated);
+                            }}
+                            className="w-full bg-slate-900 border border-slate-850 text-slate-300 text-[11px] rounded-lg px-2 py-1 focus:outline-none cursor-pointer"
+                          >
+                            <option value="dining">Dining</option>
+                            <option value="travel">Travel</option>
+                            <option value="shopping">Shopping</option>
+                            <option value="entertainment">Entertainment</option>
+                            <option value="other">Other</option>
+                          </select>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex gap-3 pt-4 border-t border-slate-850 mt-4">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsCreateModalOpen(false);
+                    setNewBenefits([{ name: '', value: 0, resetPeriod: 'monthly', category: 'dining', description: '' }]);
+                  }}
+                  className="w-1/3 bg-slate-800 hover:bg-slate-750 text-slate-300 font-semibold py-2.5 rounded-xl text-xs transition"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="w-2/3 bg-gradient-to-tr from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-550 text-white font-bold py-2.5 rounded-xl text-xs transition active:scale-[0.98]"
+                >
+                  Create & Save Card
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

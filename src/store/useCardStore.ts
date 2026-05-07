@@ -1,12 +1,16 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { CARDS_DB } from '../data/cards.db';
+import type { Benefit } from '../data/cards.db';
 
 export interface OwnedCardInstance {
   id: string; // Unique instance ID (e.g. inst_171500000)
-  templateId: string; // References the static CARDS_DB card id
+  templateId: string; // References the static CARDS_DB card id, or 'custom'
   customName: string; // User's label (e.g. "Amex Gold - Player 2")
   anniversaryMonth: string; // '01'-'12'
+  bank?: string; // Custom bank name for custom cards
+  color?: string; // Custom gradient classes for custom cards
+  customBenefits?: Benefit[]; // Custom benefits for custom cards
 }
 
 export interface CardStore {
@@ -15,6 +19,7 @@ export interface CardStore {
 
   // Actions
   addCard: (templateId: string) => void;
+  addCustomCard: (card: Omit<OwnedCardInstance, 'id'>) => void;
   removeCard: (instanceId: string) => void;
   renameCard: (instanceId: string, customName: string) => void;
   setAnniversaryMonth: (instanceId: string, month: string) => void;
@@ -25,7 +30,7 @@ export interface CardStore {
 // Helper to generate log key based on reset period and current date
 export const getLogKey = (
   resetPeriod: 'monthly' | 'semi-annual' | 'annual-calendar' | 'annual-anniversary',
-  instanceId: string, // Unique instance ID instead of template ID
+  instanceId: string, // Unique instance ID
   benefitId: string,
   currentDate: Date,
   anniversaryMonthStr?: string // '01' to '12'
@@ -82,13 +87,23 @@ export const useCardStore = create<CardStore>()(
           };
         }),
 
+      addCustomCard: (customCard) =>
+        set((state) => {
+          const uniqueId = `inst_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
+          const newInstance: OwnedCardInstance = {
+            ...customCard,
+            id: uniqueId,
+          };
+          return {
+            ownedCards: [...state.ownedCards, newInstance],
+          };
+        }),
+
       removeCard: (instanceId) =>
         set((state) => ({
           ownedCards: state.ownedCards.filter((c) => c.id !== instanceId),
-          // Clean up logs associated with this instanceId to keep storage clean
           logs: Object.keys(state.logs).reduce((acc, key) => {
             const parts = key.split(':');
-            // parts[1] is the instanceId (e.g., "period:instanceId:benefitId")
             if (parts[1] !== instanceId) {
               acc[key] = state.logs[key];
             }
