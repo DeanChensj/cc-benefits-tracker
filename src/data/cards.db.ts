@@ -39,6 +39,22 @@ export const CARDS_DB: CardTemplate[] = [
         value: 10,
         resetPeriod: 'monthly',
         category: 'dining'
+      },
+      {
+        id: 'amex-gold-resy',
+        name: 'Resy Credit',
+        description: '$50 semi-annually (Jan-Jun, Jul-Dec) statement credit for Resy bookings',
+        value: 50,
+        resetPeriod: 'semi-annual',
+        category: 'dining'
+      },
+      {
+        id: 'amex-gold-dunkin',
+        name: 'Dunkin Credit',
+        description: '$7/month statement credit at U.S. Dunkin locations',
+        value: 7,
+        resetPeriod: 'monthly',
+        category: 'dining'
       }
     ]
   },
@@ -87,6 +103,38 @@ export const CARDS_DB: CardTemplate[] = [
         value: 200,
         resetPeriod: 'annual-calendar',
         category: 'travel'
+      },
+      {
+        id: 'amex-plat-walmart',
+        name: 'Walmart+ Membership',
+        description: '$12.95/month statement credit for Walmart+ monthly membership ($155/yr)',
+        value: 13,
+        resetPeriod: 'monthly',
+        category: 'shopping'
+      },
+      {
+        id: 'amex-plat-clear',
+        name: 'CLEAR Plus Credit',
+        description: '$189/calendar year statement credit for CLEAR Plus membership',
+        value: 189,
+        resetPeriod: 'annual-calendar',
+        category: 'travel'
+      },
+      {
+        id: 'amex-plat-lululemon',
+        name: 'Lululemon Credit',
+        description: '$75 quarterly statement credit at Lululemon',
+        value: 75,
+        resetPeriod: 'quarterly',
+        category: 'shopping'
+      },
+      {
+        id: 'amex-plat-resy-plat',
+        name: 'Resy Restaurant Credit',
+        description: '$100 quarterly statement credit at Resy restaurants',
+        value: 100,
+        resetPeriod: 'quarterly',
+        category: 'dining'
       }
     ]
   },
