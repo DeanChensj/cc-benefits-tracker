@@ -1383,6 +1383,7 @@ function App() {
         theme={theme}
         addCustomCard={handleAddCustomCard}
         getLocalDateString={getLocalDateString}
+        showToast={showToast}
       />
 
       {/* Card Detail popover Sheet Drawer */}
@@ -1405,6 +1406,7 @@ function App() {
           }
         }}
         theme={theme}
+        showToast={showToast}
       />
 
       {/* Custom Delete Confirmation Modal */}
@@ -1451,7 +1453,7 @@ function App() {
       )}
 
       {/* SpentAssistant AI Drawer */}
-      <SpentAssistant remainingBenefits={remainingBenefits} logs={logs} theme={theme} />
+      <SpentAssistant remainingBenefits={remainingBenefits} logs={logs} theme={theme} showToast={showToast} />
 
       {/* Premium Floating Toast Notification */}
       {toast && (

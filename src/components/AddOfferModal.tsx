@@ -8,9 +8,10 @@ interface AddOfferModalProps {
   cardName: string;
   onAdd: (offer: Omit<Benefit, 'id'>) => void;
   theme: 'dark' | 'light';
+  showToast?: (message: string, type?: 'success' | 'error' | 'info' | 'warning') => void;
 }
 
-export function AddOfferModal({ isOpen, onClose, cardName, onAdd, theme }: AddOfferModalProps) {
+export function AddOfferModal({ isOpen, onClose, cardName, onAdd, theme, showToast }: AddOfferModalProps) {
   if (!isOpen) return null;
 
   const themeClass = (dark: string, light: string) => theme === 'dark' ? dark : light;
@@ -37,7 +38,7 @@ export function AddOfferModal({ isOpen, onClose, cardName, onAdd, theme }: AddOf
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim()) {
-      alert('Please enter an offer name.');
+      showToast?.('❌ Please enter an offer name.', 'error');
       return;
     }
 

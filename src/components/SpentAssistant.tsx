@@ -23,6 +23,7 @@ interface SpentAssistantProps {
   remainingBenefits: RemainingBenefit[];
   logs: Record<string, boolean | number>;
   theme: 'dark' | 'light';
+  showToast?: (message: string, type?: 'success' | 'error' | 'info' | 'warning') => void;
 }
 
 interface ChatMessage {
@@ -30,7 +31,7 @@ interface ChatMessage {
   text: string;
 }
 
-export function SpentAssistant({ remainingBenefits, logs, theme }: SpentAssistantProps) {
+export function SpentAssistant({ remainingBenefits, logs, theme, showToast }: SpentAssistantProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [apiKey, setApiKey] = useState('');
   const [savedKey, setSavedKey] = useState('');
@@ -98,7 +99,7 @@ export function SpentAssistant({ remainingBenefits, logs, theme }: SpentAssistan
         throw new Error('Verification failed');
       }
     } catch (err) {
-      alert('❌ Invalid API Key. Please check your key and try again.');
+      showToast?.('❌ Invalid API Key. Please try again.', 'error');
     } finally {
       setIsVerifying(false);
     }

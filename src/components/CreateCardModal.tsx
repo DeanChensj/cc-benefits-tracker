@@ -8,6 +8,7 @@ interface CreateCardModalProps {
   theme: 'dark' | 'light';
   addCustomCard: (card: Omit<OwnedCardInstance, 'id'>) => void;
   getLocalDateString: () => string;
+  showToast?: (message: string, type?: 'success' | 'error' | 'info' | 'warning') => void;
 }
 
 export function CreateCardModal({ 
@@ -15,7 +16,8 @@ export function CreateCardModal({
   onClose, 
   theme, 
   addCustomCard, 
-  getLocalDateString 
+  getLocalDateString,
+  showToast
 }: CreateCardModalProps) {
   if (!isOpen) return null;
 
@@ -40,7 +42,7 @@ export function CreateCardModal({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!customCardName.trim()) {
-      alert('Please enter a card name.');
+      showToast?.('❌ Please enter a card name.', 'error');
       return;
     }
 
