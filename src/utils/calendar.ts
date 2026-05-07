@@ -9,6 +9,11 @@ const formatICSDate = (date: Date): string => {
   return `${year}${month}${day}T090000`;
 };
 
+// Format standard UTC timestamp for creation/updates (DTSTAMP)
+const formatICSDateTimeUTC = (date: Date): string => {
+  return date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+};
+
 export const downloadICSFile = (ownedCards: OwnedCardInstance[]) => {
   let icsContent = [
     'BEGIN:VCALENDAR',
@@ -69,7 +74,7 @@ export const downloadICSFile = (ownedCards: OwnedCardInstance[]) => {
       icsContent.push(
         'BEGIN:VEVENT',
         `UID:${uid}`,
-        `DTSTAMP:${formatICSDate(new Date())}Z`,
+        `DTSTAMP:${formatICSDateTimeUTC(new Date())}`,
         `DTSTART:${dtstartStr}`,
         `DTEND:${dtendStr}`,
         `SUMMARY:${title}`,

@@ -36,6 +36,7 @@ function App() {
   const [activeTab, setActiveTab] = useState<'todo' | 'all' | 'cards'>('todo');
   const [filterCategory, setFilterCategory] = useState<string>('all');
   const [editingInstanceId, setEditingInstanceId] = useState<string | null>(null);
+  const [isSyncModalOpen, setIsSyncModalOpen] = useState(false);
 
   const currentMonthStr = currentDate.toLocaleString('default', { month: 'long' });
   const currentYear = currentDate.getFullYear();
@@ -310,9 +311,9 @@ function App() {
 
             {ownedCards.length > 0 && (
               <button
-                onClick={() => downloadICSFile(ownedCards)}
-                className="flex items-center gap-1.5 bg-slate-900 hover:bg-slate-855 text-xs font-medium text-slate-200 px-3 py-2 rounded-lg border border-slate-800 transition"
-                title="Download iCal Calendar Reminders File"
+                onClick={() => setIsSyncModalOpen(true)}
+                className="flex items-center gap-1.5 bg-slate-900 hover:bg-slate-855 text-xs font-medium text-slate-200 px-3 py-2 rounded-lg border border-slate-800 transition active:scale-95"
+                title="Sync All Calendar Reminders"
               >
                 <Calendar className="w-3.5 h-3.5 text-amber-500" />
                 Calendar Sync
@@ -541,6 +542,67 @@ function App() {
           </section>
         )}
       </main>
+
+      {/* Calendar Sync Modal Overlay */}
+      {isSyncModalOpen && (
+        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in">
+          <div 
+            className="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-6 shadow-2xl relative animate-scale-up"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center gap-3 mb-4">
+              <div className="p-2 bg-amber-500/10 rounded-lg text-amber-500">
+                <Calendar className="w-6 h-6" />
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-white">Calendar Reminders Sync</h3>
+                <p className="text-xs text-slate-400">Export and import events to your native calendars</p>
+              </div>
+            </div>
+
+            <p className="text-xs text-slate-300 leading-relaxed mb-5">
+              We will bundle all active tracked card perks and their respective renewal schedules into a single standard calendar subscription file.
+            </p>
+
+            <button
+              onClick={() => {
+                downloadICSFile(ownedCards);
+              }}
+              className="w-full flex items-center justify-center gap-2 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold py-3 px-4 rounded-xl text-sm transition active:scale-[0.98] shadow-lg shadow-amber-500/10 mb-6"
+            >
+              <Download className="w-4 h-4 stroke-[3]" />
+              1. Download Calendar File (.ics)
+            </button>
+
+            <div className="space-y-4 border-t border-slate-800 pt-4">
+              <h4 className="text-[10px] font-bold uppercase tracking-wider text-slate-500">How to Import (如何导入):</h4>
+              
+              <div className="space-y-2.5">
+                <div className="text-xs">
+                  <p className="font-semibold text-slate-200">🍎 Apple Calendar / iOS / Mac:</p>
+                  <p className="text-slate-400 mt-0.5 text-[11px]">Just double-click or drag-and-drop the downloaded file into the Calendar app. All reminders sync automatically!</p>
+                </div>
+
+                <div className="text-xs">
+                  <p className="font-semibold text-slate-200">🤖 Google Calendar (谷歌日历网页版):</p>
+                  <p className="text-slate-400 mt-0.5 text-[11px]">
+                    1. Open <a href="https://calendar.google.com" target="_blank" className="text-amber-400 hover:underline font-medium">Google Calendar</a>. <br />
+                    2. Go to <span className="font-medium text-slate-300">Settings (Gear icon)</span> &rarr; <span className="font-medium text-slate-300">Import & Export</span>. <br />
+                    3. Select and upload the downloaded `.ics` file. Done!
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <button
+              onClick={() => setIsSyncModalOpen(false)}
+              className="w-full mt-6 bg-slate-800 hover:bg-slate-750 text-slate-300 font-semibold py-2 rounded-lg text-xs transition"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
       
       {/* Footer */}
       <footer className="text-center py-8 text-xs text-slate-600 border-t border-slate-950 mt-12">
