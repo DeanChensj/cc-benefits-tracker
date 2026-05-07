@@ -8,6 +8,10 @@ import { CalendarSyncModal } from './components/CalendarSyncModal';
 import { CreateCardModal } from './components/CreateCardModal';
 import { CardDetailDrawer } from './components/CardDetailDrawer';
 import { AddOfferModal } from './components/AddOfferModal';
+import { Toast } from './components/Toast';
+import { DeleteConfirmModal } from './components/DeleteConfirmModal';
+import { getLocalDateString, getDaysLeft, getUrgencyScore } from './utils/dateUtils';
+import type { ActiveBenefit } from './utils/dateUtils';
 import { loadGoogleGsiScript, requestGDriveToken, fetchUserEmail } from './utils/gdrive';
 import { 
   CreditCard, 
@@ -29,13 +33,6 @@ import {
   ArrowUpDown,
   ExternalLink
 } from 'lucide-react';
-
-const getLocalDateString = (date = new Date()): string => {
-  const year = date.getFullYear();
-  const month = (date.getMonth() + 1).toString().padStart(2, '0');
-  const day = date.getDate().toString().padStart(2, '0');
-  return `${year}-${month}-${day}`;
-};
 
 function App() {
   const { 
@@ -318,72 +315,7 @@ function App() {
     return true;
   });
 
-  // Helper to compute days left relative to simulated/current date
-  const getDaysLeft = (ab: ActiveBenefit): number | null => {
-    const { benefit, cardInstance } = ab;
-    const year = currentDate.getFullYear();
-    const month = currentDate.getMonth(); // 0-11
-    const todayMidnight = new Date(year, month, currentDate.getDate());
-
-    if (benefit.resetPeriod === 'fixed' && benefit.expirationDate) {
-      const expMidnight = new Date(benefit.expirationDate + 'T00:00:00');
-      return Math.round((expMidnight.getTime() - todayMidnight.getTime()) / (1000 * 60 * 60 * 24));
-    } else if (benefit.resetPeriod === 'monthly') {
-      const lastDay = new Date(year, month + 1, 0);
-      const expMidnight = new Date(year, month, lastDay.getDate());
-      return Math.round((expMidnight.getTime() - todayMidnight.getTime()) / (1000 * 60 * 60 * 24));
-    } else if (benefit.resetPeriod === 'quarterly') {
-      const qEndMonth = Math.floor(month / 3) * 3 + 2;
-      const lastDay = new Date(year, qEndMonth + 1, 0);
-      const expMidnight = new Date(year, qEndMonth, lastDay.getDate());
-      return Math.round((expMidnight.getTime() - todayMidnight.getTime()) / (1000 * 60 * 60 * 24));
-    } else if (benefit.resetPeriod === 'semi-annual') {
-      const saEndMonth = month <= 5 ? 5 : 11;
-      const lastDay = saEndMonth === 5 ? 30 : 31;
-      const expMidnight = new Date(year, saEndMonth, lastDay);
-      return Math.round((expMidnight.getTime() - todayMidnight.getTime()) / (1000 * 60 * 60 * 24));
-    } else if (benefit.resetPeriod === 'annual-calendar') {
-      const expMidnight = new Date(year, 11, 31);
-      return Math.round((expMidnight.getTime() - todayMidnight.getTime()) / (1000 * 60 * 60 * 24));
-    } else if (benefit.resetPeriod === 'annual-anniversary' && cardInstance.cardOpenDate) {
-      const openDate = new Date(cardInstance.cardOpenDate + 'T00:00:00');
-      let nextAnniv = new Date(year, openDate.getMonth(), openDate.getDate());
-      if (todayMidnight >= nextAnniv) {
-        nextAnniv = new Date(year + 1, openDate.getMonth(), openDate.getDate());
-      }
-      return Math.round((nextAnniv.getTime() - todayMidnight.getTime()) / (1000 * 60 * 60 * 24));
-    }
-    return null;
-  };
-
-  // Scientific urgency sorting
-  const getUrgencyScore = (ab: ActiveBenefit): number => {
-    if (ab.isUsed) return 10000; // Checked is lowest priority
-    
-    const isExpired = ab.benefit.resetPeriod === 'fixed' && 
-      ab.benefit.expirationDate && 
-      new Date(ab.benefit.expirationDate + 'T00:00:00') < currentDate;
-      
-    if (isExpired) return 9000; // Expired is second lowest priority
-    
-    const daysLeft = getDaysLeft(ab);
-    if (daysLeft !== null) {
-      if (ab.benefit.resetPeriod === 'fixed') {
-        return daysLeft;
-      } else if (ab.benefit.resetPeriod === 'monthly') {
-        return daysLeft + 15;
-      } else if (ab.benefit.resetPeriod === 'quarterly') {
-        return daysLeft + 45;
-      } else if (ab.benefit.resetPeriod === 'semi-annual') {
-        return daysLeft + 90;
-      } else {
-        return daysLeft + 180;
-      }
-    }
-    
-    return 200; // Other cyclical benefits have standard priority
-  };
-
+  // Helpers & Sorting delegated to utility helpers
   const sortedBenefits = [...filteredBenefits].sort((a, b) => {
     // Keep resolved/used items at the bottom of all sorting strategies
     if (a.isUsed !== b.isUsed) {
@@ -396,12 +328,12 @@ function App() {
       case 'value-asc':
         return a.benefit.value - b.benefit.value;
       case 'expiry':
-        const daysA = getDaysLeft(a) ?? 9999;
-        const daysB = getDaysLeft(b) ?? 9999;
+        const daysA = getDaysLeft(a, currentDate) ?? 9999;
+        const daysB = getDaysLeft(b, currentDate) ?? 9999;
         return daysA - daysB;
       case 'urgency':
       default:
-        return getUrgencyScore(a) - getUrgencyScore(b);
+        return getUrgencyScore(a, currentDate) - getUrgencyScore(b, currentDate);
     }
   });
 
@@ -841,7 +773,7 @@ function App() {
                     !!benefit.expirationDate && 
                     new Date(benefit.expirationDate + 'T00:00:00') < currentDate;
 
-                  const daysLeft = getDaysLeft(ab);
+                  const daysLeft = getDaysLeft(ab, currentDate);
 
                   const isProgressive = !!benefit.spendingLimit;
                   const spent = isProgressive ? (Number(logs[logKey]) || 0) : 0;
@@ -1433,66 +1365,22 @@ function App() {
       />
 
       {/* Custom Delete Confirmation Modal */}
-      {deleteCardInstanceId && (
-        <div className="fixed inset-0 bg-slate-950/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in">
-          <div className={`w-full max-w-sm rounded-2xl border p-6 text-center space-y-4 shadow-2xl animate-scale-up ${
-            themeClass(
-              'bg-slate-900 border-slate-850 text-slate-200 shadow-slate-950/50',
-              'bg-white border-slate-200 text-slate-800 shadow-slate-300/30'
-            )
-          }`}>
-            <div className="w-12 h-12 bg-red-500/10 text-red-500 rounded-2xl flex items-center justify-center mx-auto">
-              <Trash2 className="w-6 h-6" />
-            </div>
-            <div className="space-y-1.5">
-              <h4 className={`font-extrabold text-base ${themeClass('text-white', 'text-slate-900')}`}>
-                Remove Card from Wallet?
-              </h4>
-              <p className={`text-xs leading-relaxed ${themeClass('text-slate-400', 'text-slate-505')}`}>
-                All monthly/cyclical logs and customized offers associated with this card instance will be permanently deleted. This action cannot be undone.
-              </p>
-            </div>
-            <div className="flex gap-2.5 pt-2">
-              <button
-                onClick={() => setDeleteCardInstanceId(null)}
-                className={`flex-1 font-bold text-xs py-2.5 rounded-xl border transition cursor-pointer ${
-                  themeClass(
-                    'bg-slate-800 hover:bg-slate-750 border-slate-750 text-slate-300',
-                    'bg-slate-100 hover:bg-slate-200 border-slate-200 text-slate-700'
-                  )
-                }`}
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleConfirmRemoveCard}
-                className="flex-1 bg-gradient-to-tr from-rose-600 to-red-600 hover:from-rose-550 hover:to-red-550 text-white font-bold text-xs py-2.5 rounded-xl transition active:scale-95 shadow-lg shadow-rose-500/10 cursor-pointer"
-              >
-                Delete Card
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <DeleteConfirmModal
+        isOpen={!!deleteCardInstanceId}
+        cardName={ownedCards.find((c) => c.id === deleteCardInstanceId)?.templateId === 'custom' 
+          ? (ownedCards.find((c) => c.id === deleteCardInstanceId)?.customName || 'Card') 
+          : (CARDS_DB.find((t) => t.id === (ownedCards.find((c) => c.id === deleteCardInstanceId)?.templateId || ''))?.name || 'Card')}
+        onConfirm={handleConfirmRemoveCard}
+        onCancel={() => setDeleteCardInstanceId(null)}
+        theme={theme}
+      />
 
       {/* SpentAssistant AI Drawer */}
       <SpentAssistant remainingBenefits={remainingBenefits} logs={logs} theme={theme} showToast={showToast} />
 
       {/* Premium Floating Toast Notification */}
       {toast && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 pointer-events-none animate-slide-up">
-          <div className={`px-4 py-3 rounded-xl border text-xs font-bold flex items-center gap-2 shadow-2xl backdrop-blur-xl transition-all duration-300 ${
-            toast.type === 'error'
-              ? themeClass('bg-rose-950/90 border-rose-500/30 text-rose-200 shadow-[0_10px_30px_rgba(244,63,94,0.1)]', 'bg-rose-50/95 border-rose-200 text-rose-900 shadow-lg shadow-rose-800/5')
-            : toast.type === 'warning'
-              ? themeClass('bg-amber-950/90 border-amber-500/30 text-amber-200 shadow-[0_10px_30px_rgba(245,158,11,0.1)]', 'bg-amber-50/95 border-amber-200 text-amber-900 shadow-lg shadow-amber-800/5')
-            : toast.type === 'info'
-              ? themeClass('bg-slate-900/90 border-slate-800 text-slate-300 shadow-[0_10px_30px_rgba(15,23,42,0.3)]', 'bg-white/95 border-slate-200 text-slate-800 shadow-lg shadow-slate-200/30')
-            : themeClass('bg-emerald-950/90 border-emerald-500/30 text-emerald-200 shadow-[0_10px_30px_rgba(16,185,129,0.1)]', 'bg-emerald-50/95 border-emerald-200 text-emerald-900 shadow-lg shadow-emerald-800/5')
-          }`}>
-            <span>{toast.message}</span>
-          </div>
-        </div>
+        <Toast message={toast.message} type={toast.type} theme={theme} />
       )}
     </div>
   );
