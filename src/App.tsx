@@ -72,6 +72,7 @@ function App() {
   const [isSyncModalOpen, setIsSyncModalOpen] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [templateFeeFilter, setTemplateFeeFilter] = useState<'all' | 'free' | 'mid' | 'premium'>('all');
   const [focusedLogKey, setFocusedLogKey] = useState<string | null>(null);
   const [activeTemplateDetail, setActiveTemplateDetail] = useState<CardTemplate | null>(null);
   const [isSyncDropdownOpen, setIsSyncDropdownOpen] = useState(false);
@@ -1194,19 +1195,41 @@ function App() {
             <div className={`border rounded-xl p-4 sm:p-6 transition duration-300 ${
               themeClass('bg-slate-900/30 border-slate-850', 'bg-white border-slate-200 shadow-sm')
             }`}>
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5 pb-3 border-b border-dashed border-slate-200/60 dark:border-slate-800/60">
+              <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-5 pb-3 border-b border-dashed border-slate-200/60 dark:border-slate-800/60">
                 <h3 className={`text-xs font-bold uppercase tracking-wider flex items-center gap-2 ${themeClass('text-slate-400', 'text-slate-555')}`}>
                   <Plus className="w-4 h-4 text-amber-500" />
                   Add New Cards (Templates)
                 </h3>
-                <div className="flex items-center gap-2">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-3 flex-wrap shrink-0">
+                  {/* Minimalist Annual Fee Segment Selector */}
+                  <div className={`flex items-center gap-0.5 p-0.5 rounded-xl border shrink-0 ${
+                    themeClass('bg-slate-955/30 border-slate-850/80', 'bg-slate-50 border-slate-200/80 shadow-inner')
+                  }`}>
+                    {(['all', 'free', 'mid', 'premium'] as const).map((filter) => (
+                      <button
+                        key={filter}
+                        type="button"
+                        onClick={() => setTemplateFeeFilter(filter)}
+                        className={`px-2.5 py-1 rounded-lg text-[9px] font-bold transition uppercase tracking-wider cursor-pointer ${
+                          templateFeeFilter === filter
+                            ? themeClass('bg-slate-950 text-amber-400 border border-slate-850/50 shadow-sm', 'bg-white text-purple-600 border border-slate-200 shadow-sm')
+                            : 'text-slate-500 hover:text-slate-400 dark:hover:text-slate-300'
+                        }`}
+                      >
+                        {filter === 'all' ? 'All' :
+                         filter === 'free' ? 'Free ($0)' :
+                         filter === 'mid' ? 'Mid (<$300)' : 'Prem ($300+)'}
+                      </button>
+                    ))}
+                  </div>
+
                   <input
                     type="text"
                     placeholder="🔍 Search card templates..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className={`border text-xs rounded-xl px-3 py-1.5 focus:outline-none w-48 font-medium ${
-                      themeClass('bg-slate-950 border-slate-800 focus:border-purple-500 text-slate-200', 'bg-slate-50 border-slate-250 focus:border-purple-500 text-slate-800 shadow-inner')
+                      themeClass('bg-slate-955 border-slate-800 focus:border-purple-500 text-slate-200', 'bg-slate-50 border-slate-250 focus:border-purple-500 text-slate-800 shadow-inner')
                     }`}
                   />
                 </div>
@@ -1214,10 +1237,18 @@ function App() {
 
               <div className="space-y-8">
                 {(['Amex', 'Chase', 'Capital One', 'Other'] as const).map((bankName) => {
-                  const bankCards = CARDS_DB.filter((c) => c.bank === bankName).filter((c) =>
-                    c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                    c.bank.toLowerCase().includes(searchQuery.toLowerCase())
-                  );
+                  const bankCards = CARDS_DB.filter((c) => c.bank === bankName).filter((c) => {
+                    // Search Query Check
+                    const matchesSearch = c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                                          c.bank.toLowerCase().includes(searchQuery.toLowerCase());
+                    if (!matchesSearch) return false;
+
+                    // Annual Fee Filter Check
+                    if (templateFeeFilter === 'free') return c.annualFee === 0;
+                    if (templateFeeFilter === 'mid') return c.annualFee > 0 && c.annualFee < 300;
+                    if (templateFeeFilter === 'premium') return c.annualFee >= 300;
+                    return true;
+                  });
                   if (bankCards.length === 0) return null;
 
                   return (
