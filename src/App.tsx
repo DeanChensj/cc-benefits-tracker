@@ -6,6 +6,7 @@ import type { OwnedCardInstance } from './store/useCardStore';
 import { SpentAssistant } from './components/SpentAssistant';
 import { CalendarSyncModal } from './components/CalendarSyncModal';
 import { CreateCardModal } from './components/CreateCardModal';
+import { CardDetailDrawer } from './components/CardDetailDrawer';
 import { 
   CreditCard, 
   Calendar, 
@@ -57,6 +58,7 @@ function App() {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [focusedLogKey, setFocusedLogKey] = useState<string | null>(null);
+  const [activeTemplateDetail, setActiveTemplateDetail] = useState<CardTemplate | null>(null);
 
   const currentMonthStr = currentDate.toLocaleString('default', { month: 'long' });
   const currentYear = currentDate.getFullYear();
@@ -855,33 +857,38 @@ function App() {
                       </div>
 
                       <div className="grid sm:grid-cols-2 gap-4">
-                        {bankCards.map((card) => {
-                          return (
-                            <div 
-                              key={card.id}
-                              className={`p-4 rounded-xl border flex flex-col justify-between transition ${
-                                themeClass('bg-slate-950 border-slate-900 hover:border-slate-850', 'bg-slate-50/50 border-slate-200 hover:border-slate-300 hover:bg-slate-50 shadow-sm')
-                              }`}
-                            >
-                              <div className="pb-2">
-                                <span className={`text-[9px] font-semibold uppercase ${themeClass('text-slate-500', 'text-slate-550')}`}>{card.bank}</span>
-                                <h4 className={`text-base font-bold mt-0.5 ${themeClass('text-white', 'text-slate-900')}`}>{card.name}</h4>
-                                <p className={`text-xs mt-1.5 leading-relaxed ${themeClass('text-slate-400', 'text-slate-500')}`}>
-                                  Contains <span className="font-bold text-purple-500 dark:text-amber-400">{card.benefits.length}</span> built-in benefits <br />
-                                  (Total potential value: <span className={`font-bold ${themeClass('text-white', 'text-slate-950')}`}>${card.benefits.reduce((s, b) => s + b.value, 0)}/yr</span>)
-                                </p>
-                              </div>
-
-                              <button
-                                onClick={() => addCard(card.id)}
-                                className="w-full mt-4 flex items-center justify-center gap-1 bg-gradient-to-tr from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-550 text-white font-bold py-2.5 rounded-xl text-xs transition active:scale-[0.97] shadow shadow-purple-500/10 cursor-pointer"
-                              >
-                                <Plus className="w-3.5 h-3.5 stroke-[3]" />
-                                Add to Wallet
-                              </button>
+                        {bankCards.map((card) => (
+                          <div 
+                            key={card.id}
+                            onClick={() => setActiveTemplateDetail(card)}
+                            className={`p-4 rounded-xl border flex flex-col justify-between transition cursor-pointer hover:scale-[1.01] duration-200 relative overflow-hidden group/card after:absolute after:top-0 after:-left-[150%] after:w-[60%] after:h-full after:bg-gradient-to-r after:from-transparent after:via-white/15 dark:after:via-white/10 after:to-transparent after:skew-x-12 after:transition-all after:duration-700 hover:after:left-[150%] ${
+                              themeClass('bg-slate-955 border-slate-900 hover:border-slate-850', 'bg-slate-50/50 border-slate-200 hover:border-slate-300 hover:bg-slate-50 shadow-sm')
+                            }`}
+                          >
+                            <div className="pb-2 flex-grow">
+                              <span className={`text-[9px] font-semibold uppercase ${themeClass('text-slate-500', 'text-slate-555')}`}>{card.bank}</span>
+                              <h4 className={`text-base font-bold mt-0.5 ${themeClass('text-white', 'text-slate-900')}`}>{card.name}</h4>
+                              <p className={`text-xs mt-1.5 leading-relaxed ${themeClass('text-slate-400', 'text-slate-500')}`}>
+                                Contains <span className="font-bold text-purple-500 dark:text-amber-400">{card.benefits.length}</span> built-in benefits <br />
+                                (Total potential value: <span className={`font-bold ${themeClass('text-white', 'text-slate-955')}`}>${card.benefits.reduce((s, b) => s + b.value, 0)}/yr</span>)
+                              </p>
+                              <span className="text-[9px] text-purple-500 dark:text-purple-455 font-bold mt-3 block animate-pulse">
+                                🔍 Click card to view details
+                              </span>
                             </div>
-                          );
-                        })}
+
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation(); // Prevent modal drawer trigger
+                                addCard(card.id);
+                              }}
+                              className="w-full mt-4 flex items-center justify-center gap-1 bg-gradient-to-tr from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-550 text-white font-bold py-2.5 rounded-xl text-xs transition active:scale-[0.97] shadow shadow-purple-500/10 cursor-pointer"
+                            >
+                              <Plus className="w-3.5 h-3.5 stroke-[3]" />
+                              Add to Wallet
+                            </button>
+                          </div>
+                        ))}
                       </div>
                     </div>
                   );
@@ -952,6 +959,15 @@ function App() {
         theme={theme}
         addCustomCard={addCustomCard}
         getLocalDateString={getLocalDateString}
+      />
+
+      {/* Card Detail popover Sheet Drawer */}
+      <CardDetailDrawer 
+        isOpen={!!activeTemplateDetail}
+        card={activeTemplateDetail}
+        onClose={() => setActiveTemplateDetail(null)}
+        onAdd={() => addCard(activeTemplateDetail ? activeTemplateDetail.id : '')}
+        theme={theme}
       />
 
       {/* SpentAssistant AI Drawer */}
