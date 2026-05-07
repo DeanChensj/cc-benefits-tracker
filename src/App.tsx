@@ -46,6 +46,8 @@ function App() {
     setGDriveCredentials,
     setSyncStatus,
     syncWithGDrive,
+    customClientId,
+    setCustomClientId,
     addCard, 
     addCustomCard,
     removeCard, 
@@ -69,6 +71,7 @@ function App() {
   const [focusedLogKey, setFocusedLogKey] = useState<string | null>(null);
   const [activeTemplateDetail, setActiveTemplateDetail] = useState<CardTemplate | null>(null);
   const [isSyncDropdownOpen, setIsSyncDropdownOpen] = useState(false);
+  const [showAdvancedSync, setShowAdvancedSync] = useState(false);
 
   const currentMonthStr = currentDate.toLocaleString('default', { month: 'long' });
   const currentYear = currentDate.getFullYear();
@@ -84,7 +87,7 @@ function App() {
   const handleLinkGoogleDrive = async () => {
     setSyncStatus('syncing');
     try {
-      const token = await requestGDriveToken();
+      const token = await requestGDriveToken(customClientId);
       const email = await fetchUserEmail(token);
       setGDriveCredentials(token, email);
       
@@ -341,7 +344,7 @@ function App() {
               </button>
 
               {isSyncDropdownOpen && (
-                <div className={`absolute right-0 mt-2 w-64 border rounded-xl p-4 shadow-2xl z-50 animate-scale-up flex flex-col gap-3 ${
+                <div className={`border rounded-xl p-4 shadow-2xl z-50 animate-scale-up flex flex-col gap-3 max-sm:fixed max-sm:top-16 max-sm:right-4 max-sm:left-4 max-sm:w-auto sm:absolute sm:right-0 sm:w-64 sm:mt-2 ${
                   themeClass('bg-slate-900/95 border-slate-800 text-slate-200 backdrop-blur-xl shadow-slate-950/50', 'bg-white/95 border-slate-200 text-slate-800 backdrop-blur-xl shadow-slate-300/30')
                 }`}>
                   <div className="flex items-start gap-2.5">
@@ -420,6 +423,46 @@ function App() {
                       >
                         Connect Google Drive
                       </button>
+                    )}
+                  </div>
+
+                  {/* Advanced Developer Settings Accordion */}
+                  <div className="mt-1 pt-2 border-t border-dashed border-slate-205/40 dark:border-slate-800 text-left">
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setShowAdvancedSync(!showAdvancedSync);
+                      }}
+                      className={`text-[8px] font-bold tracking-wide uppercase flex items-center gap-0.5 transition cursor-pointer ${
+                        themeClass('text-slate-500 hover:text-slate-450', 'text-slate-450 hover:text-slate-600')
+                      }`}
+                    >
+                      {showAdvancedSync ? '▼ Developer Options' : '▶ Developer Options'}
+                    </button>
+
+                    {showAdvancedSync && (
+                      <div className="mt-2 space-y-2 animate-fade-in" onClick={(e) => e.stopPropagation()}>
+                        <div>
+                          <label className={`block text-[7px] font-bold uppercase tracking-wider mb-1 ${
+                            themeClass('text-slate-505', 'text-slate-555')
+                          }`}>
+                            Custom Google Client ID
+                          </label>
+                          <input
+                            type="text"
+                            placeholder="Pasted client ID..."
+                            value={customClientId || ''}
+                            onChange={(e) => setCustomClientId(e.target.value || null)}
+                            className={`w-full text-[9px] rounded px-2 py-1 border focus:outline-none font-mono transition ${
+                              themeClass('bg-slate-955 border-slate-850 text-slate-200 focus:border-purple-500', 'bg-slate-50 border-slate-200 text-slate-800 focus:border-purple-500')
+                            }`}
+                          />
+                        </div>
+                        <p className="text-[8px] leading-normal opacity-75 text-slate-500">
+                          Paste your own Google Cloud Web Client ID with authorized origins matching your site.
+                        </p>
+                      </div>
                     )}
                   </div>
                 </div>

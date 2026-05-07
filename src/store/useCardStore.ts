@@ -26,6 +26,7 @@ export interface CardStore {
   gdriveEmail: string | null; // Connected google account email
   syncStatus: 'disconnected' | 'syncing' | 'synced' | 'error';
   lastSyncedTime: string | null;
+  customClientId: string | null; // Custom Google Client ID (persisted)
 
   // Actions
   addCard: (templateId: string) => void;
@@ -42,6 +43,7 @@ export interface CardStore {
   setGDriveCredentials: (token: string | null, email: string | null) => void;
   setSyncStatus: (status: 'disconnected' | 'syncing' | 'synced' | 'error') => void;
   syncWithGDrive: () => Promise<void>;
+  setCustomClientId: (clientId: string | null) => void;
 
   resetAll: () => void;
 }
@@ -128,6 +130,7 @@ export const useCardStore = create<CardStore>()(
       gdriveEmail: null,
       syncStatus: 'disconnected',
       lastSyncedTime: null,
+      customClientId: null, // Initially null, loaded via persisted storage
 
       addCard: (templateId) =>
         set((state) => {
@@ -262,6 +265,11 @@ export const useCardStore = create<CardStore>()(
           syncStatus: status,
         })),
 
+      setCustomClientId: (clientId) =>
+        set(() => ({
+          customClientId: clientId ? clientId.trim() : null,
+        })),
+
       syncWithGDrive: async () => {
         const { gdriveToken, ownedCards, logs } = get();
         if (!gdriveToken) return;
@@ -340,6 +348,7 @@ export const useCardStore = create<CardStore>()(
         logs: state.logs,
         theme: state.theme,
         language: state.language,
+        customClientId: state.customClientId, // Persist the custom Client ID
       }),
     }
   )
