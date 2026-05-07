@@ -11,7 +11,8 @@ export interface OwnedCardInstance {
   cardOpenDate: string; // Precise card opened date 'YYYY-MM-DD'
   bank?: string; // Custom bank name for custom cards
   color?: string; // Custom gradient classes for custom cards
-  customBenefits?: Benefit[]; // Custom benefits for custom cards
+  customBenefits?: Benefit[]; // Custom base benefits for custom cards
+  instanceOffers?: Benefit[]; // Temporary, instance-specific custom offers (e.g. Amex Offers)
   annualFee?: number; // Annual fee of the card instance
 }
 
@@ -44,6 +45,10 @@ export interface CardStore {
   setSyncStatus: (status: 'disconnected' | 'syncing' | 'synced' | 'error') => void;
   syncWithGDrive: () => Promise<void>;
   setCustomClientId: (clientId: string | null) => void;
+
+  // Instance Offer Actions
+  addInstanceOffer: (instanceId: string, offer: Omit<Benefit, 'id'>) => void;
+  removeInstanceOffer: (instanceId: string, offerId: string) => void;
 
   resetAll: () => void;
 }
@@ -130,7 +135,7 @@ export const useCardStore = create<CardStore>()(
       gdriveEmail: null,
       syncStatus: 'disconnected',
       lastSyncedTime: null,
-      customClientId: null, // Initially null, loaded via persisted storage
+      customClientId: null,
 
       addCard: (templateId) =>
         set((state) => {
@@ -147,6 +152,7 @@ export const useCardStore = create<CardStore>()(
             customName: template.name,
             cardOpenDate: todayStr,
             annualFee: template.annualFee,
+            instanceOffers: [], // Initialize empty offers array
           };
 
           const nextCards = [...state.ownedCards, newInstance];
@@ -163,6 +169,7 @@ export const useCardStore = create<CardStore>()(
           const newInstance: OwnedCardInstance = {
             ...customCard,
             id: uniqueId,
+            instanceOffers: [], // Initialize empty offers array
           };
           
           const nextCards = [...state.ownedCards, newInstance];
@@ -299,6 +306,19 @@ export const useCardStore = create<CardStore>()(
               const exists = localCards.some((lc) => lc.id === rc.id);
               if (!exists) {
                 mergedCards.push(rc);
+              } else {
+                // Merge custom instance offers safely if card exists
+                const localInstanceIndex = mergedCards.findIndex((lc) => lc.id === rc.id);
+                if (localInstanceIndex !== -1 && rc.instanceOffers) {
+                  const localOffers = mergedCards[localInstanceIndex].instanceOffers || [];
+                  const mergedOffers = [...localOffers];
+                  rc.instanceOffers.forEach((ro) => {
+                    if (!localOffers.some((lo) => lo.id === ro.id)) {
+                      mergedOffers.push(ro);
+                    }
+                  });
+                  mergedCards[localInstanceIndex].instanceOffers = mergedOffers;
+                }
               }
             });
 
@@ -332,6 +352,47 @@ export const useCardStore = create<CardStore>()(
           throw err;
         }
       },
+
+      // Instance Offer Actions
+      addInstanceOffer: (instanceId, offer) =>
+        set((state) => {
+          const newOffer: Benefit = {
+            ...offer,
+            id: `offer_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
+          };
+          const nextCards = state.ownedCards.map((c) => {
+            if (c.id === instanceId) {
+              return {
+                ...c,
+                instanceOffers: [...(c.instanceOffers || []), newOffer],
+              };
+            }
+            return c;
+          });
+          syncPushToCloud(state.gdriveToken, nextCards, state.logs);
+
+          return {
+            ownedCards: nextCards,
+          };
+        }),
+
+      removeInstanceOffer: (instanceId, offerId) =>
+        set((state) => {
+          const nextCards = state.ownedCards.map((c) => {
+            if (c.id === instanceId) {
+              return {
+                ...c,
+                instanceOffers: (c.instanceOffers || []).filter((o) => o.id !== offerId),
+              };
+            }
+            return c;
+          });
+          syncPushToCloud(state.gdriveToken, nextCards, state.logs);
+
+          return {
+            ownedCards: nextCards,
+          };
+        }),
 
       resetAll: () =>
         set(() => ({

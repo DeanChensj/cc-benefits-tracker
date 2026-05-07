@@ -7,6 +7,7 @@ import { SpentAssistant } from './components/SpentAssistant';
 import { CalendarSyncModal } from './components/CalendarSyncModal';
 import { CreateCardModal } from './components/CreateCardModal';
 import { CardDetailDrawer } from './components/CardDetailDrawer';
+import { AddOfferModal } from './components/AddOfferModal';
 import { loadGoogleGsiScript, requestGDriveToken, fetchUserEmail } from './utils/gdrive';
 import { 
   CreditCard, 
@@ -55,6 +56,8 @@ function App() {
     setCardOpenDate, 
     toggleBenefit, 
     updateProgressLog,
+    addInstanceOffer,
+    removeInstanceOffer,
     resetAll 
   } = useCardStore();
 
@@ -72,6 +75,7 @@ function App() {
   const [activeTemplateDetail, setActiveTemplateDetail] = useState<CardTemplate | null>(null);
   const [isSyncDropdownOpen, setIsSyncDropdownOpen] = useState(false);
   const [showAdvancedSync, setShowAdvancedSync] = useState(false);
+  const [addOfferInstanceId, setAddOfferInstanceId] = useState<string | null>(null);
 
   const currentMonthStr = currentDate.toLocaleString('default', { month: 'long' });
   const currentYear = currentDate.getFullYear();
@@ -163,9 +167,14 @@ function App() {
     let benefits: Benefit[] = [];
 
     if (cardInstance.templateId === 'custom') {
-      benefits = cardInstance.customBenefits || [];
+      benefits = [...(cardInstance.customBenefits || [])];
     } else if (template) {
-      benefits = template.benefits;
+      benefits = [...template.benefits];
+    }
+
+    // Append card-instance specific custom offers (e.g., Amex Offers)
+    if (cardInstance.instanceOffers && cardInstance.instanceOffers.length > 0) {
+      benefits = [...benefits, ...cardInstance.instanceOffers];
     }
 
     benefits.forEach((benefit) => {
@@ -289,6 +298,8 @@ function App() {
   };
 
   const sortedBenefits = [...filteredBenefits].sort((a, b) => getUrgencyScore(a) - getUrgencyScore(b));
+
+  const addOfferCard = ownedCards.find((c) => c.id === addOfferInstanceId);
 
   const adjustMonth = (amount: number) => {
     const nextDate = new Date(currentDate);
@@ -1000,16 +1011,55 @@ function App() {
                           </div>
                         </div>
 
-                        <div className="mt-3 pt-3 border-t border-white/10 flex items-center justify-between gap-2">
-                          <label className="text-[10px] font-medium text-slate-355">
-                            Card Opened Date:
-                          </label>
-                          <input
-                            type="date"
-                            value={instance.cardOpenDate}
-                            onChange={(e) => setCardOpenDate(instance.id, e.target.value)}
-                            className="bg-slate-955 border border-slate-800 text-slate-300 text-[11px] rounded px-2 py-0.5 focus:outline-none cursor-pointer font-medium"
-                          />
+                        {/* Google Drive / Instance Custom Offers List */}
+                        {instance.instanceOffers && instance.instanceOffers.length > 0 && (
+                          <div className="mt-3.5 pt-3 border-t border-white/10 space-y-1.5 text-left">
+                            <p className="text-[8px] font-black text-purple-400 dark:text-purple-500 uppercase tracking-widest">Active Temporary Offers</p>
+                            <div className="space-y-1">
+                              {instance.instanceOffers.map((offer) => (
+                                <div key={offer.id} className="flex items-center justify-between text-[10px] bg-purple-500/10 border border-purple-500/15 p-1.5 rounded text-slate-200 group/offer">
+                                  <span className="truncate pr-2">{offer.name}</span>
+                                  <div className="flex items-center gap-1.5 shrink-0 font-bold text-white">
+                                    <span>+${offer.value}</span>
+                                    <button
+                                      type="button"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        removeInstanceOffer(instance.id, offer.id);
+                                      }}
+                                      className="text-slate-400 hover:text-red-400 transition cursor-pointer active:scale-90"
+                                      title="Remove Offer"
+                                    >
+                                      <Trash2 className="w-3 h-3" />
+                                    </button>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        <div className="mt-3 pt-3 border-t border-white/10 flex items-center justify-between gap-2 flex-wrap">
+                          <div className="flex items-center gap-1.5">
+                            <label className="text-[10px] font-medium text-slate-355">
+                              Opened:
+                            </label>
+                            <input
+                              type="date"
+                              value={instance.cardOpenDate}
+                              onChange={(e) => setCardOpenDate(instance.id, e.target.value)}
+                              className="bg-slate-955 border border-slate-800 text-slate-300 text-[11px] rounded px-2 py-0.5 focus:outline-none cursor-pointer font-medium"
+                            />
+                          </div>
+
+                          <button
+                            type="button"
+                            onClick={() => setAddOfferInstanceId(instance.id)}
+                            className="flex items-center gap-1 bg-white/10 hover:bg-white/20 dark:bg-slate-950 dark:hover:bg-slate-850 border border-white/10 dark:border-slate-800 text-white dark:text-slate-300 font-bold px-2.5 py-1 rounded-lg text-[9px] transition active:scale-95 cursor-pointer"
+                          >
+                            <Plus className="w-2.5 h-2.5 stroke-[3]" />
+                            Add Offer
+                          </button>
                         </div>
                       </div>
                     );
@@ -1176,6 +1226,19 @@ function App() {
         card={activeTemplateDetail}
         onClose={() => setActiveTemplateDetail(null)}
         onAdd={() => addCard(activeTemplateDetail ? activeTemplateDetail.id : '')}
+        theme={theme}
+      />
+
+      {/* Add Custom Offer Modal */}
+      <AddOfferModal
+        isOpen={!!addOfferInstanceId}
+        cardName={addOfferCard ? (addOfferCard.templateId === 'custom' ? addOfferCard.customName : (CARDS_DB.find((t) => t.id === addOfferCard.templateId)?.name || 'Card')) : 'Card'}
+        onClose={() => setAddOfferInstanceId(null)}
+        onAdd={(offer) => {
+          if (addOfferInstanceId) {
+            addInstanceOffer(addOfferInstanceId, offer);
+          }
+        }}
         theme={theme}
       />
 
