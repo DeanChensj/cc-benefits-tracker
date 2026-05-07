@@ -14,6 +14,7 @@ export interface CardTemplate {
   name: string;
   bank: 'Amex' | 'Chase' | 'Capital One' | 'Other';
   color: string; // Tailwind gradient classes
+  annualFee: number; // USD Annual Fee of the card
   benefits: Benefit[];
 }
 
@@ -23,6 +24,7 @@ export const CARDS_DB: CardTemplate[] = [
     name: 'American Express Gold',
     bank: 'Amex',
     color: 'from-amber-500 to-yellow-600',
+    annualFee: 320,
     benefits: [
       {
         id: 'amex-gold-uber',
@@ -63,6 +65,7 @@ export const CARDS_DB: CardTemplate[] = [
     name: 'American Express Platinum',
     bank: 'Amex',
     color: 'from-slate-600 via-slate-700 to-slate-900',
+    annualFee: 695,
     benefits: [
       {
         id: 'amex-plat-uber',
@@ -143,6 +146,7 @@ export const CARDS_DB: CardTemplate[] = [
     name: 'Amex Blue Cash Preferred',
     bank: 'Amex',
     color: 'from-cyan-600 via-blue-800 to-slate-900',
+    annualFee: 95,
     benefits: [
       {
         id: 'bcp-groceries',
@@ -176,6 +180,7 @@ export const CARDS_DB: CardTemplate[] = [
     name: 'Amex Delta SkyMiles Reserve',
     bank: 'Amex',
     color: 'from-blue-950 via-indigo-900 to-slate-950',
+    annualFee: 650,
     benefits: [
       {
         id: 'delta-reserve-companion',
@@ -216,6 +221,7 @@ export const CARDS_DB: CardTemplate[] = [
     name: 'Amex Business Platinum',
     bank: 'Amex',
     color: 'from-zinc-600 via-zinc-700 to-slate-900',
+    annualFee: 695,
     benefits: [
       {
         id: 'biz-plat-dell',
@@ -228,7 +234,7 @@ export const CARDS_DB: CardTemplate[] = [
       {
         id: 'biz-plat-wireless',
         name: 'Wireless Credit',
-        description: '$10/month statement credit for U.S. wireless services',
+        description: '$10/month statement credit for U.S. statement credit wireless',
         value: 10,
         resetPeriod: 'monthly',
         category: 'other'
@@ -248,6 +254,7 @@ export const CARDS_DB: CardTemplate[] = [
     name: 'Amex Hilton Aspire',
     bank: 'Amex',
     color: 'from-indigo-900 via-violet-950 to-slate-950',
+    annualFee: 550,
     benefits: [
       {
         id: 'aspire-resort',
@@ -272,6 +279,7 @@ export const CARDS_DB: CardTemplate[] = [
     name: 'Amex Delta SkyMiles Platinum',
     bank: 'Amex',
     color: 'from-blue-950 via-slate-900 to-red-950',
+    annualFee: 350,
     benefits: [
       {
         id: 'delta-plat-companion',
@@ -312,6 +320,7 @@ export const CARDS_DB: CardTemplate[] = [
     name: 'Chase Sapphire Reserve',
     bank: 'Chase',
     color: 'from-blue-700 to-indigo-900',
+    annualFee: 550,
     benefits: [
       {
         id: 'csr-travel',
@@ -328,6 +337,7 @@ export const CARDS_DB: CardTemplate[] = [
     name: 'Chase Sapphire Preferred',
     bank: 'Chase',
     color: 'from-blue-850 via-blue-950 to-slate-950',
+    annualFee: 95,
     benefits: [
       {
         id: 'csp-hotel',
@@ -344,6 +354,7 @@ export const CARDS_DB: CardTemplate[] = [
     name: 'Chase Freedom Flex',
     bank: 'Chase',
     color: 'from-sky-900 via-indigo-950 to-black',
+    annualFee: 0,
     benefits: [
       {
         id: 'cff-rotating',
@@ -369,6 +380,7 @@ export const CARDS_DB: CardTemplate[] = [
     name: 'Chase Marriott Bonvoy Brilliant',
     bank: 'Chase',
     color: 'from-slate-900 via-zinc-900 to-black',
+    annualFee: 650,
     benefits: [
       {
         id: 'brilliant-dining',
@@ -393,6 +405,7 @@ export const CARDS_DB: CardTemplate[] = [
     name: 'Chase World of Hyatt',
     bank: 'Chase',
     color: 'from-blue-600 via-sky-850 to-slate-950',
+    annualFee: 95,
     benefits: [
       {
         id: 'hyatt-fnr',
@@ -409,6 +422,7 @@ export const CARDS_DB: CardTemplate[] = [
     name: 'Chase Marriott Bonvoy Boundless',
     bank: 'Chase',
     color: 'from-slate-900 via-indigo-950 to-black',
+    annualFee: 95,
     benefits: [
       {
         id: 'marriott-fnr',
@@ -425,6 +439,7 @@ export const CARDS_DB: CardTemplate[] = [
     name: 'Chase IHG One Rewards Premier',
     bank: 'Chase',
     color: 'from-amber-900 via-neutral-950 to-neutral-950',
+    annualFee: 95,
     benefits: [
       {
         id: 'ihg-fnr',
@@ -449,6 +464,7 @@ export const CARDS_DB: CardTemplate[] = [
     name: 'Capital One Venture X',
     bank: 'Capital One',
     color: 'from-teal-600 to-emerald-800',
+    annualFee: 395,
     benefits: [
       {
         id: 'vx-travel',
@@ -465,6 +481,7 @@ export const CARDS_DB: CardTemplate[] = [
     name: 'Discover it Cash Back',
     bank: 'Other',
     color: 'from-orange-500 via-red-500 to-orange-600',
+    annualFee: 0,
     benefits: [
       {
         id: 'discover-it-rotating',

@@ -11,6 +11,7 @@ export interface OwnedCardInstance {
   bank?: string; // Custom bank name for custom cards
   color?: string; // Custom gradient classes for custom cards
   customBenefits?: Benefit[]; // Custom benefits for custom cards
+  annualFee?: number; // Annual fee of the card instance
 }
 
 export interface CardStore {
@@ -112,6 +113,7 @@ export const useCardStore = create<CardStore>()(
             templateId,
             customName: template.name,
             cardOpenDate: todayStr,
+            annualFee: template.annualFee, // Auto-assign the static template's annual fee
           };
 
           return {

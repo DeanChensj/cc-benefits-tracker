@@ -123,6 +123,13 @@ function App() {
     });
   });
 
+  // Helper to calculate recouped value of a specific card instance
+  const getCardRecoupedValue = (instanceId: string): number => {
+    const cardBenefits = activeBenefits.filter((ab) => ab.cardInstance.id === instanceId);
+    const sum = cardBenefits.reduce((s, ab) => s + getResolvedValue(ab), 0);
+    return Math.round(sum * 100) / 100;
+  };
+
   // Helper to calculate resolved value dynamically (supports progressive spends & binary logs)
   const getResolvedValue = (ab: ActiveBenefit): number => {
     const logVal = logs[ab.logKey];
@@ -708,12 +715,20 @@ function App() {
                       ? (instance.color || 'from-purple-950/50 to-slate-950')
                       : (template?.color || 'from-slate-800 to-slate-900');
                     const benefits = instance.templateId === 'custom' ? (instance.customBenefits || []) : (template?.benefits || []);
+                    
+                    const cardFee = instance.annualFee !== undefined 
+                      ? instance.annualFee 
+                      : (template?.annualFee !== undefined ? template.annualFee : 0);
+                    const recouped = getCardRecoupedValue(instance.id);
+                    const isRecouped = cardFee > 0 && recouped >= cardFee;
 
                     return (
                       <div 
                         key={instance.id}
-                        className={`p-4 rounded-xl border flex flex-col justify-between transition bg-gradient-to-tr ${cardColor} relative overflow-hidden group/card after:absolute after:top-0 after:-left-[150%] after:w-[60%] after:h-full after:bg-gradient-to-r after:from-transparent after:via-white/15 dark:after:via-white/10 after:to-transparent after:skew-x-12 after:transition-all after:duration-700 hover:after:left-[150%] ${
-                          themeClass('border-purple-900/30 hover:border-purple-800/50', 'border-slate-250/40 hover:border-slate-300 shadow-md text-slate-100')
+                        className={`p-4 rounded-xl border flex flex-col justify-between transition bg-gradient-to-tr ${cardColor} relative overflow-hidden group/card after:absolute after:top-0 after:-left-[150%] after:w-[60%] after:h-full after:bg-gradient-to-r after:from-transparent after:via-white/15 dark:after:via-white/10 after:to-transparent after:skew-x-12 after:transition-all after:duration-700 hover:after:left-[150%] duration-300 ${
+                          isRecouped 
+                            ? 'ring-2 ring-amber-500/50 dark:ring-amber-400/40 shadow-lg shadow-amber-500/5 scale-[1.01] border-amber-500/25' 
+                            : themeClass('border-purple-900/30 hover:border-purple-800/50', 'border-slate-250/40 hover:border-slate-300 shadow-md text-slate-100')
                         }`}
                       >
                         <div className="pb-3">
@@ -731,6 +746,7 @@ function App() {
                                       bank: instance.bank,
                                       color: instance.color,
                                       cardOpenDate: instance.cardOpenDate,
+                                      annualFee: instance.annualFee,
                                       customBenefits: (instance.customBenefits || []).map((b) => ({
                                         ...b,
                                         id: `benefit_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
@@ -773,7 +789,7 @@ function App() {
                                 }
                               }}
                               autoFocus
-                              className="bg-slate-950/80 border border-purple-500/50 text-white text-xs rounded px-2 py-1 font-semibold focus:outline-none w-full mt-2"
+                              className="bg-slate-955/80 border border-purple-500/50 text-white text-xs rounded px-2 py-1 font-semibold focus:outline-none w-full mt-2"
                             />
                           ) : (
                             <h4 
@@ -790,8 +806,32 @@ function App() {
                             {benefits.length} perks (Total: ${benefits.reduce((s, b) => s + b.value, 0)}/yr)
                           </p>
 
+                          {/* Annual Fee Recoup Progress Bar */}
+                          {cardFee > 0 ? (
+                            <div className="mt-3 max-w-[240px] space-y-1.5">
+                              <div className="h-1 w-full bg-white/20 rounded-full overflow-hidden">
+                                <div 
+                                  className={`h-full rounded-full bg-gradient-to-r ${
+                                    isRecouped ? 'from-amber-400 via-yellow-400 to-yellow-500' : 'from-purple-500 to-indigo-400'
+                                  }`}
+                                  style={{ width: `${Math.min((recouped / cardFee) * 100, 100)}%` }}
+                                />
+                              </div>
+                              <div className="flex justify-between items-center text-[9px] font-semibold text-slate-350">
+                                <span>Fee: ${cardFee}</span>
+                                <span className={isRecouped ? 'text-amber-300 font-bold tracking-wide' : ''}>
+                                  {isRecouped ? '🎉 Recouped! (已回本)' : `Recouped: $${recouped} (${Math.round((recouped / cardFee) * 100)}%)`}
+                                </span>
+                              </div>
+                            </div>
+                          ) : (
+                            <p className="text-[9px] font-bold text-emerald-400 mt-2.5 flex items-center gap-1">
+                              <span>✓ No Annual Fee (Free Card!)</span>
+                            </p>
+                          )}
+
                           {/* Benefits preview inline list */}
-                          <div className="mt-3 space-y-1">
+                          <div className="mt-4 space-y-1">
                             {benefits.slice(0, 3).map((b) => (
                               <div key={b.id} className="flex items-center justify-between text-[10px] bg-slate-955/40 border border-white/5 p-1 rounded text-slate-300">
                                 <span className="truncate">{b.name}</span>
@@ -805,7 +845,7 @@ function App() {
                         </div>
 
                         <div className="mt-3 pt-3 border-t border-white/10 flex items-center justify-between gap-2">
-                          <label className="text-[10px] font-medium text-slate-350">
+                          <label className="text-[10px] font-medium text-slate-355">
                             Card Opened Date:
                           </label>
                           <input

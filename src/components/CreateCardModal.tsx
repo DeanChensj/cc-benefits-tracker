@@ -24,6 +24,7 @@ export function CreateCardModal({
   // Custom card builder states
   const [customBank, setCustomBank] = useState('');
   const [customCardName, setCustomCardName] = useState('');
+  const [customAnnualFee, setCustomAnnualFee] = useState(0);
   const [customColor, setCustomColor] = useState('from-purple-600 to-indigo-900');
   const [customCardOpenDate, setCustomCardOpenDate] = useState(getLocalDateString());
   const [newBenefits, setNewBenefits] = useState<{
@@ -58,12 +59,14 @@ export function CreateCardModal({
       bank: customBank.trim() || 'Custom',
       color: customColor,
       cardOpenDate: customCardOpenDate,
+      annualFee: customAnnualFee || 0,
       customBenefits: preparedBenefits,
     });
 
     // Reset states
     setCustomBank('');
     setCustomCardName('');
+    setCustomAnnualFee(0);
     setCustomColor('from-purple-600 to-indigo-900');
     setCustomCardOpenDate(getLocalDateString());
     setNewBenefits([{ name: '', value: 0, resetPeriod: 'monthly', category: 'dining', description: '' }]);
@@ -71,7 +74,7 @@ export function CreateCardModal({
   };
 
   return (
-    <div className="fixed inset-0 bg-slate-955/50 dark:bg-slate-955/80 backdrop-blur-sm flex items-center justify-center z-50 p-4 overflow-y-auto animate-fade-in">
+    <div className="fixed inset-0 bg-slate-950/50 dark:bg-slate-950/80 backdrop-blur-sm flex items-center justify-center z-50 p-4 overflow-y-auto animate-fade-in">
       <div 
         className={`border rounded-2xl max-w-lg w-full p-6 shadow-2xl relative my-8 animate-scale-up transition-colors duration-300 ${
           themeClass('bg-slate-900 border-slate-800 text-slate-100', 'bg-white border-slate-200 text-slate-800')
@@ -100,7 +103,7 @@ export function CreateCardModal({
                 value={customBank}
                 onChange={(e) => setCustomBank(e.target.value)}
                 className={`w-full border text-xs rounded-xl px-3 py-2.5 focus:outline-none font-medium ${
-                  themeClass('bg-slate-950 border-slate-800 focus:border-purple-500 text-slate-200', 'bg-slate-50 border-slate-250 focus:border-purple-500 text-slate-800 shadow-inner')
+                  themeClass('bg-slate-955 border-slate-800 focus:border-purple-500 text-slate-200', 'bg-slate-50 border-slate-250 focus:border-purple-500 text-slate-800 shadow-inner')
                 }`}
               />
             </div>
@@ -113,13 +116,13 @@ export function CreateCardModal({
                 value={customCardName}
                 onChange={(e) => setCustomCardName(e.target.value)}
                 className={`w-full border text-xs rounded-xl px-3 py-2.5 focus:outline-none font-medium ${
-                  themeClass('bg-slate-950 border-slate-800 focus:border-purple-500 text-slate-200', 'bg-slate-50 border-slate-250 focus:border-purple-500 text-slate-800 shadow-inner')
+                  themeClass('bg-slate-955 border-slate-800 focus:border-purple-500 text-slate-200', 'bg-slate-50 border-slate-250 focus:border-purple-500 text-slate-800 shadow-inner')
                 }`}
               />
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-3 gap-3">
             <div>
               <label className={`block text-[10px] font-bold uppercase tracking-wider mb-1 ${themeClass('text-slate-400', 'text-slate-555')}`}>Card Opened Date</label>
               <input
@@ -134,8 +137,21 @@ export function CreateCardModal({
             </div>
 
             <div>
+              <label className={`block text-[10px] font-bold uppercase tracking-wider mb-1 ${themeClass('text-slate-400', 'text-slate-555')}`}>Annual Fee ($)</label>
+              <input
+                type="number"
+                placeholder="0"
+                value={customAnnualFee || ''}
+                onChange={(e) => setCustomAnnualFee(Number(e.target.value) || 0)}
+                className={`w-full border text-xs rounded-xl px-3 py-2.5 focus:outline-none font-bold ${
+                  themeClass('bg-slate-955 border-slate-800 focus:border-purple-500 text-slate-200', 'bg-slate-50 border-slate-250 focus:border-purple-500 text-slate-850 shadow-inner')
+                }`}
+              />
+            </div>
+
+            <div>
               <label className={`block text-[10px] font-bold uppercase tracking-wider mb-1.5 ${themeClass('text-slate-400', 'text-slate-555')}`}>Card Color</label>
-              <div className="flex gap-1.5 items-center pt-1">
+              <div className="flex gap-1.5 items-center pt-1.5">
                 {[
                   { class: 'from-purple-600 to-indigo-900', label: 'Violet' },
                   { class: 'from-teal-500 to-cyan-800', label: 'Lagoon' },
@@ -174,7 +190,7 @@ export function CreateCardModal({
             <div className="space-y-3 max-h-[180px] overflow-y-auto pr-1.5 scrollbar-thin">
               {newBenefits.map((benefit, idx) => (
                 <div key={idx} className={`p-3 rounded-xl border space-y-2.5 relative ${
-                  themeClass('bg-slate-950 border-slate-855/80', 'bg-slate-50 border-slate-200')
+                  themeClass('bg-slate-955 border-slate-855/80', 'bg-slate-50 border-slate-200')
                 }`}>
                   {newBenefits.length > 1 && (
                     <button
@@ -239,7 +255,7 @@ export function CreateCardModal({
 
                   <div className="grid grid-cols-2 gap-2">
                     <div>
-                      <label className="block text-[9px] font-semibold text-slate-550 mb-0.5">Reset Period</label>
+                      <label className="block text-[9px] font-semibold text-slate-555 mb-0.5">Reset Period</label>
                       <select
                         value={benefit.resetPeriod}
                         onChange={(e) => {
@@ -298,7 +314,7 @@ export function CreateCardModal({
                           setNewBenefits(updated);
                         }}
                         className={`w-full border text-xs rounded-lg px-2.5 py-1.5 focus:outline-none font-medium cursor-pointer ${
-                          themeClass('bg-slate-900 border-slate-855 text-slate-300', 'bg-white border-slate-255 text-slate-850')
+                          themeClass('bg-slate-900 border-slate-855 text-slate-300', 'bg-white border-slate-255 text-slate-855')
                         }`}
                       />
                     </div>
