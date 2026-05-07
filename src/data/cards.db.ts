@@ -459,5 +459,22 @@ export const CARDS_DB: CardTemplate[] = [
         category: 'travel'
       }
     ]
+  },
+  {
+    id: 'discover-it-cashback',
+    name: 'Discover it Cash Back',
+    bank: 'Other',
+    color: 'from-orange-500 via-red-500 to-orange-600',
+    benefits: [
+      {
+        id: 'discover-it-rotating',
+        name: '5% Rotating Category',
+        description: '5% cash back on rotating quarterly categories on up to $1,500 spend per quarter',
+        value: 75,
+        resetPeriod: 'quarterly',
+        category: 'shopping',
+        spendingLimit: 1500
+      }
+    ]
   }
 ];
