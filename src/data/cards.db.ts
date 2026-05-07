@@ -391,14 +391,7 @@ export const CARDS_DB: CardTemplate[] = [
         category: 'dining',
         spendingLimit: 1500
       },
-      {
-        id: 'cff-lyft',
-        name: 'Lyft Benefit',
-        description: '$10 monthly Lyft credit after taking 3 rides in a calendar month',
-        value: 10,
-        resetPeriod: 'monthly',
-        category: 'travel'
-      }
+
     ]
   },
 
