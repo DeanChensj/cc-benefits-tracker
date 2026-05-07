@@ -6,7 +6,7 @@ declare global {
   }
 }
 
-const CLIENT_ID = '1095325655086-v8r0m183k8q22s94eoc22p1aom7q95n5.apps.googleusercontent.com';
+const CLIENT_ID = '200919207225-0tf72gmfvkbi7jttc6ji6nbaao0poo18.apps.googleusercontent.com';
 const SCOPES = 'https://www.googleapis.com/auth/drive.appdata';
 
 // Load Google Identity Services script dynamically on mount
@@ -27,7 +27,7 @@ export function loadGoogleGsiScript(): Promise<void> {
 }
 
 // Request OAuth access token from user using standard GIS token client popup
-export function requestGDriveToken(): Promise<string> {
+export function requestGDriveToken(customClientId?: string | null): Promise<string> {
   return new Promise((resolve, reject) => {
     if (!window.google?.accounts?.oauth2) {
       reject(new Error('Google GSI Client library not loaded.'));
@@ -35,7 +35,7 @@ export function requestGDriveToken(): Promise<string> {
     }
 
     const client = window.google.accounts.oauth2.initTokenClient({
-      client_id: CLIENT_ID,
+      client_id: customClientId || CLIENT_ID,
       scope: SCOPES,
       callback: (response: any) => {
         if (response.error) {
