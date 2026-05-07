@@ -276,7 +276,7 @@ function App() {
               <CreditCard className="w-6 h-6 stroke-[2]" />
             </div>
             <div>
-              <h1 className="text-lg font-bold text-white tracking-tight">CardPerks</h1>
+              <h1 className="text-lg font-bold text-white tracking-tight">Credit Card Benefits Tracker</h1>
               <p className="text-xs text-slate-400 flex items-center gap-1.5">
                 <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span>
                 <span>Today: {new Date().toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}</span>
