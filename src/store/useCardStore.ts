@@ -16,6 +16,7 @@ export interface OwnedCardInstance {
 export interface CardStore {
   ownedCards: OwnedCardInstance[];
   logs: Record<string, boolean>; // logKey -> isUsed
+  theme: 'dark' | 'light'; // App theme selection
 
   // Actions
   addCard: (templateId: string) => void;
@@ -24,6 +25,7 @@ export interface CardStore {
   renameCard: (instanceId: string, customName: string) => void;
   setCardOpenDate: (instanceId: string, dateStr: string) => void;
   toggleBenefit: (logKey: string) => void;
+  toggleTheme: () => void;
   resetAll: () => void;
 }
 
@@ -86,6 +88,8 @@ export const useCardStore = create<CardStore>()(
     (set) => ({
       ownedCards: [],
       logs: {},
+      // Defaults to system light/dark preference dynamically
+      theme: (typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: light)').matches) ? 'light' : 'dark',
 
       addCard: (templateId) =>
         set((state) => {
@@ -154,10 +158,16 @@ export const useCardStore = create<CardStore>()(
           },
         })),
 
+      toggleTheme: () =>
+        set((state) => ({
+          theme: state.theme === 'dark' ? 'light' : 'dark',
+        })),
+
       resetAll: () =>
         set(() => ({
           ownedCards: [],
           logs: {},
+          // Do not reset the user's theme preference
         })),
     }),
     {
