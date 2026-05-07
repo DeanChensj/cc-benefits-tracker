@@ -45,7 +45,7 @@ export const CARDS_DB: CardTemplate[] = [
     id: 'amex-platinum',
     name: 'American Express Platinum',
     bank: 'Amex',
-    color: 'from-slate-300 to-slate-500',
+    color: 'from-slate-600 via-slate-700 to-slate-900',
     benefits: [
       {
         id: 'amex-plat-uber',
@@ -93,7 +93,7 @@ export const CARDS_DB: CardTemplate[] = [
     id: 'amex-biz-platinum',
     name: 'Amex Business Platinum',
     bank: 'Amex',
-    color: 'from-zinc-400 via-slate-500 to-gray-750',
+    color: 'from-zinc-600 via-zinc-700 to-slate-900',
     benefits: [
       {
         id: 'biz-plat-dell',
