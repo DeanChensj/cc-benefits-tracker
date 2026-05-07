@@ -79,9 +79,10 @@ function App() {
   const [isSyncDropdownOpen, setIsSyncDropdownOpen] = useState(false);
   const [showAdvancedSync, setShowAdvancedSync] = useState(false);
   const [addOfferInstanceId, setAddOfferInstanceId] = useState<string | null>(null);
-  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
+  const [deleteCardInstanceId, setDeleteCardInstanceId] = useState<string | null>(null);
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' | 'warning' } | null>(null);
 
-  const showToast = (message: string, type: 'success' | 'error' | 'info' = 'success') => {
+  const showToast = (message: string, type: 'success' | 'error' | 'info' | 'warning' = 'success') => {
     setToast({ message, type });
   };
 
@@ -100,16 +101,19 @@ function App() {
   };
 
   const handleRemoveCard = (instanceId: string) => {
-    const instance = ownedCards.find((c) => c.id === instanceId);
-    if (!instance) return;
-    
-    const template = CARDS_DB.find((t) => t.id === instance.templateId);
-    const cardName = instance.templateId === 'custom' ? instance.customName : (template?.name || 'Card');
-    
-    if (confirm(`Are you sure you want to remove ${cardName} from your wallet? All checklist logs associated with this card instance will be permanently deleted.`)) {
-      removeCard(instanceId);
-      showToast(`🗑️ Removed ${cardName} from your Wallet`, 'info');
+    setDeleteCardInstanceId(instanceId);
+  };
+
+  const handleConfirmRemoveCard = () => {
+    if (!deleteCardInstanceId) return;
+    const instance = ownedCards.find((c) => c.id === deleteCardInstanceId);
+    if (instance) {
+      const template = CARDS_DB.find((t) => t.id === instance.templateId);
+      const cardName = instance.templateId === 'custom' ? instance.customName : (template?.name || 'Card');
+      removeCard(deleteCardInstanceId);
+      showToast(`🗑️ Removed "${cardName}" from Wallet`, 'warning');
     }
+    setDeleteCardInstanceId(null);
   };
 
   const handleAddCustomCard = (card: Omit<OwnedCardInstance, 'id'>) => {
@@ -1403,18 +1407,63 @@ function App() {
         theme={theme}
       />
 
+      {/* Custom Delete Confirmation Modal */}
+      {deleteCardInstanceId && (
+        <div className="fixed inset-0 bg-slate-950/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in">
+          <div className={`w-full max-w-sm rounded-2xl border p-6 text-center space-y-4 shadow-2xl animate-scale-up ${
+            themeClass(
+              'bg-slate-900 border-slate-850 text-slate-200 shadow-slate-950/50',
+              'bg-white border-slate-200 text-slate-800 shadow-slate-300/30'
+            )
+          }`}>
+            <div className="w-12 h-12 bg-red-500/10 text-red-500 rounded-2xl flex items-center justify-center mx-auto">
+              <Trash2 className="w-6 h-6" />
+            </div>
+            <div className="space-y-1.5">
+              <h4 className={`font-extrabold text-base ${themeClass('text-white', 'text-slate-900')}`}>
+                Remove Card from Wallet?
+              </h4>
+              <p className={`text-xs leading-relaxed ${themeClass('text-slate-400', 'text-slate-505')}`}>
+                All monthly/cyclical logs and customized offers associated with this card instance will be permanently deleted. This action cannot be undone.
+              </p>
+            </div>
+            <div className="flex gap-2.5 pt-2">
+              <button
+                onClick={() => setDeleteCardInstanceId(null)}
+                className={`flex-1 font-bold text-xs py-2.5 rounded-xl border transition cursor-pointer ${
+                  themeClass(
+                    'bg-slate-800 hover:bg-slate-750 border-slate-750 text-slate-300',
+                    'bg-slate-100 hover:bg-slate-200 border-slate-200 text-slate-700'
+                  )
+                }`}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleConfirmRemoveCard}
+                className="flex-1 bg-gradient-to-tr from-rose-600 to-red-600 hover:from-rose-550 hover:to-red-550 text-white font-bold text-xs py-2.5 rounded-xl transition active:scale-95 shadow-lg shadow-rose-500/10 cursor-pointer"
+              >
+                Delete Card
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* SpentAssistant AI Drawer */}
       <SpentAssistant remainingBenefits={remainingBenefits} logs={logs} theme={theme} />
 
       {/* Premium Floating Toast Notification */}
       {toast && (
         <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 pointer-events-none animate-slide-up">
-          <div className={`px-4 py-3 rounded-xl border text-xs font-bold flex items-center gap-2 shadow-2xl backdrop-blur-xl ${
+          <div className={`px-4 py-3 rounded-xl border text-xs font-bold flex items-center gap-2 shadow-2xl backdrop-blur-xl transition-all duration-300 ${
             toast.type === 'error'
-              ? themeClass('bg-red-950/90 border-red-500/30 text-red-200 shadow-red-950/20', 'bg-red-50/95 border-red-200 text-red-800 shadow-red-100')
-              : toast.type === 'info'
-              ? themeClass('bg-slate-900/90 border-slate-800 text-slate-300 shadow-slate-950/40', 'bg-slate-100/95 border-slate-200 text-slate-800 shadow-slate-200/50')
-              : themeClass('bg-emerald-950/90 border-emerald-500/30 text-emerald-200 shadow-emerald-950/20', 'bg-emerald-50/95 border-emerald-200 text-emerald-800 shadow-emerald-100')
+              ? themeClass('bg-rose-950/90 border-rose-500/30 text-rose-200 shadow-[0_10px_30px_rgba(244,63,94,0.1)]', 'bg-rose-50/95 border-rose-200 text-rose-900 shadow-lg shadow-rose-800/5')
+            : toast.type === 'warning'
+              ? themeClass('bg-amber-950/90 border-amber-500/30 text-amber-200 shadow-[0_10px_30px_rgba(245,158,11,0.1)]', 'bg-amber-50/95 border-amber-200 text-amber-900 shadow-lg shadow-amber-800/5')
+            : toast.type === 'info'
+              ? themeClass('bg-slate-900/90 border-slate-800 text-slate-300 shadow-[0_10px_30px_rgba(15,23,42,0.3)]', 'bg-white/95 border-slate-200 text-slate-800 shadow-lg shadow-slate-200/30')
+            : themeClass('bg-emerald-950/90 border-emerald-500/30 text-emerald-200 shadow-[0_10px_30px_rgba(16,185,129,0.1)]', 'bg-emerald-50/95 border-emerald-200 text-emerald-900 shadow-lg shadow-emerald-800/5')
           }`}>
             <span>{toast.message}</span>
           </div>
