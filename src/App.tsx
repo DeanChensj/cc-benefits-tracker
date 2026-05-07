@@ -556,189 +556,227 @@ function App() {
                 </button>
               </div>
               
-              <div className="grid sm:grid-cols-2 gap-4">
-                {CARDS_DB.map((card) => {
-                  const instances = ownedCards.filter((c) => c.templateId === card.id);
+              <div className="space-y-8">
+                {(['Amex', 'Chase', 'Capital One'] as const).map((bankName) => {
+                  const bankCards = CARDS_DB.filter((c) => c.bank === bankName);
+                  if (bankCards.length === 0) return null;
 
                   return (
-                    <div 
-                      key={card.id}
-                      className={`p-4 rounded-xl border flex flex-col justify-between transition bg-slate-950 border-slate-900 hover:border-slate-850`}
-                    >
-                      <div className="pb-3">
-                        <div className="flex items-center justify-between">
-                          <span className="text-xs font-semibold text-slate-400 uppercase">{card.bank}</span>
-                          <button
-                            onClick={() => addCard(card.id)}
-                            className="flex items-center gap-1 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold px-2.5 py-1 rounded-lg text-xs transition"
-                          >
-                            <Plus className="w-3.5 h-3.5 stroke-[3]" />
-                            Add Instance
-                          </button>
-                        </div>
-                        <h4 className="text-base font-bold text-white mt-1">{card.name}</h4>
-                        <p className="text-xs text-slate-400 mt-1">
-                          {card.benefits.length} perks (Total: ${card.benefits.reduce((s, b) => s + b.value, 0)}/yr)
-                        </p>
+                    <div key={bankName} className="space-y-3.5">
+                      <div className="flex items-center gap-2 border-b border-slate-900 pb-2">
+                        <div className={`w-2 h-2 rounded-full ${
+                          bankName === 'Amex' ? 'bg-amber-500' :
+                          bankName === 'Chase' ? 'bg-blue-500' : 'bg-teal-500'
+                        }`} />
+                        <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400">
+                          {bankName === 'Amex' ? 'American Express' : bankName} Cards
+                        </h4>
+                        <span className="text-[10px] text-slate-600 font-semibold ml-auto">
+                          {bankCards.length} templates available
+                        </span>
                       </div>
 
-                      {instances.length > 0 && (
-                        <div className="mt-3 pt-3 border-t border-slate-900 space-y-3">
-                          <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Active Instances ({instances.length})</p>
-                          
-                          {instances.map((instance) => (
-                            <div key={instance.id} className="bg-slate-900/50 p-2.5 rounded-lg border border-slate-850/60 space-y-2">
-                              <div className="flex items-center justify-between gap-2">
-                                {editingInstanceId === instance.id ? (
-                                  <input
-                                    type="text"
-                                    value={instance.customName}
-                                    onChange={(e) => renameCard(instance.id, e.target.value)}
-                                    onBlur={() => setEditingInstanceId(null)}
-                                    onKeyDown={(e) => {
-                                      if (e.key === 'Enter' || e.key === 'Escape') {
-                                        setEditingInstanceId(null);
-                                      }
-                                    }}
-                                    autoFocus
-                                    className="bg-slate-950 border border-amber-500/50 text-slate-200 text-xs rounded px-2 py-1 font-semibold focus:outline-none w-full"
-                                  />
-                                ) : (
-                                  <div 
-                                    onClick={() => setEditingInstanceId(instance.id)}
-                                    className="text-xs font-bold text-slate-200 flex items-center gap-1 cursor-pointer hover:text-amber-500 transition"
-                                    title="Click to rename"
+                      <div className="grid sm:grid-cols-2 gap-4">
+                        {bankCards.map((card) => {
+                          const instances = ownedCards.filter((c) => c.templateId === card.id);
+
+                          return (
+                            <div 
+                              key={card.id}
+                              className={`p-4 rounded-xl border flex flex-col justify-between transition bg-slate-950 border-slate-900 hover:border-slate-850`}
+                            >
+                              <div className="pb-3">
+                                <div className="flex items-center justify-between">
+                                  <span className="text-xs font-semibold text-slate-400 uppercase">{card.bank}</span>
+                                  <button
+                                    onClick={() => addCard(card.id)}
+                                    className="flex items-center gap-1 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold px-2.5 py-1 rounded-lg text-xs transition"
                                   >
-                                    {instance.customName}
-                                    <Edit3 className="w-3 h-3 text-slate-500 shrink-0" />
-                                  </div>
-                                )}
-
-                                <button
-                                  onClick={() => removeCard(instance.id)}
-                                  className="p-1 text-red-400 hover:text-red-500 hover:bg-red-500/10 rounded transition"
-                                  title="Delete this instance"
-                                >
-                                  <Trash2 className="w-3.5 h-3.5" />
-                                </button>
+                                    <Plus className="w-3.5 h-3.5 stroke-[3]" />
+                                    Add Instance
+                                  </button>
+                                </div>
+                                <h4 className="text-base font-bold text-white mt-1">{card.name}</h4>
+                                <p className="text-xs text-slate-400 mt-1">
+                                  {card.benefits.length} perks (Total: ${card.benefits.reduce((s, b) => s + b.value, 0)}/yr)
+                                </p>
                               </div>
 
-                              <div className="flex items-center justify-between gap-2 pt-1">
-                                <label className="text-[10px] font-medium text-slate-400">
-                                  Card Opened Date:
-                                </label>
-                                <input
-                                  type="date"
-                                  value={instance.cardOpenDate}
-                                  onChange={(e) => setCardOpenDate(instance.id, e.target.value)}
-                                  className="bg-slate-950 border border-slate-800 text-slate-350 text-[11px] rounded px-2.5 py-0.5 focus:outline-none cursor-pointer font-medium"
-                                />
-                              </div>
+                              {instances.length > 0 && (
+                                <div className="mt-3 pt-3 border-t border-slate-900 space-y-3">
+                                  <p className="text-[10px] font-bold uppercase tracking-wider text-slate-550">Active Instances ({instances.length})</p>
+                                  
+                                  {instances.map((instance) => (
+                                    <div key={instance.id} className="bg-slate-900/50 p-2.5 rounded-lg border border-slate-850/60 space-y-2">
+                                      <div className="flex items-center justify-between gap-2">
+                                        {editingInstanceId === instance.id ? (
+                                          <input
+                                            type="text"
+                                            value={instance.customName}
+                                            onChange={(e) => renameCard(instance.id, e.target.value)}
+                                            onBlur={() => setEditingInstanceId(null)}
+                                            onKeyDown={(e) => {
+                                              if (e.key === 'Enter' || e.key === 'Escape') {
+                                                setEditingInstanceId(null);
+                                              }
+                                            }}
+                                            autoFocus
+                                            className="bg-slate-950 border border-amber-500/50 text-slate-200 text-xs rounded px-2 py-1 font-semibold focus:outline-none w-full"
+                                          />
+                                        ) : (
+                                          <div 
+                                            onClick={() => setEditingInstanceId(instance.id)}
+                                            className="text-xs font-bold text-slate-200 flex items-center gap-1 cursor-pointer hover:text-amber-500 transition"
+                                            title="Click to rename"
+                                          >
+                                            {instance.customName}
+                                            <Edit3 className="w-3 h-3 text-slate-500 shrink-0" />
+                                          </div>
+                                        )}
+
+                                        <button
+                                          onClick={() => removeCard(instance.id)}
+                                          className="p-1 text-red-400 hover:text-red-500 hover:bg-red-500/10 rounded transition"
+                                          title="Delete this instance"
+                                        >
+                                          <Trash2 className="w-3.5 h-3.5" />
+                                        </button>
+                                      </div>
+
+                                      <div className="flex items-center justify-between gap-2 pt-1">
+                                        <label className="text-[10px] font-medium text-slate-400">
+                                          Card Opened Date:
+                                        </label>
+                                        <input
+                                          type="date"
+                                          value={instance.cardOpenDate}
+                                          onChange={(e) => setCardOpenDate(instance.id, e.target.value)}
+                                          className="bg-slate-950 border border-slate-800 text-slate-350 text-[11px] rounded px-2.5 py-0.5 focus:outline-none cursor-pointer font-medium"
+                                        />
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
                             </div>
-                          ))}
-                        </div>
-                      )}
+                          );
+                        })}
+                      </div>
                     </div>
                   );
                 })}
 
                 {/* Custom Card Instances List */}
-                {ownedCards.filter((c) => c.templateId === 'custom').map((instance) => {
-                  const customColor = instance.color || 'from-purple-950/50 to-slate-950';
-                  
-                  return (
-                    <div 
-                      key={instance.id}
-                      className={`p-4 rounded-xl border flex flex-col justify-between transition bg-gradient-to-tr ${customColor} border-purple-900/30 hover:border-purple-800/50 shadow-lg shadow-purple-500/[0.02]`}
-                    >
-                      <div className="pb-3">
-                        <div className="flex items-center justify-between">
-                          <span className="text-[9px] font-bold bg-purple-500/10 text-purple-400 border border-purple-500/20 px-1.5 py-0.5 rounded-md uppercase tracking-wider">{instance.bank || 'Custom'}</span>
-                          <div className="flex items-center gap-1.5">
-                            <button
-                              onClick={() => {
-                                addCustomCard({
-                                  templateId: 'custom',
-                                  customName: `${instance.customName} (Copy)`,
-                                  bank: instance.bank,
-                                  color: instance.color,
-                                  cardOpenDate: instance.cardOpenDate,
-                                  customBenefits: (instance.customBenefits || []).map((b) => ({
-                                    ...b,
-                                    id: `benefit_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
-                                  })),
-                                });
-                              }}
-                              className="p-1 text-purple-400 hover:text-purple-300 hover:bg-purple-550/10 rounded transition active:scale-90"
-                              title="Duplicate custom card instance"
-                            >
-                              <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
-                            </button>
-                            <button
-                              onClick={() => removeCard(instance.id)}
-                              className="p-1 text-red-400 hover:text-red-500 hover:bg-red-550/10 rounded transition"
-                              title="Delete custom card"
-                            >
-                              <Trash2 className="w-3.5 h-3.5" />
-                            </button>
-                          </div>
-                        </div>
-
-                        {editingInstanceId === instance.id ? (
-                          <input
-                            type="text"
-                            value={instance.customName}
-                            onChange={(e) => renameCard(instance.id, e.target.value)}
-                            onBlur={() => setEditingInstanceId(null)}
-                            onKeyDown={(e) => {
-                              if (e.key === 'Enter' || e.key === 'Escape') {
-                                setEditingInstanceId(null);
-                              }
-                            }}
-                            autoFocus
-                            className="bg-slate-950 border border-purple-500/50 text-slate-200 text-xs rounded px-2 py-1 font-semibold focus:outline-none w-full mt-2"
-                          />
-                        ) : (
-                          <h4 
-                            onClick={() => setEditingInstanceId(instance.id)}
-                            className="text-base font-bold text-white mt-1.5 flex items-center gap-1 cursor-pointer hover:text-purple-400 transition"
-                            title="Click to rename"
-                          >
-                            {instance.customName}
-                            <Edit3 className="w-3 h-3 text-slate-500 shrink-0" />
-                          </h4>
-                        )}
-
-                        <p className="text-xs text-slate-400 mt-1">
-                          {(instance.customBenefits || []).length} perks (Total: ${(instance.customBenefits || []).reduce((s, b) => s + b.value, 0)}/yr)
-                        </p>
-
-                        {/* Custom benefits inline list */}
-                        <div className="mt-4 space-y-1.5">
-                          <p className="text-[9px] font-bold uppercase tracking-wider text-slate-500">Card Benefits</p>
-                          {(instance.customBenefits || []).map((b) => (
-                            <div key={b.id} className="flex items-center justify-between text-xs bg-slate-950/50 p-1.5 rounded border border-slate-900/80 text-slate-300">
-                              <span>{b.name}</span>
-                              <span className="font-bold text-white">${b.value}</span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-
-                      <div className="mt-3 pt-3 border-t border-slate-900/80 flex items-center justify-between gap-2">
-                        <label className="text-[10px] font-medium text-slate-400">
-                          Card Opened Date:
-                        </label>
-                        <input
-                          type="date"
-                          value={instance.cardOpenDate}
-                          onChange={(e) => setCardOpenDate(instance.id, e.target.value)}
-                          className="bg-slate-950 border border-slate-800 text-slate-350 text-[11px] rounded px-2.5 py-0.5 focus:outline-none cursor-pointer font-medium"
-                        />
-                      </div>
+                {ownedCards.filter((c) => c.templateId === 'custom').length > 0 && (
+                  <div className="space-y-3.5 border-t border-slate-900 pt-6">
+                    <div className="flex items-center gap-2 border-b border-slate-900 pb-2">
+                      <div className="w-2 h-2 rounded-full bg-purple-500" />
+                      <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400">Custom Cards</h4>
+                      <span className="text-[10px] text-slate-600 font-semibold ml-auto">
+                        {ownedCards.filter((c) => c.templateId === 'custom').length} active cards
+                      </span>
                     </div>
-                  );
-                })}
+
+                    <div className="grid sm:grid-cols-2 gap-4">
+                      {ownedCards.filter((c) => c.templateId === 'custom').map((instance) => {
+                        const customColor = instance.color || 'from-purple-950/50 to-slate-950';
+                        
+                        return (
+                          <div 
+                            key={instance.id}
+                            className={`p-4 rounded-xl border flex flex-col justify-between transition bg-gradient-to-tr ${customColor} border-purple-900/30 hover:border-purple-800/50 shadow-lg shadow-purple-500/[0.02]`}
+                          >
+                            <div className="pb-3">
+                              <div className="flex items-center justify-between">
+                                <span className="text-[9px] font-bold bg-purple-500/10 text-purple-400 border border-purple-500/20 px-1.5 py-0.5 rounded-md uppercase tracking-wider">{instance.bank || 'Custom'}</span>
+                                <div className="flex items-center gap-1.5">
+                                  <button
+                                    onClick={() => {
+                                      addCustomCard({
+                                        templateId: 'custom',
+                                        customName: `${instance.customName} (Copy)`,
+                                        bank: instance.bank,
+                                        color: instance.color,
+                                        cardOpenDate: instance.cardOpenDate,
+                                        customBenefits: (instance.customBenefits || []).map((b) => ({
+                                          ...b,
+                                          id: `benefit_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
+                                        })),
+                                      });
+                                    }}
+                                    className="p-1 text-purple-400 hover:text-purple-300 hover:bg-purple-550/10 rounded transition active:scale-90"
+                                    title="Duplicate custom card instance"
+                                  >
+                                    <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
+                                  </button>
+                                  <button
+                                    onClick={() => removeCard(instance.id)}
+                                    className="p-1 text-red-400 hover:text-red-500 hover:bg-red-550/10 rounded transition"
+                                    title="Delete custom card"
+                                  >
+                                    <Trash2 className="w-3.5 h-3.5" />
+                                  </button>
+                                </div>
+                              </div>
+
+                              {editingInstanceId === instance.id ? (
+                                <input
+                                  type="text"
+                                  value={instance.customName}
+                                  onChange={(e) => renameCard(instance.id, e.target.value)}
+                                  onBlur={() => setEditingInstanceId(null)}
+                                  onKeyDown={(e) => {
+                                    if (e.key === 'Enter' || e.key === 'Escape') {
+                                      setEditingInstanceId(null);
+                                    }
+                                  }}
+                                  autoFocus
+                                  className="bg-slate-950 border border-purple-500/50 text-slate-200 text-xs rounded px-2 py-1 font-semibold focus:outline-none w-full mt-2"
+                                />
+                              ) : (
+                                <h4 
+                                  onClick={() => setEditingInstanceId(instance.id)}
+                                  className="text-base font-bold text-white mt-1.5 flex items-center gap-1 cursor-pointer hover:text-purple-400 transition"
+                                  title="Click to rename"
+                                >
+                                  {instance.customName}
+                                  <Edit3 className="w-3 h-3 text-slate-500 shrink-0" />
+                                </h4>
+                              )}
+
+                              <p className="text-xs text-slate-400 mt-1">
+                                {(instance.customBenefits || []).length} perks (Total: ${(instance.customBenefits || []).reduce((s, b) => s + b.value, 0)}/yr)
+                              </p>
+
+                              {/* Custom benefits inline list */}
+                              <div className="mt-4 space-y-1.5">
+                                <p className="text-[9px] font-bold uppercase tracking-wider text-slate-500">Card Benefits</p>
+                                {(instance.customBenefits || []).map((b) => (
+                                  <div key={b.id} className="flex items-center justify-between text-xs bg-slate-950/50 p-1.5 rounded border border-slate-900/80 text-slate-300">
+                                    <span>{b.name}</span>
+                                    <span className="font-bold text-white">${b.value}</span>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+
+                            <div className="mt-3 pt-3 border-t border-slate-900/80 flex items-center justify-between gap-2">
+                              <label className="text-[10px] font-medium text-slate-400">
+                                Card Opened Date:
+                              </label>
+                              <input
+                                type="date"
+                                value={instance.cardOpenDate}
+                                onChange={(e) => setCardOpenDate(instance.id, e.target.value)}
+                                className="bg-slate-950 border border-slate-800 text-slate-350 text-[11px] rounded px-2.5 py-0.5 focus:outline-none cursor-pointer font-medium"
+                              />
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 
