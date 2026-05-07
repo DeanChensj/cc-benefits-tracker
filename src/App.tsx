@@ -536,7 +536,7 @@ function App() {
                           {isExpired ? (
                             <span className="text-[10px] font-bold">✕</span>
                           ) : (
-                            <CheckCircle2 className="w-4 h-4 stroke-[3]" />
+                            <CheckCircle2 className={`w-4 h-4 stroke-[3] transition-all duration-250 transform origin-center ${isUsed ? 'scale-100 rotate-0' : 'scale-0 -rotate-12 opacity-0'}`} />
                           )}
                         </div>
 
@@ -657,8 +657,8 @@ function App() {
                           return (
                             <div 
                               key={card.id}
-                              className={`p-4 rounded-xl border flex flex-col justify-between transition ${
-                                themeClass('bg-slate-950 border-slate-900 hover:border-slate-850', 'bg-slate-50/60 border-slate-200 hover:border-slate-300 hover:bg-slate-50 shadow-sm')
+                              className={`p-4 rounded-xl border flex flex-col justify-between transition relative overflow-hidden group/card after:absolute after:top-0 after:-left-[150%] after:w-[60%] after:h-full after:bg-gradient-to-r after:from-transparent after:via-white/15 dark:after:via-white/10 after:to-transparent after:skew-x-12 after:transition-all after:duration-700 hover:after:left-[150%] ${
+                                themeClass('bg-slate-950 border-slate-900 hover:border-slate-850', 'bg-white border-slate-200 hover:border-slate-300 hover:bg-slate-50 shadow-sm')
                               }`}
                             >
                               <div className="pb-3">
@@ -776,7 +776,7 @@ function App() {
                           return (
                             <div 
                               key={instance.id}
-                              className={`p-4 rounded-xl border flex flex-col justify-between transition bg-gradient-to-tr ${customColor} ${
+                              className={`p-4 rounded-xl border flex flex-col justify-between transition bg-gradient-to-tr ${customColor} relative overflow-hidden group/card after:absolute after:top-0 after:-left-[150%] after:w-[60%] after:h-full after:bg-gradient-to-r after:from-transparent after:via-white/15 dark:after:via-white/10 after:to-transparent after:skew-x-12 after:transition-all after:duration-700 hover:after:left-[150%] ${
                                 themeClass('border-purple-900/30 hover:border-purple-800/50', 'border-purple-500/20 hover:border-purple-500/45 shadow-sm text-slate-800')
                               }`}
                             >
