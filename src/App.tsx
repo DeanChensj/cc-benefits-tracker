@@ -828,6 +828,17 @@ function App() {
                             }`}>
                               {cardInstance.customName}
                             </span>
+                            <span className={`text-[9px] pl-1.5 pr-2 py-0.5 rounded-md font-bold tracking-wide border shrink-0 flex items-center gap-1 ${
+                              themeClass('bg-slate-955/30 text-slate-400 border-slate-850', 'bg-slate-50 text-slate-550 border-slate-200')
+                            }`}>
+                              <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${
+                                benefit.category === 'dining' ? 'bg-rose-500 animate-pulse' :
+                                benefit.category === 'travel' ? 'bg-sky-500' :
+                                benefit.category === 'shopping' ? 'bg-emerald-500' :
+                                benefit.category === 'entertainment' ? 'bg-purple-500' : 'bg-slate-400'
+                              }`} />
+                              <span className="uppercase tracking-wider text-[8px]">{benefit.category}</span>
+                            </span>
                             
                             {isExpired ? (
                               <span className="text-[9px] font-bold bg-red-555/10 text-red-505 border border-red-505/20 px-1.5 py-0.2 rounded shrink-0">Expired</span>
