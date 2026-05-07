@@ -93,7 +93,8 @@ export const useCardStore = create<CardStore>()(
           if (!template) return state;
 
           const uniqueId = `inst_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
-          const todayStr = new Date().toISOString().split('T')[0];
+          const now = new Date();
+          const todayStr = `${now.getFullYear()}-${(now.getMonth() + 1).toString().padStart(2, '0')}-${now.getDate().toString().padStart(2, '0')}`;
 
           const newInstance: OwnedCardInstance = {
             id: uniqueId,

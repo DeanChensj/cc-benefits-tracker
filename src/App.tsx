@@ -19,6 +19,13 @@ import {
   Edit3
 } from 'lucide-react';
 
+const getLocalDateString = (date = new Date()): string => {
+  const year = date.getFullYear();
+  const month = (date.getMonth() + 1).toString().padStart(2, '0');
+  const day = date.getDate().toString().padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
 function App() {
   const { 
     ownedCards, 
@@ -44,7 +51,7 @@ function App() {
   const [customBank, setCustomBank] = useState('');
   const [customCardName, setCustomCardName] = useState('');
   const [customColor, setCustomColor] = useState('from-purple-600 to-indigo-900');
-  const [customCardOpenDate, setCustomCardOpenDate] = useState(new Date().toISOString().split('T')[0]);
+  const [customCardOpenDate, setCustomCardOpenDate] = useState(getLocalDateString());
   const [newBenefits, setNewBenefits] = useState<{
     name: string;
     value: number;
@@ -270,14 +277,19 @@ function App() {
             </div>
             <div>
               <h1 className="text-lg font-bold text-white tracking-tight">CardPerks</h1>
-              <p className="text-xs text-slate-400 flex items-center gap-1">
+              <p className="text-xs text-slate-400 flex items-center gap-1.5">
                 <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span>
-                Multi-Player MVP
+                <span>Today: {new Date().toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}</span>
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2 self-end sm:self-auto">
+          <div className="flex items-center gap-3 self-end sm:self-auto">
+            {currentDate.getMonth() !== new Date().getMonth() || currentDate.getFullYear() !== new Date().getFullYear() ? (
+              <span className="inline-flex items-center gap-1 px-2.5 py-1 text-[10px] font-bold text-amber-400 bg-amber-500/10 border border-amber-500/25 rounded-lg animate-pulse">
+                ⚠️ Simulated Sandbox
+              </span>
+            ) : null}
             <div className="flex items-center bg-slate-900 rounded-lg p-1 text-xs font-medium text-slate-300 border border-slate-800">
               <button 
                 onClick={() => adjustMonth(-1)} 
@@ -876,7 +888,7 @@ function App() {
               setCustomBank('');
               setCustomCardName('');
               setCustomColor('from-purple-600 to-indigo-900');
-              setCustomCardOpenDate(new Date().toISOString().split('T')[0]);
+              setCustomCardOpenDate(getLocalDateString());
               setNewBenefits([{ name: '', value: 0, resetPeriod: 'monthly', category: 'dining', description: '' }]);
               setIsCreateModalOpen(false);
             }} className="space-y-4">
@@ -1009,7 +1021,7 @@ function App() {
                               const updated = [...newBenefits];
                               updated[idx].resetPeriod = e.target.value as any;
                               if (e.target.value === 'fixed' && !updated[idx].expirationDate) {
-                                updated[idx].expirationDate = new Date().toISOString().split('T')[0];
+                                updated[idx].expirationDate = getLocalDateString();
                               }
                               setNewBenefits(updated);
                             }}
