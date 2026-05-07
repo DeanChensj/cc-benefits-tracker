@@ -25,7 +25,8 @@ import {
   Sun,
   Moon,
   Cloud,
-  CloudOff
+  CloudOff,
+  ArrowUpDown
 } from 'lucide-react';
 
 const getLocalDateString = (date = new Date()): string => {
@@ -67,6 +68,7 @@ function App() {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [activeTab, setActiveTab] = useState<'todo' | 'all' | 'cards'>('todo');
   const [filterCategory, setFilterCategory] = useState<string>('all');
+  const [sortBy, setSortBy] = useState<'urgency' | 'value-desc' | 'value-asc' | 'expiry'>('urgency');
   const [editingInstanceId, setEditingInstanceId] = useState<string | null>(null);
   const [isSyncModalOpen, setIsSyncModalOpen] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -271,6 +273,44 @@ function App() {
     return true;
   });
 
+  // Helper to compute days left relative to simulated/current date
+  const getDaysLeft = (ab: ActiveBenefit): number | null => {
+    const { benefit, cardInstance } = ab;
+    const year = currentDate.getFullYear();
+    const month = currentDate.getMonth(); // 0-11
+    const todayMidnight = new Date(year, month, currentDate.getDate());
+
+    if (benefit.resetPeriod === 'fixed' && benefit.expirationDate) {
+      const expMidnight = new Date(benefit.expirationDate + 'T00:00:00');
+      return Math.round((expMidnight.getTime() - todayMidnight.getTime()) / (1000 * 60 * 60 * 24));
+    } else if (benefit.resetPeriod === 'monthly') {
+      const lastDay = new Date(year, month + 1, 0);
+      const expMidnight = new Date(year, month, lastDay.getDate());
+      return Math.round((expMidnight.getTime() - todayMidnight.getTime()) / (1000 * 60 * 60 * 24));
+    } else if (benefit.resetPeriod === 'quarterly') {
+      const qEndMonth = Math.floor(month / 3) * 3 + 2;
+      const lastDay = new Date(year, qEndMonth + 1, 0);
+      const expMidnight = new Date(year, qEndMonth, lastDay.getDate());
+      return Math.round((expMidnight.getTime() - todayMidnight.getTime()) / (1000 * 60 * 60 * 24));
+    } else if (benefit.resetPeriod === 'semi-annual') {
+      const saEndMonth = month <= 5 ? 5 : 11;
+      const lastDay = saEndMonth === 5 ? 30 : 31;
+      const expMidnight = new Date(year, saEndMonth, lastDay);
+      return Math.round((expMidnight.getTime() - todayMidnight.getTime()) / (1000 * 60 * 60 * 24));
+    } else if (benefit.resetPeriod === 'annual-calendar') {
+      const expMidnight = new Date(year, 11, 31);
+      return Math.round((expMidnight.getTime() - todayMidnight.getTime()) / (1000 * 60 * 60 * 24));
+    } else if (benefit.resetPeriod === 'annual-anniversary' && cardInstance.cardOpenDate) {
+      const openDate = new Date(cardInstance.cardOpenDate + 'T00:00:00');
+      let nextAnniv = new Date(year, openDate.getMonth(), openDate.getDate());
+      if (todayMidnight >= nextAnniv) {
+        nextAnniv = new Date(year + 1, openDate.getMonth(), openDate.getDate());
+      }
+      return Math.round((nextAnniv.getTime() - todayMidnight.getTime()) / (1000 * 60 * 60 * 24));
+    }
+    return null;
+  };
+
   // Scientific urgency sorting
   const getUrgencyScore = (ab: ActiveBenefit): number => {
     if (ab.isUsed) return 10000; // Checked is lowest priority
@@ -281,23 +321,44 @@ function App() {
       
     if (isExpired) return 9000; // Expired is second lowest priority
     
-    if (ab.benefit.resetPeriod === 'fixed' && ab.benefit.expirationDate) {
-      const expTime = new Date(ab.benefit.expirationDate + 'T00:00:00').getTime();
-      const curTime = currentDate.getTime();
-      const daysLeft = Math.ceil((expTime - curTime) / (1000 * 60 * 60 * 24));
-      return daysLeft; // Urgency score is number of days left (lower is higher priority)
-    }
-    
-    if (ab.benefit.resetPeriod === 'monthly') {
-      const lastDay = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate();
-      const daysLeft = lastDay - currentDate.getDate();
-      return daysLeft + 15; // Base urgency + offset slightly below fixed expirations
+    const daysLeft = getDaysLeft(ab);
+    if (daysLeft !== null) {
+      if (ab.benefit.resetPeriod === 'fixed') {
+        return daysLeft;
+      } else if (ab.benefit.resetPeriod === 'monthly') {
+        return daysLeft + 15;
+      } else if (ab.benefit.resetPeriod === 'quarterly') {
+        return daysLeft + 45;
+      } else if (ab.benefit.resetPeriod === 'semi-annual') {
+        return daysLeft + 90;
+      } else {
+        return daysLeft + 180;
+      }
     }
     
     return 200; // Other cyclical benefits have standard priority
   };
 
-  const sortedBenefits = [...filteredBenefits].sort((a, b) => getUrgencyScore(a) - getUrgencyScore(b));
+  const sortedBenefits = [...filteredBenefits].sort((a, b) => {
+    // Keep resolved/used items at the bottom of all sorting strategies
+    if (a.isUsed !== b.isUsed) {
+      return a.isUsed ? 1 : -1;
+    }
+
+    switch (sortBy) {
+      case 'value-desc':
+        return b.benefit.value - a.benefit.value;
+      case 'value-asc':
+        return a.benefit.value - b.benefit.value;
+      case 'expiry':
+        const daysA = getDaysLeft(a) ?? 9999;
+        const daysB = getDaysLeft(b) ?? 9999;
+        return daysA - daysB;
+      case 'urgency':
+      default:
+        return getUrgencyScore(a) - getUrgencyScore(b);
+    }
+  });
 
   const addOfferCard = ownedCards.find((c) => c.id === addOfferInstanceId);
 
@@ -498,6 +559,22 @@ function App() {
               )}
             </button>
 
+            {/* Calendar Sync Button */}
+            {ownedCards.length > 0 && (
+              <button
+                onClick={() => setIsSyncModalOpen(true)}
+                className={`p-2 rounded-xl border transition duration-300 active:scale-90 cursor-pointer ${
+                  themeClass(
+                    'bg-slate-900 border-slate-800 hover:bg-slate-800 text-amber-500',
+                    'bg-white border-slate-250 hover:bg-slate-100 text-amber-600 shadow-sm'
+                  )
+                }`}
+                title="Sync All Calendar Reminders"
+              >
+                <Calendar className="w-4 h-4" />
+              </button>
+            )}
+
             {currentDate.getMonth() !== new Date().getMonth() || currentDate.getFullYear() !== new Date().getFullYear() ? (
               <span className={`inline-flex items-center gap-1 px-2.5 py-1 text-[10px] font-bold text-amber-400 bg-amber-500/10 border rounded-lg animate-pulse ${
                 themeClass('border-amber-500/25', 'border-amber-500/40')
@@ -612,37 +689,44 @@ function App() {
 
           <div className="flex flex-wrap items-center gap-2">
             {activeTab !== 'cards' && (
-              <div className={`flex items-center gap-1 border rounded-lg px-2.5 py-1.5 text-xs transition duration-300 ${
-                themeClass('bg-slate-900 border-slate-800', 'bg-white border-slate-200 shadow-sm')
-              }`}>
-                <Filter className="w-3.5 h-3.5 text-slate-500" />
-                <select
-                  value={filterCategory}
-                  onChange={(e) => setFilterCategory(e.target.value)}
-                  className={`bg-transparent border-none focus:outline-none cursor-pointer font-medium ${themeClass('text-slate-300', 'text-slate-700')}`}
-                >
-                  <option value="all">All Categories</option>
-                  <option value="dining">Dining</option>
-                  <option value="travel">Travel</option>
-                  <option value="shopping">Shopping</option>
-                  <option value="entertainment">Entertainment</option>
-                  <option value="other">Other</option>
-                </select>
-              </div>
+              <>
+                <div className={`flex items-center gap-1 border rounded-lg px-2.5 py-1.5 text-xs transition duration-300 ${
+                  themeClass('bg-slate-900 border-slate-800', 'bg-white border-slate-200 shadow-sm')
+                }`}>
+                  <Filter className="w-3.5 h-3.5 text-slate-500" />
+                  <select
+                    value={filterCategory}
+                    onChange={(e) => setFilterCategory(e.target.value)}
+                    className={`bg-transparent border-none focus:outline-none cursor-pointer font-medium ${themeClass('text-slate-300', 'text-slate-700')}`}
+                  >
+                    <option value="all">All Categories</option>
+                    <option value="dining">Dining</option>
+                    <option value="travel">Travel</option>
+                    <option value="shopping">Shopping</option>
+                    <option value="entertainment">Entertainment</option>
+                    <option value="other">Other</option>
+                  </select>
+                </div>
+
+                <div className={`flex items-center gap-1.5 border rounded-lg px-2.5 py-1.5 text-xs transition duration-300 ${
+                  themeClass('bg-slate-900 border-slate-800', 'bg-white border-slate-200 shadow-sm')
+                }`}>
+                  <ArrowUpDown className="w-3.5 h-3.5 text-slate-500" />
+                  <select
+                    value={sortBy}
+                    onChange={(e) => setSortBy(e.target.value as any)}
+                    className={`bg-transparent border-none focus:outline-none cursor-pointer font-medium ${themeClass('text-slate-300', 'text-slate-700')}`}
+                  >
+                    <option value="urgency">Sort: Urgency</option>
+                    <option value="expiry">Sort: Expiration</option>
+                    <option value="value-desc">Sort: Value (High ➔ Low)</option>
+                    <option value="value-asc">Sort: Value (Low ➔ High)</option>
+                  </select>
+                </div>
+              </>
             )}
 
-            {ownedCards.length > 0 && (
-              <button
-                onClick={() => setIsSyncModalOpen(true)}
-                className={`flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-lg border transition active:scale-95 cursor-pointer ${
-                  themeClass('bg-slate-900 hover:bg-slate-855 border-slate-800 text-slate-300', 'bg-white hover:bg-slate-100 border-slate-255 text-slate-600 shadow-sm')
-                }`}
-                title="Sync All Calendar Reminders"
-              >
-                <Calendar className="w-3.5 h-3.5 text-amber-500" />
-                Calendar Sync
-              </button>
-            )}
+
           </div>
         </div>
 
@@ -677,44 +761,13 @@ function App() {
               </div>
             ) : (
               <div className="space-y-3">
-                {sortedBenefits.map(({ cardInstance, benefit, logKey, isUsed }) => {
+                {sortedBenefits.map((ab) => {
+                  const { cardInstance, benefit, logKey, isUsed } = ab;
                   const isExpired = !isUsed && benefit.resetPeriod === 'fixed' && 
                     !!benefit.expirationDate && 
                     new Date(benefit.expirationDate + 'T00:00:00') < currentDate;
 
-                  let daysLeft: number | null = null;
-                  const year = currentDate.getFullYear();
-                  const month = currentDate.getMonth(); // 0-11
-                  const todayMidnight = new Date(year, month, currentDate.getDate());
-
-                  if (benefit.resetPeriod === 'fixed' && benefit.expirationDate) {
-                    const expMidnight = new Date(benefit.expirationDate + 'T00:00:00');
-                    daysLeft = Math.round((expMidnight.getTime() - todayMidnight.getTime()) / (1000 * 60 * 60 * 24));
-                  } else if (benefit.resetPeriod === 'monthly') {
-                    const lastDay = new Date(year, month + 1, 0);
-                    const expMidnight = new Date(year, month, lastDay.getDate());
-                    daysLeft = Math.round((expMidnight.getTime() - todayMidnight.getTime()) / (1000 * 60 * 60 * 24));
-                  } else if (benefit.resetPeriod === 'quarterly') {
-                    const qEndMonth = Math.floor(month / 3) * 3 + 2;
-                    const lastDay = new Date(year, qEndMonth + 1, 0);
-                    const expMidnight = new Date(year, qEndMonth, lastDay.getDate());
-                    daysLeft = Math.round((expMidnight.getTime() - todayMidnight.getTime()) / (1000 * 60 * 60 * 24));
-                  } else if (benefit.resetPeriod === 'semi-annual') {
-                    const saEndMonth = month <= 5 ? 5 : 11;
-                    const lastDay = saEndMonth === 5 ? 30 : 31;
-                    const expMidnight = new Date(year, saEndMonth, lastDay);
-                    daysLeft = Math.round((expMidnight.getTime() - todayMidnight.getTime()) / (1000 * 60 * 60 * 24));
-                  } else if (benefit.resetPeriod === 'annual-calendar') {
-                    const expMidnight = new Date(year, 11, 31);
-                    daysLeft = Math.round((expMidnight.getTime() - todayMidnight.getTime()) / (1000 * 60 * 60 * 24));
-                  } else if (benefit.resetPeriod === 'annual-anniversary' && cardInstance.cardOpenDate) {
-                    const openDate = new Date(cardInstance.cardOpenDate + 'T00:00:00');
-                    let nextAnniv = new Date(year, openDate.getMonth(), openDate.getDate());
-                    if (todayMidnight >= nextAnniv) {
-                      nextAnniv = new Date(year + 1, openDate.getMonth(), openDate.getDate());
-                    }
-                    daysLeft = Math.round((nextAnniv.getTime() - todayMidnight.getTime()) / (1000 * 60 * 60 * 24));
-                  }
+                  const daysLeft = getDaysLeft(ab);
 
                   const isProgressive = !!benefit.spendingLimit;
                   const spent = isProgressive ? (Number(logs[logKey]) || 0) : 0;
