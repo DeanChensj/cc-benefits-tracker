@@ -682,11 +682,38 @@ function App() {
                     !!benefit.expirationDate && 
                     new Date(benefit.expirationDate + 'T00:00:00') < currentDate;
 
-                  let daysLeft = 0;
+                  let daysLeft: number | null = null;
+                  const year = currentDate.getFullYear();
+                  const month = currentDate.getMonth(); // 0-11
+                  const todayMidnight = new Date(year, month, currentDate.getDate());
+
                   if (benefit.resetPeriod === 'fixed' && benefit.expirationDate) {
-                    const expTime = new Date(benefit.expirationDate + 'T00:00:00').getTime();
-                    const curTime = currentDate.getTime();
-                    daysLeft = Math.ceil((expTime - curTime) / (1000 * 60 * 60 * 24));
+                    const expMidnight = new Date(benefit.expirationDate + 'T00:00:00');
+                    daysLeft = Math.round((expMidnight.getTime() - todayMidnight.getTime()) / (1000 * 60 * 60 * 24));
+                  } else if (benefit.resetPeriod === 'monthly') {
+                    const lastDay = new Date(year, month + 1, 0);
+                    const expMidnight = new Date(year, month, lastDay.getDate());
+                    daysLeft = Math.round((expMidnight.getTime() - todayMidnight.getTime()) / (1000 * 60 * 60 * 24));
+                  } else if (benefit.resetPeriod === 'quarterly') {
+                    const qEndMonth = Math.floor(month / 3) * 3 + 2;
+                    const lastDay = new Date(year, qEndMonth + 1, 0);
+                    const expMidnight = new Date(year, qEndMonth, lastDay.getDate());
+                    daysLeft = Math.round((expMidnight.getTime() - todayMidnight.getTime()) / (1000 * 60 * 60 * 24));
+                  } else if (benefit.resetPeriod === 'semi-annual') {
+                    const saEndMonth = month <= 5 ? 5 : 11;
+                    const lastDay = saEndMonth === 5 ? 30 : 31;
+                    const expMidnight = new Date(year, saEndMonth, lastDay);
+                    daysLeft = Math.round((expMidnight.getTime() - todayMidnight.getTime()) / (1000 * 60 * 60 * 24));
+                  } else if (benefit.resetPeriod === 'annual-calendar') {
+                    const expMidnight = new Date(year, 11, 31);
+                    daysLeft = Math.round((expMidnight.getTime() - todayMidnight.getTime()) / (1000 * 60 * 60 * 24));
+                  } else if (benefit.resetPeriod === 'annual-anniversary' && cardInstance.cardOpenDate) {
+                    const openDate = new Date(cardInstance.cardOpenDate + 'T00:00:00');
+                    let nextAnniv = new Date(year, openDate.getMonth(), openDate.getDate());
+                    if (todayMidnight >= nextAnniv) {
+                      nextAnniv = new Date(year + 1, openDate.getMonth(), openDate.getDate());
+                    }
+                    daysLeft = Math.round((nextAnniv.getTime() - todayMidnight.getTime()) / (1000 * 60 * 60 * 24));
                   }
 
                   const isProgressive = !!benefit.spendingLimit;
@@ -716,7 +743,7 @@ function App() {
                     >
                       <div className="flex items-center gap-3.5 pr-4 flex-grow">
                         <div className={`w-6 h-6 flex items-center justify-center rounded-lg border transition-colors duration-200 shrink-0 ${
-                          isExpired
+                           isExpired
                             ? 'border-red-900 bg-red-950/10 text-red-500'
                             : isUsed 
                             ? 'bg-emerald-500 border-emerald-500 text-slate-955' 
@@ -745,7 +772,7 @@ function App() {
                             
                             {isExpired ? (
                               <span className="text-[9px] font-bold bg-red-555/10 text-red-505 border border-red-505/20 px-1.5 py-0.2 rounded shrink-0">Expired</span>
-                            ) : benefit.resetPeriod === 'fixed' && benefit.expirationDate && (
+                            ) : !isUsed && daysLeft !== null && (
                               <span className={`text-[9px] font-bold border px-1.5 py-0.2 rounded shrink-0 ${
                                 daysLeft <= 5 
                                   ? 'bg-red-555/10 text-red-505 border-red-505/30 animate-pulse' 
