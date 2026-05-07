@@ -1,4 +1,5 @@
-import type { CardTemplate } from '../data/cards.db';
+import { CARDS_DB } from '../data/cards.db';
+import type { OwnedCardInstance } from '../store/useCardStore';
 
 // Format date to ICS format (YYYYMMDD or YYYYMMDDTHHMMSS)
 const formatICSDate = (date: Date): string => {
@@ -8,7 +9,7 @@ const formatICSDate = (date: Date): string => {
   return `${year}${month}${day}T090000`;
 };
 
-export const downloadICSFile = (ownedCards: CardTemplate[], cardAnniversaries: Record<string, string>) => {
+export const downloadICSFile = (ownedCards: OwnedCardInstance[]) => {
   let icsContent = [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
@@ -19,10 +20,15 @@ export const downloadICSFile = (ownedCards: CardTemplate[], cardAnniversaries: R
 
   const now = new Date();
 
-  ownedCards.forEach((card) => {
-    card.benefits.forEach((benefit) => {
-      const uid = `${card.id}-${benefit.id}@cc-benefits-tracker`;
-      const title = `💳 Use ${card.name} - ${benefit.name}`;
+  ownedCards.forEach((cardInstance) => {
+    // Retrieve the static card template to get its benefits
+    const template = CARDS_DB.find((t) => t.id === cardInstance.templateId);
+    if (!template) return;
+
+    template.benefits.forEach((benefit) => {
+      // Ensure unique UID per instance
+      const uid = `${cardInstance.id}-${benefit.id}@cc-benefits-tracker`;
+      const title = `💳 Use ${cardInstance.customName} - ${benefit.name}`;
       
       let rrule = '';
       let dtstart: Date;
@@ -46,11 +52,9 @@ export const downloadICSFile = (ownedCards: CardTemplate[], cardAnniversaries: R
         rrule = 'RRULE:FREQ=YEARLY';
       } else {
         // annual-anniversary
-        const anniversaryMonthStr = cardAnniversaries[card.id] || '01';
-        const anniversaryMonth = parseInt(anniversaryMonthStr, 10); // 1-12
+        const anniversaryMonth = parseInt(cardInstance.anniversaryMonth, 10); // 1-12
         
         // Reminder is set 10 days before the anniversary month ends
-        // Anniversary month is indexed 1-12, so to set to the 20th of the anniversary month:
         dtstart = new Date(now.getFullYear(), anniversaryMonth - 1, 20);
         if (dtstart < now) {
           dtstart.setFullYear(dtstart.getFullYear() + 1);
@@ -59,8 +63,7 @@ export const downloadICSFile = (ownedCards: CardTemplate[], cardAnniversaries: R
       }
 
       const dtstartStr = formatICSDate(dtstart);
-      // End of event is 1 hour later
-      const dtend = new Date(dtstart.getTime() + 60 * 60 * 1000);
+      const dtend = new Date(dtstart.getTime() + 60 * 60 * 1000); // 1 hr duration
       const dtendStr = formatICSDate(dtend);
 
       icsContent.push(

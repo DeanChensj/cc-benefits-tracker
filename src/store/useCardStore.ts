@@ -1,91 +1,113 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { CARDS_DB } from '../data/cards.db';
 
-// Structure for tracking when a benefit was resolved
-// Key: 
-// - Monthly: `YYYY-MM:cardId:benefitId`
-// - Semi-Annual: `YYYY-H1:cardId:benefitId` or `YYYY-H2:cardId:benefitId`
-// - Annual-Calendar: `YYYY:cardId:benefitId`
-// - Annual-Anniversary: `periodStartYear:cardId:benefitId`
+export interface OwnedCardInstance {
+  id: string; // Unique instance ID (e.g. inst_171500000)
+  templateId: string; // References the static CARDS_DB card id
+  customName: string; // User's label (e.g. "Amex Gold - Player 2")
+  anniversaryMonth: string; // '01'-'12'
+}
+
 export interface CardStore {
-  ownedCardIds: string[];
-  cardAnniversaries: Record<string, string>; // cardId -> 'MM' (anniversary month, e.g., '10' for October)
+  ownedCards: OwnedCardInstance[];
   logs: Record<string, boolean>; // logKey -> isUsed
-  
+
   // Actions
-  addCard: (cardId: string) => void;
-  removeCard: (cardId: string) => void;
-  setAnniversaryMonth: (cardId: string, month: string) => void;
+  addCard: (templateId: string) => void;
+  removeCard: (instanceId: string) => void;
+  renameCard: (instanceId: string, customName: string) => void;
+  setAnniversaryMonth: (instanceId: string, month: string) => void;
   toggleBenefit: (logKey: string) => void;
   resetAll: () => void;
 }
 
 // Helper to generate log key based on reset period and current date
 export const getLogKey = (
-  resetPeriod: 'monthly' | 'annual-calendar' | 'annual-anniversary' | 'semi-annual',
-  cardId: string,
+  resetPeriod: 'monthly' | 'semi-annual' | 'annual-calendar' | 'annual-anniversary',
+  instanceId: string, // Unique instance ID instead of template ID
   benefitId: string,
   currentDate: Date,
   anniversaryMonthStr?: string // '01' to '12'
 ): string => {
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth() + 1; // 1-12
-  
+
   switch (resetPeriod) {
     case 'monthly':
       const monthStr = month.toString().padStart(2, '0');
-      return `${year}-${monthStr}:${cardId}:${benefitId}`;
-      
+      return `${year}-${monthStr}:${instanceId}:${benefitId}`;
+
     case 'semi-annual':
       const half = month <= 6 ? 'H1' : 'H2';
-      return `${year}-${half}:${cardId}:${benefitId}`;
-      
+      return `${year}-${half}:${instanceId}:${benefitId}`;
+
     case 'annual-calendar':
-      return `${year}:${cardId}:${benefitId}`;
-      
+      return `${year}:${instanceId}:${benefitId}`;
+
     case 'annual-anniversary':
       const annMonth = parseInt(anniversaryMonthStr || '01', 10);
       // If current month is less than anniversary month, the period started in the previous calendar year
       const periodStartYear = month < annMonth ? year - 1 : year;
-      return `${periodStartYear}-anniversary:${cardId}:${benefitId}`;
-      
+      return `${periodStartYear}-anniversary:${instanceId}:${benefitId}`;
+
     default:
-      return `${year}-${month}:${cardId}:${benefitId}`;
+      return `${year}-${month}:${instanceId}:${benefitId}`;
   }
 };
 
 export const useCardStore = create<CardStore>()(
   persist(
     (set) => ({
-      ownedCardIds: [],
-      cardAnniversaries: {},
+      ownedCards: [],
       logs: {},
 
-      addCard: (cardId) =>
+      addCard: (templateId) =>
         set((state) => {
-          if (state.ownedCardIds.includes(cardId)) return state;
+          const template = CARDS_DB.find((c) => c.id === templateId);
+          if (!template) return state;
+
+          const uniqueId = `inst_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
           const currentMonth = (new Date().getMonth() + 1).toString().padStart(2, '0');
+
+          const newInstance: OwnedCardInstance = {
+            id: uniqueId,
+            templateId,
+            customName: template.name,
+            anniversaryMonth: currentMonth,
+          };
+
           return {
-            ownedCardIds: [...state.ownedCardIds, cardId],
-            cardAnniversaries: {
-              ...state.cardAnniversaries,
-              [cardId]: state.cardAnniversaries[cardId] || currentMonth,
-            },
+            ownedCards: [...state.ownedCards, newInstance],
           };
         }),
 
-      removeCard: (cardId) =>
+      removeCard: (instanceId) =>
         set((state) => ({
-          ownedCardIds: state.ownedCardIds.filter((id) => id !== cardId),
-          // Keep anniversary and logs just in case they re-add it
+          ownedCards: state.ownedCards.filter((c) => c.id !== instanceId),
+          // Clean up logs associated with this instanceId to keep storage clean
+          logs: Object.keys(state.logs).reduce((acc, key) => {
+            const parts = key.split(':');
+            // parts[1] is the instanceId (e.g., "period:instanceId:benefitId")
+            if (parts[1] !== instanceId) {
+              acc[key] = state.logs[key];
+            }
+            return acc;
+          }, {} as Record<string, boolean>),
         })),
 
-      setAnniversaryMonth: (cardId, month) =>
+      renameCard: (instanceId, customName) =>
         set((state) => ({
-          cardAnniversaries: {
-            ...state.cardAnniversaries,
-            [cardId]: month,
-          },
+          ownedCards: state.ownedCards.map((c) =>
+            c.id === instanceId ? { ...c, customName: customName.trim() || c.customName } : c
+          ),
+        })),
+
+      setAnniversaryMonth: (instanceId, month) =>
+        set((state) => ({
+          ownedCards: state.ownedCards.map((c) =>
+            c.id === instanceId ? { ...c, anniversaryMonth: month } : c
+          ),
         })),
 
       toggleBenefit: (logKey) =>
@@ -98,8 +120,7 @@ export const useCardStore = create<CardStore>()(
 
       resetAll: () =>
         set(() => ({
-          ownedCardIds: [],
-          cardAnniversaries: {},
+          ownedCards: [],
           logs: {},
         })),
     }),
