@@ -16,6 +16,8 @@ interface WalletCreditCardProps {
   setCardOpenDate: (instanceId: string, dateStr: string) => void;
   removeInstanceOffer: (instanceId: string, offerId: string) => void;
   updateCardMultipliers: (instanceId: string, multipliers: any) => void;
+  toggleSignupBonus: (instanceId: string) => void;
+  updateSignupBonusValue: (instanceId: string, value: number) => void;
   setAddOfferInstanceId: (instanceId: string) => void;
   themeClass: (dark: string, light: string) => string;
 }
@@ -34,6 +36,8 @@ export function WalletCreditCard({
   setCardOpenDate,
   removeInstanceOffer,
   updateCardMultipliers,
+  toggleSignupBonus,
+  updateSignupBonusValue,
   setAddOfferInstanceId,
   themeClass,
 }: WalletCreditCardProps) {
@@ -286,6 +290,44 @@ export function WalletCreditCard({
                   </div>
                 </div>
               ))}
+            </div>
+          </div>
+        )}
+
+        {/* 2.5. Premium Secured Sign-Up Bonus (SUB) Leverager with custom override */}
+        {template?.signupBonusValue !== undefined && (
+          <div className="mt-3 pt-3 border-t border-dashed border-white/10 dark:border-black/5 text-left animate-fade-in">
+            <div className={`flex items-center justify-between gap-3 p-2 rounded-xl border transition ${
+              isSilverCard
+                ? 'bg-black/5 border-black/5 text-slate-900 font-bold'
+                : 'bg-slate-955/30 border-white/5 text-slate-300'
+            }`}>
+              <label className="flex items-center gap-2 text-[10px] font-bold cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  checked={!!instance.signupBonusActive}
+                  onChange={() => toggleSignupBonus(instance.id)}
+                  className="w-3.5 h-3.5 text-purple-600 rounded border-slate-800 focus:ring-purple-500 cursor-pointer"
+                />
+                <span> Secured Sign-Up Bonus (SUB)</span>
+              </label>
+              {instance.signupBonusActive && (
+                <div className="flex items-center gap-1 text-[10px] font-mono shrink-0">
+                  <span className="text-slate-450 font-bold">$</span>
+                  <input
+                    type="number"
+                    min="0"
+                    max="99999"
+                    value={instance.signupBonusValue !== undefined ? instance.signupBonusValue : ''}
+                    onChange={(e) => updateSignupBonusValue(instance.id, Number(e.target.value) || 0)}
+                    className={`w-12 text-center text-[10px] font-black rounded focus:outline-none py-0.5 border ${
+                      isSilverCard
+                        ? 'bg-slate-950/10 border-slate-950/20 text-slate-950'
+                        : 'bg-slate-950 border-slate-800 text-slate-200'
+                    }`}
+                  />
+                </div>
+              )}
             </div>
           </div>
         )}

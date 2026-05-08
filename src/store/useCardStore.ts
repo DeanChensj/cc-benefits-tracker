@@ -17,6 +17,8 @@ export interface OwnedCardInstance {
   instanceOffers?: Benefit[]; // Temporary, instance-specific custom offers (e.g. Amex Offers)
   annualFee?: number; // Annual fee of the card instance
   multipliers?: Record<string, number | undefined>;
+  signupBonusActive?: boolean; // True if user secured the SUB!
+  signupBonusValue?: number; // Valuation of the secured SUB
 }
 
 export interface CardStore {
@@ -54,6 +56,10 @@ export interface CardStore {
   removeInstanceOffer: (instanceId: string, offerId: string) => void;
   // Multiplier Customizer Actions
   updateCardMultipliers: (instanceId: string, multipliers: OwnedCardInstance['multipliers']) => void;
+
+  // Sign-Up Bonus Actions
+  toggleSignupBonus: (instanceId: string) => void;
+  updateSignupBonusValue: (instanceId: string, value: number) => void;
 
   // Database Slimming Actions
   pruneExpiredLogs: (currentDate: Date) => void;
@@ -428,6 +434,41 @@ export const useCardStore = create<CardStore>()(
           return {
             ownedCards: nextCards,
           };
+        }),
+
+      toggleSignupBonus: (instanceId) =>
+        set((state) => {
+          const nextCards = state.ownedCards.map((c) => {
+            if (c.id === instanceId) {
+              const template = CARDS_DB.find((t) => t.id === c.templateId);
+              const defaultVal = c.signupBonusValue !== undefined 
+                ? c.signupBonusValue 
+                : (template?.signupBonusValue !== undefined ? template.signupBonusValue : 0);
+              return {
+                ...c,
+                signupBonusActive: !c.signupBonusActive,
+                signupBonusValue: defaultVal
+              };
+            }
+            return c;
+          });
+          syncPushToCloud(state.gdriveToken, nextCards, state.logs);
+          return { ownedCards: nextCards };
+        }),
+
+      updateSignupBonusValue: (instanceId, value) =>
+        set((state) => {
+          const nextCards = state.ownedCards.map((c) => {
+            if (c.id === instanceId) {
+              return {
+                ...c,
+                signupBonusValue: Math.max(0, value)
+              };
+            }
+            return c;
+          });
+          syncPushToCloud(state.gdriveToken, nextCards, state.logs);
+          return { ownedCards: nextCards };
         }),
 
       pruneExpiredLogs: (currentDate) =>

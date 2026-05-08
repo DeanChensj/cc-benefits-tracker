@@ -18,6 +18,7 @@ import { AnnualFeeWarningsWidget } from './components/AnnualFeeWarningsWidget';
 import { FilterHubPanel } from './components/FilterHubPanel';
 import { ChecklistCardRow } from './components/ChecklistCardRow';
 import { WalletCreditCard } from './components/WalletCreditCard';
+import { SavingsWrappedModal } from './components/SavingsWrappedModal';
 import { getLocalDateString, getDaysLeft, getUrgencyScore, getAnnualFeeWarningInfo, parseLogEntry, obfuscateKey } from './utils/dateUtils';
 import { loadGoogleGsiScript, requestGDriveToken, fetchUserEmail } from './utils/gdrive';
 import { 
@@ -34,7 +35,8 @@ import {
   Calendar,
   Trash2,
   DollarSign,
-  Clock
+  Clock,
+  Sparkles
 } from 'lucide-react';
 
 
@@ -62,6 +64,8 @@ function App() {
     addInstanceOffer,
     removeInstanceOffer,
     updateCardMultipliers,
+    toggleSignupBonus,
+    updateSignupBonusValue,
     pruneExpiredLogs,
     resetAll 
   } = useCardStore();
@@ -83,6 +87,7 @@ function App() {
   const [activeTemplateDetail, setActiveTemplateDetail] = useState<CardTemplate | null>(null);
   const [isSyncDropdownOpen, setIsSyncDropdownOpen] = useState(false);
   const [showAdvancedSync, setShowAdvancedSync] = useState(false);
+  const [isWrappedModalOpen, setIsWrappedModalOpen] = useState(false);
   const [addOfferInstanceId, setAddOfferInstanceId] = useState<string | null>(null);
   const [deleteCardInstanceId, setDeleteCardInstanceId] = useState<string | null>(null);
   const [isGDriveDisconnectOpen, setIsGDriveDisconnectOpen] = useState(false);
@@ -316,8 +321,12 @@ function App() {
 
   // Helper to calculate recouped value of a specific card instance
   const getCardRecoupedValue = (instanceId: string): number => {
+    const instance = ownedCards.find((c) => c.id === instanceId);
+    const subValue = (instance?.signupBonusActive && instance.signupBonusValue !== undefined) 
+      ? instance.signupBonusValue 
+      : 0;
     const cardBenefits = activeBenefits.filter((ab) => ab.cardInstance.id === instanceId);
-    const sum = cardBenefits.reduce((s, ab) => s + getResolvedValue(ab), 0);
+    const sum = cardBenefits.reduce((s, ab) => s + getResolvedValue(ab), subValue);
     return Math.round(sum * 100) / 100;
   };
 
@@ -496,6 +505,18 @@ function App() {
           </div>
 
           <div className="flex items-center gap-3 self-end sm:self-auto animate-fade-in">
+            {/* Year-End Savings Wrapped Button (Viral Growth Magnet!) */}
+            {ownedCards.length > 0 && (
+              <button
+                onClick={() => setIsWrappedModalOpen(true)}
+                className="flex items-center gap-1 px-3 py-2 rounded-xl border bg-gradient-to-tr from-purple-600/15 via-indigo-600/10 to-purple-600/15 border-purple-500/30 hover:border-purple-400/50 text-purple-400 hover:text-purple-300 font-extrabold text-xs transition duration-300 active:scale-90 cursor-pointer shadow-md shadow-purple-500/5 animate-pulse"
+                title="View and Share your Personal Churner Savings Wrapped Poster!"
+              >
+                <Sparkles className="w-3.5 h-3.5 text-amber-400 shrink-0 animate-spin-slow" />
+                <span>Wrapped 👑</span>
+              </button>
+            )}
+
             {/* Google Drive Cloud Sync Widget */}
             <div className="relative">
               <button
@@ -944,6 +965,8 @@ function App() {
                         setCardOpenDate={setCardOpenDate}
                         removeInstanceOffer={removeInstanceOffer}
                         updateCardMultipliers={updateCardMultipliers}
+                        toggleSignupBonus={toggleSignupBonus}
+                        updateSignupBonusValue={updateSignupBonusValue}
                         setAddOfferInstanceId={setAddOfferInstanceId}
                         themeClass={themeClass}
                       />
@@ -1228,6 +1251,15 @@ function App() {
         onCancel={() => setIsWipeDataOpen(false)}
         theme={theme}
         type="danger"
+      />
+
+      {/* Premium Savings Wrapped Poster Modal */}
+      <SavingsWrappedModal
+        isOpen={isWrappedModalOpen}
+        onClose={() => setIsWrappedModalOpen(false)}
+        ownedCards={ownedCards}
+        resolvedValue={resolvedValue}
+        themeClass={themeClass}
       />
 
       {/* Premium Floating Toast Notification */}

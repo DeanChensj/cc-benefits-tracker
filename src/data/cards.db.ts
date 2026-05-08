@@ -17,6 +17,7 @@ export interface CardTemplate {
   annualFee: number; // USD Annual Fee of the card
   benefits: Benefit[];
   officialUrl?: string; // Official card application / detail landing page URL
+  signupBonusValue?: number; // Pre-populated signup bonus value in USD
 }
 
 export const CARDS_DB: CardTemplate[] = [
@@ -27,6 +28,7 @@ export const CARDS_DB: CardTemplate[] = [
     color: 'from-[#c5a059] via-[#fdf2d5] to-[#9c7a3c]',
     annualFee: 320,
     officialUrl: 'https://www.americanexpress.com/us/credit-cards/card/gold-card/',
+    signupBonusValue: 800,
     benefits: [
       {
         id: 'amex-gold-uber',
@@ -69,6 +71,7 @@ export const CARDS_DB: CardTemplate[] = [
     color: 'from-slate-400 via-slate-200 to-slate-600',
     annualFee: 895,
     officialUrl: 'https://www.americanexpress.com/us/credit-cards/card/platinum/',
+    signupBonusValue: 1250,
     benefits: [
       {
         id: 'amex-plat-uber',
@@ -227,6 +230,7 @@ export const CARDS_DB: CardTemplate[] = [
     color: 'from-zinc-400 via-zinc-200 to-zinc-600',
     annualFee: 695,
     officialUrl: 'https://www.americanexpress.com/us/credit-cards/business/business-credit-cards/american-express-business-platinum-credit-card-amex/',
+    signupBonusValue: 1500,
     benefits: [
       {
         id: 'biz-plat-dell',
@@ -337,6 +341,7 @@ export const CARDS_DB: CardTemplate[] = [
     color: 'from-blue-700 to-indigo-900',
     annualFee: 795,
     officialUrl: 'https://creditcards.chase.com/rewards-credit-cards/sapphire/reserve',
+    signupBonusValue: 900,
     benefits: [
       {
         id: 'csr-travel',
@@ -379,6 +384,7 @@ export const CARDS_DB: CardTemplate[] = [
     color: 'from-blue-850 via-blue-950 to-slate-950',
     annualFee: 95,
     officialUrl: 'https://creditcards.chase.com/rewards-credit-cards/sapphire/preferred',
+    signupBonusValue: 750,
     benefits: [
       {
         id: 'csp-hotel',
@@ -480,6 +486,7 @@ export const CARDS_DB: CardTemplate[] = [
     color: 'from-teal-600 to-emerald-800',
     annualFee: 395,
     officialUrl: 'https://www.capitalone.com/credit-cards/venture-x/',
+    signupBonusValue: 750,
     benefits: [
       {
         id: 'vx-travel',
