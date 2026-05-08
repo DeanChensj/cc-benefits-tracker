@@ -118,7 +118,7 @@ export function SavingsWrappedModal({
     };
   });
 
-  // Helper to pre-render the SVG into a static PNG image in the background
+  // Helper to pre-render the SVG into a static SVG Blob URL in the background
   const updatePosterImage = async () => {
     if (!svgRef.current) return;
     try {
@@ -141,43 +141,22 @@ export function SavingsWrappedModal({
           imgNode.setAttribute('href', base64Qr);
         }
         
+        // Directly serialize SVG XML to a secure same-origin Blob URL
         const svgString = new XMLSerializer().serializeToString(svgElement);
         const svgBlob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
-        const URL = window.URL || window.webkitURL || window;
-        const blobURL = URL.createObjectURL(svgBlob);
         
-        const image = new Image();
-        image.src = blobURL;
+        // Revoke previously generated Blob URL first to prevent memory leaks!
+        if (posterDataUrl && posterDataUrl.startsWith('blob:')) {
+          URL.revokeObjectURL(posterDataUrl);
+        }
         
-        image.onload = () => {
-          try {
-            const canvas = document.createElement('canvas');
-            canvas.width = 760;  // 2x retina scale
-            canvas.height = 1350;
-            const ctx = canvas.getContext('2d');
-            
-            if (ctx) {
-              ctx.drawImage(image, 0, 0, 760, 1350);
-              canvas.toBlob((pngBlob) => {
-                if (pngBlob) {
-                  if (posterDataUrl && posterDataUrl.startsWith('blob:')) {
-                    URL.revokeObjectURL(posterDataUrl);
-                  }
-                  const pngBlobUrl = URL.createObjectURL(pngBlob);
-                  setPosterDataUrl(pngBlobUrl);
-                }
-              }, 'image/png');
-            }
-          } catch (err) {
-            console.warn('⚠️ Canvas pre-rendering blocked by browser sandbox:', err);
-          } finally {
-            // Restore original external href to keep the live DOM cleanly connected
-            if (imgNode && originalHref) {
-              imgNode.setAttribute('href', originalHref);
-            }
-            URL.revokeObjectURL(blobURL);
-          }
-        };
+        const svgBlobUrl = URL.createObjectURL(svgBlob);
+        setPosterDataUrl(svgBlobUrl); // ➔ Direct SVG Blob URL! No canvas, 100% WKWebView compliant!
+        
+        // Restore original external href to keep the live DOM cleanly connected
+        if (imgNode && originalHref) {
+          imgNode.setAttribute('href', originalHref);
+        }
       };
     } catch (err) {
       console.error('Failed to pre-render poster image:', err);
