@@ -118,14 +118,14 @@ export function SavingsWrappedModal({
     };
   });
 
-  // Helper to pre-render the SVG into a static SVG Blob URL in the background
+  // Helper to pre-render the SVG into a static PNG image in the background
   const updatePosterImage = async () => {
     if (!svgRef.current) return;
     try {
       const svgElement = svgRef.current;
       
-      // Preload GDrive or qrserver QR code as a Base64 Data URI to bypass browser SVG canvas sandbox block!
-      const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(currentUrl)}`;
+      // Preload GDrive or Google Charts QR code as a Base64 Data URI (Google API supports CORS out-of-the-box!)
+      const qrUrl = `https://chart.googleapis.com/chart?cht=qr&chs=150x150&chl=${encodeURIComponent(currentUrl)}`;
       const response = await fetch(qrUrl);
       const blob = await response.blob();
       
@@ -141,22 +141,43 @@ export function SavingsWrappedModal({
           imgNode.setAttribute('href', base64Qr);
         }
         
-        // Directly serialize SVG XML to a secure same-origin Blob URL
         const svgString = new XMLSerializer().serializeToString(svgElement);
         const svgBlob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
+        const URL = window.URL || window.webkitURL || window;
+        const blobURL = URL.createObjectURL(svgBlob);
         
-        // Revoke previously generated Blob URL first to prevent memory leaks!
-        if (posterDataUrl && posterDataUrl.startsWith('blob:')) {
-          URL.revokeObjectURL(posterDataUrl);
-        }
+        const image = new Image();
+        image.src = blobURL;
         
-        const svgBlobUrl = URL.createObjectURL(svgBlob);
-        setPosterDataUrl(svgBlobUrl); // ➔ Direct SVG Blob URL! No canvas, 100% WKWebView compliant!
-        
-        // Restore original external href to keep the live DOM cleanly connected
-        if (imgNode && originalHref) {
-          imgNode.setAttribute('href', originalHref);
-        }
+        image.onload = () => {
+          try {
+            const canvas = document.createElement('canvas');
+            canvas.width = 760;  // 2x retina scale
+            canvas.height = 1350;
+            const ctx = canvas.getContext('2d');
+            
+            if (ctx) {
+              ctx.drawImage(image, 0, 0, 760, 1350);
+              canvas.toBlob((pngBlob) => {
+                if (pngBlob) {
+                  if (posterDataUrl && posterDataUrl.startsWith('blob:')) {
+                    URL.revokeObjectURL(posterDataUrl);
+                  }
+                  const pngBlobUrl = URL.createObjectURL(pngBlob);
+                  setPosterDataUrl(pngBlobUrl);
+                }
+              }, 'image/png');
+            }
+          } catch (err) {
+            console.warn('⚠️ Canvas pre-rendering blocked by browser sandbox:', err);
+          } finally {
+            // Restore original external href to keep the live DOM cleanly connected
+            if (imgNode && originalHref) {
+              imgNode.setAttribute('href', originalHref);
+            }
+            URL.revokeObjectURL(blobURL);
+          }
+        };
       };
     } catch (err) {
       console.error('Failed to pre-render poster image:', err);
@@ -189,8 +210,8 @@ export function SavingsWrappedModal({
     try {
       const svgElement = svgRef.current;
       
-      // Preload GDrive or qrserver QR code as a Base64 Data URI to bypass browser SVG canvas sandbox block!
-      const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(currentUrl)}`;
+      // Preload GDrive or Google Charts QR code as a Base64 Data URI (Google API supports CORS out-of-the-box!)
+      const qrUrl = `https://chart.googleapis.com/chart?cht=qr&chs=150x150&chl=${encodeURIComponent(currentUrl)}`;
       const response = await fetch(qrUrl);
       const blob = await response.blob();
       
@@ -307,21 +328,20 @@ export function SavingsWrappedModal({
 
           {/* Crisp Vector SVG Poster Container (9:16 proportion) */}
           <div className="relative w-full aspect-[9/16] rounded-2xl overflow-hidden shadow-2xl border border-white/10 select-none shrink-0 max-w-[280px] sm:max-w-[360px] mx-auto bg-gradient-to-b from-slate-950 via-slate-900 to-indigo-950 text-white">
-            {/* Transparent PNG Image Overlay layer allowing native mobile OS long-press 'Save to Photos'! */}
-            {posterDataUrl && (
+            {posterDataUrl ? (
               <img 
                 src={posterDataUrl} 
-                alt="Long press to save to Photos!" 
-                className="absolute inset-0 w-full h-full opacity-0 z-20 cursor-pointer select-none pointer-events-auto"
+                alt="Savings Wrapped Poster" 
+                className="w-full h-full object-cover cursor-pointer pointer-events-auto animate-fade-in"
                 style={{ WebkitTouchCallout: 'default' }}
               />
-            )}
-            <svg 
-              ref={svgRef}
-              xmlns="http://www.w3.org/2000/svg" 
-              viewBox="0 0 380 675" 
-              className="w-full h-full"
-            >
+            ) : (
+              <svg 
+                ref={svgRef}
+                xmlns="http://www.w3.org/2000/svg" 
+                viewBox="0 0 380 675" 
+                className="w-full h-full"
+              >
               {/* Definitions for Gradients and 3D Filters */}
               <defs>
                 <linearGradient id="brushedGold" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -504,6 +524,7 @@ export function SavingsWrappedModal({
                 height="36" 
               />
             </svg>
+            )}
           </div>
         </div>
 

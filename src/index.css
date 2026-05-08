@@ -70,3 +70,17 @@
     opacity: 1;
   }
 }
+
+/* Premium micro-animations for mobile responsive bottom sheets (NO horizontal offsets!) */
+@utility animate-slide-sheet {
+  animation: slideSheet 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes slideSheet {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
