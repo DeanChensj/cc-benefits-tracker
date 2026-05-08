@@ -1,46 +1,27 @@
-const CACHE_NAME = 'cc-tracker-cache-v1';
-const ASSETS_TO_CACHE = [
-  './',
-  './index.html',
-  './manifest.json',
-  './icon.png'
-];
+// Safe, transparent pass-through service worker for PWA compliance
+// Does not lock index.html cache, preventing hashed JS bundle 404 white-screen crashes!
 
-// Install Service Worker and cache core assets
 self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then((cache) => cache.addAll(ASSETS_TO_CACHE))
-      .then(() => self.skipWaiting())
-  );
+  self.skipWaiting();
 });
 
-// Activate Service Worker and clear old caches
 self.addEventListener('activate', (event) => {
+  // Clear any old caches that could be causing white-screens
   event.waitUntil(
     caches.keys().then((cacheNames) => {
       return Promise.all(
-        cacheNames.map((cache) => {
-          if (cache !== CACHE_NAME) {
-            return caches.delete(cache);
-          }
-        })
+        cacheNames.map((cache) => caches.delete(cache))
       );
     }).then(() => self.clients.claim())
   );
 });
 
-// Intercept requests and serve from cache when offline
+// Simple network-first transparent fetch handler
 self.addEventListener('fetch', (event) => {
   event.respondWith(
-    caches.match(event.request)
-      .then((response) => {
-        return response || fetch(event.request).catch(() => {
-          // Fallback to index.html if offline and navigating
-          if (event.request.mode === 'navigate') {
-            return caches.match('./index.html');
-          }
-        });
-      })
+    fetch(event.request).catch(() => {
+      // Fallback if offline
+      return caches.match(event.request);
+    })
   );
 });
