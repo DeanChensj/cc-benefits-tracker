@@ -3,6 +3,8 @@ import { persist } from 'zustand/middleware';
 import { CARDS_DB } from '../data/cards.db';
 import type { Benefit } from '../data/cards.db';
 import { findSyncFile, uploadSyncFile, downloadSyncFile } from '../utils/gdrive';
+import type { LogEntry } from '../utils/dateUtils';
+import { obfuscateKey, deobfuscateKey, parseLogEntry } from '../utils/dateUtils';
 
 export interface OwnedCardInstance {
   id: string; // Unique instance ID (e.g. inst_171500000)
@@ -19,7 +21,7 @@ export interface OwnedCardInstance {
 
 export interface CardStore {
   ownedCards: OwnedCardInstance[];
-  logs: Record<string, boolean | number>; // logKey -> boolean (resolved) or number (spent progress value)
+  logs: Record<string, LogEntry>; // ObfuscatedKey -> LogEntry object
   theme: 'dark' | 'light'; // App theme selection
   language: 'zh' | 'en'; // App language selection
   
@@ -118,7 +120,7 @@ export const getLogKey = (
 };
 
 // Helper to push updates to Google Drive silently in the background
-const syncPushToCloud = async (token: string | null, ownedCards: OwnedCardInstance[], logs: Record<string, boolean | number>) => {
+const syncPushToCloud = async (token: string | null, ownedCards: OwnedCardInstance[], logs: Record<string, LogEntry>) => {
   if (!token) return;
   try {
     const fileId = await findSyncFile(token);
@@ -195,7 +197,7 @@ export const useCardStore = create<CardStore>()(
               acc[key] = state.logs[key];
             }
             return acc;
-          }, {} as Record<string, boolean | number>);
+          }, {} as Record<string, LogEntry>);
 
           syncPushToCloud(state.gdriveToken, nextCards, nextLogs);
 
@@ -231,10 +233,17 @@ export const useCardStore = create<CardStore>()(
 
       toggleBenefit: (logKey) =>
         set((state) => {
-          const nextLogs = {
-            ...state.logs,
-            [logKey]: !state.logs[logKey],
-          };
+          const nextLogs = { ...state.logs };
+          const obfuscatedKey = obfuscateKey(logKey);
+          if (nextLogs[obfuscatedKey]) {
+            delete nextLogs[obfuscatedKey];
+          } else {
+            nextLogs[obfuscatedKey] = {
+              resolved: true,
+              timestamp: Date.now(),
+              value: 0,
+            };
+          }
           syncPushToCloud(state.gdriveToken, state.ownedCards, nextLogs);
 
           return {
@@ -244,10 +253,19 @@ export const useCardStore = create<CardStore>()(
 
       updateProgressLog: (logKey, spent) =>
         set((state) => {
-          const nextLogs = {
-            ...state.logs,
-            [logKey]: Math.max(0, spent),
-          };
+          const nextLogs = { ...state.logs };
+          const obfuscatedKey = obfuscateKey(logKey);
+          const spentVal = Math.max(0, spent);
+          if (spentVal === 0) {
+            delete nextLogs[obfuscatedKey];
+          } else {
+            nextLogs[obfuscatedKey] = {
+              resolved: true,
+              timestamp: Date.now(),
+              value: 0,
+              spentProgress: spentVal,
+            };
+          }
           syncPushToCloud(state.gdriveToken, state.ownedCards, nextLogs);
 
           return {
@@ -326,12 +344,19 @@ export const useCardStore = create<CardStore>()(
 
             const mergedLogs = { ...logs };
             Object.entries(remoteLogs).forEach(([key, val]) => {
+              const remoteValStr = val as string;
               if (mergedLogs[key] === undefined) {
-                mergedLogs[key] = val as boolean | number;
-              } else if (typeof val === 'number' && typeof mergedLogs[key] === 'number') {
-                mergedLogs[key] = Math.max(Number(mergedLogs[key]), Number(val));
-              } else if (val === true || mergedLogs[key] === true) {
-                mergedLogs[key] = true;
+                mergedLogs[key] = remoteValStr;
+              } else {
+                // Both have this key. Keep the latest click update based on UNIX timestamp!
+                const localParts = mergedLogs[key].split('|');
+                const remoteParts = remoteValStr.split('|');
+                const localTime = parseInt(localParts[0], 10) || 0;
+                const remoteTime = parseInt(remoteParts[0], 10) || 0;
+                
+                if (remoteTime > localTime) {
+                  mergedLogs[key] = remoteValStr;
+                }
               }
             });
 
@@ -414,19 +439,41 @@ export const useCardStore = create<CardStore>()(
           let prunedAny = false;
 
           Object.keys(nextLogs).forEach((key) => {
-            const parts = key.split('_');
-            const dateSegment = parts[parts.length - 1];
-            if (dateSegment && dateSegment.length >= 4) {
-              const logYear = parseInt(dateSegment.substring(0, 4), 10);
-              if (!isNaN(logYear) && (currentYear - logYear > 1)) {
-                delete nextLogs[key];
-                prunedAny = true;
+            const val = nextLogs[key] as any;
+
+            // 1. Self-Healing Migration: Check if it is a legacy plain key (starts with 'benefit_')
+            if (key.startsWith('benefit_')) {
+              delete nextLogs[key];
+              
+              // Parse whatever value format it has (boolean, number, string, or rich object)
+              const parsed = parseLogEntry(val);
+              if (parsed) {
+                const obfuscatedKey = obfuscateKey(key);
+                nextLogs[obfuscatedKey] = {
+                  resolved: true,
+                  timestamp: parsed.timestamp instanceof Date ? parsed.timestamp.getTime() : Number(parsed.timestamp) || Date.now(),
+                  value: parsed.value || 0,
+                  spentProgress: parsed.spentProgress,
+                };
+              }
+              prunedAny = true;
+            } else {
+              // 2. Standard Date Pruning: It is already obfuscated. Deobfuscate to check date!
+              const plainKey = deobfuscateKey(key);
+              const parts = plainKey.split('_');
+              const dateSegment = parts[parts.length - 1];
+              if (dateSegment && dateSegment.length >= 4) {
+                const logYear = parseInt(dateSegment.substring(0, 4), 10);
+                if (!isNaN(logYear) && (currentYear - logYear > 1)) {
+                  delete nextLogs[key];
+                  prunedAny = true;
+                }
               }
             }
           });
 
           if (prunedAny) {
-            console.log('🧹 Automatic Database Slimming: Pruned expired logs older than 2 years.');
+            console.log('🧹 Database Auto-Healing & Slimming: Pruned/migrated logs successfully.');
             syncPushToCloud(state.gdriveToken, state.ownedCards, nextLogs);
             return { logs: nextLogs };
           }

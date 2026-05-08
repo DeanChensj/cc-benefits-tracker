@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 
 import { ConfirmationModal } from './ConfirmationModal';
+import { parseLogEntry, LogEntry } from '../utils/dateUtils';
 
 interface RemainingBenefit {
   cardInstance: OwnedCardInstance;
@@ -23,7 +24,7 @@ interface RemainingBenefit {
 
 interface SpentAssistantProps {
   remainingBenefits: RemainingBenefit[];
-  logs: Record<string, boolean | number>;
+  logs: Record<string, LogEntry>;
   theme: 'dark' | 'light';
   showToast?: (message: string, type?: 'success' | 'error' | 'info' | 'warning') => void;
 }
@@ -136,7 +137,8 @@ export function SpentAssistant({ remainingBenefits, logs, theme, showToast }: Sp
       // Assemble Card Context
       const activeBenefitsText = remainingBenefits.map((ab) => {
         if (ab.benefit.spendingLimit) {
-          const spent = Number(logs[ab.logKey]) || 0;
+          const entry = parseLogEntry(logs[ab.logKey]);
+          const spent = entry?.spentProgress || 0;
           return `- [Progressive Limit perk] ${ab.benefit.name} (Currently Spent: $${spent} / $${ab.benefit.spendingLimit}, Cashback value: $${ab.benefit.value}, Category: ${ab.benefit.category}, Period: ${ab.benefit.resetPeriod}) on card "${ab.cardInstance.customName}"`;
         }
         return `- [Remaining perk] ${ab.benefit.name} (Value: $${ab.benefit.value}, Category: ${ab.benefit.category}, Period: ${ab.benefit.resetPeriod}${

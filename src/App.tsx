@@ -18,7 +18,7 @@ import { AnnualFeeWarningsWidget } from './components/AnnualFeeWarningsWidget';
 import { FilterHubPanel } from './components/FilterHubPanel';
 import { ChecklistCardRow } from './components/ChecklistCardRow';
 import { WalletCreditCard } from './components/WalletCreditCard';
-import { getLocalDateString, getDaysLeft, getUrgencyScore, getAnnualFeeWarningInfo } from './utils/dateUtils';
+import { getLocalDateString, getDaysLeft, getUrgencyScore, getAnnualFeeWarningInfo, parseLogEntry, obfuscateKey } from './utils/dateUtils';
 import { loadGoogleGsiScript, requestGDriveToken, fetchUserEmail } from './utils/gdrive';
 import { 
   CreditCard, 
@@ -280,10 +280,12 @@ function App() {
         benefit.expirationDate
       );
       
-      // Progress evaluation for progressive benefits
+      const obfuscatedKey = obfuscateKey(logKey);
+      const logVal = logs[obfuscatedKey];
+      const parsed = parseLogEntry(logVal);
       const isUsed = benefit.spendingLimit
-        ? (Number(logs[logKey]) || 0) >= benefit.spendingLimit
-        : !!logs[logKey];
+        ? (parsed?.spentProgress || 0) >= benefit.spendingLimit
+        : !!parsed;
 
       // Dynamically compute precision date-level expiration for anniversary benefits
       let resolvedExpirationDate = benefit.expirationDate;
@@ -321,16 +323,19 @@ function App() {
 
   // Helper to calculate resolved value dynamically (supports progressive spends & binary logs)
   const getResolvedValue = (ab: ActiveBenefit): number => {
-    const logVal = logs[ab.logKey];
+    const logVal = logs[obfuscateKey(ab.logKey)];
     if (!logVal) return 0;
     
+    const parsed = parseLogEntry(logVal);
+    if (!parsed) return 0;
+    
     if (ab.benefit.spendingLimit) {
-      const spent = Number(logVal) || 0;
+      const spent = parsed.spentProgress || 0;
       const progressPercent = Math.min(spent / ab.benefit.spendingLimit, 1);
       return Math.round((ab.benefit.value * progressPercent) * 100) / 100;
     }
     
-    return logVal === true ? ab.benefit.value : 0;
+    return ab.benefit.value;
   };
 
   const getExpiredValue = (ab: ActiveBenefit): number => {

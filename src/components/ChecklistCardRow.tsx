@@ -1,9 +1,10 @@
 import { CheckCircle2 } from 'lucide-react';
-import type { ActiveBenefit } from '../utils/dateUtils';
+import type { ActiveBenefit, LogEntry } from '../utils/dateUtils';
+import { parseLogEntry, obfuscateKey } from '../utils/dateUtils';
 
 interface ChecklistCardRowProps {
   ab: ActiveBenefit;
-  logs: Record<string, boolean | number>;
+  logs: Record<string, LogEntry>;
   daysLeft: number | null;
   isExpired: boolean;
   isProgressive: boolean;
@@ -141,7 +142,7 @@ export function ChecklistCardRow({
               type="number"
               disabled={isExpired}
               placeholder="0"
-              value={logs[logKey] !== undefined && logs[logKey] !== false ? String(logs[logKey]) : ''}
+              value={(() => { const p = parseLogEntry(logs[obfuscateKey(logKey)]); return p && p.spentProgress !== undefined ? String(p.spentProgress) : ''; })()}
               onChange={(e) => {
                 const val = Number(e.target.value);
                 updateProgressLog(logKey, val);
