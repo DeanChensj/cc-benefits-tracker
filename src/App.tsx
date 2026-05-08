@@ -218,11 +218,12 @@ function App() {
   };
 
   const exportBackup = () => {
-    const { ownedCards, logs } = useCardStore.getState();
+    const { ownedCards, loyaltyAwards, logs } = useCardStore.getState();
     const backupData = {
-      version: '1.0.0',
+      version: '1.1.0',
       timestamp: new Date().toISOString(),
       ownedCards,
+      loyaltyAwards,
       logs
     };
     const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(backupData, null, 2));
@@ -245,7 +246,9 @@ function App() {
           if (parsed.ownedCards && parsed.logs) {
             useCardStore.setState({
               ownedCards: parsed.ownedCards,
-              logs: parsed.logs
+              loyaltyAwards: parsed.loyaltyAwards || [],
+              logs: parsed.logs,
+              walletLastModified: Date.now()
             });
             showToast('🎉 Backup restored successfully!');
           } else {
