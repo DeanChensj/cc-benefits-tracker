@@ -61,7 +61,7 @@ export async function fetchUserEmail(token: string): Promise<string> {
 
 // Search for cc_tracker_sync.json inside user's private, hidden appDataFolder
 export async function findSyncFile(token: string): Promise<string | null> {
-  const query = encodeURIComponent("name = 'cc_tracker_sync.json' and parents in 'appDataFolder'");
+  const query = encodeURIComponent("name = 'cc_tracker_sync.json' and parents in 'appDataFolder' and trashed = false");
   const response = await fetch(
     `https://www.googleapis.com/drive/v3/files?q=${query}&spaces=appDataFolder&fields=files(id,name)`,
     {
