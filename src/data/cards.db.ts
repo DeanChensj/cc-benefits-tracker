@@ -12,7 +12,7 @@ export interface Benefit {
 export interface CardTemplate {
   id: string;
   name: string;
-  bank: 'Amex' | 'Chase' | 'Capital One' | 'Other';
+  bank: 'Amex' | 'Chase' | 'Citi' | 'Other';
   color: string; // Tailwind gradient classes
   annualFee: number; // USD Annual Fee of the card
   benefits: Benefit[];
@@ -482,7 +482,7 @@ export const CARDS_DB: CardTemplate[] = [
   {
     id: 'capital-one-venture-x',
     name: 'Capital One Venture X',
-    bank: 'Capital One',
+    bank: 'Other',
     color: 'from-teal-600 to-emerald-800',
     annualFee: 395,
     officialUrl: 'https://www.capitalone.com/credit-cards/venture-x/',
@@ -516,6 +516,160 @@ export const CARDS_DB: CardTemplate[] = [
         spendingLimit: 1500
       }
     ]
+  },
+  {
+    id: 'amex-marriott-brilliant',
+    name: 'Amex Marriott Bonvoy Brilliant',
+    bank: 'Amex',
+    color: 'from-neutral-900 via-stone-950 to-stone-900',
+    annualFee: 650,
+    officialUrl: 'https://www.americanexpress.com/us/credit-cards/card/marriott-bonvoy-brilliant/',
+    benefits: [
+      {
+        id: 'marriott-brilliant-dining',
+        name: '$300 Dining Credit',
+        description: 'Get up to $25 back per month in statement credits for global restaurant purchases.',
+        value: 300,
+        resetPeriod: 'monthly',
+        category: 'dining'
+      },
+      {
+        id: 'marriott-brilliant-fnr',
+        name: 'Anniversary Free Night (85K)',
+        description: '1 Free Night Award every year after card anniversary, valid up to 85,000 Marriott points.',
+        value: 450,
+        resetPeriod: 'annual-anniversary',
+        category: 'travel'
+      }
+    ]
+  },
+  {
+    id: 'citi-custom-cash',
+    name: 'Citi Custom Cash',
+    bank: 'Citi',
+    color: 'from-blue-600 to-blue-900',
+    annualFee: 0,
+    officialUrl: 'https://www.citi.com/credit-cards/citi-custom-cash-credit-card',
+    benefits: [
+      {
+        id: 'citi-custom-5percent',
+        name: '5% Cashback on Top Category',
+        description: '5% cash back on your highest eligible spend category each billing cycle, up to $500 spent ($25/mo cash back).',
+        value: 300,
+        resetPeriod: 'monthly',
+        category: 'shopping',
+        spendingLimit: 500
+      }
+    ]
+  },
+  {
+    id: 'amex-biz-gold',
+    name: 'Amex Business Gold',
+    bank: 'Amex',
+    color: 'from-amber-600 via-amber-700 to-amber-900',
+    annualFee: 375,
+    officialUrl: 'https://www.americanexpress.com/us/credit-cards/business/business-credit-cards/american-express-business-gold-card-amex/',
+    benefits: [
+      {
+        id: 'biz-gold-office-transit',
+        name: '$240 Office Supply & Transit',
+        description: 'Get up to $20 back per month in statement credits for U.S. office supply store or transit purchases.',
+        value: 240,
+        resetPeriod: 'monthly',
+        category: 'shopping'
+      }
+    ]
+  },
+  {
+    id: 'chase-ink-cash',
+    name: 'Chase Ink Business Cash',
+    bank: 'Chase',
+    color: 'from-slate-700 via-slate-800 to-slate-900',
+    annualFee: 0,
+    officialUrl: 'https://creditcards.chase.com/business-credit-cards/ink/cash',
+    benefits: [
+      {
+        id: 'ink-cash-5percent',
+        name: '5% Office Supply & Telecom',
+        description: '5% cash back on the first $25,000 spent in combined purchases at office supply stores and on internet/phone services each card anniversary year.',
+        value: 1250,
+        resetPeriod: 'annual-anniversary',
+        category: 'shopping',
+        spendingLimit: 25000
+      }
+    ]
+  },
+  {
+    id: 'chase-freedom-unlimited',
+    name: 'Chase Freedom Unlimited',
+    bank: 'Chase',
+    color: 'from-blue-500 to-indigo-700',
+    annualFee: 0,
+    officialUrl: 'https://creditcards.chase.com/cash-back-credit-cards/freedom/unlimited',
+    benefits: []
+  },
+  {
+    id: 'amex-bce',
+    name: 'Amex Blue Cash Everyday',
+    bank: 'Amex',
+    color: 'from-sky-600 via-sky-700 to-blue-800',
+    annualFee: 0,
+    officialUrl: 'https://www.americanexpress.com/us/credit-cards/card/blue-cash-everyday/',
+    benefits: [
+      {
+        id: 'bce-disney',
+        name: '$84 Disney Bundle Credit',
+        description: 'Get a $7 monthly statement credit after spending $9.99 or more on Disney Bundle subscriptions.',
+        value: 84,
+        resetPeriod: 'monthly',
+        category: 'shopping'
+      },
+      {
+        id: 'bce-homechef',
+        name: '$180 Home Chef Credit',
+        description: 'Get up to $15 back per month in statement credits for Home Chef meal kit purchases.',
+        value: 180,
+        resetPeriod: 'monthly',
+        category: 'dining'
+      }
+    ]
+  },
+  {
+    id: 'citi-premier',
+    name: 'Citi Premier',
+    bank: 'Citi',
+    color: 'from-cyan-600 to-blue-800',
+    annualFee: 95,
+    officialUrl: 'https://www.citi.com/credit-cards/citi-strata-premier-credit-card',
+    benefits: [
+      {
+        id: 'strata-premier-hotel',
+        name: '$100 Annual Hotel Benefit',
+        description: '$100 off a single hotel stay of $500 or more (excluding taxes/fees) booked through CitiTravel.com each calendar year.',
+        value: 100,
+        resetPeriod: 'annual-calendar',
+        category: 'travel'
+      }
+    ]
+  },
+  {
+    id: 'citi-aa-platinum-select',
+    name: 'Citi AAdvantage Platinum Select',
+    bank: 'Citi',
+    color: 'from-slate-500 via-slate-600 to-zinc-700',
+    annualFee: 99,
+    officialUrl: 'https://www.citi.com/credit-cards/citi-aadvantage-platinum-select-credit-card',
+    benefits: [
+      {
+        id: 'citi-aa-flight-discount',
+        name: '$125 Flight Discount',
+        description: 'Earn a $125 American Airlines Flight Discount after spending $20,000 or more during your cardmembership year.',
+        value: 125,
+        resetPeriod: 'annual-anniversary',
+        category: 'travel',
+        spendingLimit: 20000
+      }
+    ]
   }
 ];
 
@@ -533,5 +687,13 @@ export const CARD_MULTIPLIERS: Record<string, { dining?: number; travel?: number
   'chase-hyatt': { travel: 4, dining: 2 }, // 4x Hyatt, 2x Dining
   'chase-marriott-boundless': { travel: 6, dining: 2 }, // 6x Marriott, 2x Dining
   'chase-ihg-premier': { travel: 10, dining: 5 }, // 10x IHG, 5x Dining
-  'capitalone-venture-x': { travel: 2, dining: 2, shopping: 2, entertainment: 2 } // 2x everything
+  'capitalone-venture-x': { travel: 2, dining: 2, shopping: 2, entertainment: 2 }, // 2x everything
+  'amex-marriott-brilliant': { travel: 6, dining: 3 }, // 6x Marriott, 3x Dining
+  'citi-custom-cash': { shopping: 5 }, // 5x top category
+  'amex-biz-gold': { travel: 4, shopping: 4 }, // 4x transit/office
+  'chase-ink-cash': { shopping: 5 }, // 5x office/telecom
+  'chase-freedom-unlimited': { dining: 3, travel: 1.5, shopping: 1.5 }, // 3x dining, 1.5x flat
+  'amex-bce': { shopping: 3 }, // 3x groceries/online
+  'citi-premier': { travel: 3, dining: 3, shopping: 3 }, // 3x travel/dining/supermarket
+  'citi-aa-platinum-select': { travel: 2, dining: 2, shopping: 2 } // 2x AA Flights/Dining/Gas Stations
 };

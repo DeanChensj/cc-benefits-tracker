@@ -1021,7 +1021,7 @@ function App() {
               </div>
 
               <div className="space-y-8">
-                {(['Amex', 'Chase', 'Capital One', 'Other'] as const).map((bankName) => {
+                {(['Amex', 'Chase', 'Citi', 'Other'] as const).map((bankName) => {
                   const bankCards = CARDS_DB.filter((c) => c.bank === bankName).filter((c) => {
                     // Search Query Check
                     const matchesSearch = c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -1042,10 +1042,10 @@ function App() {
                         <div className={`w-2 h-2 rounded-full ${
                           bankName === 'Amex' ? 'bg-amber-500' :
                           bankName === 'Chase' ? 'bg-blue-500' :
-                          bankName === 'Capital One' ? 'bg-teal-500' : 'bg-orange-500'
+                          bankName === 'Citi' ? 'bg-red-500' : 'bg-orange-500'
                         }`} />
                         <h4 className={`text-xs font-bold uppercase tracking-wider ${themeClass('text-slate-400', 'text-slate-500')}`}>
-                          {bankName === 'Amex' ? 'American Express' : bankName} Templates
+                          {bankName === 'Amex' ? 'American Express' : bankName === 'Citi' ? 'Citibank' : bankName === 'Other' ? 'Other Banks' : bankName} Templates
                         </h4>
                         <span className="text-[10px] text-slate-600 font-semibold ml-auto">
                           {bankCards.length} templates
