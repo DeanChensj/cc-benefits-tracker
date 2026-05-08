@@ -344,18 +344,16 @@ export const useCardStore = create<CardStore>()(
 
             const mergedLogs = { ...logs };
             Object.entries(remoteLogs).forEach(([key, val]) => {
-              const remoteValStr = val as string;
+              const remoteVal = val as LogEntry;
               if (mergedLogs[key] === undefined) {
-                mergedLogs[key] = remoteValStr;
+                mergedLogs[key] = remoteVal;
               } else {
                 // Both have this key. Keep the latest click update based on UNIX timestamp!
-                const localParts = mergedLogs[key].split('|');
-                const remoteParts = remoteValStr.split('|');
-                const localTime = parseInt(localParts[0], 10) || 0;
-                const remoteTime = parseInt(remoteParts[0], 10) || 0;
+                const localTime = mergedLogs[key].timestamp || 0;
+                const remoteTime = remoteVal.timestamp || 0;
                 
                 if (remoteTime > localTime) {
-                  mergedLogs[key] = remoteValStr;
+                  mergedLogs[key] = remoteVal;
                 }
               }
             });
@@ -451,7 +449,7 @@ export const useCardStore = create<CardStore>()(
                 const obfuscatedKey = obfuscateKey(key);
                 nextLogs[obfuscatedKey] = {
                   resolved: true,
-                  timestamp: parsed.timestamp instanceof Date ? parsed.timestamp.getTime() : Number(parsed.timestamp) || Date.now(),
+                  timestamp: Number(parsed.timestamp) || Date.now(),
                   value: parsed.value || 0,
                   spentProgress: parsed.spentProgress,
                 };

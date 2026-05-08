@@ -14,7 +14,8 @@ import {
 } from 'lucide-react';
 
 import { ConfirmationModal } from './ConfirmationModal';
-import { parseLogEntry, LogEntry } from '../utils/dateUtils';
+import { parseLogEntry } from '../utils/dateUtils';
+import type { LogEntry } from '../utils/dateUtils';
 
 interface RemainingBenefit {
   cardInstance: OwnedCardInstance;
