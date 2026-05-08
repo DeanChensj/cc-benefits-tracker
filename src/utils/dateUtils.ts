@@ -80,3 +80,36 @@ export const getUrgencyScore = (ab: ActiveBenefit, currentDate: Date): number =>
   
   return 200; // Other cyclical benefits have standard priority
 };
+
+export interface AnnualFeeWarning {
+  nextAnniversaryDate: Date;
+  daysUntil: number;
+  isWarningZone: boolean;
+}
+
+export const getAnnualFeeWarningInfo = (
+  cardOpenDateStr: string,
+  currentDate: Date
+): AnnualFeeWarning => {
+  const year = currentDate.getFullYear();
+  const todayMidnight = new Date(year, currentDate.getMonth(), currentDate.getDate());
+  const openDate = new Date(cardOpenDateStr + 'T00:00:00');
+
+  // Calculate the anniversary in the current calendar year
+  let nextAnniv = new Date(year, openDate.getMonth(), openDate.getDate());
+
+  // If the anniversary this year has already passed, or is the opening day itself, schedule for next year
+  if (todayMidnight > nextAnniv || nextAnniv.getTime() <= openDate.getTime()) {
+    nextAnniv = new Date(year + 1, openDate.getMonth(), openDate.getDate());
+  }
+
+  const diffTime = nextAnniv.getTime() - todayMidnight.getTime();
+  const daysUntil = Math.round(diffTime / (1000 * 60 * 60 * 24));
+
+  // Warning zone is within 30 days of the annual fee anniversary
+  return {
+    nextAnniversaryDate: nextAnniv,
+    daysUntil,
+    isWarningZone: daysUntil >= 0 && daysUntil <= 30
+  };
+};
