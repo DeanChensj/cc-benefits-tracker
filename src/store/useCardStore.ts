@@ -14,6 +14,7 @@ export interface OwnedCardInstance {
   customBenefits?: Benefit[]; // Custom base benefits for custom cards
   instanceOffers?: Benefit[]; // Temporary, instance-specific custom offers (e.g. Amex Offers)
   annualFee?: number; // Annual fee of the card instance
+  multipliers?: Record<string, number>;
 }
 
 export interface CardStore {
@@ -49,6 +50,8 @@ export interface CardStore {
   // Instance Offer Actions
   addInstanceOffer: (instanceId: string, offer: Omit<Benefit, 'id'>) => void;
   removeInstanceOffer: (instanceId: string, offerId: string) => void;
+  // Multiplier Customizer Actions
+  updateCardMultipliers: (instanceId: string, multipliers: OwnedCardInstance['multipliers']) => void;
 
   resetAll: () => void;
 }
@@ -285,7 +288,6 @@ export const useCardStore = create<CardStore>()(
         try {
           const fileId = await findSyncFile(gdriveToken);
           if (!fileId) {
-            // No backup file exists yet, upload current local state
             const dataToUpload = { ownedCards, logs };
             await uploadSyncFile(gdriveToken, null, dataToUpload);
             set({ 
@@ -293,12 +295,10 @@ export const useCardStore = create<CardStore>()(
               lastSyncedTime: new Date().toLocaleTimeString() 
             });
           } else {
-            // Backup file exists, download and perform two-way merge
             const remoteData = await downloadSyncFile(gdriveToken, fileId);
             const remoteCards = remoteData.ownedCards || [];
             const remoteLogs = remoteData.logs || {};
 
-            // 1. Merge owned cards by unique ID (union)
             const localCards = [...ownedCards];
             const mergedCards = [...localCards];
             
@@ -307,7 +307,6 @@ export const useCardStore = create<CardStore>()(
               if (!exists) {
                 mergedCards.push(rc);
               } else {
-                // Merge custom instance offers safely if card exists
                 const localInstanceIndex = mergedCards.findIndex((lc) => lc.id === rc.id);
                 if (localInstanceIndex !== -1 && rc.instanceOffers) {
                   const localOffers = mergedCards[localInstanceIndex].instanceOffers || [];
@@ -322,21 +321,17 @@ export const useCardStore = create<CardStore>()(
               }
             });
 
-            // 2. Merge logs by deterministic key
             const mergedLogs = { ...logs };
             Object.entries(remoteLogs).forEach(([key, val]) => {
               if (mergedLogs[key] === undefined) {
                 mergedLogs[key] = val as boolean | number;
               } else if (typeof val === 'number' && typeof mergedLogs[key] === 'number') {
-                // For progressive spent limits, pick the higher spending progress
                 mergedLogs[key] = Math.max(Number(mergedLogs[key]), Number(val));
               } else if (val === true || mergedLogs[key] === true) {
-                // For binary statement credits, if one is checked, it is completed
                 mergedLogs[key] = true;
               }
             });
 
-            // 3. Upload merged state back to Drive and save locally
             const finalMergedData = { ownedCards: mergedCards, logs: mergedLogs };
             await uploadSyncFile(gdriveToken, fileId, finalMergedData);
 
@@ -394,6 +389,21 @@ export const useCardStore = create<CardStore>()(
           };
         }),
 
+      updateCardMultipliers: (instanceId, multipliers) =>
+        set((state) => {
+          const nextCards = state.ownedCards.map((c) => {
+            if (c.id === instanceId) {
+              return { ...c, multipliers };
+            }
+            return c;
+          });
+          syncPushToCloud(state.gdriveToken, nextCards, state.logs);
+          
+          return {
+            ownedCards: nextCards,
+          };
+        }),
+
       resetAll: () =>
         set(() => ({
           ownedCards: [],
@@ -403,13 +413,15 @@ export const useCardStore = create<CardStore>()(
     }),
     {
       name: 'cc-benefits-tracker-storage',
-      // Do NOT persist Google Drive credentials in LocalStorage to maintain 100% security
+      // Persist connection indicators, but NEVER the raw temporary gdriveToken to maintain 100% security
       partialize: (state) => ({
         ownedCards: state.ownedCards,
         logs: state.logs,
         theme: state.theme,
         language: state.language,
-        customClientId: state.customClientId, // Persist the custom Client ID
+        customClientId: state.customClientId,
+        gdriveEmail: state.gdriveEmail, // Persist email connection state
+        syncStatus: state.syncStatus === 'synced' ? 'synced' : 'disconnected', // Persist connection status
       }),
     }
   )

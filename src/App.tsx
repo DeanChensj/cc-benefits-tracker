@@ -78,6 +78,7 @@ function App() {
     updateProgressLog,
     addInstanceOffer,
     removeInstanceOffer,
+    updateCardMultipliers,
     resetAll 
   } = useCardStore();
 
@@ -387,8 +388,11 @@ function App() {
 
       ownedCards.forEach((instance) => {
         let mult = 0;
-        // 1. Search in static multipliers
-        if (instance.templateId !== 'custom') {
+        // 1. Check if the instance has manually customized overrides
+        if (instance.multipliers?.[cat] !== undefined) {
+          mult = instance.multipliers[cat]!;
+        } else if (instance.templateId !== 'custom') {
+          // 2. Fallback to static standard template multipliers
           mult = CARD_MULTIPLIERS[instance.templateId]?.[cat] || 0;
         }
         
@@ -1214,9 +1218,18 @@ function App() {
                     const recouped = getCardRecoupedValue(instance.id);
                     const isRecouped = cardFee > 0 && recouped >= cardFee;
                     
-                    // Meticulous contrast fix: Amex Platinum and Business Platinum have bright silver-grey metal card backgrounds.
-                    // Force elegant high-contrast slate text overlays for readability on these two specific cards!
                     const isSilverCard = instance.templateId === 'amex-platinum' || instance.templateId === 'amex-biz-platinum';
+
+                    // Pre-load standard audited default point multipliers for placeholder rendering in editor
+                    const defaultDining = CARD_MULTIPLIERS[instance.templateId]?.dining || 1;
+                    const defaultTravel = CARD_MULTIPLIERS[instance.templateId]?.travel || 1;
+                    const defaultShopping = CARD_MULTIPLIERS[instance.templateId]?.shopping || 1; // Supermarket/Groceries
+                    const defaultEntertainment = CARD_MULTIPLIERS[instance.templateId]?.entertainment || 1; // Streaming
+
+                    // Meticulous product design: Only show the point customizer for custom cards or standard rotating cards (CFF, Discover)
+                    const canCustomizePoints = instance.templateId === 'custom' || 
+                                               instance.templateId === 'chase-freedom-flex' || 
+                                               instance.templateId === 'discover-it-cashback';
 
                     return (
                       <div 
@@ -1445,6 +1458,127 @@ function App() {
                                   ))}
                                 </div>
                               </div>
+                            )}
+
+                            {/* 3. Premium Custom Point Multipliers Editor */}
+                            {canCustomizePoints && (
+                              <div className="mt-3 pt-3 border-t border-dashed border-white/10 dark:border-black/5 space-y-2 text-left">
+                              <p className={`text-[8.5px] font-black uppercase tracking-widest flex items-center gap-1 ${
+                                isSilverCard ? 'text-indigo-950' : 'text-purple-400 dark:text-purple-500'
+                              }`}>
+                                <span>⚡ Custom Point Multipliers</span>
+                              </p>
+                              <div className="grid grid-cols-2 gap-2">
+                                {/* Dining */}
+                                <div className={`flex items-center justify-between gap-2 border p-1.5 rounded-lg ${
+                                  isSilverCard 
+                                    ? 'bg-black/5 border-black/5 text-slate-900' 
+                                    : 'bg-slate-955/25 border-white/5 text-slate-300'
+                                }`}>
+                                  <span className={`text-[9px] font-bold ${isSilverCard ? 'text-slate-850' : 'text-slate-400'}`}>🍽️ Dining</span>
+                                  <input
+                                    type="number"
+                                    min="1"
+                                    max="99"
+                                    placeholder={`${defaultDining}x`}
+                                    value={instance.multipliers?.dining !== undefined ? instance.multipliers.dining : ''}
+                                    onChange={(e) => {
+                                      const val = e.target.value === '' ? undefined : Math.max(1, Number(e.target.value));
+                                      updateCardMultipliers(instance.id, {
+                                        ...instance.multipliers,
+                                        dining: val
+                                      });
+                                    }}
+                                    className={`w-9 text-center text-[10px] font-black rounded focus:outline-none py-0.2 ${
+                                      isSilverCard 
+                                        ? 'bg-slate-950/15 border border-slate-950/20 text-slate-950' 
+                                        : 'bg-slate-950 border border-slate-800 text-slate-200'
+                                    }`}
+                                  />
+                                </div>
+                                {/* Travel */}
+                                <div className={`flex items-center justify-between gap-2 border p-1.5 rounded-lg ${
+                                  isSilverCard 
+                                    ? 'bg-black/5 border-black/5 text-slate-900' 
+                                    : 'bg-slate-955/25 border-white/5 text-slate-300'
+                                }`}>
+                                  <span className={`text-[9px] font-bold ${isSilverCard ? 'text-slate-850' : 'text-slate-400'}`}>✈️ Travel</span>
+                                  <input
+                                    type="number"
+                                    min="1"
+                                    max="99"
+                                    placeholder={`${defaultTravel}x`}
+                                    value={instance.multipliers?.travel !== undefined ? instance.multipliers.travel : ''}
+                                    onChange={(e) => {
+                                      const val = e.target.value === '' ? undefined : Math.max(1, Number(e.target.value));
+                                      updateCardMultipliers(instance.id, {
+                                        ...instance.multipliers,
+                                        travel: val
+                                      });
+                                    }}
+                                    className={`w-9 text-center text-[10px] font-black rounded focus:outline-none py-0.2 ${
+                                      isSilverCard 
+                                        ? 'bg-slate-950/15 border border-slate-950/20 text-slate-950' 
+                                        : 'bg-slate-950 border border-slate-800 text-slate-200'
+                                    }`}
+                                  />
+                                </div>
+                                {/* Shopping / Groceries */}
+                                <div className={`flex items-center justify-between gap-2 border p-1.5 rounded-lg ${
+                                  isSilverCard 
+                                    ? 'bg-black/5 border-black/5 text-slate-900' 
+                                    : 'bg-slate-955/25 border-white/5 text-slate-300'
+                                }`}>
+                                  <span className={`text-[9px] font-bold ${isSilverCard ? 'text-slate-850' : 'text-slate-400'}`}>🛍️ Groceries</span>
+                                  <input
+                                    type="number"
+                                    min="1"
+                                    max="99"
+                                    placeholder={`${defaultShopping}x`}
+                                    value={instance.multipliers?.shopping !== undefined ? instance.multipliers.shopping : ''}
+                                    onChange={(e) => {
+                                      const val = e.target.value === '' ? undefined : Math.max(1, Number(e.target.value));
+                                      updateCardMultipliers(instance.id, {
+                                        ...instance.multipliers,
+                                        shopping: val
+                                      });
+                                    }}
+                                    className={`w-9 text-center text-[10px] font-black rounded focus:outline-none py-0.2 ${
+                                      isSilverCard 
+                                        ? 'bg-slate-950/15 border border-slate-950/20 text-slate-950' 
+                                        : 'bg-slate-950 border border-slate-800 text-slate-200'
+                                    }`}
+                                  />
+                                </div>
+                                {/* Entertainment / Streaming */}
+                                <div className={`flex items-center justify-between gap-2 border p-1.5 rounded-lg ${
+                                  isSilverCard 
+                                    ? 'bg-black/5 border-black/5 text-slate-900' 
+                                    : 'bg-slate-955/25 border-white/5 text-slate-300'
+                                }`}>
+                                  <span className={`text-[9px] font-bold ${isSilverCard ? 'text-slate-850' : 'text-slate-400'}`}>🎬 Streaming</span>
+                                  <input
+                                    type="number"
+                                    min="1"
+                                    max="99"
+                                    placeholder={`${defaultEntertainment}x`}
+                                    value={instance.multipliers?.entertainment !== undefined ? instance.multipliers.entertainment : ''}
+                                    onChange={(e) => {
+                                      const val = e.target.value === '' ? undefined : Math.max(1, Number(e.target.value));
+                                      updateCardMultipliers(instance.id, {
+                                        ...instance.multipliers,
+                                        entertainment: val
+                                      });
+                                    }}
+                                    className={`w-9 text-center text-[10px] font-black rounded focus:outline-none py-0.2 ${
+                                      isSilverCard 
+                                        ? 'bg-slate-950/15 border border-slate-950/20 text-slate-950' 
+                                        : 'bg-slate-950 border border-slate-800 text-slate-200'
+                                    }`}
+                                  />
+                                </div>
+                              </div>
+                            </div>
                             )}
                           </div>
 
