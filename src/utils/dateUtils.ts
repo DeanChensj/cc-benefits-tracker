@@ -1,11 +1,12 @@
 import type { OwnedCardInstance } from '../store/useCardStore';
-import type { Benefit } from '../data/cards.db';
+import type { Benefit, LoyaltyAward } from '../data/cards.db';
 
 export interface ActiveBenefit {
-  cardInstance: OwnedCardInstance;
+  cardInstance?: OwnedCardInstance;
   benefit: Benefit;
   logKey: string;
   isUsed: boolean;
+  loyaltyAward?: LoyaltyAward;
 }
 
 export const getLocalDateString = (date = new Date()): string => {
@@ -51,7 +52,7 @@ export const getDaysLeft = (ab: ActiveBenefit, currentDate: Date): number | null
   } else if (benefit.resetPeriod === 'annual-calendar') {
     const expMidnight = new Date(year, 11, 31);
     return Math.round((expMidnight.getTime() - todayMidnight.getTime()) / (1000 * 60 * 60 * 24));
-  } else if (benefit.resetPeriod === 'annual-anniversary' && cardInstance.cardOpenDate) {
+  } else if (benefit.resetPeriod === 'annual-anniversary' && cardInstance && cardInstance.cardOpenDate) {
     const openDate = new Date(cardInstance.cardOpenDate + 'T00:00:00');
     let nextAnniv = new Date(year, openDate.getMonth(), openDate.getDate());
     if (todayMidnight >= nextAnniv) {

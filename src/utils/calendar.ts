@@ -1,5 +1,5 @@
-import { CARDS_DB } from '../data/cards.db';
-import type { Benefit } from '../data/cards.db';
+import { CARDS_DB, AWARD_TEMPLATES } from '../data/cards.db';
+import type { Benefit, LoyaltyAward } from '../data/cards.db';
 import type { OwnedCardInstance } from '../store/useCardStore';
 
 // Format date to ICS format (YYYYMMDD or YYYYMMDDTHHMMSS)
@@ -15,7 +15,7 @@ const formatICSDateTimeUTC = (date: Date): string => {
   return date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
 };
 
-export const downloadICSFile = (ownedCards: OwnedCardInstance[]) => {
+export const downloadICSFile = (ownedCards: OwnedCardInstance[], loyaltyAwards?: LoyaltyAward[]) => {
   let icsContent = [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
@@ -102,6 +102,41 @@ export const downloadICSFile = (ownedCards: OwnedCardInstance[]) => {
         'END:VEVENT'
       );
     });
+  });
+
+  // Integrate standalone loyalty awards into active calendar events subscription cleanly
+  (loyaltyAwards || []).forEach((award) => {
+    if (award.isUsed || !award.expirationDate) return;
+
+    const isCustom = award.templateId === 'custom';
+    const info = isCustom ? {
+      name: award.customName || 'Custom Voucher',
+      brand: award.customBrand || 'Other',
+      value: award.customValue || 0
+    } : AWARD_TEMPLATES[award.templateId];
+
+    const uid = `${award.id}@cc-benefits-tracker`;
+    const title = `🎁 Expiring: ${info.name} (${award.quantity}x)`;
+    const exp = new Date(award.expirationDate + 'T00:00:00');
+    
+    // Set alert 10 days before expiration date
+    const dtstart = new Date(exp.getTime() - 10 * 24 * 60 * 60 * 1000);
+    const dtstartStr = formatICSDate(dtstart);
+    const dtend = new Date(dtstart.getTime() + 60 * 60 * 1000); // 1 hr duration
+    const dtendStr = formatICSDate(dtend);
+    
+    const description = `${award.notes || 'Standalone card voucher.'} (Total value: $${info.value * award.quantity})`;
+
+    icsContent.push(
+      'BEGIN:VEVENT',
+      `UID:${uid}`,
+      `DTSTAMP:${formatICSDateTimeUTC(new Date())}`,
+      `DTSTART:${dtstartStr}`,
+      `DTEND:${dtendStr}`,
+      `SUMMARY:${title}`,
+      `DESCRIPTION:${description}`,
+      'END:VEVENT'
+    );
   });
 
   icsContent.push('END:VCALENDAR');

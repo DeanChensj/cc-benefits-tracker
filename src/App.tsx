@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 // Meticulously audited and verified PWA release build with dynamic re-auth and contrast fixes
 import { CARDS_DB, CARD_MULTIPLIERS, AWARD_TEMPLATES } from './data/cards.db';
-import type { CardTemplate, Benefit } from './data/cards.db';
+import type { CardTemplate, Benefit, LoyaltyAward } from './data/cards.db';
 import { useCardStore, getLogKey } from './store/useCardStore';
 import type { OwnedCardInstance } from './store/useCardStore';
 import { SpentAssistant } from './components/SpentAssistant';
@@ -259,11 +259,12 @@ function App() {
 
   // Flat list of all active benefits based on instances
   interface ActiveBenefit {
-    cardInstance: OwnedCardInstance;
+    cardInstance?: OwnedCardInstance;
     template?: CardTemplate;
     benefit: Benefit;
     logKey: string;
     isUsed: boolean;
+    loyaltyAward?: LoyaltyAward;
   }
 
   const activeBenefits: ActiveBenefit[] = [];
@@ -326,19 +327,55 @@ function App() {
     });
   });
 
+  // Append active standalone loyalty awards into checklist benefits cleanly!
+  loyaltyAwards.forEach((award) => {
+    const isCustom = award.templateId === 'custom';
+    const info = isCustom ? {
+      name: award.customName || 'Custom Voucher',
+      brand: award.customBrand || 'Other',
+      programType: award.customProgramType || 'other',
+      awardType: award.customAwardType || 'other',
+      value: award.customValue || 0
+    } : AWARD_TEMPLATES[award.templateId];
+
+    const totalVal = info.value * award.quantity;
+
+    // Synthesize standard Benefit object
+    const synthesizedBenefit: Benefit = {
+      id: award.id,
+      name: info.name,
+      description: award.notes || `${info.brand} standalone award.`,
+      value: totalVal,
+      resetPeriod: 'fixed',
+      expirationDate: award.expirationDate,
+      category: info.programType === 'hotel' ? 'travel' : info.programType === 'bank' ? 'shopping' : 'other'
+    };
+
+    activeBenefits.push({
+      benefit: synthesizedBenefit,
+      logKey: award.id,
+      isUsed: award.isUsed,
+      loyaltyAward: award
+    });
+  });
+
   // Helper to calculate recouped value of a specific card instance
   const getCardRecoupedValue = (instanceId: string): number => {
     const instance = ownedCards.find((c) => c.id === instanceId);
     const subValue = (instance?.signupBonusActive && instance.signupBonusValue !== undefined) 
       ? instance.signupBonusValue 
       : 0;
-    const cardBenefits = activeBenefits.filter((ab) => ab.cardInstance.id === instanceId);
+    const cardBenefits = activeBenefits.filter((ab) => ab.cardInstance && ab.cardInstance.id === instanceId);
     const sum = cardBenefits.reduce((s, ab) => s + getResolvedValue(ab), subValue);
     return Math.round(sum * 100) / 100;
   };
 
-  // Helper to calculate resolved value dynamically (supports progressive spends & binary logs)
+  // Helper to calculate resolved value dynamically (supports progressive spends, binary logs, and standalone awards)
   const getResolvedValue = (ab: ActiveBenefit): number => {
+    if (ab.loyaltyAward) {
+      return ab.isUsed ? ab.benefit.value : 0;
+    }
+
     const logVal = logs[obfuscateKey(ab.logKey)];
     if (!logVal) return 0;
     
@@ -355,9 +392,9 @@ function App() {
   };
 
   const getExpiredValue = (ab: ActiveBenefit): number => {
-    const isExpired = ab.benefit.resetPeriod === 'fixed' && 
-      !!ab.benefit.expirationDate && 
-      new Date(ab.benefit.expirationDate + 'T00:00:00') < currentDate;
+    const isExpired = ab.loyaltyAward
+      ? (!ab.isUsed && !!ab.benefit.expirationDate && new Date(ab.benefit.expirationDate + 'T00:00:00') < currentDate)
+      : (ab.benefit.resetPeriod === 'fixed' && !!ab.benefit.expirationDate && new Date(ab.benefit.expirationDate + 'T00:00:00') < currentDate);
       
     if (!isExpired) return 0;
     return ab.benefit.value - getResolvedValue(ab);
@@ -440,20 +477,20 @@ function App() {
     return hasWinner ? winners : null;
   })();
 
-  // Calculate actual remaining, non-expired active benefits for the AI SpentAssistant
+  // Calculate actual remaining, non-expired active benefits for the AI SpentAssistant (cards only)
   const remainingBenefits = activeBenefits.filter((ab) => {
-    if (ab.isUsed) return false;
+    if (ab.isUsed || !ab.cardInstance) return false;
     const isExpired = ab.benefit.resetPeriod === 'fixed' && 
       ab.benefit.expirationDate && 
       new Date(ab.benefit.expirationDate + 'T00:05:00') < currentDate;
     return !isExpired;
-  });
+  }) as any;
 
   // Filtered benefits for view
   const filteredBenefits = activeBenefits.filter((ab) => {
     if (activeTab === 'todo' && ab.isUsed) return false;
     if (filterCategory !== 'all' && ab.benefit.category !== filterCategory) return false;
-    if (filterCardInstanceId !== 'all' && ab.cardInstance.id !== filterCardInstanceId) return false;
+    if (filterCardInstanceId !== 'all' && (!ab.cardInstance || ab.cardInstance.id !== filterCardInstanceId)) return false;
     return true;
   });
 
@@ -875,11 +912,13 @@ function App() {
             ) : (
               <div className="space-y-3">
                 {sortedBenefits.map((ab) => {
-                  const isExpired = !ab.isUsed && ab.benefit.resetPeriod === 'fixed' && 
-                    !!ab.benefit.expirationDate && 
-                    new Date(ab.benefit.expirationDate + 'T00:00:00') < currentDate;
+                  const isExpired = ab.loyaltyAward 
+                    ? (!ab.isUsed && !!ab.benefit.expirationDate && new Date(ab.benefit.expirationDate + 'T00:00:00') < currentDate)
+                    : (!ab.isUsed && ab.benefit.resetPeriod === 'fixed' && !!ab.benefit.expirationDate && new Date(ab.benefit.expirationDate + 'T00:00:00') < currentDate);
 
-                  const daysLeft = getDaysLeft(ab, currentDate);
+                  const daysLeft = ab.loyaltyAward
+                    ? (ab.benefit.expirationDate ? getDaysLeftForDate(ab.benefit.expirationDate, currentDate) : null)
+                    : getDaysLeft(ab, currentDate);
 
                   const isProgressive = !!ab.benefit.spendingLimit;
                   const spent = isProgressive ? (Number(logs[ab.logKey]) || 0) : 0;
@@ -897,7 +936,13 @@ function App() {
                       spent={spent}
                       spentPercent={spentPercent}
                       cashbackEarned={cashbackEarned}
-                      toggleBenefit={toggleBenefit}
+                      toggleBenefit={(key) => {
+                        if (ab.loyaltyAward) {
+                          toggleLoyaltyAward(key);
+                        } else {
+                          toggleBenefit(key);
+                        }
+                      }}
                       updateProgressLog={updateProgressLog}
                       themeClass={themeClass}
                     />
@@ -1341,6 +1386,7 @@ function App() {
         isOpen={isSyncModalOpen} 
         onClose={() => setIsSyncModalOpen(false)} 
         ownedCards={ownedCards}
+        loyaltyAwards={loyaltyAwards}
         theme={theme}
       />
 
@@ -1452,6 +1498,7 @@ function App() {
         isOpen={isWrappedModalOpen}
         onClose={() => setIsWrappedModalOpen(false)}
         ownedCards={ownedCards}
+        loyaltyAwards={loyaltyAwards}
         resolvedValue={resolvedValue}
         themeClass={themeClass}
       />

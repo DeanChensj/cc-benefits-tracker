@@ -1,12 +1,14 @@
 import { useRef, useState, useEffect } from 'react';
 import type { OwnedCardInstance } from '../store/useCardStore';
-import { CARDS_DB } from '../data/cards.db';
+import { CARDS_DB, AWARD_TEMPLATES } from '../data/cards.db';
+import type { LoyaltyAward } from '../data/cards.db';
 import { X, Download, Sparkles, RefreshCw } from 'lucide-react';
 
 interface SavingsWrappedModalProps {
   isOpen: boolean;
   onClose: () => void;
   ownedCards: OwnedCardInstance[];
+  loyaltyAwards: LoyaltyAward[];
   resolvedValue: number;
   themeClass: (dark: string, light: string) => string;
 }
@@ -15,6 +17,7 @@ export function SavingsWrappedModal({
   isOpen,
   onClose,
   ownedCards,
+  loyaltyAwards,
   resolvedValue,
   themeClass,
 }: SavingsWrappedModalProps) {
@@ -111,17 +114,33 @@ export function SavingsWrappedModal({
   };
 
   // 5. Prepare and format battleships (regex clean custom card tail-numbers)
-  const cardRecoups = ownedCards.map((c) => {
-    const template = CARDS_DB.find((t) => t.id === c.templateId);
-    const shortName = getShortCardName(c.customName);
-    const cleanName = shortName.replace(/\s(\d+)$/, ' ($1)');
-    
-    return {
-      name: cleanName,
-      subActive: !!c.signupBonusActive,
-      bank: c.templateId === 'custom' ? (c.bank || 'Custom') : (template?.bank || 'Standard'),
-    };
-  });
+  const cardRecoups = [
+    ...ownedCards.map((c) => {
+      const template = CARDS_DB.find((t) => t.id === c.templateId);
+      const shortName = getShortCardName(c.customName);
+      const cleanName = shortName.replace(/\s(\d+)$/, ' ($1)');
+      
+      return {
+        name: cleanName,
+        subActive: !!c.signupBonusActive,
+        bank: c.templateId === 'custom' ? (c.bank || 'Custom') : (template?.bank || 'Standard'),
+      };
+    }),
+    ...loyaltyAwards.map((award) => {
+      const isCustom = award.templateId === 'custom';
+      const info = isCustom ? {
+        name: award.customName || 'Custom Award',
+        brand: award.customBrand || 'Other'
+      } : AWARD_TEMPLATES[award.templateId];
+
+      const labelName = `${info.name} (x${award.quantity})`;
+      return {
+        name: labelName.length > 22 ? `${labelName.substring(0, 20)}..` : labelName,
+        subActive: false,
+        bank: info.brand,
+      };
+    })
+  ];
 
   // Helper to pre-render the SVG into a static PNG image in the background
   const updatePosterImage = async () => {

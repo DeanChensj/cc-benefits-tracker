@@ -1,5 +1,6 @@
 import { CheckCircle2 } from 'lucide-react';
 import type { ActiveBenefit, LogEntry } from '../utils/dateUtils';
+import { AWARD_TEMPLATES } from '../data/cards.db';
 import { parseLogEntry, obfuscateKey } from '../utils/dateUtils';
 
 interface ChecklistCardRowProps {
@@ -29,7 +30,11 @@ export function ChecklistCardRow({
   updateProgressLog,
   themeClass,
 }: ChecklistCardRowProps) {
-  const { cardInstance, benefit, logKey, isUsed } = ab;
+  const { cardInstance, benefit, logKey, isUsed, loyaltyAward } = ab;
+  const isStandalone = !cardInstance;
+  const badgeText = isStandalone
+    ? (loyaltyAward ? (AWARD_TEMPLATES[loyaltyAward.templateId]?.brand || loyaltyAward.customBrand || 'Award') : 'Award')
+    : cardInstance.customName;
 
   return (
     <div
@@ -74,9 +79,11 @@ export function ChecklistCardRow({
               {benefit.name}
             </span>
             <span className={`text-[10px] px-2 py-0.5 rounded font-bold tracking-wide border shrink-0 ${
-              themeClass('bg-slate-800 text-slate-300 border-slate-700', 'bg-slate-100 text-slate-600 border-slate-200')
+              isStandalone
+                ? 'bg-purple-500/10 text-purple-500 border-purple-500/20 dark:bg-purple-500/5 shadow-sm'
+                : themeClass('bg-slate-800 text-slate-300 border-slate-700', 'bg-slate-100 text-slate-600 border-slate-200')
             }`}>
-              {cardInstance.customName}
+              {badgeText}
             </span>
             <span className={`text-[9px] pl-1.5 pr-2 py-0.5 rounded-md font-bold tracking-wide border shrink-0 flex items-center gap-1 ${
               themeClass('bg-slate-955/30 text-slate-400 border-slate-850', 'bg-slate-50 text-slate-550 border-slate-200')

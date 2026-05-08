@@ -1,15 +1,17 @@
 import { Calendar, Download } from 'lucide-react';
 import { downloadICSFile } from '../utils/calendar';
 import type { OwnedCardInstance } from '../store/useCardStore';
+import type { LoyaltyAward } from '../data/cards.db';
 
 interface CalendarSyncModalProps {
   isOpen: boolean;
   onClose: () => void;
   ownedCards: OwnedCardInstance[];
+  loyaltyAwards?: LoyaltyAward[];
   theme: 'dark' | 'light';
 }
 
-export function CalendarSyncModal({ isOpen, onClose, ownedCards, theme }: CalendarSyncModalProps) {
+export function CalendarSyncModal({ isOpen, onClose, ownedCards, loyaltyAwards, theme }: CalendarSyncModalProps) {
   if (!isOpen) return null;
 
   const themeClass = (dark: string, light: string) => theme === 'dark' ? dark : light;
@@ -38,7 +40,7 @@ export function CalendarSyncModal({ isOpen, onClose, ownedCards, theme }: Calend
 
         <button
           onClick={() => {
-            downloadICSFile(ownedCards);
+            downloadICSFile(ownedCards, loyaltyAwards);
           }}
           className="w-full flex items-center justify-center gap-2 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold py-3 px-4 rounded-xl text-sm transition active:scale-[0.98] shadow-lg shadow-amber-500/10 mb-6 cursor-pointer"
         >
