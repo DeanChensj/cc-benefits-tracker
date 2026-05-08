@@ -24,7 +24,7 @@ export const CARDS_DB: CardTemplate[] = [
     id: 'amex-gold',
     name: 'American Express Gold',
     bank: 'Amex',
-    color: 'from-amber-500 to-yellow-600',
+    color: 'from-[#c5a059] via-[#fdf2d5] to-[#9c7a3c]',
     annualFee: 320,
     officialUrl: 'https://www.americanexpress.com/us/credit-cards/card/gold-card/',
     benefits: [

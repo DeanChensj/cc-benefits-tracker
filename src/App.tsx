@@ -1218,7 +1218,11 @@ function App() {
                     const recouped = getCardRecoupedValue(instance.id);
                     const isRecouped = cardFee > 0 && recouped >= cardFee;
                     
-                    const isSilverCard = instance.templateId === 'amex-platinum' || instance.templateId === 'amex-biz-platinum';
+                    // Meticulous contrast fix: Amex Platinum, Biz Platinum, and Gold have bright reflective card faces.
+                    // Force high-contrast deep-charcoal/slate text styling for ultimate premium legibility on these cards!
+                    const isSilverCard = instance.templateId === 'amex-platinum' || 
+                                         instance.templateId === 'amex-biz-platinum' || 
+                                         instance.templateId === 'amex-gold';
 
                     // Pre-load standard audited default point multipliers for placeholder rendering in editor
                     const defaultDining = CARD_MULTIPLIERS[instance.templateId]?.dining || 1;

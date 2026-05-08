@@ -14,7 +14,7 @@ export interface OwnedCardInstance {
   customBenefits?: Benefit[]; // Custom base benefits for custom cards
   instanceOffers?: Benefit[]; // Temporary, instance-specific custom offers (e.g. Amex Offers)
   annualFee?: number; // Annual fee of the card instance
-  multipliers?: Record<string, number>;
+  multipliers?: Record<string, number | undefined>;
 }
 
 export interface CardStore {
