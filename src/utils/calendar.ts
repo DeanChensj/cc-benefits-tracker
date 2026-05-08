@@ -64,7 +64,7 @@ export const downloadICSFile = (ownedCards: OwnedCardInstance[]) => {
         dtstart = new Date(now.getFullYear(), 11, 15);
         rrule = 'RRULE:FREQ=YEARLY';
       } else if (benefit.resetPeriod === 'fixed') {
-        const exp = new Date(benefit.expirationDate || now);
+        const exp = new Date((benefit.expirationDate ? benefit.expirationDate + 'T00:00:00' : null) || now);
         // Set alert 10 days before expiration Date
         dtstart = new Date(exp.getTime() - 10 * 24 * 60 * 60 * 1000);
         rrule = '';
