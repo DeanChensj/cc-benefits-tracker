@@ -511,3 +511,20 @@ export const CARDS_DB: CardTemplate[] = [
     ]
   }
 ];
+
+export const CARD_MULTIPLIERS: Record<string, { dining?: number; travel?: number; shopping?: number; entertainment?: number }> = {
+  'amex-gold': { dining: 4, shopping: 4 }, // 4x Dining, 4x Groceries
+  'amex-platinum': { travel: 5 }, // 5x Flights
+  'amex-bcp': { shopping: 6, entertainment: 6 }, // 6% Groceries, 6% Streaming
+  'amex-delta-reserve': { travel: 3 }, // 3x Delta
+  'amex-delta-platinum': { travel: 3 }, // 3x Delta
+  'amex-biz-platinum': { travel: 5 }, // 5x Flights
+  'amex-hilton-aspire': { travel: 7, dining: 7 }, // 14x Hilton, 7x Flights/Dining
+  'chase-sapphire-reserve': { travel: 3, dining: 3 }, // 3x Travel, 3x Dining
+  'chase-sapphire-preferred': { dining: 3, travel: 2, entertainment: 3 }, // 3x Dining, 3x Streaming, 2x Travel
+  'chase-freedom-flex': { dining: 3, shopping: 5 }, // 3x Dining, 5x Rotating
+  'chase-hyatt': { travel: 4, dining: 2 }, // 4x Hyatt, 2x Dining
+  'chase-marriott-boundless': { travel: 6, dining: 2 }, // 6x Marriott, 2x Dining
+  'chase-ihg-premier': { travel: 10, dining: 5 }, // 10x IHG, 5x Dining
+  'capitalone-venture-x': { travel: 2, dining: 2, shopping: 2, entertainment: 2 } // 2x everything
+};

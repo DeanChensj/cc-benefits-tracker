@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 // Meticulously audited and verified PWA release build with dynamic re-auth and contrast fixes
-import { CARDS_DB } from './data/cards.db';
+import { CARDS_DB, CARD_MULTIPLIERS } from './data/cards.db';
 import type { CardTemplate, Benefit } from './data/cards.db';
 import { useCardStore, getLogKey } from './store/useCardStore';
 import type { OwnedCardInstance } from './store/useCardStore';
@@ -12,6 +12,12 @@ import { AddOfferModal } from './components/AddOfferModal';
 import { Toast } from './components/Toast';
 import { DeleteConfirmModal } from './components/DeleteConfirmModal';
 import { ConfirmationModal } from './components/ConfirmationModal';
+import { EmptyWalletState } from './components/EmptyWalletState';
+import { CheckoutWinnersRow } from './components/CheckoutWinnersRow';
+import { AnnualFeeWarningsWidget } from './components/AnnualFeeWarningsWidget';
+import { FilterHubPanel } from './components/FilterHubPanel';
+import { ChecklistCardRow } from './components/ChecklistCardRow';
+import { WalletCreditCard } from './components/WalletCreditCard';
 import { getLocalDateString, getDaysLeft, getUrgencyScore, getAnnualFeeWarningInfo } from './utils/dateUtils';
 import { loadGoogleGsiScript, requestGDriveToken, fetchUserEmail } from './utils/gdrive';
 import { 
@@ -39,22 +45,7 @@ import {
   X
 } from 'lucide-react';
 
-const CARD_MULTIPLIERS: Record<string, { dining?: number; travel?: number; shopping?: number; entertainment?: number }> = {
-  'amex-gold': { dining: 4, shopping: 4 }, // 4x Dining, 4x Groceries
-  'amex-platinum': { travel: 5 }, // 5x Flights
-  'amex-bcp': { shopping: 6, entertainment: 6 }, // 6% Groceries, 6% Streaming
-  'amex-delta-reserve': { travel: 3 }, // 3x Delta
-  'amex-delta-platinum': { travel: 3 }, // 3x Delta
-  'amex-biz-platinum': { travel: 5 }, // 5x Flights
-  'amex-hilton-aspire': { travel: 7, dining: 7 }, // 14x Hilton, 7x Flights/Dining
-  'chase-sapphire-reserve': { travel: 3, dining: 3 }, // 3x Travel, 3x Dining
-  'chase-sapphire-preferred': { dining: 3, travel: 2, entertainment: 3 }, // 3x Dining, 3x Streaming, 2x Travel
-  'chase-freedom-flex': { dining: 3, shopping: 5 }, // 3x Dining, 5x Rotating
-  'chase-hyatt': { travel: 4, dining: 2 }, // 4x Hyatt, 2x Dining
-  'chase-marriott-boundless': { travel: 6, dining: 2 }, // 6x Marriott, 2x Dining
-  'chase-ihg-premier': { travel: 10, dining: 5 }, // 10x IHG, 5x Dining
-  'capitalone-venture-x': { travel: 2, dining: 2, shopping: 2, entertainment: 2 } // 2x everything
-};
+
 
 function App() {
   const { 
@@ -818,192 +809,29 @@ function App() {
         </div>
 
         {/* 0. Glanceable Point Multiplier Checkout Winners Row */}
-        {activeTab !== 'cards' && checkoutWinners && (
-          <div className="flex gap-2 overflow-x-auto pb-3 mb-1 no-scrollbar shrink-0 animate-fade-in">
-            {Object.entries(checkoutWinners).map(([category, bestCard]) => {
-              if (!bestCard) return null;
-              const catName = category === 'dining' ? 'Dining' :
-                              category === 'travel' ? 'Travel' :
-                              category === 'shopping' ? 'Groceries' : 'Streaming';
-              const emoji = category === 'dining' ? '🍽️' :
-                            category === 'travel' ? '✈️' :
-                            category === 'shopping' ? '🛍️' : '🎬';
-              const badgeColor = category === 'dining' ? 'bg-rose-500/10 text-rose-600 dark:text-rose-300 border-rose-500/20' :
-                                 category === 'travel' ? 'bg-sky-500/10 text-sky-600 dark:text-sky-300 border-sky-500/20' :
-                                 category === 'shopping' ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-300 border-emerald-500/20' :
-                                 'bg-purple-500/10 text-purple-600 dark:text-purple-300 border-purple-500/20';
-
-              return (
-                <div 
-                  key={category}
-                  className={`flex items-center gap-1.5 text-[10px] font-bold px-2.5 py-1 rounded-xl border shrink-0 ${badgeColor}`}
-                  title={`${bestCard.cardName} has the highest points in this category!`}
-                >
-                  <span>{emoji} {catName}:</span>
-                  <span className="opacity-75 font-black">{bestCard.cardName}</span>
-                  <span className="bg-white/15 px-1.5 py-0.2 rounded text-[8px] font-extrabold shrink-0">
-                    {bestCard.multiplier}x
-                  </span>
-                  <span>👑</span>
-                </div>
-              );
-            })}
-          </div>
-        )}
+        <CheckoutWinnersRow checkoutWinners={checkoutWinners} activeTab={activeTab} />
 
         {/* 0.5. Annual Fee Anniversary Warning Widget (Fully Conditional) */}
-        {activeTab !== 'cards' && annualFeeWarnings.length > 0 && (
-          <div className="space-y-2 mb-4 animate-fade-in">
-            {annualFeeWarnings.map((warning) => {
-              return (
-                <div
-                  key={warning.card.id}
-                  className={`p-3 rounded-xl border backdrop-blur-md relative overflow-hidden flex flex-col sm:flex-row sm:items-center justify-between gap-3 transition duration-300 ${
-                    warning.daysUntil <= 7
-                      ? 'bg-red-500/5 border-red-500/30 dark:border-red-400/25 text-red-600 dark:text-red-350 shadow-md shadow-red-500/5'
-                      : 'bg-amber-500/5 border-amber-500/25 dark:border-amber-400/20 text-amber-600 dark:text-amber-350'
-                  }`}
-                >
-                  <div className="flex items-start gap-2.5 text-left min-w-0">
-                    <div className={`p-1.5 rounded-lg shrink-0 mt-0.5 ${
-                      warning.daysUntil <= 7
-                        ? 'bg-red-500/10 text-red-500 animate-pulse'
-                        : 'bg-amber-500/10 text-amber-500'
-                    }`}>
-                      <AlertTriangle className="w-3.5 h-3.5 stroke-[2.5]" />
-                    </div>
-                    <div className="space-y-0.5 min-w-0">
-                      <h5 className={`font-extrabold text-xs flex items-center gap-2 flex-wrap ${themeClass('text-white', 'text-slate-900')}`}>
-                        <span>Annual Fee Alert: {warning.card.customName}</span>
-                        <span className={`text-[8px] font-bold px-1.5 py-0.2 rounded shrink-0 tracking-wider uppercase ${
-                          warning.daysUntil <= 7
-                            ? 'bg-red-500/20 text-red-600 dark:text-red-300 animate-pulse'
-                            : 'bg-amber-500/20 text-amber-650 dark:text-amber-300'
-                        }`}>
-                          {warning.daysUntil === 0 ? 'Today!' : `${warning.daysUntil} Days Left`}
-                        </span>
-                      </h5>
-                      <p className={`text-[10px] leading-normal font-medium ${themeClass('text-slate-400', 'text-slate-600')}`}>
-                        Card anniversary is approaching! An annual fee of <span className="font-extrabold text-emerald-500">${warning.fee}</span> is expected to post. ➔ Posting Date:{' '}
-                        <span className="font-bold underline underline-offset-2">
-                          {warning.nextAnniversaryDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
-                        </span>
-                      </p>
-                      <p className="text-[8.5px] opacity-80 font-medium text-purple-400 dark:text-purple-500 leading-normal mt-1 flex items-center gap-1">
-                        <span>💡 Churning Tip: Call the retention line for bonuses, or downgrade to a no-fee option within 30 days after the fee posts to get a 100% refund!</span>
-                      </p>
-                    </div>
-                  </div>
-                  
-                  {/* Meticulous OCD Close Button: Manual warning dismissal */}
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      dismissWarning(warning.card.id);
-                      showToast(`🧹 Annual Fee warning for "${warning.card.customName}" dismissed!`);
-                    }}
-                    className={`absolute top-3 right-3 p-1 rounded-md transition cursor-pointer active:scale-90 shrink-0 ${
-                      warning.daysUntil <= 7
-                        ? 'text-red-500/50 hover:text-red-600 hover:bg-red-500/10 dark:text-red-400/60 dark:hover:text-red-300'
-                        : 'text-amber-500/50 hover:text-amber-600 hover:bg-amber-500/10 dark:text-amber-400/60 dark:hover:text-amber-300'
-                    }`}
-                    title="Dismiss warning"
-                  >
-                    <X className="w-3.5 h-3.5 stroke-[2.5]" />
-                  </button>
-                </div>
-              );
-            })}
-          </div>
-        )}
+        <AnnualFeeWarningsWidget annualFeeWarnings={annualFeeWarnings} activeTab={activeTab} dismissWarning={dismissWarning} showToast={showToast} themeClass={themeClass} />
 
         {/* Premium Glassmorphic Filters Control Panel */}
-        {activeTab !== 'cards' && (
-          <div className={`grid grid-cols-1 ${ownedCards.length > 0 ? 'sm:grid-cols-3' : 'sm:grid-cols-2'} gap-3 p-3 mb-6 rounded-2xl border backdrop-blur-md transition-all duration-300 ${
-            themeClass(
-              'bg-slate-900/30 border-slate-900/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.03)]',
-              'bg-white/70 border-slate-200/80 shadow-[0_8px_20px_rgba(15,23,42,0.035)]'
-            )
-          }`}>
-            {/* 1. Category Filter */}
-            <div className={`flex items-center gap-2.5 border rounded-xl px-3 py-2.5 text-xs transition ${
-              themeClass('bg-slate-955/40 border-slate-850 hover:border-slate-800 text-slate-300', 'bg-slate-50/80 border-slate-250/60 hover:border-slate-300 text-slate-700')
-            }`}>
-              <Filter className="w-4 h-4 text-slate-400 shrink-0" />
-              <select
-                value={filterCategory}
-                onChange={(e) => setFilterCategory(e.target.value)}
-                className="w-full bg-transparent outline-none border-none cursor-pointer font-semibold text-xs focus:ring-0"
-              >
-                <option value="all">All Categories</option>
-                <option value="dining">Dining</option>
-                <option value="travel">Travel</option>
-                <option value="shopping">Shopping</option>
-                <option value="entertainment">Entertainment</option>
-                <option value="other">Other</option>
-              </select>
-            </div>
-
-            {/* 2. Card Instance Filter */}
-            {ownedCards.length > 0 && (
-              <div className={`flex items-center gap-2.5 border rounded-xl px-3 py-2.5 text-xs transition ${
-                themeClass('bg-slate-955/40 border-slate-850 hover:border-slate-800 text-slate-300', 'bg-slate-50/80 border-slate-250/60 hover:border-slate-300 text-slate-700')
-              }`}>
-                <CreditCard className="w-4 h-4 text-slate-400 shrink-0" />
-                <select
-                  value={filterCardInstanceId}
-                  onChange={(e) => setFilterCardInstanceId(e.target.value)}
-                  className="w-full bg-transparent outline-none border-none cursor-pointer font-semibold text-xs focus:ring-0"
-                >
-                  <option value="all">All Cards</option>
-                  {ownedCards.map((card) => (
-                    <option key={card.id} value={card.id}>
-                      {card.customName}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            )}
-
-            {/* 3. Sort Selector */}
-            <div className={`flex items-center gap-2.5 border rounded-xl px-3 py-2.5 text-xs transition ${
-              themeClass('bg-slate-955/40 border-slate-850 hover:border-slate-800 text-slate-300', 'bg-slate-50/80 border-slate-250/60 hover:border-slate-300 text-slate-700')
-            }`}>
-              <ArrowUpDown className="w-4 h-4 text-slate-400 shrink-0" />
-              <select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value as any)}
-                className="w-full bg-transparent outline-none border-none cursor-pointer font-semibold text-xs focus:ring-0"
-              >
-                <option value="urgency">Sort: Urgency Score</option>
-                <option value="expiry">Sort: Expiration Date</option>
-                <option value="value-desc">Sort: Value (High ➔ Low)</option>
-                <option value="value-asc">Sort: Value (Low ➔ High)</option>
-              </select>
-            </div>
-          </div>
-        )}
+        <FilterHubPanel
+          ownedCards={ownedCards}
+          activeTab={activeTab}
+          filterCategory={filterCategory}
+          setFilterCategory={setFilterCategory}
+          filterCardInstanceId={filterCardInstanceId}
+          setFilterCardInstanceId={setFilterCardInstanceId}
+          sortBy={sortBy}
+          setSortBy={setSortBy}
+          themeClass={themeClass}
+        />
 
         {/* TABS 1 & 2: CHECKLIST VIEW */}
         {(activeTab === 'todo' || activeTab === 'all') && (
           <section>
             {ownedCards.length === 0 ? (
-              <div className={`text-center py-16 border border-dashed rounded-2xl p-8 space-y-2.5 ${
-                themeClass('bg-slate-900/20 border-slate-850', 'bg-white border-slate-200 shadow-sm')
-              }`}>
-                <Sparkles className="w-8 h-8 text-amber-500/60 mx-auto mb-2" />
-                <h3 className={`text-base font-bold ${themeClass('text-slate-300', 'text-slate-800')}`}>Your Wallet is Empty</h3>
-                <p className="text-xs text-slate-505 max-w-xs mx-auto leading-relaxed">
-                  Welcome! Open the card library to add card templates to start tracking statement credits and annual fee recoups.
-                </p>
-                <button
-                  onClick={() => setActiveTab('cards')}
-                  className="mt-3 bg-gradient-to-tr from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-550 text-white font-bold px-4.5 py-2 rounded-xl text-[10px] transition active:scale-95 shadow-md shadow-purple-500/10 cursor-pointer"
-                >
-                  Browse Card Library
-                </button>
-              </div>
+              <EmptyWalletState onBrowse={() => setActiveTab('cards')} themeClass={themeClass} />
             ) : sortedBenefits.length === 0 ? (
               <div className={`text-center py-16 border rounded-2xl p-8 ${
                 themeClass('bg-slate-900/20 border-slate-800/40', 'bg-white border-slate-200 shadow-sm')
@@ -1017,158 +845,35 @@ function App() {
             ) : (
               <div className="space-y-3">
                 {sortedBenefits.map((ab) => {
-                  const { cardInstance, benefit, logKey, isUsed } = ab;
-                  const isExpired = !isUsed && benefit.resetPeriod === 'fixed' && 
-                    !!benefit.expirationDate && 
-                    new Date(benefit.expirationDate + 'T00:00:00') < currentDate;
+                  const isExpired = !ab.isUsed && ab.benefit.resetPeriod === 'fixed' && 
+                    !!ab.benefit.expirationDate && 
+                    new Date(ab.benefit.expirationDate + 'T00:00:00') < currentDate;
 
                   const daysLeft = getDaysLeft(ab, currentDate);
 
-                  const isProgressive = !!benefit.spendingLimit;
-                  const spent = isProgressive ? (Number(logs[logKey]) || 0) : 0;
-                  const spentPercent = isProgressive ? Math.min((spent / (benefit.spendingLimit || 1)) * 100, 100) : 0;
-                  const cashbackEarned = isProgressive ? Math.round((benefit.value * Math.min(spent / (benefit.spendingLimit || 1), 1)) * 100) / 100 : 0;
+                  const isProgressive = !!ab.benefit.spendingLimit;
+                  const spent = isProgressive ? (Number(logs[ab.logKey]) || 0) : 0;
+                  const spentPercent = isProgressive ? Math.min((spent / (ab.benefit.spendingLimit || 1)) * 100, 100) : 0;
+                  const cashbackEarned = isProgressive ? Math.round((ab.benefit.value * Math.min(spent / (ab.benefit.spendingLimit || 1), 1)) * 100) / 100 : 0;
 
                   return (
-                    <div
-                      key={logKey}
-                      onClick={() => {
-                        if (isExpired) return;
-                        if (isProgressive) {
-                          // Clicking progressive rows toggles between 0 and maximum limit
-                          updateProgressLog(logKey, spent > 0 ? 0 : (benefit.spendingLimit || 0));
-                        } else {
-                          toggleBenefit(logKey);
-                        }
-                      }}
-                      className={`group flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-xl border transition duration-200 gap-3 ${
-                        isExpired
-                          ? themeClass('bg-slate-955 border-red-955/10 opacity-40 cursor-not-allowed', 'bg-red-50/30 border-red-200/50 opacity-60 cursor-not-allowed')
-                          : isUsed
-                          ? themeClass('bg-slate-955 border-slate-900 opacity-50 cursor-pointer', 'bg-slate-100/70 border-slate-200/70 opacity-60 cursor-pointer')
-                          : themeClass('bg-slate-900/40 border-slate-850/80 hover:border-slate-700 hover:bg-slate-900 cursor-pointer', 'bg-white border-slate-200/90 hover:border-slate-300 hover:bg-slate-50/50 cursor-pointer shadow-[0_2px_6px_rgba(15,23,42,0.02)] hover:shadow-[0_4px_10px_rgba(15,23,42,0.045)]')
-                      }`}
-                    >
-                      <div className="flex items-center gap-3.5 pr-4 flex-grow">
-                        <div className={`w-6 h-6 flex items-center justify-center rounded-lg border transition-colors duration-200 shrink-0 ${
-                           isExpired
-                            ? 'border-red-900 bg-red-950/10 text-red-500'
-                            : isUsed 
-                            ? 'bg-emerald-500 border-emerald-500 text-slate-955' 
-                            : themeClass('border-slate-700 group-hover:border-slate-500 bg-slate-955/50 text-transparent', 'border-slate-250 group-hover:border-slate-350 bg-white text-transparent')
-                        }`}>
-                          {isExpired ? (
-                            <span className="text-[10px] font-bold">✕</span>
-                          ) : (
-                            <CheckCircle2 className={`w-4 h-4 stroke-[3] transition-all duration-250 transform origin-center ${isUsed ? 'scale-100 rotate-0' : 'scale-0 -rotate-12 opacity-0'}`} />
-                          )}
-                        </div>
-
-                        <div className="flex-grow min-w-0">
-                          <div className="flex flex-wrap items-center gap-2">
-                            <span className={`text-sm font-semibold truncate ${
-                              isExpired ? 'text-slate-400 line-through' :
-                              isUsed ? 'line-through text-slate-450' : themeClass('text-slate-100', 'text-slate-800')
-                            }`}>
-                              {benefit.name}
-                            </span>
-                            <span className={`text-[10px] px-2 py-0.5 rounded font-bold tracking-wide border shrink-0 ${
-                              themeClass('bg-slate-800 text-slate-300 border-slate-700', 'bg-slate-100 text-slate-600 border-slate-200')
-                            }`}>
-                              {cardInstance.customName}
-                            </span>
-                            <span className={`text-[9px] pl-1.5 pr-2 py-0.5 rounded-md font-bold tracking-wide border shrink-0 flex items-center gap-1 ${
-                              themeClass('bg-slate-955/30 text-slate-400 border-slate-850', 'bg-slate-50 text-slate-550 border-slate-200')
-                            }`}>
-                              <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${
-                                benefit.category === 'dining' ? 'bg-rose-500 animate-pulse' :
-                                benefit.category === 'travel' ? 'bg-sky-500' :
-                                benefit.category === 'shopping' ? 'bg-emerald-500' :
-                                benefit.category === 'entertainment' ? 'bg-purple-500' : 'bg-slate-400'
-                              }`} />
-                              <span className="uppercase tracking-wider text-[8px]">{benefit.category}</span>
-                            </span>
-                            
-                            {isExpired ? (
-                              <span className="text-[9px] font-bold bg-red-555/10 text-red-505 border border-red-505/20 px-1.5 py-0.2 rounded shrink-0">Expired</span>
-                            ) : !isUsed && daysLeft !== null && (
-                              <span className={`text-[9px] font-bold border px-1.5 py-0.2 rounded shrink-0 ${
-                                daysLeft <= 5 
-                                  ? 'bg-red-555/10 text-red-505 border-red-505/30 animate-pulse' 
-                                  : 'bg-amber-500/10 text-amber-600 border-amber-500/20'
-                              }`}>
-                                {daysLeft <= 0 ? 'Expires today' : `Expires in ${daysLeft}d`}
-                              </span>
-                            )}
-                          </div>
-                          <p className={`text-xs mt-1 ${themeClass('text-slate-400', 'text-slate-500')}`}>
-                            {benefit.description}
-                          </p>
-
-                          {/* Progressive Spent Progress Bar */}
-                          {isProgressive && (
-                            <div className="mt-2.5 max-w-md">
-                              <div className="h-1.5 w-full bg-slate-200/80 dark:bg-slate-800 rounded-full overflow-hidden">
-                                <div 
-                                  className={`h-full rounded-full bg-gradient-to-r ${
-                                    isUsed 
-                                      ? 'from-emerald-500 to-teal-500' 
-                                      : 'from-purple-500 to-indigo-500'
-                                  }`}
-                                  style={{ width: `${spentPercent}%` }}
-                                />
-                              </div>
-                              <div className="flex justify-between items-center mt-1 text-[9px] font-semibold text-slate-500 dark:text-slate-455">
-                                <span>Spent: ${spent} / ${benefit.spendingLimit}</span>
-                                <span className={isUsed ? 'text-emerald-555' : ''}>
-                                  Cashback: ${cashbackEarned} / ${benefit.value} ({Math.round((benefit.value / (benefit.spendingLimit || 1)) * 100)}%)
-                                </span>
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-
-                      <div className="flex items-center gap-3.5 shrink-0 justify-end sm:justify-start">
-                        {/* Interactive Numerical Spent Input Box */}
-                        {isProgressive && (
-                          <div 
-                            className="flex items-center gap-1" 
-                            onClick={(e) => e.stopPropagation()} // Prevent row click toggle
-                          >
-                            <span className="text-[10px] font-bold text-slate-505">$</span>
-                            <input
-                              type="number"
-                              disabled={isExpired}
-                              placeholder="0"
-                              value={logs[logKey] !== undefined && logs[logKey] !== false ? String(logs[logKey]) : ''}
-                              onFocus={() => setFocusedLogKey(logKey)}
-                              onBlur={() => setFocusedLogKey(null)}
-                              onChange={(e) => {
-                                const val = Number(e.target.value);
-                                updateProgressLog(logKey, val);
-                              }}
-                              className={`w-16 border text-center text-xs rounded px-1.5 py-0.5 focus:outline-none font-mono font-bold transition ${
-                                themeClass('bg-slate-955 border-slate-850 text-white focus:border-purple-500', 'bg-slate-100 border-slate-250 text-slate-905 focus:border-purple-500 shadow-inner')
-                              }`}
-                            />
-                          </div>
-                        )}
-
-                        <div className="text-right flex flex-col items-end justify-center min-w-[80px]">
-                          <span className={`text-base font-bold ${isExpired || isUsed ? 'text-slate-505' : themeClass('text-white', 'text-slate-905')}`}>
-                            ${benefit.value}
-                          </span>
-                          <span className="text-[9px] uppercase tracking-wider text-slate-555 font-bold mt-0.5">
-                            {benefit.resetPeriod === 'monthly' ? 'Monthly' :
-                             benefit.resetPeriod === 'quarterly' ? 'Quarterly' :
-                             benefit.resetPeriod === 'semi-annual' ? 'Semi-Annual' :
-                             benefit.resetPeriod === 'annual-calendar' ? 'Annual (Cal)' :
-                             benefit.resetPeriod === 'annual-anniversary' ? 'Annual (Anniv)' : 'Fixed Expir'}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
+                    <ChecklistCardRow
+                      key={ab.logKey}
+                      ab={ab}
+                      logs={logs}
+                      currentDate={currentDate}
+                      daysLeft={daysLeft}
+                      isExpired={isExpired}
+                      isProgressive={isProgressive}
+                      spent={spent}
+                      spentPercent={spentPercent}
+                      cashbackEarned={cashbackEarned}
+                      focusedLogKey={focusedLogKey}
+                      setFocusedLogKey={setFocusedLogKey}
+                      toggleBenefit={toggleBenefit}
+                      updateProgressLog={updateProgressLog}
+                      themeClass={themeClass}
+                    />
                   );
                 })}
               </div>
@@ -1215,417 +920,34 @@ function App() {
               ) : (
                 <div className="grid sm:grid-cols-2 gap-4">
                   {ownedCards.filter((instance) => {
-                    const template = CARDS_DB.find((t) => t.id === instance.templateId);
-                    const cardName = instance.templateId === 'custom' ? instance.customName : (template?.name || '');
-                    const cardBank = instance.templateId === 'custom' ? (instance.bank || '') : (template?.bank || '');
+                    const temp = CARDS_DB.find((t) => t.id === instance.templateId);
+                    const cardName = instance.templateId === 'custom' ? instance.customName : (temp?.name || '');
+                    const cardBank = instance.templateId === 'custom' ? (instance.bank || '') : (temp?.bank || '');
                     return (
                       cardName.toLowerCase().includes(searchQuery.toLowerCase()) ||
                       cardBank.toLowerCase().includes(searchQuery.toLowerCase())
                     );
                   }).map((instance) => {
-                    const template = CARDS_DB.find((t) => t.id === instance.templateId);
-                    const cardColor = instance.templateId === 'custom' 
-                      ? (instance.color || 'from-purple-950/50 to-slate-950')
-                      : (template?.color || 'from-slate-800 to-slate-900');
-                    const benefits = instance.templateId === 'custom' ? (instance.customBenefits || []) : (template?.benefits || []);
-                    
-                    const cardFee = instance.annualFee !== undefined 
-                      ? instance.annualFee 
-                      : (template?.annualFee !== undefined ? template.annualFee : 0);
-                    const recouped = getCardRecoupedValue(instance.id);
-                    const isRecouped = cardFee > 0 && recouped >= cardFee;
-                    
-                    // Meticulous contrast fix: Amex Platinum, Biz Platinum, and Gold have bright reflective card faces.
-                    // Force high-contrast deep-charcoal/slate text styling for ultimate premium legibility on these cards!
-                    const isSilverCard = instance.templateId === 'amex-platinum' || 
-                                         instance.templateId === 'amex-biz-platinum' || 
-                                         instance.templateId === 'amex-gold';
-
-                    // Pre-load standard audited default point multipliers for placeholder rendering in editor
-                    const defaultDining = CARD_MULTIPLIERS[instance.templateId]?.dining || 1;
-                    const defaultTravel = CARD_MULTIPLIERS[instance.templateId]?.travel || 1;
-                    const defaultShopping = CARD_MULTIPLIERS[instance.templateId]?.shopping || 1; // Supermarket/Groceries
-                    const defaultEntertainment = CARD_MULTIPLIERS[instance.templateId]?.entertainment || 1; // Streaming
-
-                    // Meticulous product design: Only show the point customizer for custom cards or standard rotating cards (CFF, Discover)
-                    const canCustomizePoints = instance.templateId === 'custom' || 
-                                               instance.templateId === 'chase-freedom-flex' || 
-                                               instance.templateId === 'discover-it-cashback';
-
+                    const isCardExpanded = !!expandedCardIds[instance.id];
                     return (
-                      <div 
+                      <WalletCreditCard
                         key={instance.id}
-                        className={`p-4 rounded-xl border flex flex-col justify-between transition bg-gradient-to-tr ${cardColor} relative overflow-hidden group/card after:absolute after:top-0 after:-left-[150%] after:w-[60%] after:h-full after:bg-gradient-to-r after:from-transparent after:via-white/15 dark:after:via-white/10 after:to-transparent after:skew-x-12 after:transition-all after:duration-700 hover:after:left-[150%] duration-300 ${
-                          isRecouped 
-                            ? 'ring-2 ring-amber-500/50 dark:ring-amber-400/40 shadow-lg shadow-amber-500/5 scale-[1.01] border-amber-500/25' 
-                            : isSilverCard
-                            ? themeClass('border-slate-305 text-slate-900 shadow', 'border-slate-300 text-slate-900 shadow-sm')
-                            : themeClass('border-purple-900/30 hover:border-purple-800/50', 'border-slate-250/40 hover:border-slate-300 shadow-md text-slate-100')
-                        }`}
-                      >
-                        <div className="pb-3">
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-1.5">
-                              <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-md uppercase tracking-wider ${
-                                isSilverCard
-                                  ? 'bg-slate-950/15 text-slate-800 border border-slate-950/10 font-black'
-                                  : 'bg-purple-500/15 text-purple-350 dark:text-purple-400 border border-purple-500/20'
-                              }`}>
-                                {instance.templateId === 'custom' ? (instance.bank || 'Custom') : (template?.bank || 'Standard')}
-                              </span>
-                              {template?.officialUrl && (
-                                <a
-                                  href={template.officialUrl}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className={`transition active:scale-90 cursor-pointer ${
-                                    isSilverCard ? 'text-slate-800/70 hover:text-slate-950' : 'text-white/60 hover:text-white'
-                                  }`}
-                                  title="View Official Application Details Page"
-                                >
-                                  <ExternalLink className="w-3 h-3 stroke-[2.5]" />
-                                </a>
-                              )}
-                            </div>
-                            <div className="flex items-center gap-1.5">
-                              {instance.templateId === 'custom' ? (
-                                <button
-                                  onClick={() => {
-                                    handleAddCustomCard({
-                                      templateId: 'custom',
-                                      customName: `${instance.customName} (Copy)`,
-                                      bank: instance.bank,
-                                      color: instance.color,
-                                      cardOpenDate: instance.cardOpenDate,
-                                      annualFee: instance.annualFee,
-                                      customBenefits: (instance.customBenefits || []).map((b) => ({
-                                        ...b,
-                                        id: `benefit_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
-                                      })),
-                                    });
-                                  }}
-                                  className={`p-1 rounded transition cursor-pointer active:scale-90 ${
-                                    isSilverCard ? 'text-slate-700 hover:text-slate-950 hover:bg-black/5' : 'text-slate-400 hover:text-white hover:bg-white/10'
-                                  }`}
-                                  title="Duplicate card"
-                                >
-                                  <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
-                                </button>
-                              ) : (
-                                <button
-                                  onClick={() => handleAddCard(instance.templateId)}
-                                  className={`p-1 rounded transition cursor-pointer active:scale-90 ${
-                                    isSilverCard ? 'text-slate-700 hover:text-slate-950 hover:bg-black/5' : 'text-slate-400 hover:text-white hover:bg-white/10'
-                                  }`}
-                                  title="Add another instance"
-                                >
-                                  <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
-                                </button>
-                              )}
-                              <button
-                                onClick={() => handleRemoveCard(instance.id)}
-                                className={`p-1 rounded transition cursor-pointer active:scale-90 ${
-                                  isSilverCard ? 'text-red-700 hover:text-red-850 hover:bg-red-500/10' : 'text-red-400 hover:text-red-350 hover:bg-red-550/10'
-                                }`}
-                                title="Delete card instance"
-                              >
-                                <Trash2 className="w-3.5 h-3.5" />
-                              </button>
-                            </div>
-                          </div>
-                          </div>
-
-                        {editingInstanceId === instance.id ? (
-                            <input
-                              type="text"
-                              value={instance.customName}
-                              onChange={(e) => renameCard(instance.id, e.target.value)}
-                              onBlur={() => {
-                                const trimmed = instance.customName.trim();
-                                const template = CARDS_DB.find((t) => t.id === instance.templateId);
-                                const fallback = instance.templateId === 'custom' ? 'Custom Card' : (template?.name || 'Credit Card');
-                                renameCard(instance.id, trimmed || fallback);
-                                setEditingInstanceId(null);
-                              }}
-                              onKeyDown={(e) => {
-                                if (e.key === 'Enter') {
-                                  const trimmed = instance.customName.trim();
-                                  const template = CARDS_DB.find((t) => t.id === instance.templateId);
-                                  const fallback = instance.templateId === 'custom' ? 'Custom Card' : (template?.name || 'Credit Card');
-                                  renameCard(instance.id, trimmed || fallback);
-                                  setEditingInstanceId(null);
-                                } else if (e.key === 'Escape') {
-                                  setEditingInstanceId(null);
-                                }
-                              }}
-                              autoFocus
-                              className="bg-slate-955/80 border border-purple-500/50 text-white text-xs rounded px-2 py-1 font-semibold focus:outline-none w-full mt-2"
-                            />
-                          ) : (
-                            <h4 
-                              onClick={() => setEditingInstanceId(instance.id)}
-                              className={`text-base font-bold mt-1.5 flex items-center gap-1 cursor-pointer transition ${
-                                isSilverCard ? 'hover:text-slate-800 text-slate-950 font-black' : 'hover:text-purple-300 text-white'
-                              }`}
-                              title="Click to rename"
-                            >
-                              {instance.customName}
-                              <Edit3 className={`w-3 h-3 shrink-0 ${isSilverCard ? 'text-slate-800/60' : 'text-slate-400'}`} />
-                            </h4>
-                          )}
- 
-                          <p className={`text-[11px] mt-0.5 font-medium ${isSilverCard ? 'text-slate-900/80 font-semibold' : 'text-slate-350'}`}>
-                            {benefits.length} perks (Total: ${benefits.reduce((s, b) => s + b.value, 0)}/yr)
-                          </p>
- 
-                          {/* Annual Fee Recoup Progress Bar */}
-                          {cardFee > 0 ? (
-                            <div className="mt-3 max-w-[240px] space-y-1.5">
-                              <div className={`h-1 w-full rounded-full overflow-hidden ${isSilverCard ? 'bg-black/15' : 'bg-white/20'}`}>
-                                <div 
-                                  className={`h-full rounded-full bg-gradient-to-r ${
-                                    isRecouped ? 'from-amber-400 via-yellow-400 to-yellow-500' : 'from-purple-500 to-indigo-400'
-                                  }`}
-                                  style={{ width: `${Math.min((recouped / cardFee) * 100, 100)}%` }}
-                                />
-                              </div>
-                              <div className={`flex justify-between items-center text-[9px] font-semibold ${isSilverCard ? 'text-slate-900/80 font-bold' : 'text-slate-350'}`}>
-                                <span>Fee: ${cardFee}</span>
-                                <span className={isRecouped ? (isSilverCard ? 'text-indigo-950 font-black tracking-wide' : 'text-amber-300 font-bold tracking-wide') : ''}>
-                                  {isRecouped ? '🎉 Recouped!' : `Recouped: $${recouped} (${Math.round((recouped / cardFee) * 100)}%)`}
-                                </span>
-                              </div>
-                            </div>
-                          ) : (
-                            <p className={`text-[9px] font-bold mt-2.5 flex items-center gap-1 ${isSilverCard ? 'text-emerald-850 font-extrabold' : 'text-emerald-400'}`}>
-                              <span>✓ No Annual Fee (Free Card!)</span>
-                            </p>
-                          )}
- 
-                          {/* 1. Accordion Expand Toggle Bar */}
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              toggleCardExpanded(instance.id);
-                            }}
-                            className={`w-full mt-3 px-2.5 py-1.5 rounded-lg border text-[9px] font-extrabold tracking-wider uppercase flex items-center justify-between transition active:scale-[0.98] cursor-pointer ${
-                              isSilverCard
-                                ? 'bg-slate-950/5 border-slate-950/10 text-slate-900 hover:bg-slate-950/10'
-                                : 'bg-white/5 hover:bg-white/10 border-white/5 text-slate-300 hover:text-white'
-                            }`}
-                          >
-                            <span className="flex items-center gap-1.5">
-                              {!!expandedCardIds[instance.id] ? '▲ Hide Details' : '▼ Show Details'}
-                              <span className={`text-[8px] opacity-75 lowercase font-semibold px-1 rounded ${
-                                isSilverCard ? 'bg-black/10' : 'bg-white/10'
-                              }`}>
-                                {benefits.length} perks {instance.instanceOffers && instance.instanceOffers.length > 0 ? `+ ${instance.instanceOffers.length} offers` : ''}
-                              </span>
-                            </span>
-                            <ChevronDown className={`w-3 h-3 transition-transform duration-300 transform ${
-                              !!expandedCardIds[instance.id] ? 'rotate-180' : 'rotate-0'
-                            }`} />
-                          </button>
-
-                          {/* 2. Collapsible Drawer Panel (PWA Responsive & Mobile Optimized) */}
-                          <div className={`transition-all duration-300 ease-in-out overflow-hidden ${
-                            !!expandedCardIds[instance.id]
-                              ? 'max-h-[600px] opacity-100 border-t border-dashed border-white/10 dark:border-black/5 pt-3 mt-3'
-                              : 'max-h-0 opacity-0 pointer-events-none'
-                          }`}>
-                            {/* Benefits preview inline list */}
-                            <div className="space-y-1 text-left">
-                              {benefits.slice(0, 3).map((b) => (
-                                <div key={b.id} className={`flex items-center justify-between text-[10px] p-1 rounded ${
-                                  isSilverCard 
-                                    ? 'bg-slate-950/10 border border-black/5 text-slate-900 font-bold' 
-                                    : 'bg-slate-955/40 border border-white/5 text-slate-300'
-                                }`}>
-                                  <span className="truncate">{b.name}</span>
-                                  <span className={`font-bold ${isSilverCard ? 'text-slate-950 font-black' : 'text-white'}`}>${b.value}</span>
-                                </div>
-                              ))}
-                              {benefits.length > 3 && (
-                                <p className={`text-[9px] text-right font-medium ${isSilverCard ? 'text-slate-900/70 font-semibold' : 'text-slate-400'}`}>+ {benefits.length - 3} more perks</p>
-                              )}
-                            </div>
-
-                            {/* Google Drive / Instance Custom Offers List */}
-                            {instance.instanceOffers && instance.instanceOffers.length > 0 && (
-                              <div className="mt-3 pt-3 border-t border-white/10 dark:border-black/5 space-y-1.5 text-left">
-                                <p className={`text-[8px] font-black uppercase tracking-widest ${
-                                  isSilverCard ? 'text-indigo-950' : 'text-purple-400 dark:text-purple-500'
-                                }`}>Active Temporary Offers</p>
-                                <div className="space-y-1">
-                                  {instance.instanceOffers.map((offer) => (
-                                    <div key={offer.id} className="flex items-center justify-between text-[10px] bg-purple-500/10 border border-purple-500/15 p-1.5 rounded text-slate-200 group/offer">
-                                      <span className="truncate pr-2">{offer.name}</span>
-                                      <div className="flex items-center gap-1.5 shrink-0 font-bold text-white">
-                                        <span>+${offer.value}</span>
-                                        <button
-                                          type="button"
-                                          onClick={(e) => {
-                                            e.stopPropagation();
-                                            removeInstanceOffer(instance.id, offer.id);
-                                          }}
-                                          className="text-slate-400 hover:text-red-400 transition cursor-pointer active:scale-90"
-                                          title="Remove Offer"
-                                        >
-                                          <Trash2 className="w-3 h-3" />
-                                        </button>
-                                      </div>
-                                    </div>
-                                  ))}
-                                </div>
-                              </div>
-                            )}
-
-                            {/* 3. Premium Custom Point Multipliers Editor */}
-                            {canCustomizePoints && (
-                              <div className="mt-3 pt-3 border-t border-dashed border-white/10 dark:border-black/5 space-y-2 text-left">
-                              <p className={`text-[8.5px] font-black uppercase tracking-widest flex items-center gap-1 ${
-                                isSilverCard ? 'text-indigo-950' : 'text-purple-400 dark:text-purple-500'
-                              }`}>
-                                <span>⚡ Custom Point Multipliers</span>
-                              </p>
-                              <div className="grid grid-cols-2 gap-2">
-                                {/* Dining */}
-                                <div className={`flex items-center justify-between gap-2 border p-1.5 rounded-lg ${
-                                  isSilverCard 
-                                    ? 'bg-black/5 border-black/5 text-slate-900' 
-                                    : 'bg-slate-955/25 border-white/5 text-slate-300'
-                                }`}>
-                                  <span className={`text-[9px] font-bold ${isSilverCard ? 'text-slate-850' : 'text-slate-400'}`}>🍽️ Dining</span>
-                                  <input
-                                    type="number"
-                                    min="1"
-                                    max="99"
-                                    placeholder={`${defaultDining}x`}
-                                    value={instance.multipliers?.dining !== undefined ? instance.multipliers.dining : ''}
-                                    onChange={(e) => {
-                                      const val = e.target.value === '' ? undefined : Math.max(1, Number(e.target.value));
-                                      updateCardMultipliers(instance.id, {
-                                        ...instance.multipliers,
-                                        dining: val
-                                      });
-                                    }}
-                                    className={`w-9 text-center text-[10px] font-black rounded focus:outline-none py-0.2 ${
-                                      isSilverCard 
-                                        ? 'bg-slate-950/15 border border-slate-950/20 text-slate-950' 
-                                        : 'bg-slate-950 border border-slate-800 text-slate-200'
-                                    }`}
-                                  />
-                                </div>
-                                {/* Travel */}
-                                <div className={`flex items-center justify-between gap-2 border p-1.5 rounded-lg ${
-                                  isSilverCard 
-                                    ? 'bg-black/5 border-black/5 text-slate-900' 
-                                    : 'bg-slate-955/25 border-white/5 text-slate-300'
-                                }`}>
-                                  <span className={`text-[9px] font-bold ${isSilverCard ? 'text-slate-850' : 'text-slate-400'}`}>✈️ Travel</span>
-                                  <input
-                                    type="number"
-                                    min="1"
-                                    max="99"
-                                    placeholder={`${defaultTravel}x`}
-                                    value={instance.multipliers?.travel !== undefined ? instance.multipliers.travel : ''}
-                                    onChange={(e) => {
-                                      const val = e.target.value === '' ? undefined : Math.max(1, Number(e.target.value));
-                                      updateCardMultipliers(instance.id, {
-                                        ...instance.multipliers,
-                                        travel: val
-                                      });
-                                    }}
-                                    className={`w-9 text-center text-[10px] font-black rounded focus:outline-none py-0.2 ${
-                                      isSilverCard 
-                                        ? 'bg-slate-950/15 border border-slate-950/20 text-slate-950' 
-                                        : 'bg-slate-950 border border-slate-800 text-slate-200'
-                                    }`}
-                                  />
-                                </div>
-                                {/* Shopping / Groceries */}
-                                <div className={`flex items-center justify-between gap-2 border p-1.5 rounded-lg ${
-                                  isSilverCard 
-                                    ? 'bg-black/5 border-black/5 text-slate-900' 
-                                    : 'bg-slate-955/25 border-white/5 text-slate-300'
-                                }`}>
-                                  <span className={`text-[9px] font-bold ${isSilverCard ? 'text-slate-850' : 'text-slate-400'}`}>🛍️ Groceries</span>
-                                  <input
-                                    type="number"
-                                    min="1"
-                                    max="99"
-                                    placeholder={`${defaultShopping}x`}
-                                    value={instance.multipliers?.shopping !== undefined ? instance.multipliers.shopping : ''}
-                                    onChange={(e) => {
-                                      const val = e.target.value === '' ? undefined : Math.max(1, Number(e.target.value));
-                                      updateCardMultipliers(instance.id, {
-                                        ...instance.multipliers,
-                                        shopping: val
-                                      });
-                                    }}
-                                    className={`w-9 text-center text-[10px] font-black rounded focus:outline-none py-0.2 ${
-                                      isSilverCard 
-                                        ? 'bg-slate-950/15 border border-slate-950/20 text-slate-950' 
-                                        : 'bg-slate-950 border border-slate-800 text-slate-200'
-                                    }`}
-                                  />
-                                </div>
-                                {/* Entertainment / Streaming */}
-                                <div className={`flex items-center justify-between gap-2 border p-1.5 rounded-lg ${
-                                  isSilverCard 
-                                    ? 'bg-black/5 border-black/5 text-slate-900' 
-                                    : 'bg-slate-955/25 border-white/5 text-slate-300'
-                                }`}>
-                                  <span className={`text-[9px] font-bold ${isSilverCard ? 'text-slate-850' : 'text-slate-400'}`}>🎬 Streaming</span>
-                                  <input
-                                    type="number"
-                                    min="1"
-                                    max="99"
-                                    placeholder={`${defaultEntertainment}x`}
-                                    value={instance.multipliers?.entertainment !== undefined ? instance.multipliers.entertainment : ''}
-                                    onChange={(e) => {
-                                      const val = e.target.value === '' ? undefined : Math.max(1, Number(e.target.value));
-                                      updateCardMultipliers(instance.id, {
-                                        ...instance.multipliers,
-                                        entertainment: val
-                                      });
-                                    }}
-                                    className={`w-9 text-center text-[10px] font-black rounded focus:outline-none py-0.2 ${
-                                      isSilverCard 
-                                        ? 'bg-slate-950/15 border border-slate-950/20 text-slate-950' 
-                                        : 'bg-slate-950 border border-slate-800 text-slate-200'
-                                    }`}
-                                  />
-                                </div>
-                              </div>
-                            </div>
-                            )}
-                          </div>
-
-                        <div className="mt-3 pt-3 border-t border-white/10 flex items-center justify-between gap-2 flex-wrap">
-                          <div className="flex items-center gap-1.5">
-                            <label className="text-[10px] font-medium text-slate-355">
-                              Opened:
-                            </label>
-                            <input
-                              type="date"
-                              value={instance.cardOpenDate}
-                              onChange={(e) => setCardOpenDate(instance.id, e.target.value)}
-                              className="bg-slate-955 border border-slate-800 text-slate-300 text-[11px] rounded px-2 py-0.5 focus:outline-none cursor-pointer font-medium"
-                            />
-                          </div>
-
-                          <button
-                            type="button"
-                            onClick={() => setAddOfferInstanceId(instance.id)}
-                            className="flex items-center gap-1 bg-white/10 hover:bg-white/20 dark:bg-slate-950 dark:hover:bg-slate-850 border border-white/10 dark:border-slate-800 text-white dark:text-slate-300 font-bold px-2.5 py-1 rounded-lg text-[9px] transition active:scale-95 cursor-pointer"
-                          >
-                            <Plus className="w-2.5 h-2.5 stroke-[3]" />
-                            Add Offer
-                          </button>
-                        </div>
-                      </div>
+                        instance={instance}
+                        editingInstanceId={editingInstanceId}
+                        setEditingInstanceId={setEditingInstanceId}
+                        isCardExpanded={isCardExpanded}
+                        toggleCardExpanded={toggleCardExpanded}
+                        getCardRecoupedValue={getCardRecoupedValue}
+                        handleAddCard={handleAddCard}
+                        handleAddCustomCard={handleAddCustomCard}
+                        handleRemoveCard={handleRemoveCard}
+                        renameCard={renameCard}
+                        setCardOpenDate={setCardOpenDate}
+                        removeInstanceOffer={removeInstanceOffer}
+                        updateCardMultipliers={updateCardMultipliers}
+                        setAddOfferInstanceId={setAddOfferInstanceId}
+                        themeClass={themeClass}
+                      />
                     );
                   })}
                 </div>
