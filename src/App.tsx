@@ -504,7 +504,7 @@ function App() {
             </div>
           </div>
 
-          <div className="flex items-center gap-3 self-end sm:self-auto animate-fade-in">
+          <div className="flex items-center gap-2 sm:gap-3 flex-wrap justify-end sm:justify-start self-end sm:self-auto animate-fade-in">
             {/* Year-End Savings Wrapped Button (Viral Growth Magnet!) */}
             {ownedCards.length > 0 && (
               <button

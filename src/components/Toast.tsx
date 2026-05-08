@@ -8,7 +8,7 @@ export function Toast({ message, type, theme }: ToastProps) {
   const themeClass = (dark: string, light: string) => theme === 'dark' ? dark : light;
 
   return (
-    <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 pointer-events-none animate-slide-up">
+    <div className="fixed top-6 left-1/2 -translate-x-1/2 z-50 pointer-events-none animate-scale-up">
       <div className={`px-4 py-3 rounded-xl border text-xs font-bold flex items-center gap-2 shadow-2xl backdrop-blur-xl transition-all duration-300 ${
         type === 'error'
           ? themeClass('bg-rose-955/90 border-rose-500/30 text-rose-200 shadow-[0_10px_30px_rgba(244,63,94,0.1)]', 'bg-rose-50/95 border-rose-200 text-rose-900 shadow-lg shadow-rose-800/5')
