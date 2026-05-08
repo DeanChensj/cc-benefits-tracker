@@ -165,10 +165,13 @@ export function SavingsWrappedModal({
   // Re-trigger pre-rendering in the background on modal open or language changes!
   useEffect(() => {
     if (isOpen) {
-      // Give the SVG a microsecond to render in the DOM first
+      // Immediately clear the old cached image so the live vector SVG flips to the new language instantly!
+      setPosterDataUrl(null);
+      
+      // Trigger background PNG compilation with a fast 50ms micro-delay
       const timer = setTimeout(() => {
         updatePosterImage();
-      }, 250);
+      }, 50);
       return () => clearTimeout(timer);
     } else {
       if (posterDataUrl && posterDataUrl.startsWith('blob:')) {
