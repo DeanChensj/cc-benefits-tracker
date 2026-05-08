@@ -4,15 +4,12 @@ import type { ActiveBenefit } from '../utils/dateUtils';
 interface ChecklistCardRowProps {
   ab: ActiveBenefit;
   logs: Record<string, boolean | number>;
-  currentDate: Date;
   daysLeft: number | null;
   isExpired: boolean;
   isProgressive: boolean;
   spent: number;
   spentPercent: number;
   cashbackEarned: number;
-  focusedLogKey: string | null;
-  setFocusedLogKey: (key: string | null) => void;
   toggleBenefit: (logKey: string) => void;
   updateProgressLog: (logKey: string, spent: number) => void;
   themeClass: (dark: string, light: string) => string;
@@ -21,15 +18,12 @@ interface ChecklistCardRowProps {
 export function ChecklistCardRow({
   ab,
   logs,
-  currentDate,
   daysLeft,
   isExpired,
   isProgressive,
   spent,
   spentPercent,
   cashbackEarned,
-  focusedLogKey,
-  setFocusedLogKey,
   toggleBenefit,
   updateProgressLog,
   themeClass,
@@ -148,8 +142,6 @@ export function ChecklistCardRow({
               disabled={isExpired}
               placeholder="0"
               value={logs[logKey] !== undefined && logs[logKey] !== false ? String(logs[logKey]) : ''}
-              onFocus={() => setFocusedLogKey(logKey)}
-              onBlur={() => setFocusedLogKey(null)}
               onChange={(e) => {
                 const val = Number(e.target.value);
                 updateProgressLog(logKey, val);

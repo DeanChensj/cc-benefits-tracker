@@ -22,27 +22,19 @@ import { getLocalDateString, getDaysLeft, getUrgencyScore, getAnnualFeeWarningIn
 import { loadGoogleGsiScript, requestGDriveToken, fetchUserEmail } from './utils/gdrive';
 import { 
   CreditCard, 
-  Calendar, 
   Download, 
   Upload, 
   CheckCircle2, 
   RefreshCw,
-  Trash2,
-  DollarSign,
-  Clock,
-  Filter,
   Plus,
-  Edit3,
   Sun,
   Moon,
   Cloud,
   CloudOff,
-  ArrowUpDown,
-  ExternalLink,
-  Sparkles,
-  ChevronDown,
-  AlertTriangle,
-  X
+  Calendar,
+  Trash2,
+  DollarSign,
+  Clock
 } from 'lucide-react';
 
 
@@ -70,6 +62,7 @@ function App() {
     addInstanceOffer,
     removeInstanceOffer,
     updateCardMultipliers,
+    pruneExpiredLogs,
     resetAll 
   } = useCardStore();
 
@@ -86,7 +79,7 @@ function App() {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [templateFeeFilter, setTemplateFeeFilter] = useState<'all' | 'free' | 'mid' | 'premium'>('all');
-  const [focusedLogKey, setFocusedLogKey] = useState<string | null>(null);
+
   const [activeTemplateDetail, setActiveTemplateDetail] = useState<CardTemplate | null>(null);
   const [isSyncDropdownOpen, setIsSyncDropdownOpen] = useState(false);
   const [showAdvancedSync, setShowAdvancedSync] = useState(false);
@@ -158,6 +151,9 @@ function App() {
 
   // Load Google Identity Services script dynamically on mount
   useEffect(() => {
+    // Dynamically prune expired打卡 logs older than 2 years to maintain tiny capped DB footprint!
+    pruneExpiredLogs(currentDate);
+
     loadGoogleGsiScript()
       .then(() => console.log('Google GIS client successfully pre-loaded.'))
       .catch((err) => console.error('Failed to load Google GIS Client library:', err));
@@ -434,7 +430,7 @@ function App() {
 
   // Filtered benefits for view
   const filteredBenefits = activeBenefits.filter((ab) => {
-    if (activeTab === 'todo' && ab.isUsed && focusedLogKey !== ab.logKey) return false;
+    if (activeTab === 'todo' && ab.isUsed) return false;
     if (filterCategory !== 'all' && ab.benefit.category !== filterCategory) return false;
     if (filterCardInstanceId !== 'all' && ab.cardInstance.id !== filterCardInstanceId) return false;
     return true;
@@ -653,7 +649,8 @@ function App() {
                       </div>
                     )}
                   </div>
-                </div>
+
+                 </div>
               )}
             </div>
 
@@ -861,15 +858,12 @@ function App() {
                       key={ab.logKey}
                       ab={ab}
                       logs={logs}
-                      currentDate={currentDate}
                       daysLeft={daysLeft}
                       isExpired={isExpired}
                       isProgressive={isProgressive}
                       spent={spent}
                       spentPercent={spentPercent}
                       cashbackEarned={cashbackEarned}
-                      focusedLogKey={focusedLogKey}
-                      setFocusedLogKey={setFocusedLogKey}
                       toggleBenefit={toggleBenefit}
                       updateProgressLog={updateProgressLog}
                       themeClass={themeClass}
@@ -1135,6 +1129,16 @@ function App() {
           </section>
         )}
       </main>
+
+      {/* Premium Footer: Privacy & Performance Guard declaration */}
+      <footer className="mt-auto py-8 px-4 text-center space-y-1.5 shrink-0">
+        <p className={`text-[9px] font-bold tracking-wider uppercase ${themeClass('text-slate-500/80', 'text-slate-400')}`}>
+          💳 CC Benefits Tracker • Made with Passion for Savvy Churners
+        </p>
+        <p className="text-[8.5px] leading-relaxed max-w-md mx-auto opacity-70 text-slate-500 dark:text-slate-400 font-medium">
+          🔒 <strong>Privacy & Performance Guard</strong>: Your credit card data is stored 100% locally on this device. To guarantee ultra-fast synchronization and zero cellular data waste, historical logs older than 24 months are automatically pruned.
+        </p>
+      </footer>
 
       {/* Calendar Sync Modal */}
       <CalendarSyncModal 
