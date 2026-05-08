@@ -20,7 +20,6 @@ export function SavingsWrappedModal({
 }: SavingsWrappedModalProps) {
   const [isGenerating, setIsGenerating] = useState(false);
   const [posterLang, setPosterLang] = useState<'en' | 'zh'>('zh'); // Default to punchy Chinese!
-  const [currentUrl] = useState('https://deanchensj.github.io/cc-benefits-tracker/');
   const [posterDataUrl, setPosterDataUrl] = useState<string | null>(null);
   const svgRef = useRef<SVGSVGElement>(null);
 
@@ -124,60 +123,39 @@ export function SavingsWrappedModal({
     try {
       const svgElement = svgRef.current;
       
-      // Preload GDrive or Google Charts QR code as a Base64 Data URI (Google API supports CORS out-of-the-box!)
-      const qrUrl = `https://chart.googleapis.com/chart?cht=qr&chs=150x150&chl=${encodeURIComponent(currentUrl)}`;
-      const response = await fetch(qrUrl);
-      const blob = await response.blob();
+      // Directly serialize the 100% local, CORS-free SVG XML to a same-origin Blob URL
+      const svgString = new XMLSerializer().serializeToString(svgElement);
+      const svgBlob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
+      const URL = window.URL || window.webkitURL || window;
+      const blobURL = URL.createObjectURL(svgBlob);
       
-      const reader = new FileReader();
-      reader.readAsDataURL(blob);
-      reader.onloadend = () => {
-        const base64Qr = reader.result as string;
-        
-        // Safely select and temporarily swap the image href inside the active SVG tree
-        const imgNode = svgElement.querySelector('image');
-        const originalHref = imgNode?.getAttribute('href');
-        if (imgNode && base64Qr) {
-          imgNode.setAttribute('href', base64Qr);
-        }
-        
-        const svgString = new XMLSerializer().serializeToString(svgElement);
-        const svgBlob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
-        const URL = window.URL || window.webkitURL || window;
-        const blobURL = URL.createObjectURL(svgBlob);
-        
-        const image = new Image();
-        image.src = blobURL;
-        
-        image.onload = () => {
-          try {
-            const canvas = document.createElement('canvas');
-            canvas.width = 760;  // 2x retina scale
-            canvas.height = 1350;
-            const ctx = canvas.getContext('2d');
-            
-            if (ctx) {
-              ctx.drawImage(image, 0, 0, 760, 1350);
-              canvas.toBlob((pngBlob) => {
-                if (pngBlob) {
-                  if (posterDataUrl && posterDataUrl.startsWith('blob:')) {
-                    URL.revokeObjectURL(posterDataUrl);
-                  }
-                  const pngBlobUrl = URL.createObjectURL(pngBlob);
-                  setPosterDataUrl(pngBlobUrl);
+      const image = new Image();
+      image.src = blobURL;
+      
+      image.onload = () => {
+        try {
+          const canvas = document.createElement('canvas');
+          canvas.width = 760;  // 2x retina scale
+          canvas.height = 1350;
+          const ctx = canvas.getContext('2d');
+          
+          if (ctx) {
+            ctx.drawImage(image, 0, 0, 760, 1350);
+            canvas.toBlob((pngBlob) => {
+              if (pngBlob) {
+                if (posterDataUrl && posterDataUrl.startsWith('blob:')) {
+                  URL.revokeObjectURL(posterDataUrl);
                 }
-              }, 'image/png');
-            }
-          } catch (err) {
-            console.warn('⚠️ Canvas pre-rendering blocked by browser sandbox:', err);
-          } finally {
-            // Restore original external href to keep the live DOM cleanly connected
-            if (imgNode && originalHref) {
-              imgNode.setAttribute('href', originalHref);
-            }
-            URL.revokeObjectURL(blobURL);
+                const pngBlobUrl = URL.createObjectURL(pngBlob);
+                setPosterDataUrl(pngBlobUrl);
+              }
+            }, 'image/png');
           }
-        };
+        } catch (err) {
+          console.warn('⚠️ Canvas pre-rendering blocked by browser sandbox:', err);
+        } finally {
+          URL.revokeObjectURL(blobURL);
+        }
       };
     } catch (err) {
       console.error('Failed to pre-render poster image:', err);
@@ -209,68 +187,51 @@ export function SavingsWrappedModal({
 
     try {
       const svgElement = svgRef.current;
+      const svgString = new XMLSerializer().serializeToString(svgElement);
+      const svgBlob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
+      const URL = window.URL || window.webkitURL || window;
+      const blobURL = URL.createObjectURL(svgBlob);
       
-      // Preload GDrive or Google Charts QR code as a Base64 Data URI (Google API supports CORS out-of-the-box!)
-      const qrUrl = `https://chart.googleapis.com/chart?cht=qr&chs=150x150&chl=${encodeURIComponent(currentUrl)}`;
-      const response = await fetch(qrUrl);
-      const blob = await response.blob();
+      const image = new Image();
+      image.src = blobURL;
       
-      const reader = new FileReader();
-      reader.readAsDataURL(blob);
-      reader.onloadend = () => {
-        const base64Qr = reader.result as string;
-        
-        // Safely select and temporarily swap the image href inside the active SVG tree
-        const imgNode = svgElement.querySelector('image');
-        const originalHref = imgNode?.getAttribute('href');
-        if (imgNode && base64Qr) {
-          imgNode.setAttribute('href', base64Qr);
-        }
-        
-        const svgString = new XMLSerializer().serializeToString(svgElement);
-        const svgBlob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
-        const URL = window.URL || window.webkitURL || window;
-        const blobURL = URL.createObjectURL(svgBlob);
-        
-        const image = new Image();
-        image.src = blobURL;
-        
-        image.onload = () => {
-          try {
-            const canvas = document.createElement('canvas');
-            canvas.width = 760;  // 2x retina scale
-            canvas.height = 1350;
-            const ctx = canvas.getContext('2d');
-            
-            if (ctx) {
-              ctx.drawImage(image, 0, 0, 760, 1350);
-              canvas.toBlob((pngBlob) => {
-                if (pngBlob) {
-                  const pngBlobUrl = URL.createObjectURL(pngBlob);
-                  const downloadLink = document.createElement('a');
-                  downloadLink.href = pngBlobUrl;
-                  downloadLink.download = `Savings_Wrapped_${posterLang === 'zh' ? 'CN' : 'EN'}_${new Date().getFullYear()}.png`;
-                  document.body.appendChild(downloadLink);
-                  downloadLink.click();
-                  document.body.removeChild(downloadLink);
-                  
-                  setTimeout(() => {
-                    URL.revokeObjectURL(pngBlobUrl);
-                  }, 500);
-                }
-              }, 'image/png');
-            }
-          } catch (err) {
-            console.error('⚠️ Canvas poster generation blocked:', err);
-          } finally {
-            // Restore original external href to keep the live DOM cleanly connected
-            if (imgNode && originalHref) {
-              imgNode.setAttribute('href', originalHref);
-            }
-            URL.revokeObjectURL(blobURL);
-            setIsGenerating(false);
+      image.onload = () => {
+        try {
+          const canvas = document.createElement('canvas');
+          canvas.width = 760;  // 2x retina scale
+          canvas.height = 1350;
+          const ctx = canvas.getContext('2d');
+          
+          if (ctx) {
+            ctx.drawImage(image, 0, 0, 760, 1350);
+            canvas.toBlob((pngBlob) => {
+              if (pngBlob) {
+                const pngBlobUrl = URL.createObjectURL(pngBlob);
+                const downloadLink = document.createElement('a');
+                downloadLink.href = pngBlobUrl;
+                downloadLink.download = `Savings_Wrapped_${posterLang === 'zh' ? 'CN' : 'EN'}_${new Date().getFullYear()}.png`;
+                document.body.appendChild(downloadLink);
+                downloadLink.click();
+                document.body.removeChild(downloadLink);
+                
+                setTimeout(() => {
+                  URL.revokeObjectURL(pngBlobUrl);
+                }, 500);
+              }
+            }, 'image/png');
           }
-        };
+        } catch (err) {
+          console.warn('⚠️ Canvas PNG export blocked. Falling back to crisp SVG vector download!', err);
+          const downloadLink = document.createElement('a');
+          downloadLink.href = blobURL;
+          downloadLink.download = `Savings_Wrapped_${posterLang === 'zh' ? 'CN' : 'EN'}_${new Date().getFullYear()}.svg`;
+          document.body.appendChild(downloadLink);
+          downloadLink.click();
+          document.body.removeChild(downloadLink);
+        } finally {
+          URL.revokeObjectURL(blobURL);
+          setIsGenerating(false);
+        }
       };
     } catch (err) {
       console.error('Failed to rasterize poster:', err);
@@ -328,20 +289,20 @@ export function SavingsWrappedModal({
 
           {/* Crisp Vector SVG Poster Container (9:16 proportion) */}
           <div className="relative w-full aspect-[9/16] rounded-2xl overflow-hidden shadow-2xl border border-white/10 select-none shrink-0 max-w-[280px] sm:max-w-[360px] mx-auto bg-gradient-to-b from-slate-950 via-slate-900 to-indigo-950 text-white">
-            {posterDataUrl ? (
+            {posterDataUrl && (
               <img 
                 src={posterDataUrl} 
                 alt="Savings Wrapped Poster" 
-                className="w-full h-full object-cover cursor-pointer pointer-events-auto animate-fade-in"
+                className="absolute inset-0 w-full h-full object-cover cursor-pointer pointer-events-auto z-20 animate-fade-in"
                 style={{ WebkitTouchCallout: 'default' }}
               />
-            ) : (
-              <svg 
-                ref={svgRef}
-                xmlns="http://www.w3.org/2000/svg" 
-                viewBox="0 0 380 675" 
-                className="w-full h-full"
-              >
+            )}
+            <svg 
+              ref={svgRef}
+              xmlns="http://www.w3.org/2000/svg" 
+              viewBox="0 0 380 675" 
+              className={`w-full h-full transition-opacity duration-350 ${posterDataUrl ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}
+            >
               {/* Definitions for Gradients and 3D Filters */}
               <defs>
                 <linearGradient id="brushedGold" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -510,21 +471,23 @@ export function SavingsWrappedModal({
                 <line x1="88" y1="585" x2="88" y2="610" strokeWidth="1" />
                 <line x1="92" y1="585" x2="92" y2="610" strokeWidth="2" />
               </g>
-              <text x="100" y="595" fill="#94a3b8" fontSize="6" fontWeight="900" letterSpacing="0.5" fontFamily="Inter, system-ui, sans-serif">SERIAL NO. CC2026575</text>
+              <text x="100" y="595" fill="#94a3b8" fontSize="6.2" fontWeight="900" letterSpacing="0.5" fontFamily="Inter, system-ui, sans-serif">SERIAL NO. CC2026575</text>
               <text x="100" y="605" fill="rgba(255, 255, 255, 0.5)" fontSize="6.5" fontWeight="700" fontFamily="Inter, system-ui, sans-serif">{dict.scannerLabel}</text>
 
-              {/* Dynamic scannable QR Code pointing directly to the live website URL! */}
+              {/* Luxury gold-brushed brand name text filling the bottom-left space perfectly! */}
+              <text x="40" y="572" fill="url(#brushedGold)" fontSize="7.5" fontWeight="950" letterSpacing="1.5" fontFamily="Inter, system-ui, sans-serif">CC BENEFITS TRACKER</text>
+
+              {/* Dynamic scannable QR Code (100% CORS-free static inline Base64 PNG!) */}
               <rect x="300" y="578" width="42" height="42" rx="6" fill="none" stroke="url(#brushedGold)" strokeWidth="1.5" strokeDasharray="16, 3" />
               <image 
                 crossOrigin="anonymous"
-                href={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(currentUrl)}`}
+                href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAHgAAAB4AQMAAAADqqSRAAAABlBMVEX///8AAABVwtN+AAAACXBIWXMAAA7EAAAOxAGVKw4bAAABK0lEQVQ4jaWUQcrEMAiFhSxyqdBcK4uCQhe5ViCXykLGeabMz8/s7Fga+LIQn3lK9BVstrIQVdNq9gpzI2rczbRQITrizKtlk6SllKrP2PPN8ZxxSEHGRww9rVEaVP70Rdj7iYvT5Xz6G+EdWc7y/1EDzLaQ0jRNjxHmbL1bX6dXo9ATZslm0hh2GndpMea+vKakVeuuL8h58WLknEqU8EcZZoAmOavdeuJM7uhrjuQXPzOLf3RiQEeBy6LccneFl/dm64uzsHWpNjHjR5wRjCfCfsCEUZwz/AWPahpJbz1RNhQEf6Od9RVmj4b58mKqxdnn2/XAYNgvFOZ2P8k2p894mH0/Lk9X94g94u1vRcrjGUu+zP1sI863JVxPqTPOe796O6f7kX7mr3gD/EZ+7qmgE4sAAAAASUVORK5CYII="
                 x="303" 
                 y="581" 
                 width="36" 
                 height="36" 
               />
             </svg>
-            )}
           </div>
         </div>
 
