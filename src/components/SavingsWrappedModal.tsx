@@ -185,8 +185,8 @@ export function SavingsWrappedModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/65 backdrop-blur-sm overflow-y-auto scrollbar-thin">
-      <div className={`relative w-[380px] border rounded-2xl shadow-2xl animate-scale-up overflow-hidden max-h-[95vh] flex flex-col ${
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 bg-black/65 backdrop-blur-sm overflow-y-auto scrollbar-thin">
+      <div className={`relative w-[360px] max-w-full border rounded-2xl shadow-2xl animate-scale-up overflow-hidden max-h-[90vh] max-h-[90dvh] flex flex-col ${
         themeClass('bg-slate-955 border-slate-850 text-white', 'bg-slate-50 border-slate-250 text-slate-900')
       }`}>
         {/* Modal Header */}
