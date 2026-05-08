@@ -97,10 +97,19 @@ export function SavingsWrappedModal({
   }[posterLang];
 
   // 5. Prepare and format battleships (regex clean custom card tail-numbers)
+  // Helper to dynamically nickname bulky card names for clean horizontal layouts inside the poster
+  const getShortCardName = (name: string): string => {
+    return name
+      .replace(/American Express/gi, 'Amex')
+      .replace(/Chase Sapphire/gi, 'Chase')
+      .replace(/Capital One/gi, 'Cap1');
+  };
+
+  // 5. Prepare and format battleships (regex clean custom card tail-numbers)
   const cardRecoups = ownedCards.map((c) => {
     const template = CARDS_DB.find((t) => t.id === c.templateId);
-    // Clean card tail numbers: "Name 1000" ➔ "Name (1000)"
-    const cleanName = c.customName.replace(/\s(\d+)$/, ' ($1)');
+    const shortName = getShortCardName(c.customName);
+    const cleanName = shortName.replace(/\s(\d+)$/, ' ($1)');
     
     return {
       name: cleanName,
@@ -366,7 +375,7 @@ export function SavingsWrappedModal({
                     
                     {/* Clean formatted card name with parentheses e.g. Amex Platinum (1000) */}
                     <text x="52" y={yPos + 16} fill="#ffffff" fontSize="8.5" fontWeight="900" fontFamily="Inter, system-ui, sans-serif">
-                      {c.name.length > 24 ? `${c.name.substring(0, 22)}...` : c.name}
+                      {c.name}
                     </text>
                     
                     {c.subActive ? (
