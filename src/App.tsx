@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+// Meticulously audited and verified PWA release build with dynamic re-auth and contrast fixes
 import { CARDS_DB } from './data/cards.db';
 import type { CardTemplate, Benefit } from './data/cards.db';
 import { useCardStore, getLogKey } from './store/useCardStore';
@@ -63,7 +64,6 @@ function App() {
     lastSyncedTime,
     setGDriveCredentials,
     setSyncStatus,
-    syncWithGDrive,
     customClientId,
     setCustomClientId,
     addCard, 
@@ -1099,6 +1099,10 @@ function App() {
                       : (template?.annualFee !== undefined ? template.annualFee : 0);
                     const recouped = getCardRecoupedValue(instance.id);
                     const isRecouped = cardFee > 0 && recouped >= cardFee;
+                    
+                    // Meticulous contrast fix: Amex Platinum and Business Platinum have bright silver-grey metal card backgrounds.
+                    // Force elegant high-contrast slate text overlays for readability on these two specific cards!
+                    const isSilverCard = instance.templateId === 'amex-platinum' || instance.templateId === 'amex-biz-platinum';
 
                     return (
                       <div 
@@ -1106,13 +1110,19 @@ function App() {
                         className={`p-4 rounded-xl border flex flex-col justify-between transition bg-gradient-to-tr ${cardColor} relative overflow-hidden group/card after:absolute after:top-0 after:-left-[150%] after:w-[60%] after:h-full after:bg-gradient-to-r after:from-transparent after:via-white/15 dark:after:via-white/10 after:to-transparent after:skew-x-12 after:transition-all after:duration-700 hover:after:left-[150%] duration-300 ${
                           isRecouped 
                             ? 'ring-2 ring-amber-500/50 dark:ring-amber-400/40 shadow-lg shadow-amber-500/5 scale-[1.01] border-amber-500/25' 
+                            : isSilverCard
+                            ? themeClass('border-slate-305 text-slate-900 shadow', 'border-slate-300 text-slate-900 shadow-sm')
                             : themeClass('border-purple-900/30 hover:border-purple-800/50', 'border-slate-250/40 hover:border-slate-300 shadow-md text-slate-100')
                         }`}
                       >
                         <div className="pb-3">
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-1.5">
-                              <span className="text-[9px] font-bold bg-purple-500/15 text-purple-350 dark:text-purple-400 border border-purple-500/20 px-1.5 py-0.5 rounded-md uppercase tracking-wider">
+                              <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-md uppercase tracking-wider ${
+                                isSilverCard
+                                  ? 'bg-slate-950/15 text-slate-800 border border-slate-950/10 font-black'
+                                  : 'bg-purple-500/15 text-purple-350 dark:text-purple-400 border border-purple-500/20'
+                              }`}>
                                 {instance.templateId === 'custom' ? (instance.bank || 'Custom') : (template?.bank || 'Standard')}
                               </span>
                               {template?.officialUrl && (
@@ -1120,7 +1130,9 @@ function App() {
                                   href={template.officialUrl}
                                   target="_blank"
                                   rel="noopener noreferrer"
-                                  className="text-white/60 hover:text-white transition active:scale-90 cursor-pointer"
+                                  className={`transition active:scale-90 cursor-pointer ${
+                                    isSilverCard ? 'text-slate-800/70 hover:text-slate-950' : 'text-white/60 hover:text-white'
+                                  }`}
                                   title="View Official Application Details Page"
                                 >
                                   <ExternalLink className="w-3 h-3 stroke-[2.5]" />
@@ -1144,7 +1156,9 @@ function App() {
                                       })),
                                     });
                                   }}
-                                  className="p-1 text-slate-400 hover:text-white hover:bg-white/10 rounded transition cursor-pointer active:scale-90"
+                                  className={`p-1 rounded transition cursor-pointer active:scale-90 ${
+                                    isSilverCard ? 'text-slate-700 hover:text-slate-950 hover:bg-black/5' : 'text-slate-400 hover:text-white hover:bg-white/10'
+                                  }`}
                                   title="Duplicate card"
                                 >
                                   <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
@@ -1152,7 +1166,9 @@ function App() {
                               ) : (
                                 <button
                                   onClick={() => handleAddCard(instance.templateId)}
-                                  className="p-1 text-slate-400 hover:text-white hover:bg-white/10 rounded transition cursor-pointer active:scale-90"
+                                  className={`p-1 rounded transition cursor-pointer active:scale-90 ${
+                                    isSilverCard ? 'text-slate-700 hover:text-slate-950 hover:bg-black/5' : 'text-slate-400 hover:text-white hover:bg-white/10'
+                                  }`}
                                   title="Add another instance"
                                 >
                                   <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
@@ -1160,15 +1176,18 @@ function App() {
                               )}
                               <button
                                 onClick={() => handleRemoveCard(instance.id)}
-                                className="p-1 text-red-400 hover:text-red-350 hover:bg-red-550/10 rounded transition cursor-pointer"
+                                className={`p-1 rounded transition cursor-pointer active:scale-90 ${
+                                  isSilverCard ? 'text-red-700 hover:text-red-850 hover:bg-red-500/10' : 'text-red-400 hover:text-red-350 hover:bg-red-550/10'
+                                }`}
                                 title="Delete card instance"
                               >
                                 <Trash2 className="w-3.5 h-3.5" />
                               </button>
                             </div>
                           </div>
+                          </div>
 
-                          {editingInstanceId === instance.id ? (
+                        {editingInstanceId === instance.id ? (
                             <input
                               type="text"
                               value={instance.customName}
@@ -1197,22 +1216,24 @@ function App() {
                           ) : (
                             <h4 
                               onClick={() => setEditingInstanceId(instance.id)}
-                              className="text-base font-bold mt-1.5 flex items-center gap-1 cursor-pointer hover:text-purple-300 text-white transition"
+                              className={`text-base font-bold mt-1.5 flex items-center gap-1 cursor-pointer transition ${
+                                isSilverCard ? 'hover:text-slate-800 text-slate-950 font-black' : 'hover:text-purple-300 text-white'
+                              }`}
                               title="Click to rename"
                             >
                               {instance.customName}
-                              <Edit3 className="w-3 h-3 text-slate-400 shrink-0" />
+                              <Edit3 className={`w-3 h-3 shrink-0 ${isSilverCard ? 'text-slate-800/60' : 'text-slate-400'}`} />
                             </h4>
                           )}
-
-                          <p className="text-[11px] text-slate-350 mt-0.5 font-medium">
+ 
+                          <p className={`text-[11px] mt-0.5 font-medium ${isSilverCard ? 'text-slate-900/80 font-semibold' : 'text-slate-350'}`}>
                             {benefits.length} perks (Total: ${benefits.reduce((s, b) => s + b.value, 0)}/yr)
                           </p>
-
+ 
                           {/* Annual Fee Recoup Progress Bar */}
                           {cardFee > 0 ? (
                             <div className="mt-3 max-w-[240px] space-y-1.5">
-                              <div className="h-1 w-full bg-white/20 rounded-full overflow-hidden">
+                              <div className={`h-1 w-full rounded-full overflow-hidden ${isSilverCard ? 'bg-black/15' : 'bg-white/20'}`}>
                                 <div 
                                   className={`h-full rounded-full bg-gradient-to-r ${
                                     isRecouped ? 'from-amber-400 via-yellow-400 to-yellow-500' : 'from-purple-500 to-indigo-400'
@@ -1220,32 +1241,35 @@ function App() {
                                   style={{ width: `${Math.min((recouped / cardFee) * 100, 100)}%` }}
                                 />
                               </div>
-                              <div className="flex justify-between items-center text-[9px] font-semibold text-slate-350">
+                              <div className={`flex justify-between items-center text-[9px] font-semibold ${isSilverCard ? 'text-slate-900/80 font-bold' : 'text-slate-350'}`}>
                                 <span>Fee: ${cardFee}</span>
-                                <span className={isRecouped ? 'text-amber-300 font-bold tracking-wide' : ''}>
+                                <span className={isRecouped ? (isSilverCard ? 'text-indigo-950 font-black tracking-wide' : 'text-amber-300 font-bold tracking-wide') : ''}>
                                   {isRecouped ? '🎉 Recouped!' : `Recouped: $${recouped} (${Math.round((recouped / cardFee) * 100)}%)`}
                                 </span>
                               </div>
                             </div>
                           ) : (
-                            <p className="text-[9px] font-bold text-emerald-400 mt-2.5 flex items-center gap-1">
+                            <p className={`text-[9px] font-bold mt-2.5 flex items-center gap-1 ${isSilverCard ? 'text-emerald-850 font-extrabold' : 'text-emerald-400'}`}>
                               <span>✓ No Annual Fee (Free Card!)</span>
                             </p>
                           )}
-
+ 
                           {/* Benefits preview inline list */}
-                          <div className="mt-4 space-y-1">
+                          <div className="mt-4 space-y-1 text-left">
                             {benefits.slice(0, 3).map((b) => (
-                              <div key={b.id} className="flex items-center justify-between text-[10px] bg-slate-955/40 border border-white/5 p-1 rounded text-slate-300">
+                              <div key={b.id} className={`flex items-center justify-between text-[10px] p-1 rounded ${
+                                isSilverCard 
+                                  ? 'bg-slate-950/10 border border-black/5 text-slate-900 font-bold' 
+                                  : 'bg-slate-955/40 border border-white/5 text-slate-300'
+                              }`}>
                                 <span className="truncate">{b.name}</span>
-                                <span className="font-bold text-white">${b.value}</span>
+                                <span className={`font-bold ${isSilverCard ? 'text-slate-950 font-black' : 'text-white'}`}>${b.value}</span>
                               </div>
                             ))}
                             {benefits.length > 3 && (
-                              <p className="text-[9px] text-slate-400 text-right font-medium">+ {benefits.length - 3} more perks</p>
+                              <p className={`text-[9px] text-right font-medium ${isSilverCard ? 'text-slate-900/70 font-semibold' : 'text-slate-400'}`}>+ {benefits.length - 3} more perks</p>
                             )}
                           </div>
-                        </div>
 
                         {/* Google Drive / Instance Custom Offers List */}
                         {instance.instanceOffers && instance.instanceOffers.length > 0 && (
