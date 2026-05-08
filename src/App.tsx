@@ -49,6 +49,7 @@ function App() {
     logs, 
     theme,
     toggleTheme,
+    language,
     gdriveEmail,
     syncStatus,
     lastSyncedTime,
@@ -348,7 +349,9 @@ function App() {
       value: totalVal,
       resetPeriod: 'fixed',
       expirationDate: award.expirationDate,
-      category: info.programType === 'hotel' ? 'travel' : info.programType === 'bank' ? 'shopping' : 'other'
+      category: (info.awardType === 'fnr' || info.awardType === 'sua' || info.awardType === 'goh' || info.awardType === 'companion' || info.awardType === 'swu') 
+        ? 'travel' 
+        : info.awardType === 'points' ? 'shopping' : 'other'
     };
 
     activeBenefits.push({
@@ -489,8 +492,24 @@ function App() {
   // Filtered benefits for view
   const filteredBenefits = activeBenefits.filter((ab) => {
     if (activeTab === 'todo' && ab.isUsed) return false;
-    if (filterCategory !== 'all' && ab.benefit.category !== filterCategory) return false;
-    if (filterCardInstanceId !== 'all' && (!ab.cardInstance || ab.cardInstance.id !== filterCardInstanceId)) return false;
+    if (filterCategory !== 'all') {
+      if (filterCardInstanceId === 'awards') {
+        if (!ab.loyaltyAward) return false;
+        const awardType = ab.loyaltyAward.templateId === 'custom'
+          ? (ab.loyaltyAward.customAwardType || 'other')
+          : (AWARD_TEMPLATES[ab.loyaltyAward.templateId]?.awardType || 'other');
+        if (awardType !== filterCategory) return false;
+      } else {
+        if (ab.benefit.category !== filterCategory) return false;
+      }
+    }
+    if (filterCardInstanceId !== 'all') {
+      if (filterCardInstanceId === 'awards') {
+        if (!ab.loyaltyAward) return false;
+      } else {
+        if (!ab.cardInstance || ab.cardInstance.id !== filterCardInstanceId) return false;
+      }
+    }
     return true;
   });
 
@@ -507,8 +526,12 @@ function App() {
       case 'value-asc':
         return a.benefit.value - b.benefit.value;
       case 'expiry':
-        const daysA = getDaysLeft(a, currentDate) ?? 9999;
-        const daysB = getDaysLeft(b, currentDate) ?? 9999;
+        const daysA = a.loyaltyAward
+          ? (a.benefit.expirationDate ? getDaysLeftForDate(a.benefit.expirationDate, currentDate) : 9999)
+          : (getDaysLeft(a, currentDate) ?? 9999);
+        const daysB = b.loyaltyAward
+          ? (b.benefit.expirationDate ? getDaysLeftForDate(b.benefit.expirationDate, currentDate) : 9999)
+          : (getDaysLeft(b, currentDate) ?? 9999);
         return daysA - daysB;
       case 'urgency':
       default:
@@ -884,6 +907,7 @@ function App() {
         {/* Premium Glassmorphic Filters Control Panel */}
         <FilterHubPanel
           ownedCards={ownedCards}
+          loyaltyAwards={loyaltyAwards}
           activeTab={activeTab}
           filterCategory={filterCategory}
           setFilterCategory={setFilterCategory}
@@ -892,6 +916,7 @@ function App() {
           sortBy={sortBy}
           setSortBy={setSortBy}
           themeClass={themeClass}
+          language={language}
         />
 
         {/* TABS 1 & 2: CHECKLIST VIEW */}
@@ -1225,13 +1250,41 @@ function App() {
                     </button>
                   </div>
 
-                  {loyaltyAwards.length === 0 ? (
-                    <div className="text-center py-10">
-                      <p className={`text-xs ${themeClass('text-slate-500', 'text-slate-400')}`}>No standalone awards or vouchers inside your card collection yet. Click Add Standalone Voucher above! 🎁</p>
-                    </div>
-                  ) : (
-                    <div className="grid sm:grid-cols-2 gap-4">
-                      {loyaltyAwards.map((award) => {
+                  {(() => {
+                    const filteredAwards = loyaltyAwards.filter((award) => {
+                      const isCustom = award.templateId === 'custom';
+                      const info = isCustom ? {
+                        name: award.customName || 'Custom Voucher',
+                        brand: award.customBrand || 'Other'
+                      } : AWARD_TEMPLATES[award.templateId];
+
+                      const searchLower = searchQuery.toLowerCase();
+                      return (
+                        info.name.toLowerCase().includes(searchLower) ||
+                        info.brand.toLowerCase().includes(searchLower) ||
+                        (award.notes && award.notes.toLowerCase().includes(searchLower))
+                      );
+                    });
+
+                    if (loyaltyAwards.length === 0) {
+                      return (
+                        <div className="text-center py-10">
+                          <p className={`text-xs ${themeClass('text-slate-500', 'text-slate-400')}`}>No standalone awards or vouchers inside your card collection yet. Click Add Standalone Voucher above! 🎁</p>
+                        </div>
+                      );
+                    }
+
+                    if (filteredAwards.length === 0) {
+                      return (
+                        <div className="text-center py-10 animate-fade-in">
+                          <p className={`text-xs ${themeClass('text-slate-500', 'text-slate-400')}`}>🔍 No vouchers matching your search query.</p>
+                        </div>
+                      );
+                    }
+
+                    return (
+                      <div className="grid sm:grid-cols-2 gap-4">
+                        {filteredAwards.map((award) => {
                         const isCustom = award.templateId === 'custom';
                         const info = isCustom ? {
                           name: award.customName || 'Custom Voucher',
@@ -1321,7 +1374,8 @@ function App() {
                         );
                       })}
                     </div>
-                  )}
+                  );
+                })()}
                 </div>
               </div>
             )}

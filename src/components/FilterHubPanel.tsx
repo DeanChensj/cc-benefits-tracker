@@ -1,8 +1,10 @@
 import { Filter, CreditCard, ArrowUpDown } from 'lucide-react';
 import type { OwnedCardInstance } from '../store/useCardStore';
+import type { LoyaltyAward } from '../data/cards.db';
 
 interface FilterHubPanelProps {
   ownedCards: OwnedCardInstance[];
+  loyaltyAwards: LoyaltyAward[];
   activeTab: string;
   filterCategory: string;
   setFilterCategory: (cat: string) => void;
@@ -11,10 +13,12 @@ interface FilterHubPanelProps {
   sortBy: string;
   setSortBy: (sort: any) => void;
   themeClass: (dark: string, light: string) => string;
+  language: 'zh' | 'en';
 }
 
 export function FilterHubPanel({
   ownedCards,
+  loyaltyAwards,
   activeTab,
   filterCategory,
   setFilterCategory,
@@ -23,11 +27,14 @@ export function FilterHubPanel({
   sortBy,
   setSortBy,
   themeClass,
+  language,
 }: FilterHubPanelProps) {
   if (activeTab === 'cards') return null;
 
+  const showCardFilter = ownedCards.length > 0 || loyaltyAwards.length > 0;
+
   return (
-    <div className={`grid grid-cols-1 ${ownedCards.length > 0 ? 'sm:grid-cols-3' : 'sm:grid-cols-2'} gap-3 p-3 mb-6 rounded-2xl border backdrop-blur-md transition-all duration-300 ${
+    <div className={`grid grid-cols-1 ${showCardFilter ? 'sm:grid-cols-3' : 'sm:grid-cols-2'} gap-3 p-3 mb-6 rounded-2xl border backdrop-blur-md transition-all duration-300 ${
       themeClass(
         'bg-slate-900/30 border-slate-900/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.03)]',
         'bg-white/70 border-slate-200/80 shadow-[0_8px_20px_rgba(15,23,42,0.035)]'
@@ -43,17 +50,53 @@ export function FilterHubPanel({
           onChange={(e) => setFilterCategory(e.target.value)}
           className="w-full bg-transparent outline-none border-none cursor-pointer font-semibold text-xs focus:ring-0"
         >
-          <option value="all">All Categories</option>
-          <option value="dining">Dining</option>
-          <option value="travel">Travel</option>
-          <option value="shopping">Shopping</option>
-          <option value="entertainment">Entertainment</option>
-          <option value="other">Other</option>
+          <option value="all">{language === 'zh' ? '所有权益类别' : 'All Categories'}</option>
+          {filterCardInstanceId === 'awards' ? (
+            language === 'zh' ? (
+              <>
+                <option value="fnr">免房券 (FNA)</option>
+                <option value="sua">套房升级券 (SUA)</option>
+                <option value="goh">尊荣宾客券 (GOH)</option>
+                <option value="companion">同行票证 (Companion)</option>
+                <option value="swu">全球升级券 (SWU)</option>
+                <option value="points">里程点数余额</option>
+                <option value="other">其他常客卡券</option>
+              </>
+            ) : (
+              <>
+                <option value="fnr">Free Night (FNA)</option>
+                <option value="sua">Suite Upgrade (SUA)</option>
+                <option value="goh">Guest of Honor (GOH)</option>
+                <option value="companion">Companion Pass</option>
+                <option value="swu">Systemwide Upgrade (SWU)</option>
+                <option value="points">Points & Miles</option>
+                <option value="other">Other Vouchers</option>
+              </>
+            )
+          ) : (
+            language === 'zh' ? (
+              <>
+                <option value="dining">餐饮美食 (Dining)</option>
+                <option value="travel">旅行交通 (Travel)</option>
+                <option value="shopping">百货购物 (Shopping)</option>
+                <option value="entertainment">休闲娱乐 (Entertainment)</option>
+                <option value="other">其他刷卡福利</option>
+              </>
+            ) : (
+              <>
+                <option value="dining">Dining</option>
+                <option value="travel">Travel</option>
+                <option value="shopping">Shopping</option>
+                <option value="entertainment">Entertainment</option>
+                <option value="other">Other</option>
+              </>
+            )
+          )}
         </select>
       </div>
 
-      {/* 2. Card Instance Filter */}
-      {ownedCards.length > 0 && (
+      {/* 2. Card & Vouchers Instance Filter */}
+      {showCardFilter && (
         <div className={`flex items-center gap-2.5 border rounded-xl px-3 py-2.5 text-xs transition ${
           themeClass('bg-slate-955/40 border-slate-850 hover:border-slate-800 text-slate-300', 'bg-slate-50/80 border-slate-250/60 hover:border-slate-300 text-slate-700')
         }`}>
@@ -63,10 +106,13 @@ export function FilterHubPanel({
             onChange={(e) => setFilterCardInstanceId(e.target.value)}
             className="w-full bg-transparent outline-none border-none cursor-pointer font-semibold text-xs focus:ring-0"
           >
-            <option value="all">All Cards</option>
+            <option value="all">All Portfolios</option>
+            {loyaltyAwards.length > 0 && (
+              <option value="awards">🎁 Standalone Vouchers</option>
+            )}
             {ownedCards.map((card) => (
               <option key={card.id} value={card.id}>
-                {card.customName}
+                💳 {card.customName}
               </option>
             ))}
           </select>
