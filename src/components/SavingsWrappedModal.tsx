@@ -158,8 +158,15 @@ export function SavingsWrappedModal({
             
             if (ctx) {
               ctx.drawImage(image, 0, 0, 760, 1350);
-              const pngUrl = canvas.toDataURL('image/png');
-              setPosterDataUrl(pngUrl);
+              canvas.toBlob((pngBlob) => {
+                if (pngBlob) {
+                  if (posterDataUrl && posterDataUrl.startsWith('blob:')) {
+                    URL.revokeObjectURL(posterDataUrl);
+                  }
+                  const pngBlobUrl = URL.createObjectURL(pngBlob);
+                  setPosterDataUrl(pngBlobUrl);
+                }
+              }, 'image/png');
             }
           } catch (err) {
             console.warn('⚠️ Canvas pre-rendering blocked by browser sandbox:', err);
@@ -186,6 +193,9 @@ export function SavingsWrappedModal({
       }, 250);
       return () => clearTimeout(timer);
     } else {
+      if (posterDataUrl && posterDataUrl.startsWith('blob:')) {
+        URL.revokeObjectURL(posterDataUrl);
+      }
       setPosterDataUrl(null);
     }
   }, [isOpen, posterLang, totalSavings]);
@@ -234,14 +244,21 @@ export function SavingsWrappedModal({
             
             if (ctx) {
               ctx.drawImage(image, 0, 0, 760, 1350);
-              const pngUrl = canvas.toDataURL('image/png');
-              
-              const downloadLink = document.createElement('a');
-              downloadLink.href = pngUrl;
-              downloadLink.download = `Savings_Wrapped_${posterLang === 'zh' ? 'CN' : 'EN'}_${new Date().getFullYear()}.png`;
-              document.body.appendChild(downloadLink);
-              downloadLink.click();
-              document.body.removeChild(downloadLink);
+              canvas.toBlob((pngBlob) => {
+                if (pngBlob) {
+                  const pngBlobUrl = URL.createObjectURL(pngBlob);
+                  const downloadLink = document.createElement('a');
+                  downloadLink.href = pngBlobUrl;
+                  downloadLink.download = `Savings_Wrapped_${posterLang === 'zh' ? 'CN' : 'EN'}_${new Date().getFullYear()}.png`;
+                  document.body.appendChild(downloadLink);
+                  downloadLink.click();
+                  document.body.removeChild(downloadLink);
+                  
+                  setTimeout(() => {
+                    URL.revokeObjectURL(pngBlobUrl);
+                  }, 500);
+                }
+              }, 'image/png');
             }
           } catch (err) {
             console.error('⚠️ Canvas poster generation blocked:', err);

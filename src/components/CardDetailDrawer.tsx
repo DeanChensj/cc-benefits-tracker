@@ -55,27 +55,27 @@ export function CardDetailDrawer({ isOpen, card, onClose, onAdd, theme }: CardDe
         {/* Content Area (Scrollable) */}
         <div className="px-5 py-4 overflow-y-auto space-y-5 flex-grow scrollbar-thin">
           {/* 💳 Luxury Metallic Mini-Card Preview */}
-          <div className={`p-5 rounded-2xl bg-gradient-to-tr ${cardColor} shadow-lg text-white relative overflow-hidden min-h-[130px] flex flex-col justify-between shrink-0 select-none after:absolute after:top-0 after:-left-[150%] after:w-[60%] after:h-full after:bg-gradient-to-r after:from-transparent after:via-white/10 after:to-transparent after:skew-x-12 after:transition-all after:duration-1000 hover:after:left-[150%]`}>
+          <div className={`p-4 sm:p-5 rounded-2xl bg-gradient-to-tr ${cardColor} shadow-lg text-white relative overflow-hidden min-h-[130px] flex flex-col justify-between shrink-0 select-none after:absolute after:top-0 after:-left-[150%] after:w-[60%] after:h-full after:bg-gradient-to-r after:from-transparent after:via-white/10 after:to-transparent after:skew-x-12 after:transition-all after:duration-1000 hover:after:left-[150%]`}>
             <div>
               <div className="flex items-center justify-between">
                 <span className="text-[10px] font-black uppercase tracking-wider opacity-75">{card.bank}</span>
                 <Heart className="w-4 h-4 opacity-40 fill-white/10" />
               </div>
-              <h3 className="text-lg font-black tracking-tight mt-1.5">{card.name}</h3>
+              <h3 className="text-base sm:text-lg font-black tracking-tight mt-1.5">{card.name}</h3>
             </div>
             
             <div className="flex justify-between items-end pt-4">
-              <div className="flex gap-6">
+              <div className="flex gap-3 sm:gap-6">
                 <div>
                   <p className="text-[8px] font-bold uppercase tracking-widest opacity-60">Potential Value</p>
-                  <p className="text-base font-black">${card.benefits.reduce((sum, b) => sum + b.value, 0)}/yr</p>
+                  <p className="text-sm sm:text-base font-black">${card.benefits.reduce((sum, b) => sum + b.value, 0)}/yr</p>
                 </div>
                 <div>
                   <p className="text-[8px] font-bold uppercase tracking-widest opacity-60">Annual Fee</p>
-                  <p className="text-base font-black">${card.annualFee}/yr</p>
+                  <p className="text-sm sm:text-base font-black">${card.annualFee}/yr</p>
                 </div>
               </div>
-              <span className="text-[9px] font-bold uppercase bg-white/10 px-2 py-0.5 rounded border border-white/5 shrink-0">
+              <span className="text-[8px] sm:text-[9px] font-bold uppercase bg-white/10 px-2 py-0.5 rounded border border-white/5 shrink-0">
                 {card.benefits.length} perks
               </span>
             </div>
