@@ -617,6 +617,7 @@ export const useCardStore = create<CardStore>()(
       resetAll: () =>
         set(() => ({
           ownedCards: [],
+          loyaltyAwards: [],
           logs: {},
           // Keep theme preference intact
         })),
