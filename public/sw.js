@@ -1,5 +1,5 @@
 // Safe, transparent pass-through service worker for PWA compliance
-// Does not lock index.html cache, preventing hashed JS bundle 404 white-screen crashes!
+// Only intercepts GET requests. Non-GET mutations (PATCH, POST, DELETE) are passed through natively to prevent CORS 403 errors!
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();
@@ -18,6 +18,12 @@ self.addEventListener('activate', (event) => {
 
 // Simple network-first transparent fetch handler
 self.addEventListener('fetch', (event) => {
+  // 🚨 Core Safeguard: Only intercept standard GET requests!
+  // Cross-origin mutations (POST, PATCH, PUT, DELETE) MUST bypass Service Worker completely!
+  if (event.request.method !== 'GET') {
+    return; // Let the browser handle the request natively!
+  }
+
   event.respondWith(
     fetch(event.request).catch(() => {
       // Fallback if offline

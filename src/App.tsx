@@ -503,9 +503,23 @@ function App() {
                     {syncStatus === 'synced' ? (
                       <>
                         <button
-                          onClick={() => {
-                            syncWithGDrive();
+                          onClick={async () => {
                             setIsSyncDropdownOpen(false);
+                            setSyncStatus('syncing');
+                            try {
+                              let token = useCardStore.getState().gdriveToken;
+                              if (!token) {
+                                token = await requestGDriveToken(customClientId);
+                                const email = await fetchUserEmail(token);
+                                setGDriveCredentials(token, email);
+                              }
+                              await useCardStore.getState().syncWithGDrive();
+                              showToast('🎉 Synchronized with Google Drive successfully!');
+                            } catch (err) {
+                              console.error('Manual Force Sync failed:', err);
+                              setSyncStatus('error');
+                              showToast('❌ Failed to synchronize. Please try again.', 'error');
+                            }
                           }}
                           className="w-full bg-gradient-to-tr from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-550 text-white font-bold py-2 rounded-lg text-[10px] transition active:scale-95 shadow shadow-purple-500/10 cursor-pointer"
                         >

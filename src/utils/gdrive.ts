@@ -45,7 +45,9 @@ export function requestGDriveToken(customClientId?: string | null): Promise<stri
         }
       },
     });
-    client.requestAccessToken({ prompt: 'consent' });
+    
+    // Omit prompt to let Google GIS decide (silent if already consented!)
+    client.requestAccessToken({ prompt: '' });
   });
 }
 
@@ -89,10 +91,12 @@ export async function downloadSyncFile(token: string, fileId: string): Promise<a
 
 // Upload (Create or Patch) JSON file content inside user's private, hidden appDataFolder
 export async function uploadSyncFile(token: string, fileId: string | null, data: any): Promise<string> {
-  const fileMetadata = {
+  const fileMetadata: any = {
     name: 'cc_tracker_sync.json',
-    parents: ['appDataFolder'],
   };
+  if (!fileId) {
+    fileMetadata.parents = ['appDataFolder'];
+  }
 
   const boundary = '-------314159265358979323846';
   const delimiter = `\r\n--${boundary}\r\n`;
