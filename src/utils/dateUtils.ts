@@ -15,6 +15,15 @@ export const getLocalDateString = (date = new Date()): string => {
   return `${year}-${month}-${day}`;
 };
 
+// Helper to compute days left for a raw ISO date string relative to simulated/current date
+export const getDaysLeftForDate = (dateStr: string, currentDate: Date): number => {
+  const year = currentDate.getFullYear();
+  const month = currentDate.getMonth(); // 0-11
+  const todayMidnight = new Date(year, month, currentDate.getDate());
+  const expMidnight = new Date(dateStr + 'T00:00:00');
+  return Math.round((expMidnight.getTime() - todayMidnight.getTime()) / (1000 * 60 * 60 * 24));
+};
+
 // Helper to compute days left relative to simulated/current date
 export const getDaysLeft = (ab: ActiveBenefit, currentDate: Date): number | null => {
   const { benefit, cardInstance } = ab;

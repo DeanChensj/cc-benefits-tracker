@@ -102,6 +102,7 @@ export interface LoyaltyAward {
   isUsed: boolean;
   lastModified: number; // LWW timestamp
   parentCardId?: string; // Optional: if attached to a card
+  notes?: string;
 
   // Custom overrides (only populated if templateId === 'custom')
   customName?: string;
