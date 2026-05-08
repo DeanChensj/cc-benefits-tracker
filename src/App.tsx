@@ -33,7 +33,8 @@ import {
   CloudOff,
   ArrowUpDown,
   ExternalLink,
-  Sparkles
+  Sparkles,
+  ChevronDown
 } from 'lucide-react';
 
 const CARD_MULTIPLIERS: Record<string, { dining?: number; travel?: number; shopping?: number; entertainment?: number }> = {
@@ -99,6 +100,15 @@ function App() {
   const [deleteCardInstanceId, setDeleteCardInstanceId] = useState<string | null>(null);
   const [isGDriveDisconnectOpen, setIsGDriveDisconnectOpen] = useState(false);
   const [isWipeDataOpen, setIsWipeDataOpen] = useState(false);
+  const [expandedCardIds, setExpandedCardIds] = useState<Record<string, boolean>>({});
+  
+  const toggleCardExpanded = (instanceId: string) => {
+    setExpandedCardIds((prev) => ({
+      ...prev,
+      [instanceId]: !prev[instanceId]
+    }));
+  };
+
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' | 'warning' } | null>(null);
 
   const showToast = (message: string, type: 'success' | 'error' | 'info' | 'warning' = 'success') => {
@@ -1254,50 +1264,85 @@ function App() {
                             </p>
                           )}
  
-                          {/* Benefits preview inline list */}
-                          <div className="mt-4 space-y-1 text-left">
-                            {benefits.slice(0, 3).map((b) => (
-                              <div key={b.id} className={`flex items-center justify-between text-[10px] p-1 rounded ${
-                                isSilverCard 
-                                  ? 'bg-slate-950/10 border border-black/5 text-slate-900 font-bold' 
-                                  : 'bg-slate-955/40 border border-white/5 text-slate-300'
+                          {/* 1. Accordion Expand Toggle Bar */}
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              toggleCardExpanded(instance.id);
+                            }}
+                            className={`w-full mt-3 px-2.5 py-1.5 rounded-lg border text-[9px] font-extrabold tracking-wider uppercase flex items-center justify-between transition active:scale-[0.98] cursor-pointer ${
+                              isSilverCard
+                                ? 'bg-slate-950/5 border-slate-950/10 text-slate-900 hover:bg-slate-950/10'
+                                : 'bg-white/5 hover:bg-white/10 border-white/5 text-slate-300 hover:text-white'
+                            }`}
+                          >
+                            <span className="flex items-center gap-1.5">
+                              {!!expandedCardIds[instance.id] ? '▲ Hide Details' : '▼ Show Details'}
+                              <span className={`text-[8px] opacity-75 lowercase font-semibold px-1 rounded ${
+                                isSilverCard ? 'bg-black/10' : 'bg-white/10'
                               }`}>
-                                <span className="truncate">{b.name}</span>
-                                <span className={`font-bold ${isSilverCard ? 'text-slate-950 font-black' : 'text-white'}`}>${b.value}</span>
-                              </div>
-                            ))}
-                            {benefits.length > 3 && (
-                              <p className={`text-[9px] text-right font-medium ${isSilverCard ? 'text-slate-900/70 font-semibold' : 'text-slate-400'}`}>+ {benefits.length - 3} more perks</p>
-                            )}
-                          </div>
+                                {benefits.length} perks {instance.instanceOffers && instance.instanceOffers.length > 0 ? `+ ${instance.instanceOffers.length} offers` : ''}
+                              </span>
+                            </span>
+                            <ChevronDown className={`w-3 h-3 transition-transform duration-300 transform ${
+                              !!expandedCardIds[instance.id] ? 'rotate-180' : 'rotate-0'
+                            }`} />
+                          </button>
 
-                        {/* Google Drive / Instance Custom Offers List */}
-                        {instance.instanceOffers && instance.instanceOffers.length > 0 && (
-                          <div className="mt-3.5 pt-3 border-t border-white/10 space-y-1.5 text-left">
-                            <p className="text-[8px] font-black text-purple-400 dark:text-purple-500 uppercase tracking-widest">Active Temporary Offers</p>
-                            <div className="space-y-1">
-                              {instance.instanceOffers.map((offer) => (
-                                <div key={offer.id} className="flex items-center justify-between text-[10px] bg-purple-500/10 border border-purple-500/15 p-1.5 rounded text-slate-200 group/offer">
-                                  <span className="truncate pr-2">{offer.name}</span>
-                                  <div className="flex items-center gap-1.5 shrink-0 font-bold text-white">
-                                    <span>+${offer.value}</span>
-                                    <button
-                                      type="button"
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        removeInstanceOffer(instance.id, offer.id);
-                                      }}
-                                      className="text-slate-400 hover:text-red-400 transition cursor-pointer active:scale-90"
-                                      title="Remove Offer"
-                                    >
-                                      <Trash2 className="w-3 h-3" />
-                                    </button>
-                                  </div>
+                          {/* 2. Collapsible Drawer Panel (PWA Responsive & Mobile Optimized) */}
+                          <div className={`transition-all duration-300 ease-in-out overflow-hidden ${
+                            !!expandedCardIds[instance.id]
+                              ? 'max-h-[600px] opacity-100 border-t border-dashed border-white/10 dark:border-black/5 pt-3 mt-3'
+                              : 'max-h-0 opacity-0 pointer-events-none'
+                          }`}>
+                            {/* Benefits preview inline list */}
+                            <div className="space-y-1 text-left">
+                              {benefits.slice(0, 3).map((b) => (
+                                <div key={b.id} className={`flex items-center justify-between text-[10px] p-1 rounded ${
+                                  isSilverCard 
+                                    ? 'bg-slate-950/10 border border-black/5 text-slate-900 font-bold' 
+                                    : 'bg-slate-955/40 border border-white/5 text-slate-300'
+                                }`}>
+                                  <span className="truncate">{b.name}</span>
+                                  <span className={`font-bold ${isSilverCard ? 'text-slate-950 font-black' : 'text-white'}`}>${b.value}</span>
                                 </div>
                               ))}
+                              {benefits.length > 3 && (
+                                <p className={`text-[9px] text-right font-medium ${isSilverCard ? 'text-slate-900/70 font-semibold' : 'text-slate-400'}`}>+ {benefits.length - 3} more perks</p>
+                              )}
                             </div>
+
+                            {/* Google Drive / Instance Custom Offers List */}
+                            {instance.instanceOffers && instance.instanceOffers.length > 0 && (
+                              <div className="mt-3 pt-3 border-t border-white/10 dark:border-black/5 space-y-1.5 text-left">
+                                <p className={`text-[8px] font-black uppercase tracking-widest ${
+                                  isSilverCard ? 'text-indigo-950' : 'text-purple-400 dark:text-purple-500'
+                                }`}>Active Temporary Offers</p>
+                                <div className="space-y-1">
+                                  {instance.instanceOffers.map((offer) => (
+                                    <div key={offer.id} className="flex items-center justify-between text-[10px] bg-purple-500/10 border border-purple-500/15 p-1.5 rounded text-slate-200 group/offer">
+                                      <span className="truncate pr-2">{offer.name}</span>
+                                      <div className="flex items-center gap-1.5 shrink-0 font-bold text-white">
+                                        <span>+${offer.value}</span>
+                                        <button
+                                          type="button"
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            removeInstanceOffer(instance.id, offer.id);
+                                          }}
+                                          className="text-slate-400 hover:text-red-400 transition cursor-pointer active:scale-90"
+                                          title="Remove Offer"
+                                        >
+                                          <Trash2 className="w-3 h-3" />
+                                        </button>
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
                           </div>
-                        )}
 
                         <div className="mt-3 pt-3 border-t border-white/10 flex items-center justify-between gap-2 flex-wrap">
                           <div className="flex items-center gap-1.5">
