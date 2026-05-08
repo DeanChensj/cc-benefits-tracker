@@ -13,12 +13,13 @@ It merges card perks metadata with your local checklist logs in real time to man
 ## 🌟 Key Features
 
 *   **Absolute Privacy**: No email signups, no bank account sync (via Plaid), and no password database. 100% safe from data leaks or banking flag risks.
-*   **Local-First Storage**: Your cards portfolio and checklist resolution states are persisted strictly inside your browser's `LocalStorage` sandbox.
+*   **Local-First Storage & Cloud Sync**: Your cards portfolio and checklist resolution states are persisted strictly inside your browser's `LocalStorage` sandbox. Connects safely to **Google Drive** for seamless, secure personal cloud backup and synchronization.
+*   **Dynamic Year-End Savings Wrapped Poster**: A gorgeous vertical poster (9:16 aspect ratio) summarizing your yearly cash recoup details. Displays dynamic Churner Level Rank Badges based on your total savings, personalized serial numbers, vector barcodes, and a scannable redirection QR Code. Fully optimized for high-res desktop downloads and direct mobile camera roll saving!
 *   **SpentAssistant AI (BYOK)**: A secure client-side AI assistant powered by the **Gemini 2.5 Flash** model. Paste your personal API key (stored only in local sandbox) to ask SpentAssistant where to spend (e.g., *"Kyoto hotel $350"* or *"Dining $100"*). It reads your remaining unused benefits and card point multipliers to advise you in real time.
-*   **Precise Cardmember Anniversary Boundaries**: Tracks card anniversary renewals precisely down to the day based on your exact **Card Open Date**. Automatically manages monthly statement credits, semi-annual limits, calendar resets, and anniversary free nights (e.g., World of Hyatt Cat 1-4 FNR, Hilton Aspire FNR).
+*   **Precise Cardmember Anniversary Boundaries**: Tracks card anniversary renewals precisely down to the day based on your exact **Card Open Date**. Automatically manages monthly statement credits, semi-annual limits, calendar resets, and anniversary free nights.
 *   **Multi-Option Checklist Sorting**: Dynamically sort active benefits by **Urgency**, **Expiration Date**, **Value (High ➔ Low)**, or **Value (Low ➔ High)** to see instantly where you can maximize value.
 *   **Card-Specific Checklist Filtering**: Cleanly filter your To-Do list to display benefits belonging only to a single card instance in your wallet.
-*   **Vetted 2026 Card Database**: Includes 14 pre-configured major card templates with audited 2026 details (e.g. Amex Platinum $895 fee / $300 Equinox credit / $199 CLEAR, Hilton Aspire $200 Flight credit) and verified, redirection-resilient official landing page URLs.
+*   **Vetted Card Database**: Includes audited pre-configured major card templates with updated details (e.g. Amex Platinum $895 fee, Chase Sapphire, Venture X) and verified official landing page links.
 *   **Time-Travel Simulator**: Built-in Month/Year fast-forward traveler at the top lets you simulate future periods instantly to verify rollover, reset, and anniversary boundaries timezone-safely.
 *   **Native Calendar Sync**: Generates standard RFC 5545 `.ics` subscription files on the fly. Easily import into Apple Calendar or Google Calendar to get system-native push notifications 10 days before credits expire.
 
@@ -27,7 +28,7 @@ It merges card perks metadata with your local checklist logs in real time to man
 ## 🛠️ Tech Stack
 
 *   **Framework**: React + Vite + TypeScript
-*   **Styling**: Tailwind CSS v4 (Latest compiler, CSS-only theme configs, zero runtime burden)
+*   **Styling**: Tailwind CSS v4
 *   **State Management**: Zustand + Persist Middleware
 *   **Icons**: Lucide React
 
@@ -54,16 +55,11 @@ Compiled production assets will output to the `dist/` directory (~265 kB, ready 
 
 ---
 
-## 📂 Code Structure
+## 📂 Key Files
 
-*   [`src/data/cards.db.ts`](./src/data/cards.db.ts): Static credit card templates database (Amex Plat, Gold, BCP, Delta, CSR, CSP, Hyatt, Marriott, IHG).
-*   [`src/store/useCardStore.ts`](./src/store/useCardStore.ts): Zustand core store handling persistent cards portfolio and logs.
-*   [`src/utils/dateUtils.ts`](./src/utils/dateUtils.ts): Pure modular utility library for timezone-safe days-left calculations and scientific sorting scores.
-*   [`src/utils/calendar.ts`](./src/utils/calendar.ts): iCal standard calendar subscription generator.
-*   [`src/components/Toast.tsx`](./src/components/Toast.tsx): Reusable, premium sliding Toast notification popups.
-*   [`src/components/DeleteConfirmModal.tsx`](./src/components/DeleteConfirmModal.tsx): Dedicated custom delete confirmation popup.
-*   [`src/components/ConfirmationModal.tsx`](./src/components/ConfirmationModal.tsx): Highly reusable, generic glassmorphic confirmation modal supporting Warning, Danger, and Info layout types.
-*   [`src/components/SpentAssistant.tsx`](./src/components/SpentAssistant.tsx): Isolated client-side SpentAssistant AI chat sidebar.
-*   [`src/components/CalendarSyncModal.tsx`](./src/components/CalendarSyncModal.tsx): Modular native calendar subscription guides popup.
-*   [`src/components/CreateCardModal.tsx`](./src/components/CreateCardModal.tsx): Modular custom card wizard and dynamic benefits constructor.
-*   [`src/App.tsx`](./src/App.tsx): Elegant, modular, and highly responsive Local-first Dashboard.
+*   [`src/data/cards.db.ts`](./src/data/cards.db.ts): Pre-configured audited card templates database.
+*   [`src/store/useCardStore.ts`](./src/store/useCardStore.ts): Core Zustand state store and persistence slimmers.
+*   [`src/components/SavingsWrappedModal.tsx`](./src/components/SavingsWrappedModal.tsx): High-end receipt Year-End Savings Wrapped modal.
+*   [`src/components/CardDetailDrawer.tsx`](./src/components/CardDetailDrawer.tsx): Mobile-responsive details sheet drawer.
+*   [`src/components/SpentAssistant.tsx`](./src/components/SpentAssistant.tsx): client-side Gemini AI SpentAssistant chat window.
+*   [`src/App.tsx`](./src/App.tsx): Master Dashboard with precision recoup value calculations.

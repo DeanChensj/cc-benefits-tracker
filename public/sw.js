@@ -25,9 +25,17 @@ self.addEventListener('fetch', (event) => {
   }
 
   event.respondWith(
-    fetch(event.request).catch(() => {
-      // Fallback if offline
-      return caches.match(event.request);
-    })
+    fetch(event.request)
+      .then((response) => {
+        return response;
+      })
+      .catch(async () => {
+        const cachedResponse = await caches.match(event.request);
+        if (cachedResponse) {
+          return cachedResponse;
+        }
+        // Return a fallback Response instead of undefined to prevent TypeError crashes inside browser WKWebView!
+        return new Response('Offline fallback', { status: 480, statusText: 'Offline' });
+      })
   );
 });
