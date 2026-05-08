@@ -35,6 +35,12 @@ export function SavingsWrappedModal({
   // 2. Total Savings Sum (Checked Perks + SUBs!)
   const totalSavings = Math.round((resolvedValue + securedSUBs) * 100) / 100;
 
+  // 2.5 Calculate dynamic, personalized cryptographic serial number
+  const walletSizeStr = String(ownedCards.length).padStart(2, '0');
+  const subValStr = String(securedSUBs).padStart(4, '0');
+  const savingsValStr = String(Math.round(totalSavings)).padStart(4, '0');
+  const personalSerial = `CC2026-${walletSizeStr}-${subValStr}-${savingsValStr}`;
+
   // 3. Define Churner Level Rank Badge & Relative Percentile Rank
   let rankTitleEn = 'BRONZE CHURNER 🛡️';
   let rankTitleZh = '青铜羊毛新手 🛡️';
@@ -76,7 +82,7 @@ export function SavingsWrappedModal({
       row3: 'Active Portfolio Wallet Size:',
       battleships: '👑 TOP BATTLESHIPS IN WALLET',
       rankLabel: 'CHURNER RANK:',
-      scannerLabel: 'CC Benefits Tracker • 100% Secured',
+      scannerLabel: '100% LOCAL-FIRST • ZERO-TRACK PRIVACY',
       subBadge: 'SUB SECURED ✓',
     },
     zh: {
@@ -90,7 +96,7 @@ export function SavingsWrappedModal({
       row3: '钱包 active 战神卡片数:',
       battleships: '👑 钱包主力冲锋战神卡',
       rankLabel: '薅羊毛段位评级:',
-      scannerLabel: 'CC Benefits Tracker • 本地加密保障',
+      scannerLabel: '100% 本地数据运行 • 零追踪隐私保障',
       subBadge: '开卡礼已斩获 ✓',
     }
   }[posterLang];
@@ -474,7 +480,7 @@ export function SavingsWrappedModal({
                 <line x1="88" y1="585" x2="88" y2="610" strokeWidth="1" />
                 <line x1="92" y1="585" x2="92" y2="610" strokeWidth="2" />
               </g>
-              <text x="100" y="595" fill="#94a3b8" fontSize="6.2" fontWeight="900" letterSpacing="0.5" fontFamily="Inter, system-ui, sans-serif">SERIAL NO. CC2026575</text>
+              <text x="100" y="595" fill="#94a3b8" fontSize="6.2" fontWeight="900" letterSpacing="0.5" fontFamily="Inter, system-ui, sans-serif">{"SERIAL NO. " + personalSerial}</text>
               <text x="100" y="605" fill="rgba(255, 255, 255, 0.5)" fontSize="6.5" fontWeight="700" fontFamily="Inter, system-ui, sans-serif">{dict.scannerLabel}</text>
 
               {/* Luxury gold-brushed brand name text filling the bottom-left space perfectly! */}
