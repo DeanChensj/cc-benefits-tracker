@@ -57,9 +57,9 @@ npm run build
 
 ## 📂 核心文件
 
-*   [`src/data/cards.db.ts`](./src/data/cards.db.ts): 内置信用卡模版库配置。
-*   [`src/store/useCardStore.ts`](./src/store/useCardStore.ts): Zustand 核心卡包状态及多端同步库。
-*   [`src/components/SavingsWrappedModal.tsx`](./src/components/SavingsWrappedModal.tsx): 高清 receipt 风格年度 Savings Wrapped 海报组件。
-*   [`src/components/CardDetailDrawer.tsx`](./src/components/CardDetailDrawer.tsx): 响应式自适应信用卡详情抽屉。
-*   [`src/components/SpentAssistant.tsx`](./src/components/SpentAssistant.tsx): 基于 Gemini AI 的本地消费助理聊天抽屉。
-*   [`src/App.tsx`](./src/App.tsx): 高性能本地优先美卡追踪控制面板。
+*   [`src/data/cards.db.ts`](./src/data/cards.db.ts): 内置信用卡模板规则数据库。
+*   [`src/store/useCardStore.ts`](./src/store/useCardStore.ts): 全局 Zustand 状态库，处理卡包持久化与云同步。
+*   [`src/components/SavingsWrappedModal.tsx`](./src/components/SavingsWrappedModal.tsx): 年度 Savings Wrapped 总结海报，内置静态安全二维码。
+*   [`src/components/CardDetailDrawer.tsx`](./src/components/CardDetailDrawer.tsx): 信用卡模板细节展示抽屉。
+*   [`src/components/SpentAssistant.tsx`](./src/components/SpentAssistant.tsx): 本地 Gemini AI 消费助理对话抽屉。
+*   [`src/App.tsx`](./src/App.tsx): 本地优先主控制面板容器。

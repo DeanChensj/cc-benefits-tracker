@@ -57,9 +57,9 @@ Compiled production assets will output to the `dist/` directory (~265 kB, ready 
 
 ## 📂 Key Files
 
-*   [`src/data/cards.db.ts`](./src/data/cards.db.ts): Pre-configured audited card templates database.
-*   [`src/store/useCardStore.ts`](./src/store/useCardStore.ts): Core Zustand state store and persistence slimmers.
-*   [`src/components/SavingsWrappedModal.tsx`](./src/components/SavingsWrappedModal.tsx): High-end receipt Year-End Savings Wrapped modal.
-*   [`src/components/CardDetailDrawer.tsx`](./src/components/CardDetailDrawer.tsx): Mobile-responsive details sheet drawer.
-*   [`src/components/SpentAssistant.tsx`](./src/components/SpentAssistant.tsx): client-side Gemini AI SpentAssistant chat window.
-*   [`src/App.tsx`](./src/App.tsx): Master Dashboard with precision recoup value calculations.
+*   [`src/data/cards.db.ts`](./src/data/cards.db.ts): Built-in credit card template database.
+*   [`src/store/useCardStore.ts`](./src/store/useCardStore.ts): Global Zustand store handling persistent card actions and cloud sync.
+*   [`src/components/SavingsWrappedModal.tsx`](./src/components/SavingsWrappedModal.tsx): Year-End Savings Wrapped poster modal with static QR code assets.
+*   [`src/components/CardDetailDrawer.tsx`](./src/components/CardDetailDrawer.tsx): Dynamic credit card template details drawer.
+*   [`src/components/SpentAssistant.tsx`](./src/components/SpentAssistant.tsx): client-side AI SpentAssistant panel.
+*   [`src/App.tsx`](./src/App.tsx): Main dashboard container.
