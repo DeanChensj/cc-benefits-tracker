@@ -86,10 +86,10 @@ function App() {
 
   // Date to evaluate states against (defaults to current system date)
   const [currentDate, setCurrentDate] = useState(new Date());
-  const [activeTab, setActiveTab] = useState<'todo' | 'all' | 'cards'>('todo');
-  const [filterCategory, setFilterCategory] = useState<string>('all');
-  const [sortBy, setSortBy] = useState<'urgency' | 'value-desc' | 'value-asc' | 'expiry'>('urgency');
-  const [filterCardInstanceId, setFilterCardInstanceId] = useState<string>('all');
+  const [activeTab, setActiveTab] = useState<'todo' | 'all' | 'cards'>(() => (localStorage.getItem('cc-tracker-active-tab') as any) || 'todo');
+  const [filterCategory, setFilterCategory] = useState<string>(() => localStorage.getItem('cc-tracker-filter-category') || 'all');
+  const [sortBy, setSortBy] = useState<'urgency' | 'value-desc' | 'value-asc' | 'expiry'>(() => (localStorage.getItem('cc-tracker-sort-by') as any) || 'urgency');
+  const [filterCardInstanceId, setFilterCardInstanceId] = useState<string>(() => localStorage.getItem('cc-tracker-filter-card') || 'all');
   const [editingInstanceId, setEditingInstanceId] = useState<string | null>(null);
   const [isSyncModalOpen, setIsSyncModalOpen] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -171,6 +171,23 @@ function App() {
       .then(() => console.log('Google GIS client successfully pre-loaded.'))
       .catch((err) => console.error('Failed to load Google GIS Client library:', err));
   }, []);
+
+  // Persist navigation tab and main dashboard filter settings in localStorage for seamless reload experience
+  useEffect(() => {
+    localStorage.setItem('cc-tracker-active-tab', activeTab);
+  }, [activeTab]);
+
+  useEffect(() => {
+    localStorage.setItem('cc-tracker-filter-category', filterCategory);
+  }, [filterCategory]);
+
+  useEffect(() => {
+    localStorage.setItem('cc-tracker-sort-by', sortBy);
+  }, [sortBy]);
+
+  useEffect(() => {
+    localStorage.setItem('cc-tracker-filter-card', filterCardInstanceId);
+  }, [filterCardInstanceId]);
 
   // Connection & Sync Handlers
   const handleLinkGoogleDrive = async () => {
