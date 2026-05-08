@@ -35,6 +35,23 @@ import {
   Sparkles
 } from 'lucide-react';
 
+const CARD_MULTIPLIERS: Record<string, { dining?: number; travel?: number; shopping?: number; entertainment?: number }> = {
+  'amex-gold': { dining: 4, shopping: 4 }, // 4x Dining, 4x Groceries
+  'amex-platinum': { travel: 5 }, // 5x Flights
+  'amex-bcp': { shopping: 6, entertainment: 6 }, // 6% Groceries, 6% Streaming
+  'amex-delta-reserve': { travel: 3 }, // 3x Delta
+  'amex-delta-platinum': { travel: 3 }, // 3x Delta
+  'amex-biz-platinum': { travel: 5 }, // 5x Flights
+  'amex-hilton-aspire': { travel: 7, dining: 7 }, // 14x Hilton, 7x Flights/Dining
+  'chase-sapphire-reserve': { travel: 3, dining: 3 }, // 3x Travel, 3x Dining
+  'chase-sapphire-preferred': { dining: 3, travel: 2, entertainment: 3 }, // 3x Dining, 3x Streaming, 2x Travel
+  'chase-freedom-flex': { dining: 3, shopping: 5 }, // 3x Dining, 5x Rotating
+  'chase-hyatt': { travel: 4, dining: 2 }, // 4x Hyatt, 2x Dining
+  'chase-marriott-boundless': { travel: 6, dining: 2 }, // 6x Marriott, 2x Dining
+  'chase-ihg-premier': { travel: 10, dining: 5 }, // 10x IHG, 5x Dining
+  'capitalone-venture-x': { travel: 2, dining: 2, shopping: 2, entertainment: 2 } // 2x everything
+};
+
 function App() {
   const { 
     ownedCards, 
@@ -304,6 +321,48 @@ function App() {
   const resolvedValue = Math.round(activeBenefits.reduce((sum, ab) => sum + getResolvedValue(ab), 0) * 100) / 100;
   const expiredValue = Math.round(activeBenefits.reduce((sum, ab) => sum + getExpiredValue(ab), 0) * 100) / 100;
   const pendingValue = Math.round((totalPotentialValue - resolvedValue - expiredValue) * 100) / 100;
+
+  // Calculate the Checkout Winners in active cards
+  const checkoutWinners = (() => {
+    if (ownedCards.length === 0) return null;
+
+    const categories = ['dining', 'travel', 'shopping', 'entertainment'] as const;
+    const winners: Record<string, { cardName: string; multiplier: number; bank: string } | null> = {
+      dining: null,
+      travel: null,
+      shopping: null,
+      entertainment: null
+    };
+
+    categories.forEach((cat) => {
+      let maxVal = 0;
+      let bestCard: { cardName: string; multiplier: number; bank: string } | null = null;
+
+      ownedCards.forEach((instance) => {
+        let mult = 0;
+        // 1. Search in static multipliers
+        if (instance.templateId !== 'custom') {
+          mult = CARD_MULTIPLIERS[instance.templateId]?.[cat] || 0;
+        }
+        
+        if (mult > maxVal) {
+          maxVal = mult;
+          const template = CARDS_DB.find((t) => t.id === instance.templateId);
+          bestCard = {
+            cardName: instance.customName,
+            multiplier: mult,
+            bank: instance.bank || template?.bank || 'Card'
+          };
+        }
+      });
+
+      winners[cat] = bestCard;
+    });
+
+    // Check if we actually have at least one winner
+    const hasWinner = Object.values(winners).some(w => w !== null);
+    return hasWinner ? winners : null;
+  })();
 
   // Calculate actual remaining, non-expired active benefits for the AI SpentAssistant
   const remainingBenefits = activeBenefits.filter((ab) => {
@@ -675,6 +734,40 @@ function App() {
             </div>
           )}
         </div>
+
+        {/* 0. Glanceable Point Multiplier Checkout Winners Row */}
+        {activeTab !== 'cards' && checkoutWinners && (
+          <div className="flex gap-2 overflow-x-auto pb-3 mb-1 no-scrollbar shrink-0 animate-fade-in">
+            {Object.entries(checkoutWinners).map(([category, bestCard]) => {
+              if (!bestCard) return null;
+              const catName = category === 'dining' ? 'Dining' :
+                              category === 'travel' ? 'Travel' :
+                              category === 'shopping' ? 'Groceries' : 'Streaming';
+              const emoji = category === 'dining' ? '🍽️' :
+                            category === 'travel' ? '✈️' :
+                            category === 'shopping' ? '🛍️' : '🎬';
+              const badgeColor = category === 'dining' ? 'bg-rose-500/10 text-rose-600 dark:text-rose-300 border-rose-500/20' :
+                                 category === 'travel' ? 'bg-sky-500/10 text-sky-600 dark:text-sky-300 border-sky-500/20' :
+                                 category === 'shopping' ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-300 border-emerald-500/20' :
+                                 'bg-purple-500/10 text-purple-600 dark:text-purple-300 border-purple-500/20';
+
+              return (
+                <div 
+                  key={category}
+                  className={`flex items-center gap-1.5 text-[10px] font-bold px-2.5 py-1 rounded-xl border shrink-0 ${badgeColor}`}
+                  title={`${bestCard.cardName} has the highest points in this category!`}
+                >
+                  <span>{emoji} {catName}:</span>
+                  <span className="opacity-75 font-black">{bestCard.cardName}</span>
+                  <span className="bg-white/15 px-1.5 py-0.2 rounded text-[8px] font-extrabold shrink-0">
+                    {bestCard.multiplier}x
+                  </span>
+                  <span>👑</span>
+                </div>
+              );
+            })}
+          </div>
+        )}
 
         {/* Premium Glassmorphic Filters Control Panel */}
         {activeTab !== 'cards' && (
