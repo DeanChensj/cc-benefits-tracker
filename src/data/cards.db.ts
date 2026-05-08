@@ -73,7 +73,7 @@ export const CARDS_DB: CardTemplate[] = [
       {
         id: 'amex-plat-uber',
         name: 'Uber Cash',
-        description: '$15/month ($35 in Dec) for Uber or Uber Eats',
+        description: '$15/month ($35 in Dec) for Uber or Uber Eats purchases',
         value: 15,
         resetPeriod: 'monthly',
         category: 'dining'
@@ -81,39 +81,31 @@ export const CARDS_DB: CardTemplate[] = [
       {
         id: 'amex-plat-entertainment',
         name: 'Digital Entertainment',
-        description: '$20/month for Disney+, Peacock, NY Times, etc.',
-        value: 20,
+        description: '$25/month statement credit for YouTube Premium, Disney Bundle, Hulu, etc.',
+        value: 25,
         resetPeriod: 'monthly',
         category: 'entertainment'
       },
       {
-        id: 'amex-plat-saks',
-        name: 'Saks Fifth Avenue',
-        description: '$50 semi-annually (Jan-Jun, Jul-Dec)',
-        value: 50,
-        resetPeriod: 'semi-annual',
-        category: 'shopping'
-      },
-      {
         id: 'amex-plat-airline',
         name: 'Airline Fee Credit',
-        description: '$200/calendar year statement credit',
+        description: '$200/calendar year statement credit for airline baggage & lounge incidentals',
         value: 200,
         resetPeriod: 'annual-calendar',
         category: 'travel'
       },
       {
         id: 'amex-plat-hotel',
-        name: 'Hotel Credit',
-        description: '$200/year credit on Fine Hotels + Resorts / HC',
-        value: 200,
-        resetPeriod: 'annual-calendar',
+        name: 'FHR Hotel Credit',
+        description: '$300 statement credit twice a year for prepaid Fine Hotels & Resorts bookings',
+        value: 300,
+        resetPeriod: 'semi-annual',
         category: 'travel'
       },
       {
         id: 'amex-plat-walmart',
         name: 'Walmart+ Membership',
-        description: '$12.95/month statement credit for Walmart+ monthly membership ($155/yr)',
+        description: '$12.95/month statement credit to fully cover Walmart+ monthly membership',
         value: 13,
         resetPeriod: 'monthly',
         category: 'shopping'
@@ -121,15 +113,15 @@ export const CARDS_DB: CardTemplate[] = [
       {
         id: 'amex-plat-clear',
         name: 'CLEAR Plus Credit',
-        description: '$199/calendar year statement credit for CLEAR Plus membership',
-        value: 199,
+        description: '$209/calendar year statement credit to fully cover CLEAR Plus security membership',
+        value: 209,
         resetPeriod: 'annual-calendar',
         category: 'travel'
       },
       {
         id: 'amex-plat-lululemon',
         name: 'Lululemon Credit',
-        description: '$75 quarterly statement credit at Lululemon',
+        description: '$75 quarterly statement credit at Lululemon stores or online',
         value: 75,
         resetPeriod: 'quarterly',
         category: 'shopping'
@@ -137,18 +129,18 @@ export const CARDS_DB: CardTemplate[] = [
       {
         id: 'amex-plat-resy-plat',
         name: 'Resy Restaurant Credit',
-        description: '$100 quarterly statement credit at Resy restaurants',
+        description: '$100 quarterly statement credit for dining at Resy restaurants',
         value: 100,
         resetPeriod: 'quarterly',
         category: 'dining'
       },
       {
-        id: 'amex-plat-equinox',
-        name: 'Equinox Credit',
-        description: 'Up to $300/year ($25 monthly statement credit) for Equinox membership or app',
-        value: 25,
-        resetPeriod: 'monthly',
-        category: 'entertainment'
+        id: 'amex-plat-uber-one',
+        name: 'Uber One Credit',
+        description: '$120/calendar year statement credit to fully cover Uber One subscription',
+        value: 120,
+        resetPeriod: 'annual-calendar',
+        category: 'travel'
       }
     ]
   },
@@ -343,15 +335,39 @@ export const CARDS_DB: CardTemplate[] = [
     name: 'Chase Sapphire Reserve',
     bank: 'Chase',
     color: 'from-blue-700 to-indigo-900',
-    annualFee: 550,
+    annualFee: 795,
     officialUrl: 'https://creditcards.chase.com/rewards-credit-cards/sapphire/reserve',
     benefits: [
       {
         id: 'csr-travel',
         name: 'Travel Credit',
-        description: '$300 annual travel statement credit',
+        description: '$300 annual travel statement credit for flights, hotels, transit, and tolls',
         value: 300,
         resetPeriod: 'annual-anniversary',
+        category: 'travel'
+      },
+      {
+        id: 'csr-stubhub',
+        name: 'StubHub Credit',
+        description: '$150 semi-annual statement credit for concert and sports tickets on StubHub',
+        value: 150,
+        resetPeriod: 'semi-annual',
+        category: 'entertainment'
+      },
+      {
+        id: 'csr-doordash',
+        name: 'DoorDash Credit',
+        description: '$25 monthly credit ($10 non-restaurant + $15 restaurant)',
+        value: 25,
+        resetPeriod: 'monthly',
+        category: 'dining'
+      },
+      {
+        id: 'csr-lyft',
+        name: 'Lyft Credit',
+        description: '$10 U.S. rideshare monthly statement credit',
+        value: 10,
+        resetPeriod: 'monthly',
         category: 'travel'
       }
     ]
