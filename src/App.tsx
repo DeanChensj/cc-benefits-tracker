@@ -290,7 +290,7 @@ function App() {
       const parsed = parseLogEntry(logVal);
       const isUsed = benefit.spendingLimit
         ? (parsed?.spentProgress || 0) >= benefit.spendingLimit
-        : !!parsed;
+        : !!(parsed && parsed.resolved);
 
       // Dynamically compute precision date-level expiration for anniversary benefits
       let resolvedExpirationDate = benefit.expirationDate;
@@ -336,7 +336,7 @@ function App() {
     if (!logVal) return 0;
     
     const parsed = parseLogEntry(logVal);
-    if (!parsed) return 0;
+    if (!parsed || !parsed.resolved) return 0;
     
     if (ab.benefit.spendingLimit) {
       const spent = parsed.spentProgress || 0;

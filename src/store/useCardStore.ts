@@ -125,6 +125,12 @@ export const getLogKey = (
   }
 };
 
+// Helper to extract year from a legacy plain key (supports: monthly, quarterly, semi-annual, annual, anniv, fixed)
+export const getYearFromPlainKey = (plainKey: string): number | null => {
+  const match = plainKey.match(/\b(20\d{2})\b/);
+  return match ? parseInt(match[1], 10) : null;
+};
+
 // Helper to push updates to Google Drive silently in the background
 const syncPushToCloud = async (token: string | null, ownedCards: OwnedCardInstance[], logs: Record<string, LogEntry>) => {
   if (!token) return;
@@ -241,15 +247,13 @@ export const useCardStore = create<CardStore>()(
         set((state) => {
           const nextLogs = { ...state.logs };
           const obfuscatedKey = obfuscateKey(logKey);
-          if (nextLogs[obfuscatedKey]) {
-            delete nextLogs[obfuscatedKey];
-          } else {
-            nextLogs[obfuscatedKey] = {
-              resolved: true,
-              timestamp: Date.now(),
-              value: 0,
-            };
-          }
+          const exists = nextLogs[obfuscatedKey];
+          
+          nextLogs[obfuscatedKey] = {
+            resolved: exists ? !exists.resolved : true,
+            timestamp: Date.now(),
+            value: 0,
+          };
           syncPushToCloud(state.gdriveToken, state.ownedCards, nextLogs);
 
           return {
@@ -262,16 +266,13 @@ export const useCardStore = create<CardStore>()(
           const nextLogs = { ...state.logs };
           const obfuscatedKey = obfuscateKey(logKey);
           const spentVal = Math.max(0, spent);
-          if (spentVal === 0) {
-            delete nextLogs[obfuscatedKey];
-          } else {
-            nextLogs[obfuscatedKey] = {
-              resolved: true,
-              timestamp: Date.now(),
-              value: 0,
-              spentProgress: spentVal,
-            };
-          }
+          
+          nextLogs[obfuscatedKey] = {
+            resolved: spentVal > 0,
+            timestamp: Date.now(),
+            value: 0,
+            spentProgress: spentVal,
+          };
           syncPushToCloud(state.gdriveToken, state.ownedCards, nextLogs);
 
           return {
@@ -349,8 +350,19 @@ export const useCardStore = create<CardStore>()(
             });
 
             const mergedLogs = { ...logs };
+            const currentYear = new Date().getFullYear();
+
             Object.entries(remoteLogs).forEach(([key, val]) => {
               const remoteVal = val as LogEntry;
+
+              // 2-Year Pruning Shield: Check if this remote key is expired.
+              // If yes, do not merge it (prevents stale cloud backups from resurrecting pruned entries!)
+              const plainKey = deobfuscateKey(key);
+              const logYear = getYearFromPlainKey(plainKey);
+              if (logYear !== null && (currentYear - logYear > 1)) {
+                return; // Skip, do not merge!
+              }
+
               if (mergedLogs[key] === undefined) {
                 mergedLogs[key] = remoteVal;
               } else {
@@ -480,8 +492,8 @@ export const useCardStore = create<CardStore>()(
           Object.keys(nextLogs).forEach((key) => {
             const val = nextLogs[key] as any;
 
-            // 1. Self-Healing Migration: Check if it is a legacy plain key (starts with 'benefit_')
-            if (key.startsWith('benefit_')) {
+            // 1. Self-Healing Migration: Check if it is a legacy plain key (contains ':')
+            if (key.includes(':')) {
               delete nextLogs[key];
               
               // Parse whatever value format it has (boolean, number, string, or rich object)
@@ -489,7 +501,7 @@ export const useCardStore = create<CardStore>()(
               if (parsed) {
                 const obfuscatedKey = obfuscateKey(key);
                 nextLogs[obfuscatedKey] = {
-                  resolved: true,
+                  resolved: parsed.resolved,
                   timestamp: Number(parsed.timestamp) || Date.now(),
                   value: parsed.value || 0,
                   spentProgress: parsed.spentProgress,
@@ -499,14 +511,10 @@ export const useCardStore = create<CardStore>()(
             } else {
               // 2. Standard Date Pruning: It is already obfuscated. Deobfuscate to check date!
               const plainKey = deobfuscateKey(key);
-              const parts = plainKey.split('_');
-              const dateSegment = parts[parts.length - 1];
-              if (dateSegment && dateSegment.length >= 4) {
-                const logYear = parseInt(dateSegment.substring(0, 4), 10);
-                if (!isNaN(logYear) && (currentYear - logYear > 1)) {
-                  delete nextLogs[key];
-                  prunedAny = true;
-                }
+              const logYear = getYearFromPlainKey(plainKey);
+              if (logYear !== null && (currentYear - logYear > 1)) {
+                delete nextLogs[key];
+                prunedAny = true;
               }
             }
           });
