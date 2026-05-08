@@ -20,6 +20,97 @@ export interface CardTemplate {
   signupBonusValue?: number; // Pre-populated signup bonus value in USD
 }
 
+export interface StaticAwardTemplate {
+  name: string;
+  brand: string; // e.g., "Hyatt", "Marriott", "Alaska", "Delta", "AA", "Amex", "Other"
+  programType: 'hotel' | 'airline' | 'bank' | 'other';
+  awardType: 'fnr' | 'sua' | 'goh' | 'companion' | 'swu' | 'points' | 'other';
+  value: number; // Pre-configured estimated USD cash value
+}
+
+export const AWARD_TEMPLATES: Record<string, StaticAwardTemplate> = {
+  'hyatt-sua': {
+    name: 'Hyatt Suite Upgrade Award (SUA)',
+    brand: 'Hyatt',
+    programType: 'hotel',
+    awardType: 'sua',
+    value: 50
+  },
+  'hyatt-goh': {
+    name: 'Hyatt Guest of Honor Award',
+    brand: 'Hyatt',
+    programType: 'hotel',
+    awardType: 'goh',
+    value: 80
+  },
+  'marriott-nua': {
+    name: 'Marriott Nightly Upgrade Award (NUA)',
+    brand: 'Marriott',
+    programType: 'hotel',
+    awardType: 'sua',
+    value: 40
+  },
+  'marriott-85k-fnr': {
+    name: 'Marriott 85K Free Night Award',
+    brand: 'Marriott',
+    programType: 'hotel',
+    awardType: 'fnr',
+    value: 450
+  },
+  'marriott-50k-fnr': {
+    name: 'Marriott 50K Free Night Award',
+    brand: 'Marriott',
+    programType: 'hotel',
+    awardType: 'fnr',
+    value: 250
+  },
+  'alaska-companion': {
+    name: 'Alaska Companion Fare Certificate',
+    brand: 'Alaska',
+    programType: 'airline',
+    awardType: 'companion',
+    value: 150
+  },
+  'delta-companion': {
+    name: 'Delta Companion Certificate',
+    brand: 'Delta',
+    programType: 'airline',
+    awardType: 'companion',
+    value: 200
+  },
+  'aa-swu': {
+    name: 'AA Systemwide Upgrade (SWU)',
+    brand: 'AA',
+    programType: 'airline',
+    awardType: 'swu',
+    value: 200
+  },
+  'custom': {
+    name: 'Custom Voucher',
+    brand: 'Other',
+    programType: 'other',
+    awardType: 'other',
+    value: 0
+  }
+};
+
+export interface LoyaltyAward {
+  id: string; // Unique instance ID
+  templateId: string; // References key of AWARD_TEMPLATES (e.g. 'hyatt-sua' or 'custom')
+  expirationDate?: string; // 'YYYY-MM-DD' (optional)
+  quantity: number;
+  isUsed: boolean;
+  lastModified: number; // LWW timestamp
+  parentCardId?: string; // Optional: if attached to a card
+
+  // Custom overrides (only populated if templateId === 'custom')
+  customName?: string;
+  customBrand?: string;
+  customProgramType?: 'hotel' | 'airline' | 'bank' | 'other';
+  customAwardType?: 'fnr' | 'sua' | 'goh' | 'companion' | 'swu' | 'points' | 'other';
+  customValue?: number;
+}
+
 export const CARDS_DB: CardTemplate[] = [
   {
     id: 'amex-gold',

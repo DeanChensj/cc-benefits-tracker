@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { CARDS_DB } from '../data/cards.db';
-import type { Benefit } from '../data/cards.db';
+import type { Benefit, LoyaltyAward } from '../data/cards.db';
 import { findSyncFile, uploadSyncFile, downloadSyncFile } from '../utils/gdrive';
 import type { LogEntry } from '../utils/dateUtils';
 import { obfuscateKey, deobfuscateKey, parseLogEntry } from '../utils/dateUtils';
@@ -23,6 +23,7 @@ export interface OwnedCardInstance {
 
 export interface CardStore {
   ownedCards: OwnedCardInstance[];
+  loyaltyAwards: LoyaltyAward[];
   logs: Record<string, LogEntry>; // ObfuscatedKey -> LogEntry object
   theme: 'dark' | 'light'; // App theme selection
   language: 'zh' | 'en'; // App language selection
@@ -61,6 +62,12 @@ export interface CardStore {
   // Sign-Up Bonus Actions
   toggleSignupBonus: (instanceId: string) => void;
   updateSignupBonusValue: (instanceId: string, value: number) => void;
+
+  // Standalone Loyalty Vouchers Actions
+  addLoyaltyAward: (award: Omit<LoyaltyAward, 'id' | 'isUsed' | 'lastModified'>) => void;
+  toggleLoyaltyAward: (awardId: string) => void;
+  deleteLoyaltyAward: (awardId: string) => void;
+  updateLoyaltyAward: (awardId: string, updates: Partial<LoyaltyAward>) => void;
 
   // Database Slimming Actions
   pruneExpiredLogs: (currentDate: Date) => void;
@@ -133,11 +140,16 @@ export const getYearFromPlainKey = (plainKey: string): number | null => {
 };
 
 // Helper to push updates to Google Drive silently in the background
-const syncPushToCloud = async (token: string | null, ownedCards: OwnedCardInstance[], logs: Record<string, LogEntry>) => {
+const syncPushToCloud = async (
+  token: string | null,
+  ownedCards: OwnedCardInstance[],
+  logs: Record<string, LogEntry>
+) => {
   if (!token) return;
   try {
     const fileId = await findSyncFile(token);
-    await uploadSyncFile(token, fileId, { ownedCards, logs });
+    const loyaltyAwards = useCardStore.getState()?.loyaltyAwards || [];
+    await uploadSyncFile(token, fileId, { ownedCards, logs, loyaltyAwards });
   } catch (err) {
     console.error('Silent background cloud sync failed:', err);
   }
@@ -147,6 +159,7 @@ export const useCardStore = create<CardStore>()(
   persist(
     (set, get) => ({
       ownedCards: [],
+      loyaltyAwards: [],
       logs: {},
       theme: (typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: light)').matches) ? 'light' : 'dark',
       language: (typeof navigator !== 'undefined' && navigator.language.startsWith('zh')) ? 'zh' : 'en',
@@ -315,7 +328,7 @@ export const useCardStore = create<CardStore>()(
         })),
 
       syncWithGDrive: async () => {
-        const { gdriveToken, ownedCards, logs, walletLastModified } = get();
+        const { gdriveToken, ownedCards, loyaltyAwards, logs, walletLastModified } = get();
         if (!gdriveToken) return;
 
         set({ syncStatus: 'syncing' });
@@ -324,6 +337,7 @@ export const useCardStore = create<CardStore>()(
           if (!fileId) {
             const dataToUpload = { 
               ownedCards, 
+              loyaltyAwards,
               logs, 
               walletLastModified: walletLastModified || Date.now() 
             };
@@ -335,6 +349,7 @@ export const useCardStore = create<CardStore>()(
           } else {
             const remoteData = await downloadSyncFile(gdriveToken, fileId);
             const remoteCards = remoteData.ownedCards || [];
+            const remoteAwards = remoteData.loyaltyAwards || [];
             const remoteLogs = remoteData.logs || {};
 
             // LWW Wallet Sync Shield: Compare global card wallet modified timestamps
@@ -344,6 +359,10 @@ export const useCardStore = create<CardStore>()(
             const mergedCards = remoteWalletTime > localWalletTime 
               ? remoteCards 
               : ownedCards;
+
+            const mergedAwards = remoteWalletTime > localWalletTime 
+              ? remoteAwards 
+              : loyaltyAwards;
             
             const finalWalletTime = Math.max(localWalletTime, remoteWalletTime);
 
@@ -375,6 +394,7 @@ export const useCardStore = create<CardStore>()(
 
             const finalMergedData = { 
               ownedCards: mergedCards, 
+              loyaltyAwards: mergedAwards,
               logs: mergedLogs, 
               walletLastModified: finalWalletTime 
             };
@@ -382,6 +402,7 @@ export const useCardStore = create<CardStore>()(
 
             set({
               ownedCards: mergedCards,
+              loyaltyAwards: mergedAwards,
               logs: mergedLogs,
               walletLastModified: finalWalletTime,
               syncStatus: 'synced',
@@ -494,6 +515,61 @@ export const useCardStore = create<CardStore>()(
           };
         }),
 
+      addLoyaltyAward: (award) =>
+        set((state) => {
+          const uniqueId = `award_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
+          const newAward: LoyaltyAward = {
+            ...award,
+            id: uniqueId,
+            isUsed: false,
+            lastModified: Date.now()
+          };
+          const nextAwards = [...state.loyaltyAwards, newAward];
+          syncPushToCloud(state.gdriveToken, state.ownedCards, state.logs);
+          return {
+            loyaltyAwards: nextAwards,
+            walletLastModified: Date.now()
+          };
+        }),
+
+      toggleLoyaltyAward: (awardId) =>
+        set((state) => {
+          const nextAwards = state.loyaltyAwards.map((a) =>
+            a.id === awardId
+              ? { ...a, isUsed: !a.isUsed, lastModified: Date.now() }
+              : a
+          );
+          syncPushToCloud(state.gdriveToken, state.ownedCards, state.logs);
+          return {
+            loyaltyAwards: nextAwards,
+            walletLastModified: Date.now()
+          };
+        }),
+
+      deleteLoyaltyAward: (awardId) =>
+        set((state) => {
+          const nextAwards = state.loyaltyAwards.filter((a) => a.id !== awardId);
+          syncPushToCloud(state.gdriveToken, state.ownedCards, state.logs);
+          return {
+            loyaltyAwards: nextAwards,
+            walletLastModified: Date.now()
+          };
+        }),
+
+      updateLoyaltyAward: (awardId, updates) =>
+        set((state) => {
+          const nextAwards = state.loyaltyAwards.map((a) =>
+            a.id === awardId
+              ? { ...a, ...updates, lastModified: Date.now() }
+              : a
+          );
+          syncPushToCloud(state.gdriveToken, state.ownedCards, state.logs);
+          return {
+            loyaltyAwards: nextAwards,
+            walletLastModified: Date.now()
+          };
+        }),
+
       pruneExpiredLogs: (currentDate) =>
         set((state) => {
           const currentYear = currentDate.getFullYear();
@@ -571,6 +647,7 @@ export const useCardStore = create<CardStore>()(
 
         return {
           ownedCards: dehydratedCards,
+          loyaltyAwards: state.loyaltyAwards,
           logs: state.logs,
           walletLastModified: state.walletLastModified,
           theme: state.theme,
