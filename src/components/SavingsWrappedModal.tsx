@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import type { OwnedCardInstance } from '../store/useCardStore';
 import { CARDS_DB } from '../data/cards.db';
 import { X, Download, Sparkles, RefreshCw } from 'lucide-react';
@@ -21,9 +21,9 @@ export function SavingsWrappedModal({
   const [isGenerating, setIsGenerating] = useState(false);
   const [posterLang, setPosterLang] = useState<'en' | 'zh'>('zh'); // Default to punchy Chinese!
   const [currentUrl] = useState('https://deanchensj.github.io/cc-benefits-tracker/');
+  const [posterDataUrl, setPosterDataUrl] = useState<string | null>(null);
   const svgRef = useRef<SVGSVGElement>(null);
 
-  if (!isOpen) return null;
 
   // 1. Calculate Total Secured SUBs
   const securedSUBs = ownedCards.reduce((sum, card) => {
@@ -118,6 +118,80 @@ export function SavingsWrappedModal({
     };
   });
 
+  // Helper to pre-render the SVG into a static PNG image in the background
+  const updatePosterImage = async () => {
+    if (!svgRef.current) return;
+    try {
+      const svgElement = svgRef.current;
+      
+      // Preload GDrive or qrserver QR code as a Base64 Data URI to bypass browser SVG canvas sandbox block!
+      const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(currentUrl)}`;
+      const response = await fetch(qrUrl);
+      const blob = await response.blob();
+      
+      const reader = new FileReader();
+      reader.readAsDataURL(blob);
+      reader.onloadend = () => {
+        const base64Qr = reader.result as string;
+        
+        // Safely select and temporarily swap the image href inside the active SVG tree
+        const imgNode = svgElement.querySelector('image');
+        const originalHref = imgNode?.getAttribute('href');
+        if (imgNode && base64Qr) {
+          imgNode.setAttribute('href', base64Qr);
+        }
+        
+        const svgString = new XMLSerializer().serializeToString(svgElement);
+        const svgBlob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
+        const URL = window.URL || window.webkitURL || window;
+        const blobURL = URL.createObjectURL(svgBlob);
+        
+        const image = new Image();
+        image.src = blobURL;
+        
+        image.onload = () => {
+          try {
+            const canvas = document.createElement('canvas');
+            canvas.width = 760;  // 2x retina scale
+            canvas.height = 1350;
+            const ctx = canvas.getContext('2d');
+            
+            if (ctx) {
+              ctx.drawImage(image, 0, 0, 760, 1350);
+              const pngUrl = canvas.toDataURL('image/png');
+              setPosterDataUrl(pngUrl);
+            }
+          } catch (err) {
+            console.warn('⚠️ Canvas pre-rendering blocked by browser sandbox:', err);
+          } finally {
+            // Restore original external href to keep the live DOM cleanly connected
+            if (imgNode && originalHref) {
+              imgNode.setAttribute('href', originalHref);
+            }
+            URL.revokeObjectURL(blobURL);
+          }
+        };
+      };
+    } catch (err) {
+      console.error('Failed to pre-render poster image:', err);
+    }
+  };
+
+  // Re-trigger pre-rendering in the background on modal open or language changes!
+  useEffect(() => {
+    if (isOpen) {
+      // Give the SVG a microsecond to render in the DOM first
+      const timer = setTimeout(() => {
+        updatePosterImage();
+      }, 250);
+      return () => clearTimeout(timer);
+    } else {
+      setPosterDataUrl(null);
+    }
+  }, [isOpen, posterLang, totalSavings]);
+
+  if (!isOpen) return null;
+
   // 6. Rasterize SVG to PNG and trigger native camera roll download (CORS sandbox bypass!)
   const handleExportPoster = async () => {
     if (!svgRef.current) return;
@@ -152,30 +226,33 @@ export function SavingsWrappedModal({
         image.src = blobURL;
         
         image.onload = () => {
-          const canvas = document.createElement('canvas');
-          canvas.width = 760;  // 2x retina scale
-          canvas.height = 1350;
-          const ctx = canvas.getContext('2d');
-          
-          if (ctx) {
-            ctx.drawImage(image, 0, 0, 760, 1350);
-            const pngUrl = canvas.toDataURL('image/png');
+          try {
+            const canvas = document.createElement('canvas');
+            canvas.width = 760;  // 2x retina scale
+            canvas.height = 1350;
+            const ctx = canvas.getContext('2d');
             
-            const downloadLink = document.createElement('a');
-            downloadLink.href = pngUrl;
-            downloadLink.download = `Savings_Wrapped_${posterLang === 'zh' ? 'CN' : 'EN'}_${new Date().getFullYear()}.png`;
-            document.body.appendChild(downloadLink);
-            downloadLink.click();
-            document.body.removeChild(downloadLink);
+            if (ctx) {
+              ctx.drawImage(image, 0, 0, 760, 1350);
+              const pngUrl = canvas.toDataURL('image/png');
+              
+              const downloadLink = document.createElement('a');
+              downloadLink.href = pngUrl;
+              downloadLink.download = `Savings_Wrapped_${posterLang === 'zh' ? 'CN' : 'EN'}_${new Date().getFullYear()}.png`;
+              document.body.appendChild(downloadLink);
+              downloadLink.click();
+              document.body.removeChild(downloadLink);
+            }
+          } catch (err) {
+            console.error('⚠️ Canvas poster generation blocked:', err);
+          } finally {
+            // Restore original external href to keep the live DOM cleanly connected
+            if (imgNode && originalHref) {
+              imgNode.setAttribute('href', originalHref);
+            }
+            URL.revokeObjectURL(blobURL);
+            setIsGenerating(false);
           }
-          
-          // Restore original external href to keep the live DOM cleanly connected
-          if (imgNode && originalHref) {
-            imgNode.setAttribute('href', originalHref);
-          }
-          
-          URL.revokeObjectURL(blobURL);
-          setIsGenerating(false);
         };
       };
     } catch (err) {
@@ -186,7 +263,7 @@ export function SavingsWrappedModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 bg-black/65 backdrop-blur-sm overflow-y-auto scrollbar-thin">
-      <div className={`relative w-[360px] max-w-full border rounded-2xl shadow-2xl animate-scale-up overflow-hidden max-h-[90vh] max-h-[90dvh] flex flex-col ${
+      <div className={`relative w-[340px] sm:w-[420px] max-w-full border rounded-2xl shadow-2xl animate-scale-up overflow-hidden max-h-[90vh] max-h-[90dvh] flex flex-col ${
         themeClass('bg-slate-955 border-slate-850 text-white', 'bg-slate-50 border-slate-250 text-slate-900')
       }`}>
         {/* Modal Header */}
@@ -233,7 +310,16 @@ export function SavingsWrappedModal({
           </div>
 
           {/* Crisp Vector SVG Poster Container (9:16 proportion) */}
-          <div className="relative w-full aspect-[9/16] rounded-2xl overflow-hidden shadow-2xl border border-white/10 select-none shrink-0 max-w-[320px] mx-auto bg-gradient-to-b from-slate-950 via-slate-900 to-indigo-950 text-white">
+          <div className="relative w-full aspect-[9/16] rounded-2xl overflow-hidden shadow-2xl border border-white/10 select-none shrink-0 max-w-[280px] sm:max-w-[360px] mx-auto bg-gradient-to-b from-slate-950 via-slate-900 to-indigo-950 text-white">
+            {/* Transparent PNG Image Overlay layer allowing native mobile OS long-press 'Save to Photos'! */}
+            {posterDataUrl && (
+              <img 
+                src={posterDataUrl} 
+                alt="Long press to save to Photos!" 
+                className="absolute inset-0 w-full h-full opacity-0 z-20 cursor-pointer select-none pointer-events-auto"
+                style={{ WebkitTouchCallout: 'default' }}
+              />
+            )}
             <svg 
               ref={svgRef}
               xmlns="http://www.w3.org/2000/svg" 
@@ -426,7 +512,13 @@ export function SavingsWrappedModal({
         </div>
 
         {/* Modal Actions */}
-        <div className="p-4 border-t border-dashed border-slate-800/30 dark:border-white/5 shrink-0 flex flex-col sm:flex-row gap-2 bg-slate-955 dark:bg-slate-950/40">
+        <div className="p-4 border-t border-dashed border-slate-800/30 dark:border-white/5 shrink-0 flex flex-col gap-2 bg-slate-955 dark:bg-slate-950/40">
+          {/* Premium, faded, glowing bilingual long-press saving advice note */}
+          <p className="text-[9px] text-center font-semibold tracking-wide text-slate-400 dark:text-slate-500 animate-pulse">
+            {posterLang === 'zh'
+              ? '💡 提示：长按上方海报图片可直接保存到手机“照片”相册！'
+              : '💡 Tip: Long-press the poster image above to save directly to your Photos!'}
+          </p>
           <button
             onClick={handleExportPoster}
             disabled={isGenerating}
