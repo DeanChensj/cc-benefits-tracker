@@ -26,6 +26,7 @@ export interface CardStore {
   logs: Record<string, LogEntry>; // ObfuscatedKey -> LogEntry object
   theme: 'dark' | 'light'; // App theme selection
   language: 'zh' | 'en'; // App language selection
+  walletLastModified?: number; // Global card wallet modified timestamp
   
   // Google Drive Sync States
   gdriveToken: string | null; // Temporary in-memory OAuth access token
@@ -180,6 +181,7 @@ export const useCardStore = create<CardStore>()(
 
           return {
             ownedCards: nextCards,
+            walletLastModified: Date.now(),
           };
         }),
 
@@ -197,6 +199,7 @@ export const useCardStore = create<CardStore>()(
 
           return {
             ownedCards: nextCards,
+            walletLastModified: Date.now(),
           };
         }),
 
@@ -216,6 +219,7 @@ export const useCardStore = create<CardStore>()(
           return {
             ownedCards: nextCards,
             logs: nextLogs,
+            walletLastModified: Date.now(),
           };
         }),
 
@@ -228,6 +232,7 @@ export const useCardStore = create<CardStore>()(
 
           return {
             ownedCards: nextCards,
+            walletLastModified: Date.now(),
           };
         }),
 
@@ -240,6 +245,7 @@ export const useCardStore = create<CardStore>()(
 
           return {
             ownedCards: nextCards,
+            walletLastModified: Date.now(),
           };
         }),
 
@@ -309,14 +315,18 @@ export const useCardStore = create<CardStore>()(
         })),
 
       syncWithGDrive: async () => {
-        const { gdriveToken, ownedCards, logs } = get();
+        const { gdriveToken, ownedCards, logs, walletLastModified } = get();
         if (!gdriveToken) return;
 
         set({ syncStatus: 'syncing' });
         try {
           const fileId = await findSyncFile(gdriveToken);
           if (!fileId) {
-            const dataToUpload = { ownedCards, logs };
+            const dataToUpload = { 
+              ownedCards, 
+              logs, 
+              walletLastModified: walletLastModified || Date.now() 
+            };
             await uploadSyncFile(gdriveToken, null, dataToUpload);
             set({ 
               syncStatus: 'synced', 
@@ -327,27 +337,15 @@ export const useCardStore = create<CardStore>()(
             const remoteCards = remoteData.ownedCards || [];
             const remoteLogs = remoteData.logs || {};
 
-            const localCards = [...ownedCards];
-            const mergedCards = [...localCards];
+            // LWW Wallet Sync Shield: Compare global card wallet modified timestamps
+            const localWalletTime = walletLastModified || 0;
+            const remoteWalletTime = remoteData.walletLastModified || 0;
             
-            remoteCards.forEach((rc: OwnedCardInstance) => {
-              const exists = localCards.some((lc) => lc.id === rc.id);
-              if (!exists) {
-                mergedCards.push(rc);
-              } else {
-                const localInstanceIndex = mergedCards.findIndex((lc) => lc.id === rc.id);
-                if (localInstanceIndex !== -1 && rc.instanceOffers) {
-                  const localOffers = mergedCards[localInstanceIndex].instanceOffers || [];
-                  const mergedOffers = [...localOffers];
-                  rc.instanceOffers.forEach((ro) => {
-                    if (!localOffers.some((lo) => lo.id === ro.id)) {
-                      mergedOffers.push(ro);
-                    }
-                  });
-                  mergedCards[localInstanceIndex].instanceOffers = mergedOffers;
-                }
-              }
-            });
+            const mergedCards = remoteWalletTime > localWalletTime 
+              ? remoteCards 
+              : ownedCards;
+            
+            const finalWalletTime = Math.max(localWalletTime, remoteWalletTime);
 
             const mergedLogs = { ...logs };
             const currentYear = new Date().getFullYear();
@@ -356,7 +354,6 @@ export const useCardStore = create<CardStore>()(
               const remoteVal = val as LogEntry;
 
               // 2-Year Pruning Shield: Check if this remote key is expired.
-              // If yes, do not merge it (prevents stale cloud backups from resurrecting pruned entries!)
               const plainKey = deobfuscateKey(key);
               const logYear = getYearFromPlainKey(plainKey);
               if (logYear !== null && (currentYear - logYear > 1)) {
@@ -376,12 +373,17 @@ export const useCardStore = create<CardStore>()(
               }
             });
 
-            const finalMergedData = { ownedCards: mergedCards, logs: mergedLogs };
+            const finalMergedData = { 
+              ownedCards: mergedCards, 
+              logs: mergedLogs, 
+              walletLastModified: finalWalletTime 
+            };
             await uploadSyncFile(gdriveToken, fileId, finalMergedData);
 
             set({
               ownedCards: mergedCards,
               logs: mergedLogs,
+              walletLastModified: finalWalletTime,
               syncStatus: 'synced',
               lastSyncedTime: new Date().toLocaleTimeString()
             });
@@ -412,6 +414,7 @@ export const useCardStore = create<CardStore>()(
 
           return {
             ownedCards: nextCards,
+            walletLastModified: Date.now(),
           };
         }),
 
@@ -430,6 +433,7 @@ export const useCardStore = create<CardStore>()(
 
           return {
             ownedCards: nextCards,
+            walletLastModified: Date.now(),
           };
         }),
 
@@ -445,6 +449,7 @@ export const useCardStore = create<CardStore>()(
           
           return {
             ownedCards: nextCards,
+            walletLastModified: Date.now(),
           };
         }),
 
@@ -465,7 +470,10 @@ export const useCardStore = create<CardStore>()(
             return c;
           });
           syncPushToCloud(state.gdriveToken, nextCards, state.logs);
-          return { ownedCards: nextCards };
+          return { 
+            ownedCards: nextCards,
+            walletLastModified: Date.now()
+          };
         }),
 
       updateSignupBonusValue: (instanceId, value) =>
@@ -480,7 +488,10 @@ export const useCardStore = create<CardStore>()(
             return c;
           });
           syncPushToCloud(state.gdriveToken, nextCards, state.logs);
-          return { ownedCards: nextCards };
+          return { 
+            ownedCards: nextCards,
+            walletLastModified: Date.now()
+          };
         }),
 
       pruneExpiredLogs: (currentDate) =>
@@ -561,6 +572,7 @@ export const useCardStore = create<CardStore>()(
         return {
           ownedCards: dehydratedCards,
           logs: state.logs,
+          walletLastModified: state.walletLastModified,
           theme: state.theme,
           language: state.language,
           customClientId: state.customClientId,
