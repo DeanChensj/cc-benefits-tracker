@@ -20,6 +20,7 @@ import { CloudSyncBanner } from './components/CloudSyncBanner';
 import { ActiveChecklistTab } from './components/ActiveChecklistTab';
 import { WalletLibraryTab } from './components/WalletLibraryTab';
 import { getLocalDateString, getAnnualFeeWarningInfo } from './utils/dateUtils';
+import { getResolvedValue, getCardRecoupedValue } from './utils/valuationUtils';
 import { parseLogEntry } from './utils/logUtils';
 import { obfuscateKey } from './utils/cryptoUtils';
 import { loadGoogleGsiScript, requestGDriveToken, fetchUserEmail } from './utils/gdrive';
@@ -308,46 +309,6 @@ function App() {
     });
   });
 
-  // Helper to calculate recouped value of a specific card instance
-  const getCardRecoupedValue = (instanceId: string): number => {
-    const instance = ownedCards.find((c) => c.id === instanceId);
-    const subValue = (instance?.signupBonusActive && instance.signupBonusValue !== undefined) 
-      ? instance.signupBonusValue 
-      : 0;
-    const cardBenefits = activeBenefits.filter((ab) => ab.cardInstance && ab.cardInstance.id === instanceId);
-    const sum = cardBenefits.reduce((s, ab) => s + getResolvedValue(ab), subValue);
-    return Math.round(sum * 100) / 100;
-  };
-
-  // Helper to calculate resolved value dynamically (supports progressive spends, binary logs, and standalone awards)
-  const getResolvedValue = (ab: ActiveBenefit): number => {
-    if (ab.loyaltyAward) {
-      const isCustom = ab.loyaltyAward.templateId === 'custom';
-      const info = isCustom ? {
-        value: ab.loyaltyAward.customValue || 0
-      } : AWARD_TEMPLATES[ab.loyaltyAward.templateId];
-      const usedQty = ab.loyaltyAward.usedQuantity || 0;
-      return info.value * usedQty;
-    }
-
-    const logVal = logs[obfuscateKey(ab.logKey)];
-    if (!logVal) return 0;
-    
-    const parsed = parseLogEntry(logVal);
-    if (!parsed || !parsed.resolved) return 0;
-    
-    if (ab.benefit.spendingLimit) {
-      // Exclude spend-to-earn cashback multipliers (rate <= 10%) from actual recoup math
-      if (ab.benefit.value / ab.benefit.spendingLimit <= 0.1) return 0;
-
-      const spent = parsed.spentProgress || 0;
-      const progressPercent = Math.min(spent / ab.benefit.spendingLimit, 1);
-      return Math.round((ab.benefit.value * progressPercent) * 100) / 100;
-    }
-    
-    return ab.benefit.value;
-  };
-
   const getExpiredValue = (ab: ActiveBenefit): number => {
     const usedQty = ab.loyaltyAward ? (ab.loyaltyAward.usedQuantity || 0) : 0;
     const isExpired = ab.loyaltyAward
@@ -355,12 +316,12 @@ function App() {
       : (ab.benefit.resetPeriod === 'fixed' && !!ab.benefit.expirationDate && new Date(ab.benefit.expirationDate + 'T00:00:00') < currentDate);
       
     if (!isExpired) return 0;
-    return ab.benefit.value - getResolvedValue(ab);
+    return ab.benefit.value - getResolvedValue(ab, logs);
   };
 
   // Compute stats
   const totalPotentialValue = activeBenefits.reduce((sum, ab) => sum + ab.benefit.value, 0);
-  const resolvedValue = Math.round(activeBenefits.reduce((sum, ab) => sum + getResolvedValue(ab), 0) * 100) / 100;
+  const resolvedValue = Math.round(activeBenefits.reduce((sum, ab) => sum + getResolvedValue(ab, logs), 0) * 100) / 100;
   const expiredValue = Math.round(activeBenefits.reduce((sum, ab) => sum + getExpiredValue(ab), 0) * 100) / 100;
   const pendingValue = Math.round((totalPotentialValue - resolvedValue - expiredValue) * 100) / 100;
 
@@ -694,7 +655,7 @@ function App() {
           <WalletLibraryTab
             ownedCards={ownedCards}
             loyaltyAwards={loyaltyAwards}
-            getCardRecoupedValue={getCardRecoupedValue}
+            getCardRecoupedValue={(id) => getCardRecoupedValue(id, ownedCards, activeBenefits, logs)}
             handleAddCard={handleAddCard}
             handleAddCustomCard={handleAddCustomCard}
             renameCard={renameCard}
