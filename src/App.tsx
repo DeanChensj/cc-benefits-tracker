@@ -28,7 +28,6 @@ import { obfuscateKey } from './utils/cryptoUtils';
 import { loadGoogleGsiScript, requestGDriveToken, fetchUserEmail } from './utils/gdrive';
 import { 
   CheckCircle2, 
-  RefreshCw,
   Sun,
   Moon,
   Calendar,
@@ -80,9 +79,9 @@ function App() {
 
   // Date to evaluate states against (defaults to current system date)
   const [currentDate, setCurrentDate] = useState(new Date());
-  const [activeTab, setActiveTab] = useState<'todo' | 'cards'>(() => (localStorage.getItem('cc-tracker-active-tab') as any) || 'todo');
+  const [activeTab, setActiveTab] = useState<'todo' | 'cards'>(() => (localStorage.getItem('cc-tracker-active-tab') as 'todo' | 'cards') || 'todo');
   const [deckSubTab, setDeckSubTab] = useState<'cards' | 'awards' | 'templates'>(() => {
-    return (localStorage.getItem('cc-tracker-deck-sub-tab') as any) || 'cards';
+    return (localStorage.getItem('cc-tracker-deck-sub-tab') as 'cards' | 'awards' | 'templates') || 'cards';
   });
   const [activeModal, setActiveModal] = useState<'sync' | 'create-card' | 'create-award' | 'wrapped' | 'disconnect-gdrive' | 'wipe' | null>(null);
   const [addOfferInstanceId, setAddOfferInstanceId] = useState<string | null>(null);
@@ -238,6 +237,7 @@ function App() {
     loadGoogleGsiScript()
       .then(() => console.log('Google GIS client successfully pre-loaded.'))
       .catch((err) => console.error('Failed to load Google GIS Client library:', err));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Persist navigation tab and main dashboard filter settings in localStorage for seamless reload experience
@@ -413,6 +413,7 @@ function App() {
   const resolvedValue = Math.round(activeBenefits.reduce((sum, ab) => sum + getResolvedValue(ab, logs), 0) * 100) / 100;
   const expiredValue = Math.round(activeBenefits.reduce((sum, ab) => sum + getExpiredValue(ab), 0) * 100) / 100;
   const pendingValue = Math.round((totalPotentialValue - resolvedValue - expiredValue) * 100) / 100;
+  const utilizationRate = totalPotentialValue > 0 ? Math.round((resolvedValue / totalPotentialValue) * 100) : 0;
 
   // Calculate the Annual Fee Anniversary Warnings (within 30 days)
   const annualFeeWarnings = useMemo(() => {
@@ -492,7 +493,7 @@ function App() {
       ab.benefit.expirationDate && 
       new Date(ab.benefit.expirationDate + 'T00:05:00') < currentDate;
     return !isExpired;
-  }) as any;
+  }) as unknown as { cardInstance: OwnedCardInstance; benefit: Benefit; logKey: string }[];
 
 
 
@@ -643,40 +644,7 @@ function App() {
               </button>
             )}
 
-            {currentDate.getMonth() !== new Date().getMonth() || currentDate.getFullYear() !== new Date().getFullYear() ? (
-              <button
-                onClick={() => setCurrentDate(new Date())}
-                className={`inline-flex items-center gap-1.5 px-2.5 py-1 text-[10px] font-bold text-amber-400 bg-amber-500/10 border rounded-lg cursor-pointer hover:bg-amber-500/20 transition active:scale-95 duration-200 animate-pulse ${
-                  themeClass('border-amber-500/25 hover:border-amber-500/55', 'border-amber-500/40 hover:border-amber-500/70')
-                }`}
-                title="Click to Reset simulated month back to Today"
-              >
-                <span>⚠️ Simulated Sandbox</span>
-                <RefreshCw className="w-3 h-3 animate-spin-slow" />
-              </button>
-            ) : null}
-
-            <div className={`flex items-center rounded-lg p-1 text-xs font-medium border ${
-              themeClass('bg-slate-900 text-slate-300 border-slate-800', 'bg-slate-200/60 text-slate-700 border-slate-300/80 shadow-inner')
-            }`}>
-              <button 
-                onClick={() => adjustMonth(-1)} 
-                className={`px-2 py-1 rounded transition ${themeClass('hover:bg-slate-800', 'hover:bg-slate-305')}`}
-                title="Previous Month"
-              >
-                ◀
-              </button>
-              <span className={`px-3 py-1 min-w-[110px] text-center font-semibold ${themeClass('text-white', 'text-slate-900')}`}>
-                {currentMonthStr} {currentYear}
-              </span>
-              <button 
-                onClick={() => adjustMonth(1)} 
-                className={`px-2 py-1 rounded transition ${themeClass('hover:bg-slate-800', 'hover:bg-slate-305')}`}
-                title="Next Month"
-              >
-                ▶
-              </button>
-            </div>
+            
           </div>
         </div>
       </header>
@@ -684,11 +652,11 @@ function App() {
       <main className="max-w-4xl mx-auto px-4 py-8">
         
         {/* Stats Cards */}
-        <section className="grid grid-cols-3 gap-3 mb-6">
+        <section className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
           <div className={`border rounded-xl p-3 sm:p-4 transition duration-300 ${
             themeClass('bg-slate-900/50 border-slate-800/60', 'bg-white border-slate-200 shadow-sm')
           }`}>
-            <p className={`text-[10px] sm:text-xs font-medium uppercase tracking-wider flex items-center gap-1.5 ${themeClass('text-slate-400', 'text-slate-550')}`}>
+            <p className={`text-[10px] sm:text-xs font-medium uppercase tracking-wider flex items-center gap-1.5 ${themeClass('text-slate-400', 'text-slate-555')}`}>
               <DollarSign className="w-3.5 h-3.5 text-slate-500" />
               Potential Value
             </p>
@@ -713,6 +681,43 @@ function App() {
               Remaining
             </p>
             <p className="text-xl sm:text-2xl font-bold text-amber-500 mt-1">${pendingValue}</p>
+          </div>
+
+          <div className={`border rounded-xl p-3 sm:p-4 transition duration-300 flex items-center justify-between gap-3 ${
+            themeClass('bg-slate-900/50 border-slate-800/60', 'bg-white border-slate-200 shadow-sm')
+          }`}>
+            <div className="min-w-0">
+              <p className={`text-[10px] sm:text-xs font-medium uppercase tracking-wider flex items-center gap-1.5 ${themeClass('text-slate-400', 'text-slate-555')}`}>
+                <Sparkles className="w-3.5 h-3.5 text-purple-500" />
+                Maximized
+              </p>
+              <p className={`text-xl sm:text-2xl font-bold mt-1 ${themeClass('text-white', 'text-slate-900')}`}>{utilizationRate}%</p>
+            </div>
+            
+            <div className="relative w-10 h-10 shrink-0 flex items-center justify-center">
+              <svg className="w-10 h-10 transform -rotate-90">
+                <circle
+                  cx="20"
+                  cy="20"
+                  r="15"
+                  className={`fill-none stroke-current ${themeClass('text-white/10', 'text-slate-100')}`}
+                  strokeWidth="3.5"
+                />
+                <circle
+                  cx="20"
+                  cy="20"
+                  r="15"
+                  className="fill-none stroke-current text-purple-500 dark:text-purple-400 transition-all duration-500 ease-out"
+                  strokeWidth="3.5"
+                  strokeDasharray="94.25"
+                  strokeDashoffset={94.25 - (94.25 * Math.min(utilizationRate / 100, 1))}
+                  strokeLinecap="round"
+                />
+              </svg>
+              <div className="absolute inset-0 flex items-center justify-center text-[9px] font-black text-purple-500 dark:text-purple-400">
+                🎯
+              </div>
+            </div>
           </div>
         </section>
 
@@ -1015,6 +1020,63 @@ function App() {
         }}
         theme={theme}
       />
+
+      {/* Floating Sandbox Time Machine Console (Premium Glassmorphic Capsule) */}
+      <div className="fixed bottom-6 left-6 z-45 animate-scale-up">
+        <div className={`p-2.5 border rounded-2xl shadow-2xl flex items-center gap-2.5 backdrop-blur-md transition-all duration-300 ${
+          themeClass(
+            'bg-slate-900/95 border-slate-850/80 text-white shadow-slate-950/50',
+            'bg-white/95 border-slate-255 text-slate-800 shadow-slate-300/30'
+          )
+        }`}>
+          {/* Sandbox state indicator light */}
+          {(() => {
+            const isSandbox = currentDate.getMonth() !== new Date().getMonth() || currentDate.getFullYear() !== new Date().getFullYear();
+            return (
+              <div className="flex items-center gap-2 shrink-0">
+                <span className={`relative flex h-2 w-2 ${isSandbox ? 'block' : 'hidden'}`}>
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
+                </span>
+                {isSandbox && (
+                  <button
+                    onClick={() => setCurrentDate(new Date())}
+                    className={`px-1.5 py-0.5 rounded text-[7.5px] font-black tracking-wider uppercase border hover:scale-[1.03] transition cursor-pointer active:scale-95 ${
+                      themeClass('bg-amber-500/15 text-amber-400 border-amber-500/30 hover:bg-amber-500/25', 'bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100')
+                    }`}
+                    title="Reset to Today"
+                  >
+                    Reset
+                  </button>
+                )}
+              </div>
+            );
+          })()}
+          
+          {/* Month switcher buttons */}
+          <div className={`flex items-center rounded-xl p-0.5 text-[11px] font-extrabold border ${
+            themeClass('bg-slate-950/50 border-slate-850/70 text-slate-300', 'bg-slate-100/60 border-slate-200 text-slate-750 shadow-inner')
+          }`}>
+            <button 
+              onClick={() => adjustMonth(-1)} 
+              className={`px-2 py-1 rounded-lg transition cursor-pointer ${themeClass('hover:bg-slate-900', 'hover:bg-slate-305')}`}
+              title="Previous Month"
+            >
+              ◀
+            </button>
+            <span className={`px-2.5 py-1 min-w-[95px] text-center font-extrabold text-[10px] tracking-wider uppercase`}>
+              {currentMonthStr.substring(0, 3)} {currentYear}
+            </span>
+            <button 
+              onClick={() => adjustMonth(1)} 
+              className={`px-2 py-1 rounded-lg transition cursor-pointer ${themeClass('hover:bg-slate-900', 'hover:bg-slate-305')}`}
+              title="Next Month"
+            >
+              ▶
+            </button>
+          </div>
+        </div>
+      </div>
 
       {/* Premium Floating Toast Notification */}
       {toast && (

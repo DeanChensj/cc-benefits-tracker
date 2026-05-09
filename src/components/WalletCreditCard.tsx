@@ -8,7 +8,7 @@ interface WalletCreditCardProps {
   toggleCardExpanded: (id: string) => void;
   getCardRecoupedValue: (id: string) => number;
   handleAddCard: (templateId: string) => void;
-  handleAddCustomCard: (card: any) => void;
+  handleAddCustomCard: (card: Omit<OwnedCardInstance, 'id'>) => void;
   handleRemoveCard: (instanceId: string) => void;
   removeInstanceOffer: (instanceId: string, offerId: string) => void;
   setAddOfferInstanceId: (instanceId: string) => void;
@@ -50,7 +50,7 @@ export function WalletCreditCard({
     <div className="flex flex-col w-full transition duration-200 hover:scale-[1.01]">
       {/* A. Upper Part: Realistic Virtual Credit Card Face (1.58:1 Ratio) */}
       <div
-        className={`aspect-[1.58/1] w-full rounded-2xl relative p-4 flex flex-col justify-between text-white overflow-hidden shadow-xl select-none bg-gradient-to-tr ${cardColor} border transition-all duration-300 hover:shadow-2xl group/card ${
+        className={`aspect-[1.58/1] w-full rounded-2xl relative p-4 flex flex-col justify-between text-white overflow-hidden shadow-xl select-none bg-gradient-to-tr ${cardColor} border transition-all duration-500 hover:scale-[1.02] hover:shadow-2xl hover:shadow-purple-500/10 dark:hover:shadow-purple-500/15 hover:border-purple-500/30 group/card ${
           isRecouped 
             ? 'ring-2 ring-amber-500/50 dark:ring-amber-400/35 border-amber-500/30 shadow-lg shadow-amber-500/5'
             : isSilverCard
@@ -139,11 +139,13 @@ export function WalletCreditCard({
         {/* Card Face Body: EMV Chip & Contactless Antenna */}
         <div className="flex items-center gap-2.5 my-auto z-10 relative">
           {/* CSS Micro-Engineered Gold EMV Chip */}
-          <div className="w-8 h-6 rounded-md bg-gradient-to-tr from-amber-200 via-yellow-400 to-amber-300 border border-amber-500/20 shadow-sm relative flex flex-wrap p-0.5 overflow-hidden opacity-90">
-            <div className="w-1/2 h-full border-r border-amber-600/20" />
-            <div className="w-full h-[1px] bg-amber-600/20 absolute top-1/2 left-0" />
-            <div className="w-full h-[1px] bg-amber-600/20 absolute top-1/4 left-0" />
-            <div className="w-full h-[1px] bg-amber-600/20 absolute top-3/4 left-0" />
+          <div className="w-8 h-6 rounded-md bg-gradient-to-tr from-amber-200 via-yellow-450 to-amber-350 border border-amber-500/25 shadow-sm relative flex flex-wrap p-0.5 overflow-hidden opacity-95 shrink-0">
+            <div className="w-1/2 h-full border-r border-amber-600/30" />
+            <div className="w-full h-[1px] bg-amber-600/30 absolute top-1/2 left-0" />
+            <div className="w-full h-[1px] bg-amber-600/30 absolute top-1/4 left-0" />
+            <div className="w-full h-[1px] bg-amber-600/30 absolute top-3/4 left-0" />
+            {/* EMV central metallic contact plate */}
+            <div className="absolute top-1.5 left-2.5 w-3 h-3 bg-yellow-100/90 rounded-sm border border-amber-600/25 shadow-inner z-10" />
           </div>
 
           {/* Contactless antenna waves */}
