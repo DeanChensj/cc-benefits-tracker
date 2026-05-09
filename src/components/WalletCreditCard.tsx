@@ -1,45 +1,33 @@
 import { Plus, Trash2, ExternalLink, Edit3, ChevronDown } from 'lucide-react';
-import { CARDS_DB, CARD_MULTIPLIERS } from '../data/cards.db';
+import { CARDS_DB } from '../data/cards.db';
 import type { OwnedCardInstance } from '../store/useCardStore';
 import { getCardPotentialValue } from '../utils/valuationUtils';
 
 interface WalletCreditCardProps {
   instance: OwnedCardInstance;
-  editingInstanceId: string | null;
-  setEditingInstanceId: (id: string | null) => void;
   isCardExpanded: boolean;
   toggleCardExpanded: (id: string) => void;
   getCardRecoupedValue: (id: string) => number;
   handleAddCard: (templateId: string) => void;
   handleAddCustomCard: (card: any) => void;
   handleRemoveCard: (instanceId: string) => void;
-  renameCard: (instanceId: string, name: string) => void;
-  setCardOpenDate: (instanceId: string, dateStr: string) => void;
   removeInstanceOffer: (instanceId: string, offerId: string) => void;
-  updateCardMultipliers: (instanceId: string, multipliers: any) => void;
-  toggleSignupBonus: (instanceId: string) => void;
-  updateSignupBonusValue: (instanceId: string, value: number) => void;
   setAddOfferInstanceId: (instanceId: string) => void;
+  onEditCard: (instance: OwnedCardInstance) => void;
   themeClass: (dark: string, light: string) => string;
 }
 
 export function WalletCreditCard({
   instance,
-  editingInstanceId,
-  setEditingInstanceId,
   isCardExpanded,
   toggleCardExpanded,
   getCardRecoupedValue,
   handleAddCard,
   handleAddCustomCard,
   handleRemoveCard,
-  renameCard,
-  setCardOpenDate,
   removeInstanceOffer,
-  updateCardMultipliers,
-  toggleSignupBonus,
-  updateSignupBonusValue,
   setAddOfferInstanceId,
+  onEditCard,
   themeClass,
 }: WalletCreditCardProps) {
   const template = CARDS_DB.find((t) => t.id === instance.templateId);
@@ -58,14 +46,7 @@ export function WalletCreditCard({
                        instance.templateId === 'amex-biz-platinum' || 
                        instance.templateId === 'amex-gold';
 
-  const defaultDining = CARD_MULTIPLIERS[instance.templateId]?.dining || 1;
-  const defaultTravel = CARD_MULTIPLIERS[instance.templateId]?.travel || 1;
-  const defaultShopping = CARD_MULTIPLIERS[instance.templateId]?.shopping || 1;
-  const defaultEntertainment = CARD_MULTIPLIERS[instance.templateId]?.entertainment || 1;
 
-  const canCustomizePoints = instance.templateId === 'custom' || 
-                             instance.templateId === 'chase-freedom-flex' || 
-                             instance.templateId === 'discover-it-cashback';
 
   return (
     <div 
@@ -87,6 +68,19 @@ export function WalletCreditCard({
             }`}>
               {instance.templateId === 'custom' ? (instance.bank || 'Custom') : (template?.bank || 'Standard')}
             </span>
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                onEditCard(instance);
+              }}
+              className={`text-[8px] font-black tracking-wider uppercase opacity-75 cursor-pointer hover:underline hover:opacity-100 transition ${
+                isSilverCard ? 'text-slate-850' : 'text-slate-300'
+              }`}
+              title="Click to configure card opened date, multipliers & SUB"
+            >
+              Opened: {instance.cardOpenDate}
+            </button>
             {template?.officialUrl && (
               <a
                 href={template.officialUrl}
@@ -149,44 +143,19 @@ export function WalletCreditCard({
         </div>
       </div>
 
-      {editingInstanceId === instance.id ? (
-        <input
-          type="text"
-          value={instance.customName}
-          onChange={(e) => renameCard(instance.id, e.target.value)}
-          onBlur={() => {
-            const trimmed = instance.customName.trim();
-            const temp = CARDS_DB.find((t) => t.id === instance.templateId);
-            const fallback = instance.templateId === 'custom' ? 'Custom Card' : (temp?.name || 'Credit Card');
-            renameCard(instance.id, trimmed || fallback);
-            setEditingInstanceId(null);
-          }}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') {
-              const trimmed = instance.customName.trim();
-              const temp = CARDS_DB.find((t) => t.id === instance.templateId);
-              const fallback = instance.templateId === 'custom' ? 'Custom Card' : (temp?.name || 'Credit Card');
-              renameCard(instance.id, trimmed || fallback);
-              setEditingInstanceId(null);
-            } else if (e.key === 'Escape') {
-              setEditingInstanceId(null);
-            }
-          }}
-          autoFocus
-          className="bg-slate-955/80 border border-purple-500/50 text-white text-xs rounded px-2 py-1 font-semibold focus:outline-none w-full mt-2"
-        />
-      ) : (
-        <h4 
-          onClick={() => setEditingInstanceId(instance.id)}
-          className={`text-base font-bold mt-1.5 flex items-center gap-1 cursor-pointer transition ${
-            isSilverCard ? 'hover:text-slate-850 text-slate-950 font-black' : 'hover:text-purple-300 text-white'
-          }`}
-          title="Click to rename"
-        >
-          {instance.customName}
-          <Edit3 className={`w-3 h-3 shrink-0 ${isSilverCard ? 'text-slate-850/60' : 'text-slate-400'}`} />
-        </h4>
-      )}
+      <h4 
+        onClick={(e) => {
+          e.stopPropagation();
+          onEditCard(instance);
+        }}
+        className={`text-base font-bold mt-1.5 flex items-center gap-1 cursor-pointer transition ${
+          isSilverCard ? 'hover:text-slate-850 text-slate-950 font-black' : 'hover:text-purple-300 text-white'
+        }`}
+        title="Click to configure card opened date, multipliers & SUB"
+      >
+        {instance.customName}
+        <Edit3 className={`w-3 h-3 shrink-0 ${isSilverCard ? 'text-slate-850/60' : 'text-slate-400'}`} />
+      </h4>
 
       {(() => {
         const potentialVal = getCardPotentialValue(benefits);
@@ -298,7 +267,7 @@ export function WalletCreditCard({
       {/* 2. Collapsible Drawer Panel */}
       <div className={`transition-all duration-300 ease-in-out overflow-hidden ${
         isCardExpanded
-          ? 'max-h-[600px] opacity-100 border-t border-dashed border-white/10 dark:border-black/5 pt-3 mt-3'
+          ? 'max-h-[1200px] opacity-100 border-t border-dashed border-white/10 dark:border-black/5 pt-3 mt-3'
           : 'max-h-0 opacity-0 pointer-events-none'
       }`}>
         {/* Benefits preview inline list */}
@@ -352,188 +321,15 @@ export function WalletCreditCard({
           </div>
         )}
 
-        {/* 2.5. Premium Secured Sign-Up Bonus (SUB) Leverager with custom override */}
-        {template?.signupBonusValue !== undefined && (
-          <div className="mt-3 pt-3 border-t border-dashed border-white/10 dark:border-black/5 text-left animate-fade-in">
-            <div className={`flex items-center justify-between gap-3 p-2 rounded-xl border transition ${
-              isSilverCard
-                ? 'bg-black/5 border-black/5 text-slate-900 font-bold'
-                : 'bg-slate-955/30 border-white/5 text-slate-300'
-            }`}>
-              <label className="flex items-center gap-2 text-[10px] font-bold cursor-pointer select-none">
-                <input
-                  type="checkbox"
-                  checked={!!instance.signupBonusActive}
-                  onChange={() => toggleSignupBonus(instance.id)}
-                  className="w-3.5 h-3.5 text-purple-600 rounded border-slate-800 focus:ring-purple-500 cursor-pointer"
-                />
-                <span> Secured Sign-Up Bonus (SUB)</span>
-              </label>
-              {instance.signupBonusActive && (
-                <div className="flex items-center gap-1 text-[10px] font-mono shrink-0">
-                  <span className="text-slate-450 font-bold">$</span>
-                  <input
-                    type="number"
-                    min="0"
-                    max="99999"
-                    value={instance.signupBonusValue !== undefined ? instance.signupBonusValue : ''}
-                    onChange={(e) => updateSignupBonusValue(instance.id, Number(e.target.value) || 0)}
-                    className={`w-12 text-center text-[10px] font-black rounded focus:outline-none py-0.5 border ${
-                      isSilverCard
-                        ? 'bg-slate-950/10 border-slate-950/20 text-slate-950'
-                        : 'bg-slate-950 border-slate-800 text-slate-200'
-                    }`}
-                  />
-                </div>
-              )}
-          </div>
-        </div>
-      )}
-            {/* 3. Premium Custom Point Multipliers Editor */}
-        {canCustomizePoints && (
-          <div className="mt-3 pt-3 border-t border-dashed border-white/10 dark:border-black/5 space-y-2 text-left">
-            <p className={`text-[8.5px] font-black uppercase tracking-widest flex items-center gap-1 ${
-              isSilverCard ? 'text-indigo-955' : 'text-amber-400'
-            }`}>
-              <span>⚡ Custom Point Multipliers</span>
-            </p>
-            <div className="grid grid-cols-2 gap-2">
-              {/* Dining */}
-              <div className={`flex items-center justify-between gap-2 border p-1.5 rounded-lg ${
-                isSilverCard 
-                  ? 'bg-black/5 border-black/5 text-slate-900' 
-                  : 'bg-white/10 border-white/10 text-white'
-              }`}>
-                <span className={`text-[9px] font-bold ${isSilverCard ? 'text-slate-850' : 'text-white/80'}`}>🍽️ Dining</span>
-                <input
-                  type="number"
-                  min="1"
-                  max="99"
-                  placeholder={`${defaultDining}x`}
-                  value={instance.multipliers?.dining !== undefined ? instance.multipliers.dining : ''}
-                  onChange={(e) => {
-                    const val = e.target.value === '' ? undefined : Math.max(1, Number(e.target.value));
-                    updateCardMultipliers(instance.id, {
-                      ...instance.multipliers,
-                      dining: val
-                    });
-                  }}
-                  className={`w-9 text-center text-[10px] font-black rounded focus:outline-none py-0.2 ${
-                    isSilverCard 
-                      ? 'bg-slate-950/15 border border-slate-950/20 text-slate-955' 
-                      : 'bg-black/20 border border-white/10 text-white focus:border-amber-400'
-                  }`}
-                />
-              </div>
-              {/* Travel */}
-              <div className={`flex items-center justify-between gap-2 border p-1.5 rounded-lg ${
-                isSilverCard 
-                  ? 'bg-black/5 border-black/5 text-slate-900' 
-                  : 'bg-white/10 border-white/10 text-white'
-              }`}>
-                <span className={`text-[9px] font-bold ${isSilverCard ? 'text-slate-855' : 'text-white/80'}`}>✈️ Travel</span>
-                <input
-                  type="number"
-                  min="1"
-                  max="99"
-                  placeholder={`${defaultTravel}x`}
-                  value={instance.multipliers?.travel !== undefined ? instance.multipliers.travel : ''}
-                  onChange={(e) => {
-                    const val = e.target.value === '' ? undefined : Math.max(1, Number(e.target.value));
-                    updateCardMultipliers(instance.id, {
-                      ...instance.multipliers,
-                      travel: val
-                    });
-                  }}
-                  className={`w-9 text-center text-[10px] font-black rounded focus:outline-none py-0.2 ${
-                    isSilverCard 
-                      ? 'bg-slate-950/15 border border-slate-950/20 text-slate-955' 
-                      : 'bg-black/20 border border-white/10 text-white focus:border-amber-400'
-                  }`}
-                />
-              </div>
-              {/* Shopping / Groceries */}
-              <div className={`flex items-center justify-between gap-2 border p-1.5 rounded-lg ${
-                isSilverCard 
-                  ? 'bg-black/5 border-black/5 text-slate-900' 
-                  : 'bg-white/10 border-white/10 text-white'
-              }`}>
-                <span className={`text-[9px] font-bold ${isSilverCard ? 'text-slate-855' : 'text-white/80'}`}>🛍️ Groceries</span>
-                <input
-                  type="number"
-                  min="1"
-                  max="99"
-                  placeholder={`${defaultShopping}x`}
-                  value={instance.multipliers?.shopping !== undefined ? instance.multipliers.shopping : ''}
-                  onChange={(e) => {
-                    const val = e.target.value === '' ? undefined : Math.max(1, Number(e.target.value));
-                    updateCardMultipliers(instance.id, {
-                      ...instance.multipliers,
-                      shopping: val
-                    });
-                  }}
-                  className={`w-9 text-center text-[10px] font-black rounded focus:outline-none py-0.2 ${
-                    isSilverCard 
-                      ? 'bg-slate-955 border border-slate-950/20 text-slate-955' 
-                      : 'bg-black/20 border border-white/10 text-white focus:border-amber-400'
-                  }`}
-                />
-              </div>
-              {/* Entertainment / Streaming */}
-              <div className={`flex items-center justify-between gap-2 border p-1.5 rounded-lg ${
-                isSilverCard 
-                  ? 'bg-black/5 border-black/5 text-slate-900' 
-                  : 'bg-white/10 border-white/10 text-white'
-              }`}>
-                <span className={`text-[9px] font-bold ${isSilverCard ? 'text-slate-855' : 'text-white/80'}`}>🎬 Streaming</span>
-                <input
-                  type="number"
-                  min="1"
-                  max="99"
-                  placeholder={`${defaultEntertainment}x`}
-                  value={instance.multipliers?.entertainment !== undefined ? instance.multipliers.entertainment : ''}
-                  onChange={(e) => {
-                    const val = e.target.value === '' ? undefined : Math.max(1, Number(e.target.value));
-                    updateCardMultipliers(instance.id, {
-                      ...instance.multipliers,
-                      entertainment: val
-                    });
-                  }}
-                  className={`w-9 text-center text-[10px] font-black rounded focus:outline-none py-0.2 ${
-                    isSilverCard 
-                      ? 'bg-slate-950/15 border border-slate-950/20 text-slate-950' 
-                      : 'bg-black/20 border border-white/10 text-white focus:border-amber-400'
-                  }`}
-                />
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-
-      <div className="mt-3 pt-3 border-t border-white/10 flex items-center justify-between gap-2 flex-wrap">
-        <div className="flex items-center gap-1.5">
-          <label className={`text-[10px] font-bold ${isSilverCard ? 'text-slate-800' : 'text-slate-300'}`}>
-            Opened:
-          </label>
-          <input
-            type="date"
-            value={instance.cardOpenDate}
-            onChange={(e) => setCardOpenDate(instance.id, e.target.value)}
-            className={`text-[11px] rounded px-2 py-0.5 focus:outline-none cursor-pointer font-medium transition border ${
-              isSilverCard
-                ? 'bg-slate-950/10 border-slate-950/10 text-slate-950'
-                : 'bg-slate-955 border border-slate-800 text-slate-300'
-            }`}
-          />
         </div>
 
+      <div className="mt-3 pt-3 border-t border-white/10 flex items-center justify-end gap-2 w-full">
         <button
           type="button"
           onClick={() => setAddOfferInstanceId(instance.id)}
-          className={`flex items-center gap-1 font-bold px-2.5 py-1 rounded-lg text-[9px] transition active:scale-95 cursor-pointer border ${
+          className={`flex-grow flex items-center justify-center gap-1 font-bold py-1.5 rounded-lg text-[9.5px] transition active:scale-95 cursor-pointer border ${
             isSilverCard
-              ? 'bg-slate-950/5 hover:bg-slate-950/10 border-slate-950/10 text-slate-900'
+              ? 'bg-slate-955/5 hover:bg-slate-955/10 border-slate-955/10 text-slate-900'
               : 'bg-white/10 hover:bg-white/20 border-white/10 text-slate-300 dark:bg-slate-955 dark:hover:bg-slate-850 dark:border-slate-800 dark:text-slate-300'
           }`}
         >

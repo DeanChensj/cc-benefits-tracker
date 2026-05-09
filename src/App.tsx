@@ -9,6 +9,7 @@ import { CalendarSyncModal } from './components/CalendarSyncModal';
 import { CreateCardModal } from './components/CreateCardModal';
 import { CreateAwardModal } from './components/CreateAwardModal';
 import { AddOfferModal } from './components/AddOfferModal';
+import { EditCardModal } from './components/EditCardModal';
 import { Toast } from './components/Toast';
 import { DeleteConfirmModal } from './components/DeleteConfirmModal';
 import { ConfirmationModal } from './components/ConfirmationModal';
@@ -90,6 +91,8 @@ function App() {
   const [isWipeDataOpen, setIsWipeDataOpen] = useState(false);
   const [collapsedGroups, setCollapsedGroups] = useState<Record<string, boolean>>({});
   const [selectedTemplates, setSelectedTemplates] = useState<string[]>([]);
+  const [activeEditInstanceId, setActiveEditInstanceId] = useState<string | null>(null);
+  const activeEditInstance = ownedCards.find((c) => c.id === activeEditInstanceId) || null;
 
   const [dismissedWarningCardIds, setDismissedWarningCardIds] = useState<Record<string, boolean>>({});
   
@@ -652,12 +655,7 @@ function App() {
             getCardRecoupedValue={(id) => getCardRecoupedValue(id, ownedCards, activeBenefits, logs)}
             handleAddCard={handleAddCard}
             handleAddCustomCard={handleAddCustomCard}
-            renameCard={renameCard}
-            setCardOpenDate={setCardOpenDate}
             removeInstanceOffer={removeInstanceOffer}
-            updateCardMultipliers={updateCardMultipliers}
-            toggleSignupBonus={toggleSignupBonus}
-            updateSignupBonusValue={updateSignupBonusValue}
             setAddOfferInstanceId={setAddOfferInstanceId}
             setIsCreateModalOpen={setIsCreateModalOpen}
             setIsCreateAwardModalOpen={setIsCreateAwardModalOpen}
@@ -667,6 +665,7 @@ function App() {
             theme={theme}
             selectedTemplates={selectedTemplates}
             setSelectedTemplates={setSelectedTemplates}
+            onEditCard={(instance) => setActiveEditInstanceId(instance.id)}
           />
         )}
       </main>
@@ -858,6 +857,19 @@ function App() {
           </div>
         </div>
       )}
+
+      {/* Edit Card Instance Configuration popover Modal Sheet */}
+      <EditCardModal
+        isOpen={!!activeEditInstanceId}
+        instance={activeEditInstance}
+        onClose={() => setActiveEditInstanceId(null)}
+        updateCardMultipliers={updateCardMultipliers}
+        toggleSignupBonus={toggleSignupBonus}
+        updateSignupBonusValue={updateSignupBonusValue}
+        setCardOpenDate={setCardOpenDate}
+        renameCard={renameCard}
+        themeClass={themeClass}
+      />
 
       {/* Premium Floating Toast Notification */}
       {toast && (

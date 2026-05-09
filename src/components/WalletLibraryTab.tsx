@@ -13,12 +13,7 @@ interface WalletLibraryTabProps {
   getCardRecoupedValue: (id: string) => number;
   handleAddCard: (templateId: string) => void;
   handleAddCustomCard: (card: any) => void;
-  renameCard: (instanceId: string, name: string) => void;
-  setCardOpenDate: (instanceId: string, dateStr: string) => void;
   removeInstanceOffer: (instanceId: string, offerId: string) => void;
-  updateCardMultipliers: (instanceId: string, multipliers: any) => void;
-  toggleSignupBonus: (instanceId: string) => void;
-  updateSignupBonusValue: (instanceId: string, value: number) => void;
   setAddOfferInstanceId: (instanceId: string) => void;
   setIsCreateModalOpen: (open: boolean) => void;
   setIsCreateAwardModalOpen: (open: boolean) => void;
@@ -28,6 +23,7 @@ interface WalletLibraryTabProps {
   theme: 'dark' | 'light';
   selectedTemplates: string[];
   setSelectedTemplates: React.Dispatch<React.SetStateAction<string[]>>;
+  onEditCard: (instance: OwnedCardInstance) => void;
 }
 interface BankHeaderProps {
   bankName: 'Amex' | 'Chase' | 'Citi' | 'Other';
@@ -79,12 +75,7 @@ export function WalletLibraryTab({
   getCardRecoupedValue,
   handleAddCard,
   handleAddCustomCard,
-  renameCard,
-  setCardOpenDate,
   removeInstanceOffer,
-  updateCardMultipliers,
-  toggleSignupBonus,
-  updateSignupBonusValue,
   setAddOfferInstanceId,
   setIsCreateModalOpen,
   setIsCreateAwardModalOpen,
@@ -93,7 +84,8 @@ export function WalletLibraryTab({
   themeClass,
   theme,
   selectedTemplates,
-  setSelectedTemplates
+  setSelectedTemplates,
+  onEditCard
 }: WalletLibraryTabProps) {
   const [deckSubTab, setDeckSubTab] = useState<'cards' | 'awards'>(() => {
     return (localStorage.getItem('cc-tracker-deck-sub-tab') as any) || 'cards';
@@ -101,7 +93,6 @@ export function WalletLibraryTab({
   const [searchQuery, setSearchQuery] = useState('');
   const [templateFeeFilter, setTemplateFeeFilter] = useState<'all' | 'free' | 'mid' | 'premium'>('all');
   const [expandedCardIds, setExpandedCardIds] = useState<Record<string, boolean>>({});
-  const [editingInstanceId, setEditingInstanceId] = useState<string | null>(null);
   const [activeTemplateDetail, setActiveTemplateDetail] = useState<CardTemplate | null>(null);
   const [collapsedWalletBanks, setCollapsedWalletBanks] = useState<Record<string, boolean>>({});
   const [collapsedTemplatesBanks, setCollapsedTemplatesBanks] = useState<Record<string, boolean>>({});
@@ -256,28 +247,23 @@ export function WalletLibraryTab({
                       <div className={`transition-all duration-300 ease-in-out overflow-hidden ${
                         isCollapsed 
                           ? 'max-h-0 opacity-0 pointer-events-none' 
-                          : 'max-h-[1200px] opacity-100 mt-3.5'
+                          : 'max-h-[4000px] opacity-100 mt-3.5'
                       }`}>
                         <div className="grid sm:grid-cols-2 gap-4">
                           {bankCards.map((instance) => (
                             <WalletCreditCard
                               key={instance.id}
                               instance={instance}
-                              editingInstanceId={editingInstanceId}
-                              setEditingInstanceId={setEditingInstanceId}
+                              
                               isCardExpanded={!!expandedCardIds[instance.id]}
                               toggleCardExpanded={toggleCardExpanded}
                               getCardRecoupedValue={getCardRecoupedValue}
                               handleAddCard={handleAddCard}
                               handleAddCustomCard={handleAddCustomCard}
                               handleRemoveCard={setDeleteCardInstanceId}
-                              renameCard={renameCard}
-                              setCardOpenDate={setCardOpenDate}
                               removeInstanceOffer={removeInstanceOffer}
-                              updateCardMultipliers={updateCardMultipliers}
-                              toggleSignupBonus={toggleSignupBonus}
-                              updateSignupBonusValue={updateSignupBonusValue}
                               setAddOfferInstanceId={setAddOfferInstanceId}
+                              onEditCard={onEditCard}
                               themeClass={themeClass}
                             />
                           ))}
@@ -348,7 +334,7 @@ export function WalletLibraryTab({
                     <div className={`transition-all duration-300 ease-in-out overflow-hidden ${
                       isCollapsed 
                         ? 'max-h-0 opacity-0 pointer-events-none' 
-                        : 'max-h-[1500px] opacity-100 mt-3.5'
+                        : 'max-h-[4000px] opacity-100 mt-3.5'
                     }`}>
                       <div className="grid sm:grid-cols-2 gap-4">
                         {bankCards.map((card) => {
@@ -534,7 +520,7 @@ export function WalletLibraryTab({
 
 
 
-      {/* Card Detail popover Sheet Drawer */}
+       {/* Card Detail popover Sheet Drawer */}
       <CardDetailDrawer 
         isOpen={!!activeTemplateDetail}
         card={activeTemplateDetail}
@@ -542,6 +528,7 @@ export function WalletLibraryTab({
         onAdd={() => handleAddCard(activeTemplateDetail ? activeTemplateDetail.id : '')}
         theme={theme}
       />
+
     </div>
   );
 }
