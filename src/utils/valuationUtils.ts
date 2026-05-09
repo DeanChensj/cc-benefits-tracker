@@ -4,7 +4,8 @@ import type { OwnedCardInstance } from '../store/useCardStore';
 import type { ActiveBenefit } from './dateUtils';
 import type { LogEntry } from './logUtils';
 import { parseLogEntry } from './logUtils';
-import { obfuscateKey } from './cryptoUtils';
+import { obfuscateKey, deobfuscateKey } from './cryptoUtils';
+import { CARDS_DB } from '../data/cards.db';
 
 export const getAnnualValue = (benefit: Benefit): number => {
   // Filter out spend-to-earn cashback multipliers (e.g. rate <= 10%)
@@ -26,6 +27,39 @@ export const getStepAmount = (limit: number): number => {
   if (limit <= 50) return 10;
   if (limit <= 250) return 50;
   return 100;
+};
+
+// Parse date represented by the raw key cycle string
+export const getLogEntryDate = (cycle: string, resetPeriod: string): Date => {
+  try {
+    if (resetPeriod === 'monthly') {
+      const [y, m] = cycle.split('-');
+      return new Date(parseInt(y), parseInt(m) - 1, 15);
+    }
+    if (resetPeriod === 'quarterly') {
+      const [y, q] = cycle.split('-Q');
+      const month = (parseInt(q) - 1) * 3 + 1;
+      return new Date(parseInt(y), month, 15);
+    }
+    if (resetPeriod === 'semi-annual') {
+      const [y, half] = cycle.split('-');
+      const month = half === 'H1' ? 2 : 8;
+      return new Date(parseInt(y), month, 15);
+    }
+    if (resetPeriod === 'annual-calendar') {
+      return new Date(parseInt(cycle), 5, 15);
+    }
+    if (resetPeriod === 'annual-anniversary') {
+      const startStr = cycle.split('_to_')[0];
+      return new Date(startStr + 'T12:00:00');
+    }
+    if (resetPeriod === 'fixed') {
+      return new Date(cycle + 'T12:00:00');
+    }
+  } catch (err) {
+    // fallback
+  }
+  return new Date();
 };
 
 // Helper to calculate resolved value dynamically (supports progressive spends, binary logs, and standalone awards)
@@ -54,18 +88,77 @@ export const getResolvedValue = (ab: ActiveBenefit, logs: Record<string, LogEntr
   return ab.benefit.value;
 };
 
-// Helper to calculate recouped value of a specific card instance
+// Helper to calculate recouped value of a specific card instance across historical cycles
 export const getCardRecoupedValue = (
   instanceId: string,
   ownedCards: OwnedCardInstance[],
-  activeBenefits: ActiveBenefit[],
-  logs: Record<string, LogEntry>
+  logs: Record<string, LogEntry>,
+  currentDate = new Date()
 ): number => {
   const instance = ownedCards.find((c) => c.id === instanceId);
-  const subValue = (instance?.signupBonusActive && instance.signupBonusValue !== undefined) 
+  if (!instance) return 0;
+
+  const template = CARDS_DB.find((t) => t.id === instance.templateId);
+  const benefits: Benefit[] = instance.templateId === 'custom'
+    ? (instance.customBenefits || [])
+    : (template?.benefits || []);
+
+  // Append card-instance specific custom offers
+  const offers = instance.instanceOffers || [];
+  const allBenefits = [...benefits, ...offers];
+
+  const subValue = (instance.signupBonusActive && instance.signupBonusValue !== undefined) 
     ? instance.signupBonusValue 
     : 0;
-  const cardBenefits = activeBenefits.filter((ab) => ab.cardInstance && ab.cardInstance.id === instanceId);
-  const sum = cardBenefits.reduce((s, ab) => s + getResolvedValue(ab, logs), subValue);
+
+  // Compute card anniversary boundaries based on simulated/current date
+  const year = currentDate.getFullYear();
+  const openDate = new Date((instance.cardOpenDate || '2026-01-01') + 'T00:00:00');
+  const todayMidnight = new Date(year, currentDate.getMonth(), currentDate.getDate());
+  const currentAnniv = new Date(year, openDate.getMonth(), openDate.getDate());
+
+  const start = todayMidnight < currentAnniv 
+    ? new Date(year - 1, openDate.getMonth(), openDate.getDate())
+    : currentAnniv;
+  const end = todayMidnight < currentAnniv 
+    ? currentAnniv 
+    : new Date(year + 1, openDate.getMonth(), openDate.getDate());
+
+  let sum = subValue;
+
+  // Audit all historical log entries in sandbox store
+  Object.keys(logs).forEach((obfuscatedKey) => {
+    const rawKey = deobfuscateKey(obfuscatedKey);
+    const parts = rawKey.split(':');
+    if (parts.length < 3) return;
+
+    const cycle = parts[0];
+    const logInstanceId = parts[1];
+    const logBenefitId = parts[2];
+
+    if (logInstanceId !== instanceId) return;
+
+    // Find matching benefit metadata
+    const benefit = allBenefits.find((b) => b.id === logBenefitId);
+    if (!benefit) return;
+
+    // Check if the log entry falls within the current anniversary year boundaries
+    const entryDate = getLogEntryDate(cycle, benefit.resetPeriod);
+    if (entryDate < start || entryDate >= end) return;
+
+    const logVal = logs[obfuscatedKey];
+    if (!logVal) return;
+    const parsed = parseLogEntry(logVal);
+    if (!parsed) return;
+
+    if (benefit.spendingLimit) {
+      const spent = parsed.spentProgress || 0;
+      const progressPercent = Math.min(spent / benefit.spendingLimit, 1);
+      sum += benefit.value * progressPercent;
+    } else if (parsed.resolved) {
+      sum += benefit.value;
+    }
+  });
+
   return Math.round(sum * 100) / 100;
 };

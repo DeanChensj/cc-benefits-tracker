@@ -36,6 +36,20 @@ export const ChecklistCardRow = React.memo(function ChecklistCardRow({
 }: ChecklistCardRowProps) {
   const { cardInstance, benefit, logKey, isUsed, loyaltyAward } = ab;
   const isStandalone = !cardInstance;
+
+  const isProgressiveCap = benefit.spendingLimit !== undefined;
+  const isAnnual = benefit.resetPeriod === 'annual-calendar' || benefit.resetPeriod === 'annual-anniversary';
+
+  // Calculate smart expiration threshold based on resetPeriod
+  const threshold = 
+    benefit.resetPeriod === 'monthly' ? 7 :
+    benefit.resetPeriod === 'quarterly' ? 15 : 30;
+
+  // Smart rule: Never show countdowns for annual progressive spending limit caps!
+  const isNearingExpiration = 
+    (isProgressiveCap && isAnnual) 
+      ? false 
+      : (daysLeft !== null && daysLeft <= threshold);
   const badgeText = isStandalone
     ? (loyaltyAward ? (AWARD_TEMPLATES[loyaltyAward.templateId]?.brand || loyaltyAward.customBrand || 'Award') : 'Award')
     : cardInstance.customName;
@@ -104,7 +118,7 @@ export const ChecklistCardRow = React.memo(function ChecklistCardRow({
             
             {isExpired ? (
               <span className="text-[9px] font-bold bg-red-500/10 text-red-500 border border-red-500/20 px-1.5 py-0.2 rounded shrink-0">Expired</span>
-            ) : !isUsed && daysLeft !== null && (
+            ) : !isUsed && isNearingExpiration && daysLeft !== null && (
               <span className={`text-[9px] font-bold border px-1.5 py-0.2 rounded shrink-0 ${
                 daysLeft <= 5 
                   ? 'bg-red-500/10 text-red-500 border-red-500/30 animate-pulse' 

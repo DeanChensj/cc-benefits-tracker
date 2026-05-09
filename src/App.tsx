@@ -789,7 +789,7 @@ function App() {
           <WalletLibraryTab
             ownedCards={ownedCards}
             loyaltyAwards={loyaltyAwards}
-            getCardRecoupedValue={(id) => getCardRecoupedValue(id, ownedCards, activeBenefits, logs)}
+            getCardRecoupedValue={(id) => getCardRecoupedValue(id, ownedCards, logs, currentDate)}
             handleAddCard={handleAddCard}
             handleAddCustomCard={handleAddCustomCard}
             removeInstanceOffer={removeInstanceOffer}
