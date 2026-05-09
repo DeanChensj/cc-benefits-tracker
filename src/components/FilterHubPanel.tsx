@@ -13,6 +13,8 @@ interface FilterHubPanelProps {
   sortBy: string;
   setSortBy: (sort: any) => void;
   themeClass: (dark: string, light: string) => string;
+  isGroupedView: boolean;
+  setIsGroupedView: (isGrouped: boolean) => void;
 }
 
 export function FilterHubPanel({
@@ -26,13 +28,15 @@ export function FilterHubPanel({
   sortBy,
   setSortBy,
   themeClass,
+  isGroupedView,
+  setIsGroupedView,
 }: FilterHubPanelProps) {
   if (activeTab === 'cards') return null;
 
   const showCardFilter = ownedCards.length > 0 || loyaltyAwards.length > 0;
 
   return (
-    <div className={`grid grid-cols-1 ${showCardFilter ? 'sm:grid-cols-3' : 'sm:grid-cols-2'} gap-3 p-3 mb-6 rounded-2xl border backdrop-blur-md transition-all duration-300 ${
+    <div className={`grid grid-cols-1 ${showCardFilter ? 'sm:grid-cols-4' : 'sm:grid-cols-3'} gap-3 p-3 mb-6 rounded-2xl border backdrop-blur-md transition-all duration-300 ${
       themeClass(
         'bg-slate-900/30 border-slate-900/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.03)]',
         'bg-white/70 border-slate-200/80 shadow-[0_8px_20px_rgba(15,23,42,0.035)]'
@@ -111,6 +115,26 @@ export function FilterHubPanel({
           <option value="value-asc">Sort: Value (Low ➔ High)</option>
         </select>
       </div>
+
+      {/* 4. View Mode Toggler */}
+      <button
+        onClick={() => setIsGroupedView(!isGroupedView)}
+        className={`flex items-center justify-between border rounded-xl px-3 py-2.5 text-xs font-bold transition active:scale-95 cursor-pointer select-none gap-2 ${
+          themeClass(
+            'bg-slate-955/40 border-slate-850 hover:border-slate-800 text-slate-300 hover:text-white', 
+            'bg-slate-50/80 border-slate-250/60 hover:border-slate-300 text-slate-750 shadow-sm'
+          )
+        }`}
+      >
+        <span className="truncate flex items-center gap-1.5">
+          {isGroupedView ? '🗂️ Wallet View' : '📋 List View'}
+        </span>
+        <span className={`text-[9px] px-1.5 py-0.5 rounded font-extrabold tracking-wider uppercase ${
+          themeClass('bg-slate-950 text-purple-400', 'bg-white text-purple-600 border border-slate-200')
+        }`}>
+          {isGroupedView ? 'Grouped' : 'Flat'}
+        </span>
+      </button>
     </div>
   );
 }

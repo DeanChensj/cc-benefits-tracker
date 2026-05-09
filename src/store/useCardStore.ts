@@ -31,6 +31,8 @@ export interface CardStore {
   walletLastModified?: number; // Global card wallet modified timestamp
   deletedCardIds?: string[]; // Tombstone cards tracker
   deletedAwardIds?: string[]; // Tombstone awards tracker
+  isGroupedView?: boolean; // Persisted flat/group view mode
+  setIsGroupedView: (isGrouped: boolean) => void;
   
   // Google Drive Sync States
   gdriveToken: string | null; // Temporary in-memory OAuth access token
@@ -142,29 +144,40 @@ export const getYearFromPlainKey = (plainKey: string): number | null => {
   return match ? parseInt(match[1], 10) : null;
 };
 
-// Helper to push updates to Google Drive silently in the background
+// In-memory reference to the background sync debounce timer
+let syncTimeout: any = null;
+
+// Helper to push updates to Google Drive silently in the background with a 5-second debounce buffer
 const syncPushToCloud = async (
   token: string | null,
   ownedCards: OwnedCardInstance[],
   logs: Record<string, LogEntry>
 ) => {
   if (!token) return;
-  try {
-    const fileId = await findSyncFile(token);
-    const storeState = useCardStore.getState();
-    const loyaltyAwards = storeState?.loyaltyAwards || [];
-    const deletedCardIds = storeState?.deletedCardIds || [];
-    const deletedAwardIds = storeState?.deletedAwardIds || [];
-    await uploadSyncFile(token, fileId, { 
-      ownedCards, 
-      logs, 
-      loyaltyAwards,
-      deletedCardIds,
-      deletedAwardIds
-    });
-  } catch (err) {
-    console.error('Silent background cloud sync failed:', err);
+
+  if (syncTimeout) {
+    clearTimeout(syncTimeout);
   }
+
+  syncTimeout = setTimeout(async () => {
+    syncTimeout = null;
+    try {
+      const fileId = await findSyncFile(token);
+      const storeState = useCardStore.getState();
+      const loyaltyAwards = storeState?.loyaltyAwards || [];
+      const deletedCardIds = storeState?.deletedCardIds || [];
+      const deletedAwardIds = storeState?.deletedAwardIds || [];
+      await uploadSyncFile(token, fileId, { 
+        ownedCards, 
+        logs, 
+        loyaltyAwards,
+        deletedCardIds,
+        deletedAwardIds
+      });
+    } catch (err) {
+      console.error('Silent background cloud sync failed:', err);
+    }
+  }, 5000); // 5-second debounce buffer to prevent high-frequency API throttling
 };
 
 export const useCardStore = create<CardStore>()(
@@ -177,6 +190,7 @@ export const useCardStore = create<CardStore>()(
       deletedAwardIds: [],
       theme: (typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: light)').matches) ? 'light' : 'dark',
       language: (typeof navigator !== 'undefined' && navigator.language.startsWith('zh')) ? 'zh' : 'en',
+      isGroupedView: false,
       
       // Google Drive Initial States (Not persisted in LocalStorage for absolute safety!)
       gdriveToken: null,
@@ -325,6 +339,11 @@ export const useCardStore = create<CardStore>()(
       toggleLanguage: () =>
         set((state) => ({
           language: state.language === 'zh' ? 'en' : 'zh',
+        })),
+
+      setIsGroupedView: (isGrouped) =>
+        set(() => ({
+          isGroupedView: isGrouped,
         })),
 
       // Google Drive Actions
@@ -731,6 +750,7 @@ export const useCardStore = create<CardStore>()(
           walletLastModified: state.walletLastModified,
           deletedCardIds: state.deletedCardIds || [],
           deletedAwardIds: state.deletedAwardIds || [],
+          isGroupedView: state.isGroupedView || false,
           theme: state.theme,
           language: state.language,
           customClientId: state.customClientId,
