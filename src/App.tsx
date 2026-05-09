@@ -49,7 +49,6 @@ function App() {
     logs, 
     theme,
     toggleTheme,
-    language,
     gdriveEmail,
     syncStatus,
     lastSyncedTime,
@@ -711,7 +710,7 @@ function App() {
                           }}
                           className="w-full bg-gradient-to-tr from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-550 text-white font-bold py-2 rounded-lg text-[10px] transition active:scale-95 shadow shadow-purple-500/10 cursor-pointer"
                         >
-                          {language === 'zh' ? '立即同步' : 'Sync Now'}
+                          Sync Now
                         </button>
                         <button
                           onClick={() => {
@@ -755,9 +754,7 @@ function App() {
                         themeClass('text-slate-500 hover:text-slate-450', 'text-slate-450 hover:text-slate-600')
                       }`}
                     >
-                      {showAdvancedSync 
-                        ? (language === 'zh' ? '▼ 开发者选项' : '▼ Developer Options') 
-                        : (language === 'zh' ? '▶ 开发者选项' : '▶ Developer Options')}
+                      {showAdvancedSync ? '▼ Developer Options' : '▶ Developer Options'}
                     </button>
 
                     {showAdvancedSync && (
@@ -927,7 +924,7 @@ function App() {
                   : themeClass('text-slate-400 hover:text-white hover:bg-slate-855', 'text-slate-505 hover:text-slate-900 hover:bg-slate-300/30')
               }`}
             >
-              {language === 'zh' ? '我的钱包' : 'My Wallet'} ({ownedCards.length + loyaltyAwards.length})
+              My Wallet ({ownedCards.length + loyaltyAwards.length})
             </button>
           </div>
 
@@ -958,7 +955,6 @@ function App() {
           sortBy={sortBy}
           setSortBy={setSortBy}
           themeClass={themeClass}
-          language={language}
         />
 
         {/* TABS 1 & 2: CHECKLIST VIEW */}
@@ -977,8 +973,70 @@ function App() {
                 </p>
               </div>
             ) : (
-              <div className="space-y-3">
-                {sortedBenefits.map((ab) => {
+              <div className="space-y-4">
+                {/* Quick-Action Monthly Repeating Shelf */}
+                {(() => {
+                  const quickMonthlyBenefits = activeBenefits.filter((ab) => {
+                    if (ab.isUsed) return false;
+                    return ab.benefit.resetPeriod === 'monthly';
+                  });
+
+                  if (quickMonthlyBenefits.length === 0) return null;
+
+                  return (
+                    <div className="mb-4 animate-fade-in">
+                      <h4 className={`text-[9px] font-black uppercase tracking-wider mb-2 flex items-center gap-1.5 ${
+                        themeClass('text-slate-400', 'text-slate-500')
+                      }`}>
+                        <span className="animate-pulse text-purple-400">⚡</span>
+                        Quick-Log Monthly Credits
+                      </h4>
+                      <div className="flex gap-2 overflow-x-auto pb-2 pt-1 scrollbar-none -mx-4 px-4">
+                        {quickMonthlyBenefits.map((ab) => {
+                          const cardLabel = ab.cardInstance 
+                            ? ab.cardInstance.customName 
+                            : (ab.loyaltyAward ? (AWARD_TEMPLATES[ab.loyaltyAward.templateId]?.brand || ab.loyaltyAward.customBrand || 'Award') : 'Award');
+                          
+                          const emoji = ab.benefit.category === 'dining' ? '🍽️' :
+                            ab.benefit.category === 'travel' ? '✈️' :
+                            ab.benefit.category === 'shopping' ? '🛍️' :
+                            ab.benefit.category === 'entertainment' ? '🎭' : '💳';
+
+                          return (
+                            <button
+                              key={ab.logKey}
+                              onClick={() => {
+                                if (ab.benefit.spendingLimit) {
+                                  updateProgressLog(ab.logKey, ab.benefit.spendingLimit);
+                                } else {
+                                  toggleBenefit(ab.logKey);
+                                }
+                                showToast(`🎉 Claimed $${ab.benefit.value} ${ab.benefit.name}!`);
+                              }}
+                              className={`flex items-center gap-2 px-3 py-2 rounded-xl border text-left transition active:scale-95 hover:scale-[1.01] duration-200 cursor-pointer shrink-0 shadow-sm ${
+                                themeClass('bg-slate-900/50 hover:bg-slate-900 border-slate-850 text-slate-200 hover:border-purple-900/30', 'bg-white hover:bg-slate-50 border-slate-200 text-slate-750 hover:border-purple-200')
+                              }`}
+                            >
+                              <div className="text-xs shrink-0">{emoji}</div>
+                              <div className="min-w-0 max-w-[120px]">
+                                <p className={`text-[7px] font-bold uppercase tracking-wide truncate opacity-70`}>{cardLabel}</p>
+                                <p className="text-[9px] font-extrabold truncate mt-0.5">{ab.benefit.name}</p>
+                              </div>
+                              <div className={`text-[8px] font-extrabold px-1.5 py-0.5 rounded-lg shrink-0 ml-1 ${
+                                themeClass('bg-purple-500/10 text-purple-400 border border-purple-500/20', 'bg-purple-50 text-purple-600 border border-purple-200')
+                              }`}>
+                                ${ab.benefit.value}
+                              </div>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  );
+                })()}
+
+                <div className="space-y-3">
+                  {sortedBenefits.map((ab) => {
                   const isExpired = ab.loyaltyAward 
                     ? (!ab.isUsed && !!ab.benefit.expirationDate && new Date(ab.benefit.expirationDate + 'T00:00:00') < currentDate)
                     : (!ab.isUsed && ab.benefit.resetPeriod === 'fixed' && !!ab.benefit.expirationDate && new Date(ab.benefit.expirationDate + 'T00:00:00') < currentDate);
@@ -1016,7 +1074,8 @@ function App() {
                   );
                 })}
               </div>
-            )}
+            </div>
+          )}
           </section>
         )}
 
@@ -1414,9 +1473,9 @@ function App() {
                                  <span className={`text-[9px] font-extrabold px-1 select-none font-mono ${
                                    isFullyUsed ? 'text-emerald-500 dark:text-emerald-400 line-through' : themeClass('text-slate-400', 'text-slate-700')
                                  }`}>
-                                   {language === 'zh' 
-                                     ? `已用 ${usedQty}/${award.quantity}` 
-                                     : `Used ${usedQty}/${award.quantity}`}
+                                    { `Used ${usedQty}/${award.quantity}` }
+
+
                                  </span>
                                  
                                  <button
@@ -1503,13 +1562,13 @@ function App() {
             themeClass('bg-slate-900/50 border-slate-850/60 text-slate-400', 'bg-slate-100/80 border-slate-200 text-slate-600')
           }`}>
             <span className="text-xs shrink-0">🛡️</span>
-            <span>{language === 'zh' ? '100% 本地数据存储' : '100% Local Data'}</span>
+            <span>100% Local Data</span>
           </div>
           <div className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[9.5px] font-extrabold border shadow-sm ${
             themeClass('bg-slate-900/50 border-slate-850/60 text-slate-400', 'bg-slate-100/80 border-slate-200 text-slate-600')
           }`}>
             <span className="text-xs shrink-0">🚫</span>
-            <span>{language === 'zh' ? '无 Plaid / 无需网银登录' : 'No Plaid / No Bank Logins'}</span>
+            <span>No Plaid / No Bank Logins</span>
           </div>
           <a
             href="https://github.com/DeanChensj/cc-benefits-tracker"
@@ -1520,17 +1579,15 @@ function App() {
             }`}
           >
             <span className="text-xs shrink-0">⭐</span>
-            <span>{language === 'zh' ? 'GitHub 开源可审计' : 'Open Source on GitHub'}</span>
+            <span>Open Source on GitHub</span>
           </a>
         </div>
 
         <p className={`text-[9px] font-bold tracking-wider uppercase ${themeClass('text-slate-500/80', 'text-slate-450')}`}>
-          💳 {language === 'zh' ? '信用卡权益追踪器 • 用心制作，献给聪明的卡神' : 'CC Benefits Tracker • Made with Passion for Savvy Churners'}
+          💳 CC Benefits Tracker • Made with Passion for Savvy Churners
         </p>
         <p className="text-[8.5px] leading-relaxed max-w-md mx-auto opacity-70 text-slate-500 dark:text-slate-450 font-medium">
-          🔒 {language === 'zh' 
-            ? '为了确保极致的渲染速度并最小化网络流量消耗，超过 24 个月前的历史打卡记录将被自动修剪清理。'
-            : 'Historical logs older than 24 months are automatically pruned to optimize loading speeds and minimize cellular data usage.'}
+          🔒 Historical logs older than 24 months are automatically pruned to optimize loading speeds and minimize cellular data usage.
         </p>
       </footer>
 

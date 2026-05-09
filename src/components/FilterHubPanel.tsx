@@ -13,7 +13,6 @@ interface FilterHubPanelProps {
   sortBy: string;
   setSortBy: (sort: any) => void;
   themeClass: (dark: string, light: string) => string;
-  language: 'zh' | 'en';
 }
 
 export function FilterHubPanel({
@@ -27,7 +26,6 @@ export function FilterHubPanel({
   sortBy,
   setSortBy,
   themeClass,
-  language,
 }: FilterHubPanelProps) {
   if (activeTab === 'cards') return null;
 
@@ -50,47 +48,25 @@ export function FilterHubPanel({
           onChange={(e) => setFilterCategory(e.target.value)}
           className="w-full bg-transparent outline-none border-none cursor-pointer font-semibold text-xs focus:ring-0"
         >
-          <option value="all">{language === 'zh' ? '所有权益类别' : 'All Categories'}</option>
+          <option value="all">All Categories</option>
           {filterCardInstanceId === 'awards' ? (
-            language === 'zh' ? (
-              <>
-                <option value="fnr">免房券 (FNA)</option>
-                <option value="sua">套房升级券 (SUA)</option>
-                <option value="goh">尊荣宾客券 (GOH)</option>
-                <option value="companion">同行票证 (Companion)</option>
-                <option value="swu">全球升级券 (SWU)</option>
-                <option value="points">里程点数余额</option>
-                <option value="other">其他常客卡券</option>
-              </>
-            ) : (
-              <>
-                <option value="fnr">Free Night (FNA)</option>
-                <option value="sua">Suite Upgrade (SUA)</option>
-                <option value="goh">Guest of Honor (GOH)</option>
-                <option value="companion">Companion Pass</option>
-                <option value="swu">Systemwide Upgrade (SWU)</option>
-                <option value="points">Points & Miles</option>
-                <option value="other">Other Vouchers</option>
-              </>
-            )
+            <>
+              <option value="fnr">Free Night (FNA)</option>
+              <option value="sua">Suite Upgrade (SUA)</option>
+              <option value="goh">Guest of Honor (GOH)</option>
+              <option value="companion">Companion Pass</option>
+              <option value="swu">Systemwide Upgrade (SWU)</option>
+              <option value="points">Points & Miles</option>
+              <option value="other">Other Vouchers</option>
+            </>
           ) : (
-            language === 'zh' ? (
-              <>
-                <option value="dining">餐饮美食 (Dining)</option>
-                <option value="travel">旅行交通 (Travel)</option>
-                <option value="shopping">百货购物 (Shopping)</option>
-                <option value="entertainment">休闲娱乐 (Entertainment)</option>
-                <option value="other">其他刷卡福利</option>
-              </>
-            ) : (
-              <>
-                <option value="dining">Dining</option>
-                <option value="travel">Travel</option>
-                <option value="shopping">Shopping</option>
-                <option value="entertainment">Entertainment</option>
-                <option value="other">Other</option>
-              </>
-            )
+            <>
+              <option value="dining">Dining</option>
+              <option value="travel">Travel</option>
+              <option value="shopping">Shopping</option>
+              <option value="entertainment">Entertainment</option>
+              <option value="other">Other</option>
+            </>
           )}
         </select>
       </div>
