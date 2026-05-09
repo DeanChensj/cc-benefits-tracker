@@ -1882,7 +1882,7 @@ function App() {
                 }}
                 className="px-4.5 py-2 rounded-xl text-[10px] font-extrabold bg-gradient-to-tr from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-550 text-white transition cursor-pointer active:scale-95 shadow-md shadow-purple-500/20"
               >
-                Sync to Wallet
+                Add to Wallet
               </button>
             </div>
           </div>
