@@ -4,7 +4,7 @@ import { CARDS_DB, CARD_MULTIPLIERS, AWARD_TEMPLATES } from './data/cards.db';
 import type { CardTemplate, Benefit, LoyaltyAward } from './data/cards.db';
 import { useCardStore, getLogKey } from './store/useCardStore';
 import type { OwnedCardInstance } from './store/useCardStore';
-import { SpentAssistant } from './components/SpentAssistant';
+import { WalletAiAssistant } from './components/WalletAiAssistant';
 import { CalendarSyncModal } from './components/CalendarSyncModal';
 import { CreateCardModal } from './components/CreateCardModal';
 import { CreateAwardModal } from './components/CreateAwardModal';
@@ -1606,8 +1606,8 @@ function App() {
         type="danger"
       />
 
-      {/* SpentAssistant AI Drawer */}
-      <SpentAssistant remainingBenefits={remainingBenefits} logs={logs} theme={theme} showToast={showToast} />
+      {/* Wallet AI Assistant Drawer */}
+      <WalletAiAssistant remainingBenefits={remainingBenefits} logs={logs} theme={theme} showToast={showToast} ownedCards={ownedCards} loyaltyAwards={loyaltyAwards} />
 
       {/* Google Drive Disconnect Confirmation Modal */}
       <ConfirmationModal
