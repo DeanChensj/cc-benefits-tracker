@@ -1,7 +1,6 @@
 import { Plus, Trash2, ExternalLink, Edit3, ChevronDown } from 'lucide-react';
 import { CARDS_DB } from '../data/cards.db';
 import type { OwnedCardInstance } from '../store/useCardStore';
-import { getCardPotentialValue } from '../utils/valuationUtils';
 
 interface WalletCreditCardProps {
   instance: OwnedCardInstance;
@@ -45,7 +44,7 @@ export function WalletCreditCard({
   const isSilverCard = instance.templateId === 'amex-platinum' || 
                        instance.templateId === 'amex-biz-platinum' || 
                        instance.templateId === 'amex-gold';
-
+  const isSinglePerkCard = benefits.length <= 1 && (!instance.instanceOffers || instance.instanceOffers.length === 0);
 
 
   return (
@@ -157,16 +156,7 @@ export function WalletCreditCard({
         <Edit3 className={`w-3 h-3 shrink-0 ${isSilverCard ? 'text-slate-850/60' : 'text-slate-400'}`} />
       </h4>
 
-      {(() => {
-        const potentialVal = getCardPotentialValue(benefits);
-        return (
-          <p className={`text-[11px] mt-0.5 font-medium ${isSilverCard ? 'text-slate-900/80 font-semibold' : 'text-slate-300'}`}>
-            {potentialVal > 0 
-              ? `${benefits.length} perks (Potential value: $${potentialVal}/yr)` 
-              : 'Cashback Multipliers Tracker'}
-          </p>
-        );
-      })()}
+
 
       {/* Annual Fee Recoup Progress circular ring */}
       {cardFee > 0 ? (
@@ -238,35 +228,39 @@ export function WalletCreditCard({
         </p>
       )}
 
-      {/* 1. Accordion Expand Toggle Bar */}
-      <button
-        type="button"
-        onClick={(e) => {
-          e.stopPropagation();
-          toggleCardExpanded(instance.id);
-        }}
-        className={`w-full mt-3 px-2.5 py-1.5 rounded-lg border text-[9px] font-extrabold tracking-wider uppercase flex items-center justify-between transition active:scale-[0.98] cursor-pointer ${
-          isSilverCard
-            ? 'bg-slate-950/5 border-slate-950/10 text-slate-900 hover:bg-slate-950/10'
-            : 'bg-white/5 hover:bg-white/10 border-white/5 text-slate-300 hover:text-white'
-        }`}
-      >
-        <span className="flex items-center gap-1.5">
-          {isCardExpanded ? '▲ Hide Details' : '▼ Show Details'}
-          <span className={`text-[8px] opacity-75 lowercase font-semibold px-1 rounded ${
-            isSilverCard ? 'bg-black/10' : 'bg-white/10'
-          }`}>
-            {benefits.length} perks {instance.instanceOffers && instance.instanceOffers.length > 0 ? `+ ${instance.instanceOffers.length} offers` : ''}
+      {/* 1. Accordion Expand Toggle Bar (Rendered only if there are multiple perks/offers) */}
+      {!isSinglePerkCard && (
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            toggleCardExpanded(instance.id);
+          }}
+          className={`w-full mt-3 px-2.5 py-1.5 rounded-lg border text-[9px] font-extrabold tracking-wider uppercase flex items-center justify-between transition active:scale-[0.98] cursor-pointer ${
+            isSilverCard
+              ? 'bg-slate-955/5 border-slate-955/10 text-slate-900 hover:bg-slate-955/10'
+              : 'bg-white/5 hover:bg-white/10 border-white/5 text-slate-300 hover:text-white'
+          }`}
+        >
+          <span className="flex items-center gap-1.5">
+            {isCardExpanded ? '▲ Hide Details' : '▼ Show Details'}
+            <span className={`text-[8px] opacity-75 lowercase font-semibold px-1 rounded ${
+              isSilverCard ? 'bg-black/10' : 'bg-white/10'
+            }`}>
+              {benefits.length} perks {instance.instanceOffers && instance.instanceOffers.length > 0 ? `+ ${instance.instanceOffers.length} offers` : ''}
+            </span>
           </span>
-        </span>
-        <ChevronDown className={`w-3 h-3 transition-transform duration-300 transform ${
-          isCardExpanded ? 'rotate-180' : 'rotate-0'
-        }`} />
-      </button>
+          <ChevronDown className={`w-3 h-3 transition-transform duration-300 transform ${
+            isCardExpanded ? 'rotate-180' : 'rotate-0'
+          }`} />
+        </button>
+      )}
 
       {/* 2. Collapsible Drawer Panel */}
       <div className={`transition-all duration-300 ease-in-out overflow-hidden ${
-        isCardExpanded
+        isSinglePerkCard
+          ? 'border-t border-dashed border-white/10 dark:border-black/5 pt-3 mt-3 opacity-100 max-h-[200px]'
+          : isCardExpanded
           ? 'max-h-[1200px] opacity-100 border-t border-dashed border-white/10 dark:border-black/5 pt-3 mt-3'
           : 'max-h-0 opacity-0 pointer-events-none'
       }`}>
