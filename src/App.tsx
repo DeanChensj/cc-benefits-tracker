@@ -20,6 +20,7 @@ import { FilterHubPanel } from './components/FilterHubPanel';
 import { ChecklistCardRow } from './components/ChecklistCardRow';
 import { WalletCreditCard } from './components/WalletCreditCard';
 import { SavingsWrappedModal } from './components/SavingsWrappedModal';
+import { CloudSyncBanner } from './components/CloudSyncBanner';
 import { getLocalDateString, getDaysLeft, getDaysLeftForDate, getUrgencyScore, getAnnualFeeWarningInfo, parseLogEntry, obfuscateKey, getCardPotentialValue } from './utils/dateUtils';
 import { loadGoogleGsiScript, requestGDriveToken, fetchUserEmail } from './utils/gdrive';
 import { 
@@ -32,8 +33,6 @@ import {
   Plus,
   Sun,
   Moon,
-  Cloud,
-  CloudOff,
   Calendar,
   Trash2,
   DollarSign,
@@ -58,7 +57,6 @@ function App() {
     setGDriveCredentials,
     setSyncStatus,
     customClientId,
-    setCustomClientId,
     addCard, 
     addCardsBatch,
     addCustomCard,
@@ -105,8 +103,6 @@ function App() {
   const [activeTemplateDetail, setActiveTemplateDetail] = useState<CardTemplate | null>(null);
   const [deckSubTab, setDeckSubTab] = useState<'cards' | 'awards'>(() => (localStorage.getItem('cc-tracker-deck-sub-tab') as any) || 'cards');
   const [isCreateAwardModalOpen, setIsCreateAwardModalOpen] = useState(false);
-  const [isSyncDropdownOpen, setIsSyncDropdownOpen] = useState(false);
-  const [showAdvancedSync, setShowAdvancedSync] = useState(false);
   const [isWrappedModalOpen, setIsWrappedModalOpen] = useState(false);
   const [addOfferInstanceId, setAddOfferInstanceId] = useState<string | null>(null);
   const [deleteCardInstanceId, setDeleteCardInstanceId] = useState<string | null>(null);
@@ -632,167 +628,17 @@ function App() {
             )}
 
             {/* Google Drive Cloud Sync Widget */}
-            <div className="relative">
-              <button
-                onClick={() => setIsSyncDropdownOpen(!isSyncDropdownOpen)}
-                className={`p-2 rounded-xl border transition duration-300 active:scale-90 cursor-pointer ${
-                  syncStatus === 'synced'
-                    ? themeClass('bg-emerald-500/10 border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/15', 'bg-green-50 border-green-200 text-green-600 hover:bg-green-100 shadow-sm')
-                    : syncStatus === 'syncing'
-                    ? themeClass('bg-purple-500/10 border-purple-500/30 text-purple-400 animate-pulse', 'bg-purple-50 border-purple-200 text-purple-600 shadow-sm')
-                    : syncStatus === 'error'
-                    ? themeClass('bg-red-500/10 border-red-500/30 text-red-400 hover:bg-red-500/15', 'bg-red-50 border-red-200 text-red-600 hover:bg-red-100 shadow-sm')
-                    : themeClass('bg-slate-900 border-slate-800 hover:bg-slate-800 text-slate-400', 'bg-white border-slate-250 hover:bg-slate-100 text-slate-500 shadow-sm')
-                }`}
-                title="Google Drive Cloud Sync"
-              >
-                {syncStatus === 'synced' ? (
-                  <Cloud className="w-4 h-4" />
-                ) : (
-                  <CloudOff className="w-4 h-4" />
-                )}
-              </button>
-
-              {isSyncDropdownOpen && (
-                <div className={`border rounded-xl p-4 shadow-2xl z-50 animate-scale-up flex flex-col gap-3 max-sm:fixed max-sm:top-16 max-sm:right-4 max-sm:left-4 max-sm:w-auto sm:absolute sm:right-0 sm:w-64 sm:mt-2 ${
-                  themeClass('bg-slate-900/95 border-slate-800 text-slate-200 backdrop-blur-xl shadow-slate-950/50', 'bg-white/95 border-slate-200 text-slate-800 backdrop-blur-xl shadow-slate-300/30')
-                }`}>
-                  <div className="flex items-start gap-2.5">
-                    <div className={`p-2 rounded-lg shrink-0 ${
-                      syncStatus === 'synced' 
-                        ? 'bg-green-500/10 text-green-500' 
-                        : syncStatus === 'syncing' 
-                        ? 'bg-purple-500/10 text-purple-500 animate-pulse'
-                        : syncStatus === 'error'
-                        ? 'bg-red-500/10 text-red-500'
-                        : themeClass('bg-slate-950 text-slate-400', 'bg-slate-100 text-slate-505')
-                    }`}>
-                      {syncStatus === 'synced' ? (
-                        <Cloud className="w-4.5 h-4.5" />
-                      ) : (
-                        <CloudOff className="w-4.5 h-4.5" />
-                      )}
-                    </div>
-                    <div className="space-y-0.5 text-left min-w-0">
-                      <h5 className={`font-bold text-xs ${themeClass('text-white', 'text-slate-900')}`}>
-                        Google Drive Sync
-                      </h5>
-                      <p className={`text-[10px] leading-normal ${themeClass('text-slate-400', 'text-slate-550')}`}>
-                        {syncStatus === 'synced' 
-                          ? 'Automatic backup is active.'
-                          : 'Private sandboxed appData cloud backup.'}
-                      </p>
-                    </div>
-                  </div>
-
-                  {syncStatus === 'synced' && (
-                    <div className={`p-2.5 rounded-xl border text-[10px] text-left space-y-1 ${
-                      themeClass('bg-slate-950 border-slate-850 text-slate-300', 'bg-slate-50 border-slate-200 text-slate-750 shadow-inner')
-                    }`}>
-                      <p className="truncate font-bold">Account: {gdriveEmail}</p>
-                      <p className="opacity-80 font-medium">Last synced: {lastSyncedTime || 'Just now'}</p>
-                    </div>
-                  )}
-
-                  <div className="flex flex-col gap-2 pt-1 border-t border-dashed border-slate-200/40 dark:border-slate-800/40">
-                    {syncStatus === 'synced' ? (
-                      <>
-                        <button
-                          onClick={async () => {
-                            setIsSyncDropdownOpen(false);
-                            setSyncStatus('syncing');
-                            try {
-                              let token = useCardStore.getState().gdriveToken;
-                              if (!token) {
-                                token = await requestGDriveToken(customClientId);
-                                const email = await fetchUserEmail(token);
-                                setGDriveCredentials(token, email);
-                              }
-                              await useCardStore.getState().syncWithGDrive();
-                              showToast('🎉 Synchronized with Google Drive successfully!');
-                            } catch (err) {
-                              console.error('Manual Force Sync failed:', err);
-                              setSyncStatus('error');
-                              showToast('❌ Failed to synchronize. Please try again.', 'error');
-                            }
-                          }}
-                          className="w-full bg-gradient-to-tr from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-550 text-white font-bold py-2 rounded-lg text-[10px] transition active:scale-95 shadow shadow-purple-500/10 cursor-pointer"
-                        >
-                          Sync Now
-                        </button>
-                        <button
-                          onClick={() => {
-                            handleDisconnectGoogleDrive();
-                            setIsSyncDropdownOpen(false);
-                          }}
-                          className={`w-full text-center font-bold text-[10px] py-1.5 rounded-lg border transition cursor-pointer ${
-                            themeClass('bg-slate-800 hover:bg-slate-750 border-slate-750 text-slate-300', 'bg-slate-50 hover:bg-slate-100 border-slate-200 text-slate-600')
-                          }`}
-                        >
-                          Disconnect Account
-                        </button>
-                      </>
-                    ) : syncStatus === 'syncing' ? (
-                      <div className="flex items-center justify-center gap-1.5 py-2 text-[10px] font-bold text-purple-500 animate-pulse">
-                        <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                        <span>Syncing...</span>
-                      </div>
-                    ) : (
-                      <button
-                        onClick={() => {
-                          handleLinkGoogleDrive();
-                          setIsSyncDropdownOpen(false);
-                        }}
-                        className="w-full bg-gradient-to-tr from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-550 text-white font-bold py-2 rounded-lg text-[10px] transition active:scale-95 shadow shadow-purple-500/10 cursor-pointer"
-                      >
-                        Connect Google Drive
-                      </button>
-                    )}
-                  </div>
-
-                  {/* Advanced Developer Settings Accordion */}
-                  <div className="mt-1 pt-2 border-t border-dashed border-slate-205/40 dark:border-slate-800 text-left">
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setShowAdvancedSync(!showAdvancedSync);
-                      }}
-                      className={`text-[8px] font-bold tracking-wide uppercase flex items-center gap-0.5 transition cursor-pointer ${
-                        themeClass('text-slate-500 hover:text-slate-450', 'text-slate-450 hover:text-slate-600')
-                      }`}
-                    >
-                      {showAdvancedSync ? '▼ Developer Options' : '▶ Developer Options'}
-                    </button>
-
-                    {showAdvancedSync && (
-                      <div className="mt-2 space-y-2 animate-fade-in" onClick={(e) => e.stopPropagation()}>
-                        <div>
-                          <label className={`block text-[7px] font-bold uppercase tracking-wider mb-1 ${
-                            themeClass('text-slate-505', 'text-slate-555')
-                          }`}>
-                            Custom Google Client ID
-                          </label>
-                          <input
-                            type="text"
-                            placeholder="Pasted client ID..."
-                            value={customClientId || ''}
-                            onChange={(e) => setCustomClientId(e.target.value || null)}
-                            className={`w-full text-[9px] rounded px-2 py-1 border focus:outline-none font-mono transition ${
-                              themeClass('bg-slate-955 border-slate-850 text-slate-200 focus:border-purple-500', 'bg-slate-50 border-slate-200 text-slate-800 focus:border-purple-500')
-                            }`}
-                          />
-                        </div>
-                        <p className="text-[8px] leading-normal opacity-75 text-slate-500">
-                          Paste your own Google Cloud Web Client ID with authorized origins matching your site.
-                        </p>
-                      </div>
-                    )}
-                  </div>
-
-                 </div>
-              )}
-            </div>
+            <CloudSyncBanner
+              syncStatus={syncStatus}
+              setSyncStatus={setSyncStatus}
+              gdriveEmail={gdriveEmail}
+              lastSyncedTime={lastSyncedTime}
+              setGDriveCredentials={setGDriveCredentials}
+              handleLinkGoogleDrive={handleLinkGoogleDrive}
+              handleDisconnectGoogleDrive={handleDisconnectGoogleDrive}
+              showToast={showToast}
+              themeClass={themeClass}
+            />
 
             {/* Theme Toggle Button */}
             <button
@@ -1145,10 +991,11 @@ function App() {
                             </div>
 
                             {/* Group checklist rows */}
-                            {!isCollapsed && (
-                              <div className={`p-3 space-y-2.5 ${
-                                themeClass('bg-slate-955/20', 'bg-white/50')
-                              }`}>
+                            <div className={`transition-all duration-300 ease-in-out overflow-hidden ${
+                              isCollapsed 
+                                ? 'max-h-0 opacity-0 pointer-events-none' 
+                                : 'max-h-[1200px] opacity-100 p-3 space-y-2.5'
+                            } ${themeClass('bg-slate-955/20', 'bg-white/50')}`}>
                                 {items.map((ab) => {
                                   const isExpired = ab.loyaltyAward 
                                     ? (!ab.isUsed && !!ab.benefit.expirationDate && new Date(ab.benefit.expirationDate + 'T00:00:00') < currentDate)
@@ -1187,7 +1034,6 @@ function App() {
                                   );
                                 })}
                               </div>
-                            )}
                           </div>
                         );
                       })}
