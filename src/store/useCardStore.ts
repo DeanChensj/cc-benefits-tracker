@@ -74,6 +74,7 @@ export interface CardStore {
   addLoyaltyAward: (award: Omit<LoyaltyAward, 'id' | 'usedQuantity' | 'lastModified'>) => void;
   toggleLoyaltyAward: (awardId: string) => void;
   deleteLoyaltyAward: (awardId: string) => void;
+  updateAwardUsedQuantity: (awardId: string, qty: number) => void;
   updateLoyaltyAward: (awardId: string, updates: Partial<LoyaltyAward>) => void;
 
   // Database Slimming Actions
@@ -663,7 +664,21 @@ export const useCardStore = create<CardStore>()(
         set((state) => {
           const nextAwards = state.loyaltyAwards.map((a) =>
             a.id === awardId
-              ? { ...a, usedQuantity: a.usedQuantity === a.quantity ? 0 : a.quantity, lastModified: Date.now() }
+              ? { ...a, usedQuantity: a.usedQuantity >= a.quantity ? 0 : a.usedQuantity + 1, lastModified: Date.now() }
+              : a
+          );
+          syncPushToCloud(state.gdriveToken, state.ownedCards, state.logs);
+          return {
+            loyaltyAwards: nextAwards,
+            walletLastModified: Date.now()
+          };
+        }),
+
+      updateAwardUsedQuantity: (awardId, qty) =>
+        set((state) => {
+          const nextAwards = state.loyaltyAwards.map((a) =>
+            a.id === awardId
+              ? { ...a, usedQuantity: Math.min(Math.max(0, qty), a.quantity), lastModified: Date.now() }
               : a
           );
           syncPushToCloud(state.gdriveToken, state.ownedCards, state.logs);

@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState } from 'react';
 import { Search } from 'lucide-react';
 import { FilterHubPanel } from './FilterHubPanel';
 import { ChecklistCardRow } from './ChecklistCardRow';
@@ -18,7 +18,6 @@ interface ActiveChecklistTabProps {
   themeClass: (dark: string, light: string) => string;
   updateProgressLog: (key: string, spent: number) => void;
   toggleBenefit: (key: string) => void;
-  toggleLoyaltyAward: (key: string) => void;
   ownedCards: OwnedCardInstance[];
   loyaltyAwards: LoyaltyAward[];
   isGroupedView: boolean;
@@ -35,7 +34,6 @@ export function ActiveChecklistTab({
   themeClass,
   updateProgressLog,
   toggleBenefit,
-  toggleLoyaltyAward,
   ownedCards,
   loyaltyAwards,
   isGroupedView,
@@ -47,15 +45,6 @@ export function ActiveChecklistTab({
   const [filterCategory, setFilterCategory] = useState('all');
   const [filterCardInstanceId, setFilterCardInstanceId] = useState('all');
   const [sortBy, setSortBy] = useState<'urgency' | 'expiry' | 'value-desc' | 'value-asc'>('urgency');
-
-  const handleToggleBenefit = useCallback((key: string) => {
-    const ab = activeBenefits.find(b => b.logKey === key);
-    if (ab?.loyaltyAward) {
-      toggleLoyaltyAward(key);
-    } else {
-      toggleBenefit(key);
-    }
-  }, [activeBenefits, toggleBenefit, toggleLoyaltyAward]);
 
   // Filtered benefits for view
   const filteredBenefits = activeBenefits.filter((ab) => {
@@ -252,7 +241,7 @@ export function ActiveChecklistTab({
                     spent={spent}
                     spentPercent={spentPercent}
                     cashbackEarned={cashbackEarned}
-                    toggleBenefit={handleToggleBenefit}
+                    toggleBenefit={toggleBenefit}
                     updateProgressLog={updateProgressLog}
                     themeClass={themeClass}
                   />
@@ -350,7 +339,7 @@ export function ActiveChecklistTab({
                               spent={spent}
                               spentPercent={spentPercent}
                               cashbackEarned={cashbackEarned}
-                              toggleBenefit={handleToggleBenefit}
+                              toggleBenefit={toggleBenefit}
                               updateProgressLog={updateProgressLog}
                               themeClass={themeClass}
                             />

@@ -69,6 +69,7 @@ function App() {
     updateSignupBonusValue,
     toggleLoyaltyAward,
     deleteLoyaltyAward,
+    updateAwardUsedQuantity,
     pruneExpiredLogs,
     resetAll 
   } = useCardStore();
@@ -122,27 +123,49 @@ function App() {
     }
   }, [toast]);
 
-  const handleToggleBenefit = (logKey: string) => {
-    const obfuscated = obfuscateKey(logKey);
-    const entry = parseLogEntry(logs[obfuscated]);
-    lastActionRef.current = {
-      logKey,
-      prevResolved: entry ? !!entry.resolved : false,
-      prevSpentProgress: entry ? entry.spentProgress : 0
-    };
+  const handleChecklistToggle = (key: string) => {
+    const ab = activeBenefits.find((b) => b.logKey === key);
+    if (!ab) return;
 
-    toggleBenefit(logKey);
+    if (ab.loyaltyAward) {
+      const targetAward = loyaltyAwards.find((a) => a.id === ab.loyaltyAward?.id);
+      if (!targetAward) return;
 
-    showToast('Perk logged successfully', 'success', () => {
+      lastActionRef.current = {
+        logKey: targetAward.id,
+        prevResolved: targetAward.usedQuantity >= targetAward.quantity,
+        prevSpentProgress: targetAward.usedQuantity
+      };
+
+      toggleLoyaltyAward(targetAward.id);
+    } else {
+      const obfuscated = obfuscateKey(key);
+      const entry = parseLogEntry(logs[obfuscated]);
+      lastActionRef.current = {
+        logKey: key,
+        prevResolved: entry ? !!entry.resolved : false,
+        prevSpentProgress: entry ? entry.spentProgress : 0
+      };
+
+      toggleBenefit(key);
+    }
+
+    showToast(ab.loyaltyAward ? 'Loyalty Voucher logged successfully' : 'Perk logged successfully', 'success', () => {
       if (lastActionRef.current) {
         const snap = lastActionRef.current;
-        if (snap.prevSpentProgress !== undefined) {
-          updateProgressLog(snap.logKey, snap.prevSpentProgress);
-        }
-        const currentObfuscated = obfuscateKey(snap.logKey);
-        const currentEntry = parseLogEntry(useCardStore.getState().logs[currentObfuscated]);
-        if (!currentEntry || (!!currentEntry.resolved !== snap.prevResolved)) {
-          toggleBenefit(snap.logKey);
+        if (ab.loyaltyAward) {
+          if (snap.prevSpentProgress !== undefined) {
+            updateAwardUsedQuantity(snap.logKey, snap.prevSpentProgress);
+          }
+        } else {
+          if (snap.prevSpentProgress !== undefined) {
+            updateProgressLog(snap.logKey, snap.prevSpentProgress);
+          }
+          const currentObfuscated = obfuscateKey(snap.logKey);
+          const currentEntry = parseLogEntry(useCardStore.getState().logs[currentObfuscated]);
+          if (!currentEntry || (!!currentEntry.resolved !== snap.prevResolved)) {
+            toggleBenefit(snap.logKey);
+          }
         }
         lastActionRef.current = null;
         showToast('Action reverted', 'info');
@@ -695,8 +718,7 @@ function App() {
                 activeTab={activeTab}
                 themeClass={themeClass}
                 updateProgressLog={handleUpdateProgressLog}
-                toggleBenefit={handleToggleBenefit}
-                toggleLoyaltyAward={toggleLoyaltyAward}
+                toggleBenefit={handleChecklistToggle}
                 ownedCards={ownedCards}
                 loyaltyAwards={loyaltyAwards}
                 isGroupedView={isGroupedView || false}
