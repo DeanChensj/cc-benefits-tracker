@@ -14,7 +14,7 @@ interface ActiveChecklistTabProps {
   activeBenefits: ActiveBenefit[];
   logs: Record<string, any>;
   currentDate: Date;
-  activeTab: 'todo' | 'all';
+  activeTab: 'todo' | 'cards';
   themeClass: (dark: string, light: string) => string;
   updateProgressLog: (key: string, spent: number) => void;
   toggleBenefit: (key: string) => void;
@@ -45,11 +45,19 @@ export function ActiveChecklistTab({
   const [filterCategory, setFilterCategory] = useState('all');
   const [filterCardInstanceId, setFilterCardInstanceId] = useState('all');
   const [sortBy, setSortBy] = useState<'urgency' | 'expiry' | 'value-desc' | 'value-asc'>('urgency');
+  const [isClaimedCollapsed, setIsClaimedCollapsed] = useState(true);
+  const [isExpiredCollapsed, setIsExpiredCollapsed] = useState(true);
 
-  // Filtered benefits for view
+  // Core helper to evaluate benefit expiration dynamically in sandbox
+  const isBenefitExpired = (ab: ActiveBenefit): boolean => {
+    if (ab.loyaltyAward) {
+      return !!ab.benefit.expirationDate && new Date(ab.benefit.expirationDate + 'T00:00:00') < currentDate;
+    }
+    return ab.benefit.resetPeriod === 'fixed' && !!ab.benefit.expirationDate && new Date(ab.benefit.expirationDate + 'T00:00:00') < currentDate;
+  };
+
+  // 1. Master search/category filter
   const filteredBenefits = activeBenefits.filter((ab) => {
-    if (activeTab === 'todo' && ab.isUsed) return false;
-
     // Search query filter
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
@@ -81,7 +89,7 @@ export function ActiveChecklistTab({
     return true;
   });
 
-  // Sorted benefits
+  // 2. Sort filtered benefits list
   const sortedBenefits = [...filteredBenefits].sort((a, b) => {
     if (a.isUsed !== b.isUsed) {
       return a.isUsed ? 1 : -1;
@@ -105,6 +113,42 @@ export function ActiveChecklistTab({
         return getUrgencyScore(a, currentDate) - getUrgencyScore(b, currentDate);
     }
   });
+
+  // 3. Partition sorted benefits into 3 distinct groups
+  const activeItems = sortedBenefits.filter((ab) => !ab.isUsed && !isBenefitExpired(ab));
+  const claimedItems = sortedBenefits.filter((ab) => ab.isUsed);
+  const expiredItems = sortedBenefits.filter((ab) => !ab.isUsed && isBenefitExpired(ab));
+
+  const renderBenefitRow = (ab: ActiveBenefit) => {
+    const isExpired = isBenefitExpired(ab);
+    const daysLeft = ab.loyaltyAward
+      ? (ab.benefit.expirationDate ? getDaysLeftForDate(ab.benefit.expirationDate, currentDate) : null)
+      : getDaysLeft(ab, currentDate);
+
+    const isProgressive = !!ab.benefit.spendingLimit;
+    const logEntry = logs[obfuscateKey(ab.logKey)];
+    const parsed = parseLogEntry(logEntry);
+    const spent = isProgressive ? (parsed?.spentProgress || 0) : 0;
+    const spentPercent = isProgressive ? Math.min((spent / (ab.benefit.spendingLimit || 1)) * 100, 100) : 0;
+    const cashbackEarned = isProgressive ? Math.round((ab.benefit.value * Math.min(spent / (ab.benefit.spendingLimit || 1), 1)) * 100) / 100 : 0;
+
+    return (
+      <ChecklistCardRow
+        key={ab.logKey}
+        ab={ab}
+        logs={logs}
+        daysLeft={daysLeft}
+        isExpired={isExpired}
+        isProgressive={isProgressive}
+        spent={spent}
+        spentPercent={spentPercent}
+        cashbackEarned={cashbackEarned}
+        toggleBenefit={toggleBenefit}
+        updateProgressLog={updateProgressLog}
+        themeClass={themeClass}
+      />
+    );
+  };
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -135,225 +179,214 @@ export function ActiveChecklistTab({
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           className={`w-full pl-10 pr-4 py-2.5 rounded-2xl border text-xs focus:outline-none focus:ring-1 focus:ring-purple-500 transition-all duration-300 ${
-            themeClass('bg-slate-950 border-slate-850 text-slate-200 placeholder-slate-550 focus:border-purple-500', 'bg-white border-slate-200 text-slate-800 placeholder-slate-400 focus:border-purple-500 shadow-sm')
+            themeClass('bg-slate-955 border-slate-850 text-slate-200 placeholder-slate-550 focus:border-purple-500', 'bg-white border-slate-200 text-slate-800 placeholder-slate-400 focus:border-purple-500 shadow-sm')
           }`}
         />
       </div>
 
-      {sortedBenefits.length === 0 ? (
-        <div className={`p-8 rounded-2xl text-center border border-dashed max-w-md mx-auto ${
-          themeClass('border-slate-850 bg-slate-950/20', 'border-slate-250 bg-slate-50/50')
-        }`}>
-          <p className="text-xl">🎯</p>
-          <h4 className={`text-xs font-bold mt-2 ${themeClass('text-slate-300', 'text-slate-700')}`}>All benefits claimed!</h4>
-          <p className={`text-[10px] mt-1 leading-normal ${themeClass('text-slate-450', 'text-slate-500')}`}>
-            No pending cycles active in this filter combination.
-          </p>
-        </div>
-      ) : (
-        <div className="space-y-4">
-          {/* Quick-Action Monthly Repeating Shelf */}
-          {(() => {
-            const quickMonthlyBenefits = activeBenefits.filter((ab) => {
-              if (ab.isUsed) return false;
-              return ab.benefit.resetPeriod === 'monthly';
-            });
+      <div className="space-y-6">
+        {/* A. ACTIVE ITEMS VIEW BLOCK */}
+        {activeItems.length === 0 ? (
+          <div className={`p-8 rounded-2xl text-center border border-dashed max-w-md mx-auto ${
+            themeClass('border-slate-850 bg-slate-950/20', 'border-slate-250 bg-slate-50/50')
+          }`}>
+            <p className="text-xl">🎯</p>
+            <h4 className={`text-xs font-bold mt-2 ${themeClass('text-slate-300', 'text-slate-700')}`}>All active benefits claimed!</h4>
+            <p className={`text-[10px] mt-1 leading-normal ${themeClass('text-slate-455', 'text-slate-500')}`}>
+              No pending cycles active in this filter combination.
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {/* Quick-Action Monthly Repeating Shelf */}
+            {(() => {
+              const quickMonthlyBenefits = activeItems.filter((ab) => ab.benefit.resetPeriod === 'monthly');
+              if (quickMonthlyBenefits.length === 0) return null;
 
-            if (quickMonthlyBenefits.length === 0) return null;
+              return (
+                <div className="mb-4 animate-fade-in">
+                  <h4 className={`text-[9px] font-black uppercase tracking-wider mb-2 flex items-center gap-1.5 ${
+                    themeClass('text-slate-400', 'text-slate-500')
+                  }`}>
+                    <span className="animate-pulse text-purple-400">⚡</span>
+                    Quick-Log Monthly Credits
+                  </h4>
+                  <div className="flex gap-2 overflow-x-auto pb-2 pt-1 scrollbar-none -mx-4 px-4">
+                    {quickMonthlyBenefits.map((ab) => {
+                      const cardLabel = ab.cardInstance 
+                        ? ab.cardInstance.customName 
+                        : (ab.loyaltyAward ? (AWARD_TEMPLATES[ab.loyaltyAward.templateId]?.brand || ab.loyaltyAward.customBrand || 'Award').toLowerCase() : 'award');
+                      
+                      const emoji = ab.benefit.category === 'dining' ? '🍽️' :
+                        ab.benefit.category === 'travel' ? '✈️' :
+                        ab.benefit.category === 'shopping' ? '🛍️' :
+                        ab.benefit.category === 'entertainment' ? '🎭' : '💳';
 
-            return (
-              <div className="mb-4 animate-fade-in">
-                <h4 className={`text-[9px] font-black uppercase tracking-wider mb-2 flex items-center gap-1.5 ${
-                  themeClass('text-slate-400', 'text-slate-500')
-                }`}>
-                  <span className="animate-pulse text-purple-400">⚡</span>
-                  Quick-Log Monthly Credits
-                </h4>
-                <div className="flex gap-2 overflow-x-auto pb-2 pt-1 scrollbar-none -mx-4 px-4">
-                  {quickMonthlyBenefits.map((ab) => {
-                    const cardLabel = ab.cardInstance 
-                      ? ab.cardInstance.customName 
-                      : (ab.loyaltyAward ? (AWARD_TEMPLATES[ab.loyaltyAward.templateId]?.brand || ab.loyaltyAward.customBrand || 'Award') : 'Award');
-                    
-                    const emoji = ab.benefit.category === 'dining' ? '🍽️' :
-                      ab.benefit.category === 'travel' ? '✈️' :
-                      ab.benefit.category === 'shopping' ? '🛍️' :
-                      ab.benefit.category === 'entertainment' ? '🎭' : '💳';
+                      return (
+                        <button
+                          key={ab.logKey}
+                          type="button"
+                          onClick={() => {
+                            if (ab.benefit.spendingLimit) {
+                              updateProgressLog(ab.logKey, ab.benefit.spendingLimit);
+                            } else {
+                              toggleBenefit(ab.logKey);
+                            }
+                          }}
+                          className={`flex items-center gap-2 px-3 py-2 rounded-xl border text-left transition active:scale-95 hover:scale-[1.01] duration-200 cursor-pointer shrink-0 shadow-sm ${
+                            themeClass('bg-slate-900/50 hover:bg-slate-900 border-slate-850 text-slate-200 hover:border-purple-900/30', 'bg-white hover:bg-slate-50 border-slate-200 text-slate-750 hover:border-purple-200')
+                          }`}
+                        >
+                          <div className="text-xs shrink-0">{emoji}</div>
+                          <div className="min-w-0 max-w-[120px]">
+                            <p className={`text-[7px] font-bold uppercase tracking-wide truncate opacity-70`}>{cardLabel}</p>
+                            <p className="text-[9px] font-extrabold truncate mt-0.5">{ab.benefit.name}</p>
+                          </div>
+                          <div className={`text-[8px] font-extrabold px-1.5 py-0.5 rounded-lg shrink-0 ml-1 ${
+                            themeClass('bg-purple-500/10 text-purple-400 border border-purple-500/20', 'bg-purple-50 text-purple-600 border border-purple-200')
+                          }`}>
+                            ${ab.benefit.value}
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })()}
+
+            {/* Active Items List render flat/grouped */}
+            {!isGroupedView ? (
+              <div className="space-y-3">
+                {activeItems.map(renderBenefitRow)}
+              </div>
+            ) : (() => {
+              const grouped = activeItems.reduce((acc, ab) => {
+                const key = ab.cardInstance ? ab.cardInstance.id : 'awards';
+                if (!acc[key]) acc[key] = [];
+                acc[key].push(ab);
+                return acc;
+              }, {} as Record<string, typeof activeItems>);
+
+              return (
+                <div className="space-y-4">
+                  {Object.entries(grouped).map(([key, items]) => {
+                    const isAwards = key === 'awards';
+                    const card = !isAwards ? ownedCards.find((c) => c.id === key) : null;
+                    if (!isAwards && !card) return null;
+
+                    const template = card && card.templateId !== 'custom'
+                      ? CARDS_DB.find((t) => t.id === card.templateId)
+                      : null;
+
+                    const cardName = isAwards 
+                      ? '🎁 Standalone Vouchers' 
+                      : (card?.customName || template?.name || 'Credit Card');
+
+                    const brandColor = isAwards 
+                      ? 'from-purple-600 to-indigo-800 text-white'
+                      : (card?.color || template?.color || 'from-slate-600 to-slate-800 text-white');
+
+                    const isCollapsed = !!collapsedGroups[key];
 
                     return (
-                      <button
-                        key={ab.logKey}
-                        onClick={() => {
-                          if (ab.benefit.spendingLimit) {
-                            updateProgressLog(ab.logKey, ab.benefit.spendingLimit);
-                          } else {
-                            toggleBenefit(ab.logKey);
-                          }
-                        }}
-                        className={`flex items-center gap-2 px-3 py-2 rounded-xl border text-left transition active:scale-95 hover:scale-[1.01] duration-200 cursor-pointer shrink-0 shadow-sm ${
-                          themeClass('bg-slate-900/50 hover:bg-slate-900 border-slate-850 text-slate-200 hover:border-purple-900/30', 'bg-white hover:bg-slate-50 border-slate-200 text-slate-750 hover:border-purple-200')
+                      <div 
+                        key={key}
+                        className={`border rounded-2xl overflow-hidden transition duration-200 ${
+                          themeClass('bg-slate-900/10 border-slate-850/60', 'bg-slate-50/30 border-slate-200')
                         }`}
                       >
-                        <div className="text-xs shrink-0">{emoji}</div>
-                        <div className="min-w-0 max-w-[120px]">
-                          <p className={`text-[7px] font-bold uppercase tracking-wide truncate opacity-70`}>{cardLabel}</p>
-                          <p className="text-[9px] font-extrabold truncate mt-0.5">{ab.benefit.name}</p>
+                        {/* Collapsible Section Card Header */}
+                        <div
+                          onClick={() => setCollapsedGroups(prev => ({ ...prev, [key]: !prev[key] }))}
+                          className={`flex items-center justify-between p-3 cursor-pointer select-none bg-gradient-to-r ${brandColor} text-white border-b ${
+                            themeClass('border-slate-900/40', 'border-slate-200/40')
+                          }`}
+                        >
+                          <div className="flex items-center gap-2 min-w-0">
+                            <span className="text-xs font-bold truncate">{cardName}</span>
+                            <span className={`text-[8px] font-extrabold px-1.5 py-0.5 rounded-md tracking-wide shrink-0 bg-white/20 text-white`}>
+                              {`${items.length} Pending`}
+                            </span>
+                          </div>
+                          <span className="text-[9px] font-black opacity-85 px-1.5">
+                            {isCollapsed ? '▶ Expand' : '▼ Collapse'}
+                          </span>
                         </div>
-                        <div className={`text-[8px] font-extrabold px-1.5 py-0.5 rounded-lg shrink-0 ml-1 ${
-                          themeClass('bg-purple-500/10 text-purple-400 border border-purple-500/20', 'bg-purple-50 text-purple-600 border border-purple-200')
-                        }`}>
-                          ${ab.benefit.value}
+
+                        {/* Group checklist rows */}
+                        <div className={`transition-all duration-300 ease-in-out overflow-hidden ${
+                          isCollapsed 
+                            ? 'max-h-0 opacity-0 pointer-events-none' 
+                            : 'max-h-[1200px] opacity-100 p-3 space-y-2.5'
+                        } ${themeClass('bg-slate-955/20', 'bg-white/50')}`}>
+                          {items.map(renderBenefitRow)}
                         </div>
-                      </button>
+                      </div>
                     );
                   })}
                 </div>
+              );
+            })()}
+          </div>
+        )}
+
+        {/* B. EXPIRED ITEMS ARCHIVE COLLAPSED BOX */}
+        {expiredItems.length > 0 && (
+          <div className={`border rounded-2xl overflow-hidden transition duration-250 ${
+            themeClass('bg-slate-900/10 border-slate-850/60 shadow-black/5', 'bg-slate-50/30 border-slate-250 shadow-slate-500/5')
+          }`}>
+            <div
+              onClick={() => setIsExpiredCollapsed(!isExpiredCollapsed)}
+              className={`flex items-center justify-between p-3 cursor-pointer select-none border-b ${
+                themeClass('bg-slate-955/50 border-slate-900/40 text-red-400', 'bg-red-50/30 border-slate-200/40 text-red-600')
+              }`}
+            >
+              <div className="flex items-center gap-2 min-w-0">
+                <span className="text-xs font-black uppercase tracking-wider truncate">⚠️ Expired Vouchers Archive ({expiredItems.length} items)</span>
               </div>
-            );
-          })()}
-
-          {!isGroupedView ? (
-            <div className="space-y-3">
-              {sortedBenefits.map((ab) => {
-                const isExpired = ab.loyaltyAward 
-                  ? (!ab.isUsed && !!ab.benefit.expirationDate && new Date(ab.benefit.expirationDate + 'T00:00:00') < currentDate)
-                  : (!ab.isUsed && ab.benefit.resetPeriod === 'fixed' && !!ab.benefit.expirationDate && new Date(ab.benefit.expirationDate + 'T00:00:00') < currentDate);
-
-                const daysLeft = ab.loyaltyAward
-                  ? (ab.benefit.expirationDate ? getDaysLeftForDate(ab.benefit.expirationDate, currentDate) : null)
-                  : getDaysLeft(ab, currentDate);
-
-                const isProgressive = !!ab.benefit.spendingLimit;
-                const logEntry = logs[obfuscateKey(ab.logKey)];
-                const parsed = parseLogEntry(logEntry);
-                const spent = isProgressive ? (parsed?.spentProgress || 0) : 0;
-                const spentPercent = isProgressive ? Math.min((spent / (ab.benefit.spendingLimit || 1)) * 100, 100) : 0;
-                const cashbackEarned = isProgressive ? Math.round((ab.benefit.value * Math.min(spent / (ab.benefit.spendingLimit || 1), 1)) * 100) / 100 : 0;
-
-                return (
-                  <ChecklistCardRow
-                    key={ab.logKey}
-                    ab={ab}
-                    logs={logs}
-                    daysLeft={daysLeft}
-                    isExpired={isExpired}
-                    isProgressive={isProgressive}
-                    spent={spent}
-                    spentPercent={spentPercent}
-                    cashbackEarned={cashbackEarned}
-                    toggleBenefit={toggleBenefit}
-                    updateProgressLog={updateProgressLog}
-                    themeClass={themeClass}
-                  />
-                );
-              })}
+              <span className="text-[9px] font-black opacity-80 px-1.5">
+                {isExpiredCollapsed ? '▶ Expand' : '▼ Collapse'}
+              </span>
             </div>
-          ) : (() => {
-            const grouped = sortedBenefits.reduce((acc, ab) => {
-              const key = ab.cardInstance ? ab.cardInstance.id : 'awards';
-              if (!acc[key]) acc[key] = [];
-              acc[key].push(ab);
-              return acc;
-            }, {} as Record<string, typeof sortedBenefits>);
+            <div className={`transition-all duration-300 ease-in-out overflow-hidden ${
+              isExpiredCollapsed 
+                ? 'max-h-0 opacity-0 pointer-events-none' 
+                : 'max-h-[1200px] opacity-100 p-3 space-y-2.5'
+            } ${themeClass('bg-slate-955/10', 'bg-white/30')}`}>
+              {expiredItems.map(renderBenefitRow)}
+            </div>
+          </div>
+        )}
 
-            return (
-              <div className="space-y-4">
-                {Object.entries(grouped).map(([key, items]) => {
-                  const isAwards = key === 'awards';
-                  const card = !isAwards ? ownedCards.find((c) => c.id === key) : null;
-                  if (!isAwards && !card) return null;
-
-                  const template = card && card.templateId !== 'custom'
-                    ? CARDS_DB.find((t) => t.id === card.templateId)
-                    : null;
-
-                  const cardName = isAwards 
-                    ? '🎁 Standalone Vouchers' 
-                    : (card?.customName || template?.name || 'Credit Card');
-
-                  const brandColor = isAwards 
-                    ? 'from-purple-600 to-indigo-800 text-white'
-                    : (card?.color || template?.color || 'from-slate-600 to-slate-800 text-white');
-
-                  const isCollapsed = !!collapsedGroups[key];
-                  const resolvedCount = items.filter(ab => ab.isUsed).length;
-                  const totalCount = items.length;
-
-                  return (
-                    <div 
-                      key={key}
-                      className={`border rounded-2xl overflow-hidden transition duration-200 ${
-                        themeClass('bg-slate-900/10 border-slate-850/60', 'bg-slate-50/30 border-slate-200')
-                      }`}
-                    >
-                      {/* Collapsible Section Card Header */}
-                      <div
-                        onClick={() => setCollapsedGroups(prev => ({ ...prev, [key]: !prev[key] }))}
-                        className={`flex items-center justify-between p-3 cursor-pointer select-none bg-gradient-to-r ${brandColor} text-white border-b ${
-                          themeClass('border-slate-900/40', 'border-slate-200/40')
-                        }`}
-                      >
-                        <div className="flex items-center gap-2 min-w-0">
-                          <span className="text-xs font-bold truncate">{cardName}</span>
-                          <span className={`text-[8px] font-extrabold px-1.5 py-0.5 rounded-md tracking-wide shrink-0 bg-white/20 text-white`}>
-                            {activeTab === 'todo' 
-                              ? `${items.length} Active` 
-                              : `${resolvedCount}/${totalCount} Done`}
-                          </span>
-                        </div>
-                        <span className="text-[9px] font-black opacity-80 px-1.5">
-                          {isCollapsed ? '▶ Expand' : '▼ Collapse'}
-                        </span>
-                      </div>
-
-                      {/* Group checklist rows */}
-                      <div className={`transition-all duration-300 ease-in-out overflow-hidden ${
-                        isCollapsed 
-                          ? 'max-h-0 opacity-0 pointer-events-none' 
-                          : 'max-h-[1200px] opacity-100 p-3 space-y-2.5'
-                      } ${themeClass('bg-slate-955/20', 'bg-white/50')}`}>
-                        {items.map((ab) => {
-                          const isExpired = ab.loyaltyAward 
-                            ? (!ab.isUsed && !!ab.benefit.expirationDate && new Date(ab.benefit.expirationDate + 'T00:00:00') < currentDate)
-                            : (!ab.isUsed && ab.benefit.resetPeriod === 'fixed' && !!ab.benefit.expirationDate && new Date(ab.benefit.expirationDate + 'T00:00:00') < currentDate);
-
-                          const daysLeft = ab.loyaltyAward
-                            ? (ab.benefit.expirationDate ? getDaysLeftForDate(ab.benefit.expirationDate, currentDate) : null)
-                            : getDaysLeft(ab, currentDate);
-
-                          const isProgressive = !!ab.benefit.spendingLimit;
-                          const logEntry = logs[obfuscateKey(ab.logKey)];
-                          const parsed = parseLogEntry(logEntry);
-                          const spent = isProgressive ? (parsed?.spentProgress || 0) : 0;
-                          const spentPercent = isProgressive ? Math.min((spent / (ab.benefit.spendingLimit || 1)) * 100, 100) : 0;
-                          const cashbackEarned = isProgressive ? Math.round((ab.benefit.value * Math.min(spent / (ab.benefit.spendingLimit || 1), 1)) * 100) / 100 : 0;
-
-                          return (
-                            <ChecklistCardRow
-                              key={ab.logKey}
-                              ab={ab}
-                              logs={logs}
-                              daysLeft={daysLeft}
-                              isExpired={isExpired}
-                              isProgressive={isProgressive}
-                              spent={spent}
-                              spentPercent={spentPercent}
-                              cashbackEarned={cashbackEarned}
-                              toggleBenefit={toggleBenefit}
-                              updateProgressLog={updateProgressLog}
-                              themeClass={themeClass}
-                            />
-                          );
-                        })}
-                      </div>
-                    </div>
-                  );
-                })}
+        {/* C. CLAIMED / RESOLVED ITEMS ARCHIVE COLLAPSED BOX */}
+        {claimedItems.length > 0 && (
+          <div className={`border rounded-2xl overflow-hidden transition duration-250 ${
+            themeClass('bg-slate-900/10 border-slate-850/60 shadow-black/5', 'bg-slate-50/30 border-slate-250 shadow-slate-500/5')
+          }`}>
+            <div
+              onClick={() => setIsClaimedCollapsed(!isClaimedCollapsed)}
+              className={`flex items-center justify-between p-3 cursor-pointer select-none border-b ${
+                themeClass('bg-slate-955/50 border-slate-900/40 text-slate-400', 'bg-slate-100/30 border-slate-200/40 text-slate-600')
+              }`}
+            >
+              <div className="flex items-center gap-2 min-w-0">
+                <span className="text-xs font-black uppercase tracking-wider truncate">📁 Resolved Perks Archive ({claimedItems.length} claimed)</span>
               </div>
-            );
-          })()}
-        </div>
-      )}
+              <span className="text-[9px] font-black opacity-80 px-1.5">
+                {isClaimedCollapsed ? '▶ Expand' : '▼ Collapse'}
+              </span>
+            </div>
+            <div className={`transition-all duration-300 ease-in-out overflow-hidden ${
+              isClaimedCollapsed 
+                ? 'max-h-0 opacity-0 pointer-events-none' 
+                : 'max-h-[1200px] opacity-100 p-3 space-y-2.5'
+            } ${themeClass('bg-slate-955/10', 'bg-white/30')}`}>
+              {claimedItems.map(renderBenefitRow)}
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

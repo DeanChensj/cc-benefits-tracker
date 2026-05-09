@@ -79,7 +79,7 @@ function App() {
 
   // Date to evaluate states against (defaults to current system date)
   const [currentDate, setCurrentDate] = useState(new Date());
-  const [activeTab, setActiveTab] = useState<'todo' | 'all' | 'cards'>(() => (localStorage.getItem('cc-tracker-active-tab') as any) || 'todo');
+  const [activeTab, setActiveTab] = useState<'todo' | 'cards'>(() => (localStorage.getItem('cc-tracker-active-tab') as any) || 'todo');
   const [deckSubTab, setDeckSubTab] = useState<'cards' | 'awards' | 'templates'>(() => {
     return (localStorage.getItem('cc-tracker-deck-sub-tab') as any) || 'cards';
   });
@@ -725,17 +725,7 @@ function App() {
                   : themeClass('text-slate-400 hover:text-white hover:bg-slate-855', 'text-slate-505 hover:text-slate-900 hover:bg-slate-300/30')
               }`}
             >
-              Active ({activeBenefits.filter(b => !b.isUsed).length})
-            </button>
-            <button
-              onClick={() => setActiveTab('all')}
-              className={`px-4 py-2 text-sm font-semibold rounded-lg transition cursor-pointer ${
-                activeTab === 'all'
-                  ? 'bg-amber-500 text-slate-955'
-                  : themeClass('text-slate-400 hover:text-white hover:bg-slate-855', 'text-slate-505 hover:text-slate-900 hover:bg-slate-300/30')
-              }`}
-            >
-              All Benefits ({activeBenefits.length})
+              Checklist ({activeBenefits.filter(b => !b.isUsed).length})
             </button>
             <button
               onClick={() => setActiveTab('cards')}
@@ -759,8 +749,8 @@ function App() {
         <AnnualFeeWarningsWidget annualFeeWarnings={annualFeeWarnings} activeTab={activeTab} dismissWarning={dismissWarning} showToast={showToast} themeClass={themeClass} />
 
 
-        {/* TABS 1 & 2: CHECKLIST VIEW */}
-        {(activeTab === 'todo' || activeTab === 'all') && (
+        {/* TAB 1: CHECKLIST VIEW */}
+        {activeTab === 'todo' && (
           <section>
             {ownedCards.length === 0 && loyaltyAwards.length === 0 ? (
               <EmptyWalletState onBrowse={() => setActiveTab('cards')} themeClass={themeClass} />

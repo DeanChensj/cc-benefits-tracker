@@ -130,7 +130,7 @@ export function FilterHubPanel({
           {isGroupedView ? '🗂️ Wallet View' : '📋 List View'}
         </span>
         <span className={`text-[9px] px-1.5 py-0.5 rounded font-extrabold tracking-wider uppercase ${
-          themeClass('bg-slate-950 text-purple-400', 'bg-white text-purple-600 border border-slate-200')
+          themeClass('bg-slate-955 text-purple-400', 'bg-white text-purple-600 border border-slate-200')
         }`}>
           {isGroupedView ? 'Grouped' : 'Flat'}
         </span>
