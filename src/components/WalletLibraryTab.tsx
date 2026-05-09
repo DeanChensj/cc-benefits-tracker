@@ -157,6 +157,7 @@ export function WalletLibraryTab({
   const [searchQuery, setSearchQuery] = useState('');
   const [expandedCardIds, setExpandedCardIds] = useState<Record<string, boolean>>({});
   const [collapsedWalletBanks, setCollapsedWalletBanks] = useState<Record<string, boolean>>({});
+  const [isClaimedArchiveCollapsed, setIsClaimedArchiveCollapsed] = useState(true);
 
 
 
@@ -486,13 +487,26 @@ export function WalletLibraryTab({
                   {/* Section 2: Inactive/Claimed Vouchers Archive */}
                   {inactiveAwards.length > 0 && (
                     <div className="mt-6 pt-6 border-t border-dashed border-slate-200 dark:border-slate-800/60 space-y-3.5">
-                      <div className="flex items-center gap-2">
-                        <span className={`text-[10px] font-black uppercase tracking-widest ${themeClass('text-slate-400', 'text-slate-500')}`}>
+                      <div 
+                        onClick={() => setIsClaimedArchiveCollapsed(!isClaimedArchiveCollapsed)}
+                        className="flex items-center justify-between cursor-pointer select-none group"
+                      >
+                        <span className={`text-[10px] font-black uppercase tracking-widest flex items-center gap-1 ${themeClass('text-slate-400', 'text-slate-500')} group-hover:opacity-80 transition`}>
                           📁 Claimed Vouchers Archive ({inactiveAwards.length} claimed)
                         </span>
+                        <span className={`text-[9px] font-black select-none transition duration-200 ${themeClass('text-slate-450 hover:text-slate-300', 'text-slate-500 hover:text-slate-700')}`}>
+                          {isClaimedArchiveCollapsed ? '▶ Expand' : '▼ Collapse'}
+                        </span>
                       </div>
-                      <div className="grid sm:grid-cols-2 gap-4 opacity-60 grayscale-[30%] hover:opacity-85 hover:grayscale-[10%] transition duration-300">
-                        {inactiveAwards.map(renderAwardCard)}
+                      
+                      <div className={`transition-all duration-300 ease-in-out overflow-hidden ${
+                        isClaimedArchiveCollapsed 
+                          ? 'max-h-0 opacity-0 pointer-events-none' 
+                          : 'max-h-[3000px] opacity-100 mt-3.5'
+                      }`}>
+                        <div className="grid sm:grid-cols-2 gap-4 opacity-60 grayscale-[30%] hover:opacity-85 hover:grayscale-[10%] transition duration-300">
+                          {inactiveAwards.map(renderAwardCard)}
+                        </div>
                       </div>
                     </div>
                   )}
