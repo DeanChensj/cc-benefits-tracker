@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { Search } from 'lucide-react';
 import { FilterHubPanel } from './FilterHubPanel';
 import { ChecklistCardRow } from './ChecklistCardRow';
@@ -16,7 +16,6 @@ interface ActiveChecklistTabProps {
   currentDate: Date;
   activeTab: 'todo' | 'all';
   themeClass: (dark: string, light: string) => string;
-  showToast: (message: string, type?: 'success' | 'error' | 'warning') => void;
   updateProgressLog: (key: string, spent: number) => void;
   toggleBenefit: (key: string) => void;
   toggleLoyaltyAward: (key: string) => void;
@@ -25,7 +24,7 @@ interface ActiveChecklistTabProps {
   isGroupedView: boolean;
   setIsGroupedView: (grouped: boolean) => void;
   collapsedGroups: Record<string, boolean>;
-  setCollapsedGroups: React.Dispatch<React.SetStateAction<Record<string, boolean>>>;
+  setCollapsedGroups: (updater: (prev: Record<string, boolean>) => Record<string, boolean>) => void;
 }
 
 export function ActiveChecklistTab({
@@ -34,7 +33,6 @@ export function ActiveChecklistTab({
   currentDate,
   activeTab,
   themeClass,
-  showToast,
   updateProgressLog,
   toggleBenefit,
   toggleLoyaltyAward,
@@ -202,7 +200,6 @@ export function ActiveChecklistTab({
                           } else {
                             toggleBenefit(ab.logKey);
                           }
-                          showToast(`🎉 Claimed $${ab.benefit.value} ${ab.benefit.name}!`);
                         }}
                         className={`flex items-center gap-2 px-3 py-2 rounded-xl border text-left transition active:scale-95 hover:scale-[1.01] duration-200 cursor-pointer shrink-0 shadow-sm ${
                           themeClass('bg-slate-900/50 hover:bg-slate-900 border-slate-850 text-slate-200 hover:border-purple-900/30', 'bg-white hover:bg-slate-50 border-slate-200 text-slate-750 hover:border-purple-200')

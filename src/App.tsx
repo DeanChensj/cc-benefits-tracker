@@ -94,6 +94,8 @@ function App() {
   const [activeEditInstanceId, setActiveEditInstanceId] = useState<string | null>(null);
   const activeEditInstance = ownedCards.find((c) => c.id === activeEditInstanceId) || null;
 
+  const lastActionRef = useRef<{ logKey: string; prevResolved: boolean; prevSpentProgress?: number } | null>(null);
+
   const [dismissedWarningCardIds, setDismissedWarningCardIds] = useState<Record<string, boolean>>({});
   
   const dismissWarning = (cardId: string) => {
@@ -103,18 +105,78 @@ function App() {
     }));
   };
 
-  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' | 'warning' } | null>(null);
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' | 'warning'; onUndo?: () => void } | null>(null);
 
-  const showToast = (message: string, type: 'success' | 'error' | 'info' | 'warning' = 'success') => {
-    setToast({ message, type });
+  const showToast = (
+    message: string, 
+    type: 'success' | 'error' | 'info' | 'warning' = 'success',
+    onUndo?: () => void
+  ) => {
+    setToast({ message, type, onUndo });
   };
 
   useEffect(() => {
     if (toast) {
-      const timer = setTimeout(() => setToast(null), 2800);
+      const timer = setTimeout(() => setToast(null), 3000);
       return () => clearTimeout(timer);
     }
   }, [toast]);
+
+  const handleToggleBenefit = (logKey: string) => {
+    const obfuscated = obfuscateKey(logKey);
+    const entry = parseLogEntry(logs[obfuscated]);
+    lastActionRef.current = {
+      logKey,
+      prevResolved: entry ? !!entry.resolved : false,
+      prevSpentProgress: entry ? entry.spentProgress : 0
+    };
+
+    toggleBenefit(logKey);
+
+    showToast('Perk logged successfully', 'success', () => {
+      if (lastActionRef.current) {
+        const snap = lastActionRef.current;
+        if (snap.prevSpentProgress !== undefined) {
+          updateProgressLog(snap.logKey, snap.prevSpentProgress);
+        }
+        const currentObfuscated = obfuscateKey(snap.logKey);
+        const currentEntry = parseLogEntry(useCardStore.getState().logs[currentObfuscated]);
+        if (!currentEntry || (!!currentEntry.resolved !== snap.prevResolved)) {
+          toggleBenefit(snap.logKey);
+        }
+        lastActionRef.current = null;
+        showToast('Action reverted', 'info');
+      }
+    });
+  };
+
+  const handleUpdateProgressLog = (logKey: string, spent: number) => {
+    const obfuscated = obfuscateKey(logKey);
+    const entry = parseLogEntry(logs[obfuscated]);
+    lastActionRef.current = {
+      logKey,
+      prevResolved: entry ? !!entry.resolved : false,
+      prevSpentProgress: entry ? entry.spentProgress : 0
+    };
+
+    updateProgressLog(logKey, spent);
+
+    showToast(`Progress updated to $${spent}`, 'success', () => {
+      if (lastActionRef.current) {
+        const snap = lastActionRef.current;
+        if (snap.prevSpentProgress !== undefined) {
+          updateProgressLog(snap.logKey, snap.prevSpentProgress);
+        }
+        const currentObfuscated = obfuscateKey(snap.logKey);
+        const currentEntry = parseLogEntry(useCardStore.getState().logs[currentObfuscated]);
+        if (!currentEntry || (!!currentEntry.resolved !== snap.prevResolved)) {
+          toggleBenefit(snap.logKey);
+        }
+        lastActionRef.current = null;
+        showToast('Action reverted', 'info');
+      }
+    });
+  };
 
   const handleAddCard = (templateId: string) => {
     const template = CARDS_DB.find((t) => t.id === templateId);
@@ -632,9 +694,8 @@ function App() {
                 currentDate={currentDate}
                 activeTab={activeTab}
                 themeClass={themeClass}
-                showToast={showToast}
-                updateProgressLog={updateProgressLog}
-                toggleBenefit={toggleBenefit}
+                updateProgressLog={handleUpdateProgressLog}
+                toggleBenefit={handleToggleBenefit}
                 toggleLoyaltyAward={toggleLoyaltyAward}
                 ownedCards={ownedCards}
                 loyaltyAwards={loyaltyAwards}
@@ -873,7 +934,7 @@ function App() {
 
       {/* Premium Floating Toast Notification */}
       {toast && (
-        <Toast message={toast.message} type={toast.type} theme={theme} />
+        <Toast message={toast.message} type={toast.type} theme={theme} onUndo={toast.onUndo} />
       )}
     </div>
   );

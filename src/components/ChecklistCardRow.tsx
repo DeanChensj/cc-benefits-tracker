@@ -45,8 +45,9 @@ export const ChecklistCardRow = React.memo(function ChecklistCardRow({
       onClick={() => {
         if (isExpired) return;
         if (isProgressive) {
-          // Clicking progressive rows toggles between 0 and maximum limit
-          updateProgressLog(logKey, spent > 0 ? 0 : (benefit.spendingLimit || 0));
+          const limit = benefit.spendingLimit || 0;
+          const isFullySpent = spent >= limit;
+          updateProgressLog(logKey, isFullySpent ? 0 : limit);
         } else {
           toggleBenefit(logKey);
         }
