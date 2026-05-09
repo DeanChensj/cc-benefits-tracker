@@ -15,7 +15,6 @@ import { Toast } from './components/Toast';
 import { DeleteConfirmModal } from './components/DeleteConfirmModal';
 import { ConfirmationModal } from './components/ConfirmationModal';
 import { EmptyWalletState } from './components/EmptyWalletState';
-import { CheckoutWinnersRow } from './components/CheckoutWinnersRow';
 import { AnnualFeeWarningsWidget } from './components/AnnualFeeWarningsWidget';
 import { SavingsWrappedModal } from './components/SavingsWrappedModal';
 import { CloudSyncBanner } from './components/CloudSyncBanner';
@@ -808,8 +807,7 @@ function App() {
           
         </div>
 
-        {/* 0. Glanceable Point Multiplier Checkout Winners Row */}
-        <CheckoutWinnersRow checkoutWinners={checkoutWinners} activeTab={activeTab} />
+
 
         {/* 0.5. Annual Fee Anniversary Warning Widget (Fully Conditional) */}
         <AnnualFeeWarningsWidget annualFeeWarnings={annualFeeWarnings} activeTab={activeTab} dismissWarning={dismissWarning} showToast={showToast} themeClass={themeClass} />
@@ -862,6 +860,7 @@ function App() {
             setDeckSubTab={setDeckSubTab}
             updateAwardUsedQuantity={updateAwardUsedQuantity}
             onViewTemplateDetail={setActiveTemplateDetail}
+            checkoutWinners={checkoutWinners}
           />
         )}
       </main>

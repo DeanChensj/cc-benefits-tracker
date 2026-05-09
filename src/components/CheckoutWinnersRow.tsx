@@ -7,10 +7,11 @@ interface BestCard {
 interface CheckoutWinnersRowProps {
   checkoutWinners: Record<string, BestCard | null> | null;
   activeTab: string;
+  deckSubTab: 'cards' | 'awards' | 'templates';
 }
 
-export function CheckoutWinnersRow({ checkoutWinners, activeTab }: CheckoutWinnersRowProps) {
-  if (activeTab === 'cards' || !checkoutWinners) return null;
+export function CheckoutWinnersRow({ checkoutWinners, activeTab, deckSubTab }: CheckoutWinnersRowProps) {
+  if (activeTab !== 'cards' || deckSubTab !== 'cards' || !checkoutWinners) return null;
 
   return (
     <div className="flex gap-2 overflow-x-auto pb-3 mb-1 no-scrollbar shrink-0 animate-fade-in">

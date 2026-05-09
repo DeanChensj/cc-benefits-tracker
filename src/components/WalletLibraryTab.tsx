@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Plus, Sparkles, CreditCard, Trash2, Compass } from 'lucide-react';
 import { WalletCreditCard } from './WalletCreditCard';
 import { CardTemplatesCatalog } from './CardTemplatesCatalog';
+import { CheckoutWinnersRow } from './CheckoutWinnersRow';
 import { CARDS_DB, AWARD_TEMPLATES } from '../data/cards.db';
 import type { LoyaltyAward, CardTemplate } from '../data/cards.db';
 import type { OwnedCardInstance } from '../store/useCardStore';
@@ -11,7 +12,7 @@ interface WalletLibraryTabProps {
   loyaltyAwards: LoyaltyAward[];
   getCardRecoupedValue: (id: string) => number;
   handleAddCard: (templateId: string) => void;
-  handleAddCustomCard: (card: any) => void;
+  handleAddCustomCard: (card: Omit<OwnedCardInstance, 'id'>) => void;
   removeInstanceOffer: (instanceId: string, offerId: string) => void;
   setAddOfferInstanceId: (instanceId: string) => void;
   setIsCreateModalOpen: (open: boolean) => void;
@@ -26,6 +27,7 @@ interface WalletLibraryTabProps {
   setDeckSubTab: (tab: 'cards' | 'awards' | 'templates') => void;
   updateAwardUsedQuantity: (awardId: string, qty: number) => void;
   onViewTemplateDetail: (card: CardTemplate) => void;
+  checkoutWinners: Record<string, { cardName: string; multiplier: number; bank: string } | null> | null;
 }
 interface BankHeaderProps {
   bankName: 'Amex' | 'Chase' | 'Citi' | 'Other';
@@ -154,7 +156,8 @@ export function WalletLibraryTab({
   deckSubTab,
   setDeckSubTab,
   updateAwardUsedQuantity,
-  onViewTemplateDetail
+  onViewTemplateDetail,
+  checkoutWinners
 }: WalletLibraryTabProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [expandedCardIds, setExpandedCardIds] = useState<Record<string, boolean>>({});
@@ -262,6 +265,9 @@ export function WalletLibraryTab({
                 </button>
               </div>
             </div>
+
+            {/* 0. Glanceable Point Multiplier Checkout Winners Row */}
+            <CheckoutWinnersRow checkoutWinners={checkoutWinners} activeTab="cards" deckSubTab="cards" />
 
             {ownedCards.length === 0 ? (
               <div className="text-center py-10">
@@ -382,10 +388,11 @@ export function WalletLibraryTab({
             case 'value-asc':
               return (infoA.value * a.quantity) - (infoB.value * b.quantity);
             case 'expiry':
-            default:
+            default: {
               const dateA = a.expirationDate ? new Date(a.expirationDate).getTime() : Infinity;
               const dateB = b.expirationDate ? new Date(b.expirationDate).getTime() : Infinity;
               return dateA - dateB;
+            }
           }
         });
 
@@ -515,7 +522,7 @@ export function WalletLibraryTab({
                   />
                   <select
                     value={awardSortBy}
-                    onChange={(e) => setAwardSortBy(e.target.value as any)}
+                    onChange={(e) => setAwardSortBy(e.target.value as 'expiry' | 'value-desc' | 'value-asc')}
                     className={`border text-[10px] font-bold rounded-xl px-2 py-1.5 focus:outline-none focus:border-purple-500 cursor-pointer ${
                       themeClass('bg-slate-955 border-slate-850 text-slate-300', 'bg-slate-50 border-slate-255 text-slate-700 shadow-sm')
                     }`}
