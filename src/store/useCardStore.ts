@@ -43,6 +43,7 @@ export interface CardStore {
 
   // Actions
   addCard: (templateId: string) => void;
+  addCardsBatch: (templateIds: string[]) => void;
   addCustomCard: (card: Omit<OwnedCardInstance, 'id'>) => void;
   removeCard: (instanceId: string) => void;
   renameCard: (instanceId: string, customName: string) => void;
@@ -224,6 +225,38 @@ export const useCardStore = create<CardStore>()(
           return {
             ownedCards: nextCards,
             walletLastModified: Date.now(),
+          };
+        }),
+
+      addCardsBatch: (templateIds) =>
+        set((state) => {
+          const now = new Date();
+          const todayStr = `${now.getFullYear()}-${(now.getMonth() + 1).toString().padStart(2, '0')}-${now.getDate().toString().padStart(2, '0')}`;
+          
+          const newInstances = templateIds.map((templateId, index) => {
+            const template = CARDS_DB.find((c) => c.id === templateId);
+            if (!template) return null;
+            
+            const uniqueId = `inst_${Date.now()}_${index}_${Math.random().toString(36).substring(2, 7)}`;
+            return {
+              id: uniqueId,
+              templateId,
+              customName: template.name,
+              cardOpenDate: todayStr,
+              annualFee: template.annualFee,
+              instanceOffers: [],
+              lastModified: Date.now()
+            } as OwnedCardInstance;
+          }).filter((item): item is OwnedCardInstance => item !== null);
+
+          if (newInstances.length === 0) return state;
+
+          const nextCards = [...state.ownedCards, ...newInstances];
+          syncPushToCloud(state.gdriveToken, nextCards, state.logs);
+
+          return {
+            ownedCards: nextCards,
+            walletLastModified: Date.now()
           };
         }),
 
