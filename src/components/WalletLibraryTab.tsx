@@ -256,7 +256,7 @@ export function WalletLibraryTab({
                       <div className={`transition-all duration-300 ease-in-out overflow-hidden ${
                         isCollapsed 
                           ? 'max-h-0 opacity-0 pointer-events-none' 
-                          : 'max-h-[2000px] opacity-100 mt-3.5'
+                          : 'max-h-[1200px] opacity-100 mt-3.5'
                       }`}>
                         <div className="grid sm:grid-cols-2 gap-4">
                           {bankCards.map((instance) => (
@@ -348,7 +348,7 @@ export function WalletLibraryTab({
                     <div className={`transition-all duration-300 ease-in-out overflow-hidden ${
                       isCollapsed 
                         ? 'max-h-0 opacity-0 pointer-events-none' 
-                        : 'max-h-[2000px] opacity-100 mt-3.5'
+                        : 'max-h-[1500px] opacity-100 mt-3.5'
                     }`}>
                       <div className="grid sm:grid-cols-2 gap-4">
                         {bankCards.map((card) => {
