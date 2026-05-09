@@ -81,6 +81,9 @@ function App() {
   // Date to evaluate states against (defaults to current system date)
   const [currentDate, setCurrentDate] = useState(new Date());
   const [activeTab, setActiveTab] = useState<'todo' | 'all' | 'cards'>(() => (localStorage.getItem('cc-tracker-active-tab') as any) || 'todo');
+  const [deckSubTab, setDeckSubTab] = useState<'cards' | 'awards' | 'templates'>(() => {
+    return (localStorage.getItem('cc-tracker-deck-sub-tab') as any) || 'cards';
+  });
   const [activeModal, setActiveModal] = useState<'sync' | 'create-card' | 'create-award' | 'wrapped' | 'disconnect-gdrive' | 'wipe' | null>(null);
   const [addOfferInstanceId, setAddOfferInstanceId] = useState<string | null>(null);
   const [deleteCardInstanceId, setDeleteCardInstanceId] = useState<string | null>(null);
@@ -200,6 +203,8 @@ function App() {
     const template = CARDS_DB.find((t) => t.id === templateId);
     const cardName = template ? template.name : 'Card';
     addCard(templateId);
+    setDeckSubTab('cards');
+    localStorage.setItem('cc-tracker-deck-sub-tab', 'cards');
     showToast(`🎉 Added ${cardName} to your Wallet!`);
   };
 
@@ -744,6 +749,8 @@ function App() {
             selectedTemplates={selectedTemplates}
             setSelectedTemplates={setSelectedTemplates}
             onEditCard={(instance) => setActiveEditInstanceId(instance.id)}
+            deckSubTab={deckSubTab}
+            setDeckSubTab={setDeckSubTab}
           />
         )}
       </main>
@@ -925,6 +932,8 @@ function App() {
                 onClick={() => {
                   addCardsBatch(selectedTemplates);
                   setSelectedTemplates([]);
+                  setDeckSubTab('cards');
+                  localStorage.setItem('cc-tracker-deck-sub-tab', 'cards');
                   showToast(`🎉 Successfully added ${selectedTemplates.length} cards to your Wallet!`, 'success');
                 }}
                 className="px-4.5 py-2 rounded-xl text-[10px] font-extrabold bg-gradient-to-tr from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-550 text-white transition cursor-pointer active:scale-95 shadow-md shadow-purple-500/20"

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Plus, Sparkles, CreditCard, Trash2 } from 'lucide-react';
+import { Plus, Sparkles, CreditCard, Trash2, Compass } from 'lucide-react';
 import { WalletCreditCard } from './WalletCreditCard';
 import { CardTemplatesCatalog } from './CardTemplatesCatalog';
 import { CARDS_DB, AWARD_TEMPLATES } from '../data/cards.db';
@@ -23,6 +23,8 @@ interface WalletLibraryTabProps {
   selectedTemplates: string[];
   setSelectedTemplates: React.Dispatch<React.SetStateAction<string[]>>;
   onEditCard: (instance: OwnedCardInstance) => void;
+  deckSubTab: 'cards' | 'awards' | 'templates';
+  setDeckSubTab: (tab: 'cards' | 'awards' | 'templates') => void;
 }
 interface BankHeaderProps {
   bankName: 'Amex' | 'Chase' | 'Citi' | 'Other';
@@ -148,11 +150,10 @@ export function WalletLibraryTab({
   theme,
   selectedTemplates,
   setSelectedTemplates,
-  onEditCard
+  onEditCard,
+  deckSubTab,
+  setDeckSubTab
 }: WalletLibraryTabProps) {
-  const [deckSubTab, setDeckSubTab] = useState<'cards' | 'awards'>(() => {
-    return (localStorage.getItem('cc-tracker-deck-sub-tab') as any) || 'cards';
-  });
   const [searchQuery, setSearchQuery] = useState('');
   const [expandedCardIds, setExpandedCardIds] = useState<Record<string, boolean>>({});
   const [collapsedWalletBanks, setCollapsedWalletBanks] = useState<Record<string, boolean>>({});
@@ -165,9 +166,9 @@ export function WalletLibraryTab({
 
   return (
     <div className="space-y-6 animate-fade-in">
-      {/* Double-Deck Segmented Switcher (0% Visual Bloat!) */}
+      {/* Tri-Deck Segmented Switcher (0% Visual Bloat!) */}
       <div className="flex justify-center mb-2 animate-fade-in">
-        <div className={`flex gap-0.5 p-0.5 rounded-xl border w-full max-w-[280px] ${
+        <div className={`flex gap-0.5 p-0.5 rounded-xl border w-full max-w-[360px] ${
           themeClass('bg-slate-955 border-slate-850/80', 'bg-slate-200/40 border-slate-300/60')
         }`}>
           <button
@@ -178,7 +179,7 @@ export function WalletLibraryTab({
             className={`flex-1 py-1.5 rounded-lg text-[10px] font-extrabold transition flex items-center justify-center gap-1.5 cursor-pointer ${
               deckSubTab === 'cards'
                 ? 'bg-gradient-to-tr from-purple-600 to-indigo-600 text-white shadow-sm shadow-purple-500/10'
-                : themeClass('text-slate-400 hover:text-slate-200', 'text-slate-505 hover:text-slate-800')
+                : themeClass('text-slate-400 hover:text-slate-200', 'text-slate-555 hover:text-slate-850')
             }`}
           >
             <CreditCard className="w-3 h-3" />
@@ -192,11 +193,25 @@ export function WalletLibraryTab({
             className={`flex-1 py-1.5 rounded-lg text-[10px] font-extrabold transition flex items-center justify-center gap-1.5 cursor-pointer ${
               deckSubTab === 'awards'
                 ? 'bg-gradient-to-tr from-purple-600 to-indigo-600 text-white shadow-sm shadow-purple-500/10'
-                : themeClass('text-slate-400 hover:text-slate-200', 'text-slate-505 hover:text-slate-800')
+                : themeClass('text-slate-400 hover:text-slate-200', 'text-slate-555 hover:text-slate-850')
             }`}
           >
             <Sparkles className="w-3 h-3" />
             <span>Awards ({loyaltyAwards.length})</span>
+          </button>
+          <button
+            onClick={() => {
+              setDeckSubTab('templates');
+              localStorage.setItem('cc-tracker-deck-sub-tab', 'templates');
+            }}
+            className={`flex-1 py-1.5 rounded-lg text-[10px] font-extrabold transition flex items-center justify-center gap-1.5 cursor-pointer ${
+              deckSubTab === 'templates'
+                ? 'bg-gradient-to-tr from-purple-600 to-indigo-600 text-white shadow-sm shadow-purple-500/10'
+                : themeClass('text-slate-400 hover:text-slate-200', 'text-slate-555 hover:text-slate-850')
+            }`}
+          >
+            <Compass className="w-3 h-3" />
+            <span>Library</span>
           </button>
         </div>
       </div>
@@ -210,7 +225,7 @@ export function WalletLibraryTab({
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-4 pb-2 border-b border-dashed border-slate-200/60 dark:border-slate-800/60">
               <h3 className={`text-xs font-bold uppercase tracking-wider flex items-center gap-2 ${themeClass('text-slate-400', 'text-slate-555')}`}>
                 <CreditCard className="w-4 h-4 text-purple-500" />
-                My Wallet ({ownedCards.length} active cards)
+                My Wallet ({ownedCards.length} cards)
               </h3>
               <div className="flex items-center gap-2 flex-wrap">
                 <input
@@ -224,10 +239,11 @@ export function WalletLibraryTab({
                 />
                 <button
                   onClick={() => {
-                    document.getElementById('templates-library-section')?.scrollIntoView({ behavior: 'smooth' });
+                    setDeckSubTab('templates');
+                    localStorage.setItem('cc-tracker-deck-sub-tab', 'templates');
                   }}
                   className="flex items-center gap-1 bg-gradient-to-tr from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-550 text-white font-bold px-3 py-1.5 rounded-lg text-xs transition active:scale-95 shadow-md shadow-purple-500/10 cursor-pointer"
-                  title="Scroll to card templates catalog at the bottom"
+                  title="Switch to template library catalog to add cards"
                 >
                   <Plus className="w-3.5 h-3.5 stroke-[3]" />
                   Add Template Card
@@ -319,17 +335,19 @@ export function WalletLibraryTab({
                 })}
               </div>
             )}
-                  {/* 2. CARD TEMPLATE SELECTION LIBRARY */}
-          <CardTemplatesCatalog
-            themeClass={themeClass}
-            theme={theme}
-            selectedTemplates={selectedTemplates}
-            setSelectedTemplates={setSelectedTemplates}
-            handleAddCard={handleAddCard}
-          />
         </div>
       </div>
     )}
+
+      {deckSubTab === 'templates' && (
+        <CardTemplatesCatalog
+          themeClass={themeClass}
+          theme={theme}
+          selectedTemplates={selectedTemplates}
+          setSelectedTemplates={setSelectedTemplates}
+          handleAddCard={handleAddCard}
+        />
+      )}
 
       {deckSubTab === 'awards' && (() => {
         const activeAwards = loyaltyAwards.filter((a) => (a.usedQuantity || 0) < a.quantity);
