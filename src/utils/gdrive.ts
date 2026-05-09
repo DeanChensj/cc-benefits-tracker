@@ -65,7 +65,7 @@ export async function fetchUserEmail(token: string): Promise<string> {
 export async function findSyncFile(token: string): Promise<string | null> {
   const query = encodeURIComponent("name = 'cc_tracker_sync.json' and parents in 'appDataFolder' and trashed = false");
   const response = await fetch(
-    `https://www.googleapis.com/drive/v3/files?q=${query}&spaces=appDataFolder&fields=files(id,name)`,
+    `https://www.googleapis.com/drive/v3/files?q=${query}&spaces=appDataFolder&fields=files(id,name)&t=${Date.now()}`,
     {
       headers: { Authorization: `Bearer ${token}` },
     }
@@ -80,7 +80,7 @@ export async function findSyncFile(token: string): Promise<string | null> {
 // Download JSON file content from Google Drive
 export async function downloadSyncFile(token: string, fileId: string): Promise<any> {
   const response = await fetch(
-    `https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`,
+    `https://www.googleapis.com/drive/v3/files/${fileId}?alt=media&t=${Date.now()}`,
     {
       headers: { Authorization: `Bearer ${token}` },
     }
