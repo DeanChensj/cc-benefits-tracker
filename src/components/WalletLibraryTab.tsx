@@ -586,9 +586,13 @@ export function WalletLibraryTab({
                         </button>
 
                         <div className="mt-2 flex flex-col items-center">
-                          <span className="text-[8px] font-black tracking-widest uppercase opacity-70 block">Used</span>
-                          <span className="text-base font-black mt-0.5 leading-none">
-                            {usedQty} / {award.quantity}
+                          <span className="text-[8px] font-black tracking-widest uppercase opacity-70 block">Status</span>
+                          <span className={`text-[9px] font-black mt-1 px-2 py-0.5 rounded uppercase border tracking-wide ${
+                            isCompleted 
+                              ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' 
+                              : themeClass('bg-white/15 text-white border-white/10', 'bg-black/5 text-slate-800 border-black/5')
+                          }`}>
+                            {isCompleted ? 'Claimed' : 'Unused'}
                           </span>
                         </div>
 
@@ -596,7 +600,7 @@ export function WalletLibraryTab({
                           <span className={`text-[9px] font-black uppercase tracking-wider block ${
                             isCompleted ? 'text-emerald-400' : theme.glowColor
                           }`}>
-                            {isCompleted ? '✓ Claimed' : `Bal: $${info.value * (award.quantity - usedQty)}`}
+                            {isCompleted ? '✓ Claimed' : `Bal: $${info.value}`}
                           </span>
                         </div>
                       </div>

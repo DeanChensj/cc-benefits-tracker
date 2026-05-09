@@ -17,7 +17,6 @@ export function CreateAwardModal({ isOpen, onClose, themeClass }: CreateAwardMod
   
   // Common inputs
   const [expirationDate, setExpirationDate] = useState<string>('');
-  const [quantity, setQuantity] = useState<number>(1);
   const [notes, setNotes] = useState<string>('');
 
   // Custom overrides (only used if templateId === 'custom')
@@ -43,7 +42,6 @@ export function CreateAwardModal({ isOpen, onClose, themeClass }: CreateAwardMod
       awardType: 'Voucher Type',
       valueLabel: 'Estimated Cash Value (USD)',
       expLabel: 'Expiration Date (Optional)',
-      qtyLabel: 'Quantity',
       notesLabel: 'Custom Notes (Optional)',
       notesPlace: 'e.g., Earned via 40-night milestone',
       cancelBtn: 'Cancel',
@@ -62,7 +60,6 @@ export function CreateAwardModal({ isOpen, onClose, themeClass }: CreateAwardMod
       awardType: '权益类别',
       valueLabel: '估算现值价值 (美元)',
       expLabel: '过期日期 (可选)',
-      qtyLabel: '存量数量',
       notesLabel: '自定义备注 (可选)',
       notesPlace: '例如：通过 40 晚 Milestone 达成获得',
       cancelBtn: '取消',
@@ -80,7 +77,7 @@ export function CreateAwardModal({ isOpen, onClose, themeClass }: CreateAwardMod
     addLoyaltyAward({
       templateId: selectedTemplate,
       expirationDate: expirationDate ? expirationDate : undefined,
-      quantity: Math.max(1, quantity),
+      quantity: 1,
       notes: notes.trim() ? notes.trim() : undefined,
       // Custom properties
       customName: isCustom ? customName.trim() : undefined,
@@ -94,7 +91,6 @@ export function CreateAwardModal({ isOpen, onClose, themeClass }: CreateAwardMod
     
     // Reset fields
     setExpirationDate('');
-    setQuantity(1);
     setNotes('');
     setCustomName('');
     setCustomBrand('');
@@ -292,22 +288,6 @@ export function CreateAwardModal({ isOpen, onClose, themeClass }: CreateAwardMod
             </div>
           </div>
 
-          {/* Quantity Selector */}
-          <div className="space-y-1.5">
-            <label className={`text-[10px] font-extrabold uppercase tracking-wider ${themeClass('text-slate-400', 'text-slate-500')}`}>
-              {dict.qtyLabel}
-            </label>
-            <input
-              required
-              type="number"
-              min="1"
-              value={quantity}
-              onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
-              className={`w-full text-xs font-bold rounded-xl px-3.5 py-2.5 focus:outline-none focus:border-purple-500 border transition ${
-                themeClass('bg-slate-955 border-slate-850 text-white', 'bg-slate-50 border-slate-250 text-slate-800')
-              }`}
-            />
-          </div>
 
           {/* Custom Notes */}
           <div className="space-y-1.5">
