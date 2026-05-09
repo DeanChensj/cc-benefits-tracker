@@ -377,7 +377,6 @@ function App() {
 
     const usedQty = award.usedQuantity || 0;
     const remainingQty = award.quantity - usedQty;
-    const remainingVal = info.value * remainingQty;
     const isFullyUsed = usedQty === award.quantity;
 
     // Synthesize standard Benefit object
@@ -385,7 +384,7 @@ function App() {
       id: award.id,
       name: `${info.name} ${remainingQty > 1 ? `(${remainingQty}x)` : ''}`,
       description: award.notes || `${info.brand} standalone award. ${isFullyUsed ? '(Fully Used)' : `(${usedQty}/${award.quantity} used)`}`,
-      value: isFullyUsed ? info.value * award.quantity : remainingVal,
+      value: info.value * award.quantity,
       resetPeriod: 'fixed',
       expirationDate: award.expirationDate,
       category: (info.awardType === 'fnr' || info.awardType === 'sua' || info.awardType === 'goh' || info.awardType === 'companion' || info.awardType === 'swu') 
