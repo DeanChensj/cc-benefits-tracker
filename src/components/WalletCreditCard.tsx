@@ -191,22 +191,68 @@ export function WalletCreditCard({
         {benefits.length} perks (Total: ${benefits.reduce((s, b) => s + b.value, 0)}/yr)
       </p>
 
-      {/* Annual Fee Recoup Progress Bar */}
+      {/* Annual Fee Recoup Progress circular ring */}
       {cardFee > 0 ? (
-        <div className="mt-3 max-w-[240px] space-y-1.5">
-          <div className={`h-1 w-full rounded-full overflow-hidden ${isSilverCard ? 'bg-black/15' : 'bg-white/20'}`}>
-            <div 
-              className={`h-full rounded-full bg-gradient-to-r ${
-                isRecouped ? 'from-amber-400 via-yellow-400 to-yellow-500' : 'from-purple-500 to-indigo-400'
-              }`}
-              style={{ width: `${Math.min((recouped / cardFee) * 100, 100)}%` }}
-            />
+        <div className={`flex items-center gap-3 mt-3.5 max-w-[240px] p-2 rounded-xl border text-left shadow-inner ${
+          isSilverCard 
+            ? 'bg-black/5 border-black/10 text-slate-900' 
+            : 'bg-white/5 border-white/5 text-white'
+        }`}>
+          <div className="relative w-10 h-10 shrink-0 flex items-center justify-center">
+            <svg className="w-10 h-10 transform -rotate-90">
+              {/* Background Circle */}
+              <circle
+                cx="20"
+                cy="20"
+                r="15"
+                className={`fill-none stroke-current ${isSilverCard ? 'text-black/10' : 'text-white/10'}`}
+                strokeWidth="3"
+              />
+              {/* Foreground Circle */}
+              <circle
+                cx="20"
+                cy="20"
+                r="15"
+                className={`fill-none stroke-current transition-all duration-500 ${
+                  isRecouped 
+                    ? 'text-emerald-500 dark:text-emerald-400 drop-shadow-[0_0_3px_rgba(52,211,153,0.35)]' 
+                    : isSilverCard ? 'text-slate-800' : 'text-purple-500 dark:text-purple-400'
+                }`}
+                strokeWidth="3"
+                strokeDasharray="94.25"
+                strokeDashoffset={94.25 - (94.25 * Math.min(recouped / cardFee, 1))}
+                strokeLinecap="round"
+              />
+            </svg>
+            {/* Center Percentage / Checkmark */}
+            <div className="absolute inset-0 flex items-center justify-center">
+              {isRecouped ? (
+                <span className={`text-xs font-black ${isSilverCard ? 'text-slate-905' : 'text-emerald-500 dark:text-emerald-400'}`}>✓</span>
+              ) : (
+                <span className={`text-[8.5px] font-extrabold font-mono ${isSilverCard ? 'text-slate-900' : 'text-slate-200'}`}>
+                  {Math.round((recouped / cardFee) * 100)}%
+                </span>
+              )}
+            </div>
           </div>
-          <div className={`flex justify-between items-center text-[9px] font-semibold ${isSilverCard ? 'text-slate-900/80 font-bold' : 'text-slate-350'}`}>
-            <span>Fee: ${cardFee}</span>
-            <span className={isRecouped ? (isSilverCard ? 'text-indigo-950 font-black tracking-wide' : 'text-amber-300 font-bold tracking-wide') : ''}>
-              {isRecouped ? '🎉 Recouped!' : `Recouped: $${recouped} (${Math.round((recouped / cardFee) * 100)}%)`}
-            </span>
+
+          <div className="min-w-0 flex-grow flex flex-col justify-center">
+            <div className={`flex justify-between items-baseline text-[9.5px] font-extrabold ${isSilverCard ? 'text-slate-900' : 'text-white'}`}>
+              <span>Recouped</span>
+              <span className={`font-mono text-[11px] font-black ${isRecouped ? (isSilverCard ? 'text-emerald-800' : 'text-emerald-400') : ''}`}>
+                ${recouped}
+              </span>
+            </div>
+            <div className={`flex justify-between items-center text-[8.5px] font-extrabold mt-0.5 ${isSilverCard ? 'text-slate-700' : 'text-slate-300'}`}>
+              <span>Fee: ${cardFee}</span>
+              {isRecouped && (
+                <span className={`text-[7.5px] font-black uppercase tracking-widest px-1.5 py-0.2 rounded shrink-0 animate-pulse ${
+                  themeClass('bg-emerald-500/10 text-emerald-600 border border-emerald-500/20', 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20')
+                }`}>
+                  Profit!
+                </span>
+              )}
+            </div>
           </div>
         </div>
       ) : (
@@ -272,9 +318,16 @@ export function WalletCreditCard({
             }`}>Active Temporary Offers</p>
             <div className="space-y-1">
               {instance.instanceOffers.map((offer) => (
-                <div key={offer.id} className="flex items-center justify-between text-[10px] bg-purple-500/10 border border-purple-500/15 p-1.5 rounded text-slate-200 group/offer">
+                <div 
+                  key={offer.id} 
+                  className={`flex items-center justify-between text-[10px] p-1.5 rounded border ${
+                    isSilverCard 
+                      ? 'bg-black/5 border-black/5 text-slate-900 font-bold' 
+                      : 'bg-purple-500/10 border-purple-500/15 text-slate-200'
+                  }`}
+                >
                   <span className="truncate pr-2">{offer.name}</span>
-                  <div className="flex items-center gap-1.5 shrink-0 font-bold text-white">
+                  <div className={`flex items-center gap-1.5 shrink-0 font-bold ${isSilverCard ? 'text-slate-950' : 'text-white'}`}>
                     <span>+${offer.value}</span>
                     <button
                       type="button"
@@ -456,21 +509,29 @@ export function WalletCreditCard({
 
       <div className="mt-3 pt-3 border-t border-white/10 flex items-center justify-between gap-2 flex-wrap">
         <div className="flex items-center gap-1.5">
-          <label className="text-[10px] font-medium text-slate-350">
+          <label className={`text-[10px] font-bold ${isSilverCard ? 'text-slate-800' : 'text-slate-350'}`}>
             Opened:
           </label>
           <input
             type="date"
             value={instance.cardOpenDate}
             onChange={(e) => setCardOpenDate(instance.id, e.target.value)}
-            className="bg-slate-955 border border-slate-800 text-slate-300 text-[11px] rounded px-2 py-0.5 focus:outline-none cursor-pointer font-medium"
+            className={`text-[11px] rounded px-2 py-0.5 focus:outline-none cursor-pointer font-medium transition border ${
+              isSilverCard
+                ? 'bg-slate-950/10 border-slate-950/10 text-slate-950'
+                : 'bg-slate-955 border border-slate-800 text-slate-300'
+            }`}
           />
         </div>
 
         <button
           type="button"
           onClick={() => setAddOfferInstanceId(instance.id)}
-          className="flex items-center gap-1 bg-white/10 hover:bg-white/20 dark:bg-slate-955 dark:hover:bg-slate-850 border border-white/10 dark:border-slate-800 text-white dark:text-slate-300 font-bold px-2.5 py-1 rounded-lg text-[9px] transition active:scale-95 cursor-pointer"
+          className={`flex items-center gap-1 font-bold px-2.5 py-1 rounded-lg text-[9px] transition active:scale-95 cursor-pointer border ${
+            isSilverCard
+              ? 'bg-slate-950/5 hover:bg-slate-950/10 border-slate-950/10 text-slate-900'
+              : 'bg-white/10 hover:bg-white/20 border-white/10 text-slate-300 dark:bg-slate-955 dark:hover:bg-slate-850 dark:border-slate-800 dark:text-slate-300'
+          }`}
         >
           <Plus className="w-2.5 h-2.5 stroke-[3]" />
           Add Offer
