@@ -607,13 +607,7 @@ function App() {
             </button>
           </div>
 
-          {ownedCards.length > 0 && activeTab !== 'cards' && (
-            <div className={`text-xs font-bold uppercase tracking-wider px-3 py-1.5 rounded-lg border ${
-              themeClass('bg-slate-900/40 border-slate-900 text-slate-400', 'bg-slate-100 border-slate-200 text-slate-600')
-            }`}>
-              🏆 Recouped: <span className="text-emerald-500 font-extrabold">${resolvedValue}</span> / <span className={themeClass('text-white', 'text-slate-900')}>${totalPotentialValue}</span>
-            </div>
-          )}
+          
         </div>
 
         {/* 0. Glanceable Point Multiplier Checkout Winners Row */}
