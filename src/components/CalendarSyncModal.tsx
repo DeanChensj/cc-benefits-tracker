@@ -3,7 +3,7 @@ import { downloadICSFile } from '../utils/calendar';
 import type { OwnedCardInstance } from '../store/useCardStore';
 import type { LoyaltyAward } from '../data/cards.db';
 
-import type { LogEntry } from '../utils/dateUtils';
+import type { LogEntry } from '../utils/logUtils';
 
 interface CalendarSyncModalProps {
   isOpen: boolean;

@@ -1,8 +1,8 @@
 import { CARDS_DB, AWARD_TEMPLATES } from '../data/cards.db';
 import type { Benefit, LoyaltyAward } from '../data/cards.db';
 import type { OwnedCardInstance } from '../store/useCardStore';
-import { obfuscateKey } from './dateUtils';
-import type { LogEntry } from './dateUtils';
+import { obfuscateKey } from './cryptoUtils';
+import type { LogEntry } from './logUtils';
 
 // Format date to ICS format (YYYYMMDD or YYYYMMDDTHHMMSS)
 const formatICSDate = (date: Date): string => {

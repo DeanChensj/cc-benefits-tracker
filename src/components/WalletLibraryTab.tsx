@@ -5,7 +5,7 @@ import { CardDetailDrawer } from './CardDetailDrawer';
 import { CARDS_DB, AWARD_TEMPLATES } from '../data/cards.db';
 import type { LoyaltyAward, CardTemplate } from '../data/cards.db';
 import type { OwnedCardInstance } from '../store/useCardStore';
-import { getCardPotentialValue } from '../utils/dateUtils';
+import { getCardPotentialValue } from '../utils/valuationUtils';
 
 interface WalletLibraryTabProps {
   ownedCards: OwnedCardInstance[];

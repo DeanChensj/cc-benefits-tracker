@@ -1,6 +1,6 @@
 import { X, Plus, Info, Calendar, Heart, ExternalLink } from 'lucide-react';
 import type { CardTemplate } from '../data/cards.db';
-import { getAnnualValue } from '../utils/dateUtils';
+import { getAnnualValue } from '../utils/valuationUtils';
 
 interface CardDetailDrawerProps {
   isOpen: boolean;

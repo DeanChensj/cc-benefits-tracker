@@ -19,7 +19,9 @@ import { SavingsWrappedModal } from './components/SavingsWrappedModal';
 import { CloudSyncBanner } from './components/CloudSyncBanner';
 import { ActiveChecklistTab } from './components/ActiveChecklistTab';
 import { WalletLibraryTab } from './components/WalletLibraryTab';
-import { getLocalDateString, getAnnualFeeWarningInfo, parseLogEntry, obfuscateKey } from './utils/dateUtils';
+import { getLocalDateString, getAnnualFeeWarningInfo } from './utils/dateUtils';
+import { parseLogEntry } from './utils/logUtils';
+import { obfuscateKey } from './utils/cryptoUtils';
 import { loadGoogleGsiScript, requestGDriveToken, fetchUserEmail } from './utils/gdrive';
 import { 
   CreditCard, 

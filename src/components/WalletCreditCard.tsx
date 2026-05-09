@@ -1,7 +1,7 @@
 import { Plus, Trash2, ExternalLink, Edit3, ChevronDown } from 'lucide-react';
 import { CARDS_DB, CARD_MULTIPLIERS } from '../data/cards.db';
 import type { OwnedCardInstance } from '../store/useCardStore';
-import { getCardPotentialValue } from '../utils/dateUtils';
+import { getCardPotentialValue } from '../utils/valuationUtils';
 
 interface WalletCreditCardProps {
   instance: OwnedCardInstance;

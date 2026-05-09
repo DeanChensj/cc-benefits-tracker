@@ -3,8 +3,9 @@ import { persist } from 'zustand/middleware';
 import { CARDS_DB } from '../data/cards.db';
 import type { Benefit, LoyaltyAward } from '../data/cards.db';
 import { findSyncFile, uploadSyncFile, downloadSyncFile } from '../utils/gdrive';
-import type { LogEntry } from '../utils/dateUtils';
-import { obfuscateKey, deobfuscateKey, parseLogEntry } from '../utils/dateUtils';
+import type { LogEntry } from '../utils/logUtils';
+import { parseLogEntry } from '../utils/logUtils';
+import { obfuscateKey, deobfuscateKey } from '../utils/cryptoUtils';
 
 export interface OwnedCardInstance {
   id: string; // Unique instance ID (e.g. inst_171500000)

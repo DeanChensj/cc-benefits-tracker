@@ -1,8 +1,10 @@
 import React from 'react';
 import { CheckCircle2 } from 'lucide-react';
-import type { ActiveBenefit, LogEntry } from '../utils/dateUtils';
+import type { ActiveBenefit } from '../utils/dateUtils';
+import type { LogEntry } from '../utils/logUtils';
+import { parseLogEntry } from '../utils/logUtils';
+import { obfuscateKey } from '../utils/cryptoUtils';
 import { AWARD_TEMPLATES } from '../data/cards.db';
-import { parseLogEntry, obfuscateKey } from '../utils/dateUtils';
 
 interface ChecklistCardRowProps {
   ab: ActiveBenefit;
