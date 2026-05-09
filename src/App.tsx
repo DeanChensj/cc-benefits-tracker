@@ -519,8 +519,13 @@ function App() {
               <CreditCard className="w-6 h-6 stroke-[2]" />
             </div>
             <div>
-              <h1 className={`text-lg font-bold tracking-tight ${themeClass('text-white', 'text-slate-900')}`}>Credit Card Benefits Tracker</h1>
-              <p className={`text-xs flex items-center gap-1.5 ${themeClass('text-slate-400', 'text-slate-500')}`}>
+              <div className="flex items-baseline gap-2 flex-wrap">
+                <h1 className={`text-lg font-bold tracking-tight ${themeClass('text-white', 'text-slate-900')}`}>PerkFolio</h1>
+                <span className={`text-[9px] font-black uppercase tracking-widest ${themeClass('text-slate-450', 'text-slate-500')}`}>
+                  • Smart Perks & Awards Portfolio
+                </span>
+              </div>
+              <p className={`text-xs flex items-center gap-1.5 mt-0.5 ${themeClass('text-slate-400', 'text-slate-550')}`}>
                 <span className={`w-1.5 h-1.5 rounded-full animate-pulse ${themeClass('bg-green-500', 'bg-green-600')}`}></span>
                 <span>Today: {new Date().toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}</span>
               </p>
@@ -628,7 +633,7 @@ function App() {
       <main className="max-w-4xl mx-auto px-4 py-8">
         
         {/* Stats Cards */}
-        <section className="grid grid-cols-3 gap-3 mb-8">
+        <section className="grid grid-cols-3 gap-3 mb-6">
           <div className={`border rounded-xl p-3 sm:p-4 transition duration-300 ${
             themeClass('bg-slate-900/50 border-slate-800/60', 'bg-white border-slate-200 shadow-sm')
           }`}>
@@ -785,7 +790,7 @@ function App() {
         </div>
 
         <p className={`text-[9px] font-bold tracking-wider uppercase ${themeClass('text-slate-500/80', 'text-slate-450')}`}>
-          💳 CC Benefits Tracker • Made with Passion for Savvy Churners
+          💳 PerkFolio • Made with Passion for Savvy Churners
         </p>
         <p className="text-[8.5px] leading-relaxed max-w-md mx-auto opacity-70 text-slate-500 dark:text-slate-450 font-medium">
           🔒 Historical logs older than 24 months are automatically pruned to optimize loading speeds and minimize cellular data usage.

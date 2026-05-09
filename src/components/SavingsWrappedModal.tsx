@@ -503,7 +503,7 @@ export function SavingsWrappedModal({
               <text x="100" y="605" fill="rgba(255, 255, 255, 0.5)" fontSize="6.5" fontWeight="700" fontFamily="Inter, system-ui, sans-serif">{dict.scannerLabel}</text>
 
               {/* Luxury gold-brushed brand name text filling the bottom-left space perfectly! */}
-              <text x="40" y="572" fill="url(#brushedGold)" fontSize="7.5" fontWeight="950" letterSpacing="1.5" fontFamily="Inter, system-ui, sans-serif">CC BENEFITS TRACKER</text>
+              <text x="40" y="572" fill="url(#brushedGold)" fontSize="7.5" fontWeight="950" letterSpacing="1.5" fontFamily="Inter, system-ui, sans-serif">PERKFOLIO</text>
 
               {/* Dynamic scannable QR Code (100% CORS-free static inline Base64 PNG!) */}
               <rect x="300" y="578" width="42" height="42" rx="6" fill="none" stroke="url(#brushedGold)" strokeWidth="1.5" strokeDasharray="16, 3" />

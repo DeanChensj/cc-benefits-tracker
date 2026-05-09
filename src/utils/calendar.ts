@@ -25,7 +25,7 @@ export const downloadICSFile = (
   let icsContent = [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
-    'PRODID:-//Antigravity//CC Benefits Tracker//EN',
+    'PRODID:-//Antigravity//PerkFolio//EN',
     'CALSCALE:GREGORIAN',
     'METHOD:PUBLISH'
   ];
@@ -58,7 +58,7 @@ export const downloadICSFile = (
         if (isResolved) return;
       }
       // Ensure unique UID per instance
-      const uid = `${cardInstance.id}-${benefit.id}@cc-benefits-tracker`;
+      const uid = `${cardInstance.id}-${benefit.id}@perkfolio`;
       const title = `💳 Use ${cardInstance.customName} - ${benefit.name}`;
       
       let rrule = '';
@@ -133,7 +133,7 @@ export const downloadICSFile = (
       value: award.customValue || 0
     } : AWARD_TEMPLATES[award.templateId];
 
-    const uid = `${award.id}@cc-benefits-tracker`;
+    const uid = `${award.id}@perkfolio`;
     const title = `🎁 Expiring: ${info.name} (${award.quantity}x)`;
     const exp = new Date(award.expirationDate + 'T00:00:00');
     
@@ -163,7 +163,7 @@ export const downloadICSFile = (
   const blob = new Blob([icsContent.join('\r\n')], { type: 'text/calendar;charset=utf-8' });
   const link = document.createElement('a');
   link.href = window.URL.createObjectURL(blob);
-  link.setAttribute('download', 'credit_card_benefits_reminders.ics');
+  link.setAttribute('download', 'perkfolio_reminders.ics');
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);

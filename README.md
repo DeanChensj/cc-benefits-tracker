@@ -1,10 +1,10 @@
-# 💳 Credit Card Benefits Tracker: Local-First Financial Sandbox
+# 💳 PerkFolio: Local-First Financial Sandbox
 
 [中文版说明](./README.zh-CN.md) | English Version
 
 ---
 
-A premium, absolute-privacy, and local-first personal credit card benefits tracker. **Zero account logins, zero password databases, and 100% browser-only processing**. 
+A premium, absolute-privacy, and local-first personal credit card perks portfolio. **Zero account logins, zero password databases, and 100% browser-only processing**. 
 
 It merges card perks metadata with your local checklist logs in real time to manage statement cycles, travel credits, and cardmember anniversaries—computed entirely client-side without any server database or backend cron jobs.
 
