@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 // Meticulously audited and verified PWA release build with dynamic re-auth and contrast fixes
 import { CARDS_DB, CARD_MULTIPLIERS, AWARD_TEMPLATES } from './data/cards.db';
 import type { CardTemplate, Benefit, LoyaltyAward } from './data/cards.db';
@@ -77,6 +77,8 @@ function App() {
   } = useCardStore();
 
   const themeClass = (dark: string, light: string) => theme === 'dark' ? dark : light;
+
+  const lastSyncTimeRef = useRef<number>(0);
 
   // Date to evaluate states against (defaults to current system date)
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -196,6 +198,24 @@ function App() {
   useEffect(() => {
     localStorage.setItem('cc-tracker-filter-card', filterCardInstanceId);
   }, [filterCardInstanceId]);
+
+  // Auto-Refocus Sync: Trigger background two-way sync merge when browser tab is focused
+  useEffect(() => {
+    const handleFocus = () => {
+      const state = useCardStore.getState();
+      if (state.gdriveToken && state.syncStatus === 'synced') {
+        const now = Date.now();
+        if (now - lastSyncTimeRef.current < 30000) return; // Throttle high-frequency requests
+        lastSyncTimeRef.current = now;
+
+        console.log('🔄 Auto-Refocus Sync: Tab focused. Triggering background sync merge.');
+        state.syncWithGDrive().catch((err) => console.error('Auto-Refocus Sync failed:', err));
+      }
+    };
+
+    window.addEventListener('focus', handleFocus);
+    return () => window.removeEventListener('focus', handleFocus);
+  }, [syncStatus]);
 
   // Connection & Sync Handlers
   const handleLinkGoogleDrive = async () => {
@@ -659,11 +679,11 @@ function App() {
                   </div>
 
                   {syncStatus === 'synced' && (
-                    <div className={`p-2 rounded bg-slate-955/40 dark:bg-slate-950/60 border text-[10px] text-left space-y-1 ${
-                      themeClass('border-slate-850 text-slate-400', 'border-slate-200 text-slate-600')
+                    <div className={`p-2.5 rounded-xl border text-[10px] text-left space-y-1 ${
+                      themeClass('bg-slate-950 border-slate-850 text-slate-300', 'bg-slate-50 border-slate-200 text-slate-750 shadow-inner')
                     }`}>
-                      <p className="truncate font-medium">Account: {gdriveEmail}</p>
-                      <p className="opacity-80">Last synced: {lastSyncedTime || 'Just now'}</p>
+                      <p className="truncate font-bold">Account: {gdriveEmail}</p>
+                      <p className="opacity-80 font-medium">Last synced: {lastSyncedTime || 'Just now'}</p>
                     </div>
                   )}
 
@@ -691,7 +711,7 @@ function App() {
                           }}
                           className="w-full bg-gradient-to-tr from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-550 text-white font-bold py-2 rounded-lg text-[10px] transition active:scale-95 shadow shadow-purple-500/10 cursor-pointer"
                         >
-                          Force Sync Now
+                          {language === 'zh' ? '立即同步' : 'Sync Now'}
                         </button>
                         <button
                           onClick={() => {
@@ -735,7 +755,9 @@ function App() {
                         themeClass('text-slate-500 hover:text-slate-450', 'text-slate-450 hover:text-slate-600')
                       }`}
                     >
-                      {showAdvancedSync ? '▼ Developer Options' : '▶ Developer Options'}
+                      {showAdvancedSync 
+                        ? (language === 'zh' ? '▼ 开发者选项' : '▼ Developer Options') 
+                        : (language === 'zh' ? '▶ 开发者选项' : '▶ Developer Options')}
                     </button>
 
                     {showAdvancedSync && (
