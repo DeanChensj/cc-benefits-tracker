@@ -44,60 +44,55 @@ export function WalletCreditCard({
   const isSilverCard = instance.templateId === 'amex-platinum' || 
                        instance.templateId === 'amex-biz-platinum' || 
                        instance.templateId === 'amex-gold';
-  const isSinglePerkCard = benefits.length <= 1 && (!instance.instanceOffers || instance.instanceOffers.length === 0);
 
 
   return (
-    <div 
-      className={`p-4 rounded-xl border flex flex-col justify-between transition bg-gradient-to-tr ${cardColor} relative overflow-hidden group/card after:absolute after:top-0 after:-left-[150%] after:w-[60%] after:h-full after:bg-gradient-to-r after:from-transparent after:via-white/15 dark:after:via-white/10 after:to-transparent after:skew-x-12 after:transition-all after:duration-700 hover:after:left-[150%] duration-300 ${
-        isRecouped 
-          ? 'ring-2 ring-amber-500/50 dark:ring-amber-400/40 shadow-lg shadow-amber-500/5 scale-[1.01] border-amber-500/25' 
-          : isSilverCard
-          ? themeClass('border-slate-300 text-slate-900 shadow-sm', 'border-slate-300 text-slate-900 shadow-sm')
-          : themeClass('border-purple-900/30 hover:border-purple-800/50', 'border-slate-250/40 hover:border-slate-300 shadow-md text-slate-100')
-      }`}
-    >
-      <div className="pb-3">
-        <div className="flex items-center justify-between">
+    <div className="flex flex-col w-full transition duration-200 hover:scale-[1.01]">
+      {/* A. Upper Part: Realistic Virtual Credit Card Face (1.58:1 Ratio) */}
+      <div
+        className={`aspect-[1.58/1] w-full rounded-2xl relative p-4 flex flex-col justify-between text-white overflow-hidden shadow-xl select-none bg-gradient-to-tr ${cardColor} border transition-all duration-300 hover:shadow-2xl group/card ${
+          isRecouped 
+            ? 'ring-2 ring-amber-500/50 dark:ring-amber-400/35 border-amber-500/30 shadow-lg shadow-amber-500/5'
+            : isSilverCard
+            ? 'border-slate-350/65 text-slate-900 font-bold shadow-md shadow-slate-200/10'
+            : 'border-purple-900/20 text-slate-100'
+        }`}
+      >
+        {/* Hover Metallic Gloss Sheen */}
+        <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/10 to-transparent opacity-0 group-hover/card:opacity-100 duration-1000 transition-all -translate-x-full group-hover/card:translate-x-full skew-x-12 scale-150 pointer-events-none" />
+
+        {/* Card Face Header: Bank/Opened Tag and duplicate actions */}
+        <div className="flex items-center justify-between z-10 relative">
           <div className="flex items-center gap-1.5">
-            <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-md uppercase tracking-wider ${
+            <span className={`text-[8px] font-black px-1.5 py-0.5 rounded-md uppercase tracking-widest ${
               isSilverCard
-                ? 'bg-slate-955/15 text-slate-800 border border-slate-955/10 font-black'
-                : 'bg-purple-500/15 text-purple-350 dark:text-purple-400 border border-purple-500/20'
+                ? 'bg-slate-955/15 text-slate-800 border border-slate-955/10'
+                : 'bg-white/15 text-white border border-white/15'
             }`}>
               {instance.templateId === 'custom' ? (instance.bank || 'Custom') : (template?.bank || 'Standard')}
             </span>
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                onEditCard(instance);
-              }}
-              className={`text-[8px] font-black tracking-wider uppercase opacity-75 cursor-pointer hover:underline hover:opacity-100 transition ${
-                isSilverCard ? 'text-slate-850' : 'text-slate-300'
-              }`}
-              title="Click to configure card opened date, multipliers & SUB"
-            >
+            <span className={`text-[7.5px] font-extrabold uppercase tracking-widest opacity-85 ${isSilverCard ? 'text-slate-800' : 'text-slate-350'}`}>
               Opened: {instance.cardOpenDate}
-            </button>
+            </span>
+          </div>
+
+          <div className="flex items-center gap-1 opacity-0 group-hover/card:opacity-100 transition-opacity duration-250">
             {template?.officialUrl && (
               <a
                 href={template.officialUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className={`transition active:scale-90 cursor-pointer ${
-                  isSilverCard ? 'text-slate-800/70 hover:text-slate-955' : 'text-white/60 hover:text-white'
-                }`}
-                title="View Official Application Details Page"
+                onClick={(e) => e.stopPropagation()}
+                className={`p-1 rounded hover:bg-white/10 transition cursor-pointer ${isSilverCard ? 'text-slate-800' : 'text-white'}`}
+                title="Official URL"
               >
                 <ExternalLink className="w-3 h-3 stroke-[2.5]" />
               </a>
             )}
-          </div>
-          <div className="flex items-center gap-1.5">
             {instance.templateId === 'custom' ? (
               <button
-                onClick={() => {
+                onClick={(e) => {
+                  e.stopPropagation();
                   handleAddCustomCard({
                     templateId: 'custom',
                     customName: `${instance.customName} (Copy)`,
@@ -111,225 +106,243 @@ export function WalletCreditCard({
                     })),
                   });
                 }}
-                className={`p-1 rounded transition cursor-pointer active:scale-90 ${
-                  isSilverCard ? 'text-slate-700 hover:text-slate-950 hover:bg-black/5' : 'text-slate-400 hover:text-white hover:bg-white/10'
-                }`}
-                title="Duplicate card"
+                className={`p-1 rounded transition cursor-pointer ${isSilverCard ? 'text-slate-700 hover:text-slate-955 hover:bg-black/5' : 'text-slate-400 hover:text-white hover:bg-white/10'}`}
+                title="Duplicate"
               >
-                <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
+                <Plus className="w-3 h-3 stroke-[2.5]" />
               </button>
             ) : (
               <button
-                onClick={() => handleAddCard(instance.templateId)}
-                className={`p-1 rounded transition cursor-pointer active:scale-90 ${
-                  isSilverCard ? 'text-slate-700 hover:text-slate-955 hover:bg-black/5' : 'text-slate-400 hover:text-white hover:bg-white/10'
-                }`}
-                title="Add another instance"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleAddCard(instance.templateId);
+                }}
+                className={`p-1 rounded transition cursor-pointer ${isSilverCard ? 'text-slate-700 hover:text-slate-955 hover:bg-black/5' : 'text-slate-400 hover:text-white hover:bg-white/10'}`}
+                title="Add instance"
               >
-                <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
+                <Plus className="w-3 h-3 stroke-[2.5]" />
               </button>
             )}
             <button
-              onClick={() => handleRemoveCard(instance.id)}
-              className={`p-1 rounded transition cursor-pointer active:scale-90 ${
-                isSilverCard ? 'text-red-700 hover:text-red-850 hover:bg-red-500/10' : 'text-red-400 hover:text-red-350 hover:bg-red-550/10'
-              }`}
-              title="Delete card instance"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleRemoveCard(instance.id);
+              }}
+              className={`p-1 rounded transition cursor-pointer ${isSilverCard ? 'text-red-700 hover:text-red-850 hover:bg-red-500/10' : 'text-red-400 hover:text-red-350 hover:bg-red-550/10'}`}
+              title="Remove"
             >
-              <Trash2 className="w-3.5 h-3.5" />
+              <Trash2 className="w-3 h-3" />
             </button>
           </div>
         </div>
+
+        {/* Card Face Body: EMV Chip & Contactless Antenna */}
+        <div className="flex items-center gap-2.5 my-auto z-10 relative">
+          {/* CSS Micro-Engineered Gold EMV Chip */}
+          <div className="w-8 h-6 rounded-md bg-gradient-to-tr from-amber-200 via-yellow-400 to-amber-300 border border-amber-500/20 shadow-sm relative flex flex-wrap p-0.5 overflow-hidden opacity-90">
+            <div className="w-1/2 h-full border-r border-amber-600/20" />
+            <div className="w-full h-[1px] bg-amber-600/20 absolute top-1/2 left-0" />
+            <div className="w-full h-[1px] bg-amber-600/20 absolute top-1/4 left-0" />
+            <div className="w-full h-[1px] bg-amber-600/20 absolute top-3/4 left-0" />
+          </div>
+
+          {/* Contactless antenna waves */}
+          <div className={`flex items-center gap-[1.5px] rotate-90 scale-75 origin-center font-extrabold text-[8px] opacity-60 ${isSilverCard ? 'text-slate-900' : 'text-white'}`}>
+            <span>(</span><span>(</span><span>(</span>
+          </div>
+        </div>
+
+        {/* Card Face Footer: Template Name & Custom Label Duet */}
+        <div className="flex items-end justify-between z-10 relative">
+          <div className="min-w-0 flex-grow mr-2">
+            <div 
+              onClick={(e) => {
+                e.stopPropagation();
+                onEditCard(instance);
+              }}
+              className="flex items-center gap-1.5 cursor-pointer group/edit max-w-fit"
+              title="Click to edit card details"
+            >
+              <h4 className={`text-sm font-black uppercase tracking-wider truncate ${isSilverCard ? 'text-slate-905' : 'text-white'}`}>
+                {instance.templateId === 'custom' ? instance.customName : (template?.name || 'Card')}
+              </h4>
+              <Edit3 className={`w-3 h-3 shrink-0 opacity-50 group-hover/edit:opacity-100 ${isSilverCard ? 'text-slate-850' : 'text-slate-350'}`} />
+            </div>
+            {/* Custom Sub-label displaying the user-defined customName */}
+            {instance.templateId !== 'custom' && (
+              <p className={`text-[8px] uppercase tracking-widest opacity-75 mt-0.5 truncate ${isSilverCard ? 'text-slate-755 font-bold' : 'text-slate-300'}`}>
+                {instance.customName}
+              </p>
+            )}
+          </div>
+
+          {/* Visual Network Emblem watermark */}
+          <span className={`text-[11px] font-black italic tracking-widest opacity-75 ${isSilverCard ? 'text-slate-900' : 'text-white/90'}`}>
+            {template?.bank === 'Amex' ? 'AMEX' : template?.bank === 'Chase' ? 'VISA' : 'MC'}
+          </span>
+        </div>
       </div>
 
-      <h4 
-        onClick={(e) => {
-          e.stopPropagation();
-          onEditCard(instance);
-        }}
-        className={`text-base font-bold mt-1.5 flex items-center gap-1 cursor-pointer transition ${
-          isSilverCard ? 'hover:text-slate-850 text-slate-950 font-black' : 'hover:text-purple-300 text-white'
-        }`}
-        title="Click to configure card opened date, multipliers & SUB"
-      >
-        {instance.customName}
-        <Edit3 className={`w-3 h-3 shrink-0 ${isSilverCard ? 'text-slate-850/60' : 'text-slate-400'}`} />
-      </h4>
-
-
-
-      {/* Annual Fee Recoup Progress circular ring */}
-      {cardFee > 0 ? (
-        <div className={`flex items-center gap-3 mt-3.5 max-w-[240px] p-2 rounded-xl border text-left shadow-inner ${
-          isSilverCard 
-            ? 'bg-black/5 border-black/10 text-slate-900' 
-            : 'bg-white/5 border-white/5 text-white'
-        }`}>
-          <div className="relative w-10 h-10 shrink-0 flex items-center justify-center">
-            <svg className="w-10 h-10 transform -rotate-90">
-              {/* Background Circle */}
-              <circle
-                cx="20"
-                cy="20"
-                r="15"
-                className={`fill-none stroke-current ${isSilverCard ? 'text-black/10' : 'text-white/10'}`}
-                strokeWidth="3"
-              />
-              {/* Foreground Circle */}
-              <circle
-                cx="20"
-                cy="20"
-                r="15"
-                className={`fill-none stroke-current transition-all duration-500 ${
-                  isRecouped 
-                    ? 'text-emerald-500 dark:text-emerald-400 drop-shadow-[0_0_3px_rgba(52,211,153,0.35)]' 
-                    : isSilverCard ? 'text-slate-800' : 'text-purple-500 dark:text-purple-400'
-                }`}
-                strokeWidth="3"
-                strokeDasharray="94.25"
-                strokeDashoffset={94.25 - (94.25 * Math.min(recouped / cardFee, 1))}
-                strokeLinecap="round"
-              />
-            </svg>
-            {/* Center Percentage / Checkmark */}
-            <div className="absolute inset-0 flex items-center justify-center">
-              {isRecouped ? (
-                <span className={`text-xs font-black ${isSilverCard ? 'text-slate-905' : 'text-emerald-500 dark:text-emerald-400'}`}>✓</span>
-              ) : (
-                <span className={`text-[8.5px] font-extrabold font-mono ${isSilverCard ? 'text-slate-900' : 'text-slate-200'}`}>
-                  {Math.round((recouped / cardFee) * 100)}%
-                </span>
-              )}
-            </div>
-          </div>
-
-          <div className="min-w-0 flex-grow flex flex-col justify-center">
-            <div className={`flex justify-between items-baseline text-[9.5px] font-extrabold ${isSilverCard ? 'text-slate-900' : 'text-white'}`}>
-              <span>Recouped</span>
-              <span className={`font-mono text-[11px] font-black ${isRecouped ? (isSilverCard ? 'text-emerald-800' : 'text-emerald-400') : ''}`}>
-                ${recouped}
-              </span>
-            </div>
-            <div className={`flex justify-between items-center text-[8.5px] font-extrabold mt-0.5 ${isSilverCard ? 'text-slate-700' : 'text-slate-300'}`}>
-              <span>Fee: ${cardFee}</span>
-              {isRecouped && (
-                <span className={`text-[7.5px] font-black uppercase tracking-widest px-1.5 py-0.2 rounded shrink-0 animate-pulse ${
-                  themeClass('bg-emerald-500/10 text-emerald-600 border border-emerald-500/20', 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20')
-                }`}>
-                  Profit!
-                </span>
-              )}
-            </div>
-          </div>
-        </div>
-      ) : (
-        <p className={`text-[9px] font-bold mt-2.5 flex items-center gap-1 ${isSilverCard ? 'text-emerald-855 font-extrabold' : 'text-emerald-400'}`}>
-          <span>✓ No Annual Fee (Free Card!)</span>
-        </p>
-      )}
-
-      {/* 1. Accordion Expand Toggle Bar (Rendered only if there are multiple perks/offers) */}
-      {!isSinglePerkCard && (
-        <button
-          type="button"
-          onClick={(e) => {
-            e.stopPropagation();
-            toggleCardExpanded(instance.id);
-          }}
-          className={`w-full mt-3 px-2.5 py-1.5 rounded-lg border text-[9px] font-extrabold tracking-wider uppercase flex items-center justify-between transition active:scale-[0.98] cursor-pointer ${
-            isSilverCard
-              ? 'bg-slate-955/5 border-slate-955/10 text-slate-900 hover:bg-slate-955/10'
-              : 'bg-white/5 hover:bg-white/10 border-white/5 text-slate-300 hover:text-white'
-          }`}
-        >
-          <span className="flex items-center gap-1.5">
-            {isCardExpanded ? '▲ Hide Details' : '▼ Show Details'}
-            <span className={`text-[8px] opacity-75 lowercase font-semibold px-1 rounded ${
-              isSilverCard ? 'bg-black/10' : 'bg-white/10'
-            }`}>
-              {benefits.length} perks {instance.instanceOffers && instance.instanceOffers.length > 0 ? `+ ${instance.instanceOffers.length} offers` : ''}
-            </span>
-          </span>
-          <ChevronDown className={`w-3 h-3 transition-transform duration-300 transform ${
-            isCardExpanded ? 'rotate-180' : 'rotate-0'
-          }`} />
-        </button>
-      )}
-
-      {/* 2. Collapsible Drawer Panel */}
-      <div className={`transition-all duration-300 ease-in-out overflow-hidden ${
-        isSinglePerkCard
-          ? 'border-t border-dashed border-white/10 dark:border-black/5 pt-3 mt-3 opacity-100 max-h-[200px]'
-          : isCardExpanded
-          ? 'max-h-[1200px] opacity-100 border-t border-dashed border-white/10 dark:border-black/5 pt-3 mt-3'
-          : 'max-h-0 opacity-0 pointer-events-none'
+      {/* B. Lower Part: Glassmorphic Analytics & Action Tray (Attached) */}
+      <div className={`p-4 rounded-2xl border border-t-0 rounded-t-none flex flex-col justify-between transition duration-250 -mt-3 pt-6 shadow-md ${
+        themeClass(
+          'bg-slate-900/45 border-slate-850/80 shadow-black/10', 
+          'bg-white/90 border-slate-200 shadow-slate-100/50'
+        )
       }`}>
-        {/* Benefits preview inline list */}
-        <div className="space-y-1 text-left">
-          {benefits.map((b) => (
-            <div key={b.id} className={`flex items-center justify-between text-[10px] p-1 rounded ${
-              isSilverCard 
-                ? 'bg-slate-950/10 border border-black/5 text-slate-900 font-bold' 
-                : 'bg-slate-955/40 border border-white/5 text-slate-300'
-            }`}>
-              <span className="truncate">{b.name}</span>
-              <span className={`font-bold ${isSilverCard ? 'text-slate-950 font-black' : 'text-white'}`}>${b.value}</span>
-            </div>
-          ))}
-        </div>
-
-        {/* Google Drive / Instance Custom Offers List */}
-        {instance.instanceOffers && instance.instanceOffers.length > 0 && (
-          <div className="mt-3 pt-3 border-t border-white/10 dark:border-black/5 space-y-1.5 text-left">
-            <p className={`text-[8px] font-black uppercase tracking-widest ${
-              isSilverCard ? 'text-indigo-950' : 'text-purple-400 dark:text-purple-500'
-            }`}>Active Temporary Offers</p>
-            <div className="space-y-1">
-              {instance.instanceOffers.map((offer) => (
-                <div 
-                  key={offer.id} 
-                  className={`flex items-center justify-between text-[10px] p-1.5 rounded border ${
-                    isSilverCard 
-                      ? 'bg-black/5 border-black/5 text-slate-900 font-bold' 
-                      : 'bg-purple-500/10 border-purple-500/15 text-slate-200'
+        {/* Recoup Progress Circle (if cardFee > 0) */}
+        {cardFee > 0 ? (
+          <div className={`flex items-center gap-3 p-2 rounded-xl border text-left shadow-inner ${
+            themeClass('bg-white/5 border-white/5 text-slate-300', 'bg-slate-950/5 border-slate-800/10 text-slate-800')
+          }`}>
+            <div className="relative w-10 h-10 shrink-0 flex items-center justify-center">
+              <svg className="w-10 h-10 transform -rotate-90">
+                <circle
+                  cx="20"
+                  cy="20"
+                  r="15"
+                  className={`fill-none stroke-current ${themeClass('text-white/10', 'text-slate-200')}`}
+                  strokeWidth="3"
+                />
+                <circle
+                  cx="20"
+                  cy="20"
+                  r="15"
+                  className={`fill-none stroke-current transition-all duration-500 ${
+                    isRecouped 
+                      ? 'text-emerald-500 dark:text-emerald-400 drop-shadow-[0_0_2px_rgba(52,211,153,0.25)]' 
+                      : themeClass('text-purple-400', 'text-slate-700')
                   }`}
-                >
-                  <span className="truncate pr-2">{offer.name}</span>
-                  <div className={`flex items-center gap-1.5 shrink-0 font-bold ${isSilverCard ? 'text-slate-950' : 'text-white'}`}>
-                    <span>+${offer.value}</span>
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        removeInstanceOffer(instance.id, offer.id);
-                      }}
-                      className="text-slate-400 hover:text-red-400 transition cursor-pointer active:scale-90"
-                      title="Remove Offer"
-                    >
-                      <Trash2 className="w-3 h-3" />
-                    </button>
-                  </div>
-                </div>
-              ))}
+                  strokeWidth="3"
+                  strokeDasharray="94.25"
+                  strokeDashoffset={94.25 - (94.25 * Math.min(recouped / cardFee, 1))}
+                  strokeLinecap="round"
+                />
+              </svg>
+              <div className="absolute inset-0 flex items-center justify-center text-[8px] font-black">
+                {isRecouped ? (
+                  <span className="text-emerald-500 dark:text-emerald-400">✓</span>
+                ) : (
+                  <span className={themeClass('text-slate-300', 'text-slate-700')}>
+                    {Math.round((recouped / cardFee) * 100)}%
+                  </span>
+                )}
+              </div>
+            </div>
+            <div className="min-w-0 flex-grow">
+              <p className={`text-[9px] font-black uppercase tracking-wider ${themeClass('text-slate-400', 'text-slate-500')}`}>Annual Fee Recoup</p>
+              <p className={`text-xs font-extrabold mt-0.5 leading-none ${themeClass('text-slate-200', 'text-slate-800')}`}>
+                <span className={isRecouped ? 'text-emerald-600 dark:text-emerald-400 font-black' : ''}>
+                  ${recouped}
+                </span>
+                <span className={`text-[9.5px] font-bold ml-1 ${themeClass('text-slate-455', 'text-slate-500')}`}>/ ${cardFee} fee</span>
+              </p>
             </div>
           </div>
+        ) : (
+          <p className={`text-[9px] font-black flex items-center gap-1 px-1 ${themeClass('text-emerald-400', 'text-emerald-600')}`}>
+            <span>✓ No Annual Fee (Free Card!)</span>
+          </p>
         )}
 
+    {/* Accordion Toggle & Actions Panel */}
+        <div className="mt-3 pt-3 border-t border-white/5 dark:border-slate-800 flex items-center gap-2">
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              toggleCardExpanded(instance.id);
+            }}
+            className={`flex-grow px-2.5 py-1.5 rounded-lg border text-[9px] font-extrabold tracking-wider uppercase flex items-center justify-between transition active:scale-[0.98] cursor-pointer ${
+              themeClass(
+                'bg-white/5 hover:bg-white/10 border-white/10 text-slate-100 hover:text-white',
+                'bg-slate-100 hover:bg-slate-200 border-slate-250 text-slate-700'
+              )
+            }`}
+          >
+            <span className="flex items-center gap-1">
+              {isCardExpanded ? '▲ Hide Details' : '▼ Show Details'}
+              <span className="text-[8px] opacity-75 lowercase font-semibold">
+                ({benefits.length} perks)
+              </span>
+            </span>
+            <ChevronDown className={`w-3 h-3 transition-transform duration-300 transform ${
+              isCardExpanded ? 'rotate-180' : 'rotate-0'
+            }`} />
+          </button>
+
+          {/* Interactive Offer Adder Trigger */}
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              setAddOfferInstanceId(instance.id);
+            }}
+            className="px-3 py-1.5 bg-gradient-to-tr from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-550 text-white font-bold rounded-lg text-[9px] uppercase tracking-wider transition active:scale-95 flex items-center justify-center gap-1 shadow-md shadow-purple-500/10 cursor-pointer ml-auto shrink-0"
+          >
+            <span>+ Add Offer</span>
+          </button>
         </div>
 
-      <div className="mt-3 pt-3 border-t border-white/10 flex items-center justify-end gap-2 w-full">
-        <button
-          type="button"
-          onClick={() => setAddOfferInstanceId(instance.id)}
-          className={`flex-grow flex items-center justify-center gap-1 font-bold py-1.5 rounded-lg text-[9.5px] transition active:scale-95 cursor-pointer border ${
-            isSilverCard
-              ? 'bg-slate-955/5 hover:bg-slate-955/10 border-slate-955/10 text-slate-900'
-              : 'bg-white/10 hover:bg-white/20 border-white/10 text-slate-300 dark:bg-slate-955 dark:hover:bg-slate-850 dark:border-slate-800 dark:text-slate-300'
-          }`}
-        >
-          <Plus className="w-2.5 h-2.5 stroke-[3]" />
-          Add Offer
-        </button>
+        {/* 2. Collapsible Drawer Panel */}
+        <div className={`transition-all duration-300 ease-in-out overflow-hidden ${
+          isCardExpanded
+            ? 'max-h-[1200px] opacity-100 border-t border-dashed border-white/10 dark:border-black/5 pt-3 mt-3'
+            : 'max-h-0 opacity-0 pointer-events-none'
+        }`}>
+          {/* Benefits preview inline list */}
+          <div className="space-y-1 text-left">
+            {benefits.map((b) => (
+              <div key={b.id} className={`flex items-center justify-between text-[10px] p-1.5 rounded border ${
+                themeClass(
+                  'bg-slate-955/40 border-white/5 text-slate-200',
+                  'bg-slate-50 border-slate-250/60 text-slate-800 font-semibold shadow-sm'
+                )
+              }`}>
+                <span className="truncate pr-2">{b.name}</span>
+                <span className={`font-extrabold ${themeClass('text-white', 'text-slate-900')}`}>{b.value}</span>
+              </div>
+            ))}
+          </div>
+
+          {/* Google Drive / Instance Custom Offers List */}
+          {instance.instanceOffers && instance.instanceOffers.length > 0 && (
+            <div className="mt-3 pt-3 border-t border-white/10 dark:border-black/5 space-y-1.5 text-left">
+              <p className={`text-[8px] font-black uppercase tracking-widest ${
+                themeClass('text-purple-400 dark:text-purple-500', 'text-purple-805')
+              }`}>Active Temporary Offers</p>
+              <div className="space-y-1">
+                {instance.instanceOffers.map((offer) => (
+                  <div 
+                    key={offer.id} 
+                    className={`flex items-center justify-between text-[10px] p-1.5 rounded border ${
+                      themeClass(
+                        'bg-purple-500/10 border-purple-500/15 text-slate-200',
+                        'bg-purple-50 border-purple-100 text-purple-950 font-bold'
+                      )
+                    }`}
+                  >
+                    <span className="truncate pr-2">{offer.name}</span>
+                    <div className={`flex items-center gap-1.5 shrink-0 font-extrabold ${themeClass('text-white', 'text-purple-950')}`}>
+                      <span>+${offer.value}</span>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          removeInstanceOffer(instance.id, offer.id);
+                        }}
+                        className="text-slate-400 hover:text-red-400 transition cursor-pointer p-0.5 rounded active:scale-90"
+                        title="Remove offer"
+                      >
+                        <Trash2 className="w-3 h-3" />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
