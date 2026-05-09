@@ -5,6 +5,7 @@ import type { LogEntry } from '../utils/logUtils';
 import { parseLogEntry } from '../utils/logUtils';
 import { obfuscateKey } from '../utils/cryptoUtils';
 import { AWARD_TEMPLATES } from '../data/cards.db';
+import { getStepAmount } from '../utils/valuationUtils';
 
 interface ChecklistCardRowProps {
   ab: ActiveBenefit;
@@ -149,12 +150,7 @@ export const ChecklistCardRow = React.memo(function ChecklistCardRow({
       <div className="flex items-center gap-3.5 shrink-0 justify-end sm:justify-start">
         {/* Interactive Numerical Spent Input Box */}
         {isProgressive && (() => {
-          const getStepAmount = (limit: number): number => {
-            if (limit <= 15) return limit; // e.g., $10 or $15 monthly credits
-            if (limit <= 50) return 10;
-            if (limit <= 250) return 50;
-            return 100;
-          };
+
           const limit = benefit.spendingLimit || 0;
           const step = getStepAmount(limit);
           const currentProgress = (() => { 
