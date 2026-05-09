@@ -20,7 +20,7 @@ import { FilterHubPanel } from './components/FilterHubPanel';
 import { ChecklistCardRow } from './components/ChecklistCardRow';
 import { WalletCreditCard } from './components/WalletCreditCard';
 import { SavingsWrappedModal } from './components/SavingsWrappedModal';
-import { getLocalDateString, getDaysLeft, getDaysLeftForDate, getUrgencyScore, getAnnualFeeWarningInfo, parseLogEntry, obfuscateKey } from './utils/dateUtils';
+import { getLocalDateString, getDaysLeft, getDaysLeftForDate, getUrgencyScore, getAnnualFeeWarningInfo, parseLogEntry, obfuscateKey, getCardPotentialValue } from './utils/dateUtils';
 import { loadGoogleGsiScript, requestGDriveToken, fetchUserEmail } from './utils/gdrive';
 import { 
   CreditCard, 
@@ -430,6 +430,9 @@ function App() {
     if (!parsed || !parsed.resolved) return 0;
     
     if (ab.benefit.spendingLimit) {
+      // Exclude spend-to-earn cashback multipliers (rate <= 10%) from actual recoup math
+      if (ab.benefit.value / ab.benefit.spendingLimit <= 0.1) return 0;
+
       const spent = parsed.spentProgress || 0;
       const progressPercent = Math.min(spent / ab.benefit.spendingLimit, 1);
       return Math.round((ab.benefit.value * progressPercent) * 100) / 100;
@@ -1420,7 +1423,7 @@ function App() {
                                     <h4 className={`text-sm font-extrabold mt-1.5 ${themeClass('text-white', 'text-slate-900')}`}>{card.name}</h4>
                                     <p className={`text-[11px] mt-1.5 leading-relaxed font-medium ${themeClass('text-slate-405', 'text-slate-555')}`}>
                                       Contains <span className="font-bold text-purple-500 dark:text-amber-400">{card.benefits.length}</span> built-in perks <br />
-                                      (Total value: <span className={`font-bold ${themeClass('text-white', 'text-slate-955')}`}>${card.benefits.reduce((s, b) => s + b.value, 0)}/yr</span>)
+                                      (Potential value: <span className={`font-bold ${themeClass('text-white', 'text-slate-955')}`}>${getCardPotentialValue(card.benefits)}/yr</span>)
                                     </p>
                                     <span className="text-[9px] text-purple-500 dark:text-purple-455 font-bold mt-2.5 block animate-pulse">
                                       🔍 Click card to view details

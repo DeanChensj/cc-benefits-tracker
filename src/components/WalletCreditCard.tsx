@@ -1,6 +1,7 @@
 import { Plus, Trash2, ExternalLink, Edit3, ChevronDown } from 'lucide-react';
 import { CARDS_DB, CARD_MULTIPLIERS } from '../data/cards.db';
 import type { OwnedCardInstance } from '../store/useCardStore';
+import { getCardPotentialValue } from '../utils/dateUtils';
 
 interface WalletCreditCardProps {
   instance: OwnedCardInstance;
@@ -188,7 +189,7 @@ export function WalletCreditCard({
       )}
 
       <p className={`text-[11px] mt-0.5 font-medium ${isSilverCard ? 'text-slate-900/80 font-semibold' : 'text-slate-350'}`}>
-        {benefits.length} perks (Total: ${benefits.reduce((s, b) => s + b.value, 0)}/yr)
+        {benefits.length} perks (Potential value: ${getCardPotentialValue(benefits)}/yr)
       </p>
 
       {/* Annual Fee Recoup Progress circular ring */}

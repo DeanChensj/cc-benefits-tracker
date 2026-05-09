@@ -1,5 +1,6 @@
 import { X, Plus, Info, Calendar, Heart, ExternalLink } from 'lucide-react';
 import type { CardTemplate } from '../data/cards.db';
+import { getAnnualValue } from '../utils/dateUtils';
 
 interface CardDetailDrawerProps {
   isOpen: boolean;
@@ -68,7 +69,7 @@ export function CardDetailDrawer({ isOpen, card, onClose, onAdd, theme }: CardDe
               <div className="flex gap-3 sm:gap-6">
                 <div>
                   <p className="text-[8px] font-bold uppercase tracking-widest opacity-60">Potential Value</p>
-                  <p className="text-sm sm:text-base font-black">${card.benefits.reduce((sum, b) => sum + b.value, 0)}/yr</p>
+                  <p className="text-sm sm:text-base font-black">${card.benefits.reduce((sum, b) => sum + getAnnualValue(b), 0)}/yr</p>
                 </div>
                 <div>
                   <p className="text-[8px] font-bold uppercase tracking-widest opacity-60">Annual Fee</p>
