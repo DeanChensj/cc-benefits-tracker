@@ -54,6 +54,38 @@ export const ChecklistCardRow = React.memo(function ChecklistCardRow({
     ? (loyaltyAward ? (AWARD_TEMPLATES[loyaltyAward.templateId]?.brand || loyaltyAward.customBrand || 'Award') : 'Award')
     : cardInstance.customName;
 
+  const getCategoryHoverClasses = () => {
+    const cat = benefit.category;
+    if (cat === 'dining') {
+      return themeClass(
+        'hover:border-rose-500/35 hover:bg-rose-950/10 hover:shadow-[0_4px_12px_rgba(244,63,94,0.05)]',
+        'hover:border-rose-500/35 hover:bg-rose-50/20 hover:shadow-[0_4px_12px_rgba(244,63,94,0.035)]'
+      );
+    }
+    if (cat === 'travel') {
+      return themeClass(
+        'hover:border-sky-500/35 hover:bg-sky-950/10 hover:shadow-[0_4px_12px_rgba(14,165,233,0.05)]',
+        'hover:border-sky-500/35 hover:bg-sky-50/20 hover:shadow-[0_4px_12px_rgba(14,165,233,0.035)]'
+      );
+    }
+    if (cat === 'shopping') {
+      return themeClass(
+        'hover:border-emerald-500/35 hover:bg-emerald-950/10 hover:shadow-[0_4px_12px_rgba(16,185,129,0.05)]',
+        'hover:border-emerald-500/35 hover:bg-emerald-50/20 hover:shadow-[0_4px_12px_rgba(16,185,129,0.035)]'
+      );
+    }
+    if (cat === 'entertainment') {
+      return themeClass(
+        'hover:border-purple-500/35 hover:bg-purple-950/10 hover:shadow-[0_4px_12px_rgba(168,85,247,0.05)]',
+        'hover:border-purple-500/35 hover:bg-purple-50/20 hover:shadow-[0_4px_12px_rgba(168,85,247,0.035)]'
+      );
+    }
+    return themeClass(
+      'hover:border-slate-700 hover:bg-slate-900 hover:shadow-[0_4px_12px_rgba(15,23,42,0.05)]',
+      'hover:border-slate-300 hover:bg-slate-50/50 hover:shadow-[0_4px_12px_rgba(15,23,42,0.02)]'
+    );
+  };
+
   return (
     <div
       onClick={() => {
@@ -71,7 +103,7 @@ export const ChecklistCardRow = React.memo(function ChecklistCardRow({
           ? themeClass('bg-slate-955 border-red-955/10 opacity-40 cursor-not-allowed', 'bg-red-50/30 border-red-200/50 opacity-60 cursor-not-allowed')
           : isUsed
           ? themeClass('bg-slate-955 border-slate-900 opacity-50 cursor-pointer', 'bg-slate-100/70 border-slate-200/70 opacity-60 cursor-pointer')
-          : themeClass('bg-slate-900/40 border-slate-850/80 hover:border-slate-700 hover:bg-slate-900 cursor-pointer', 'bg-white border-slate-200/90 hover:border-slate-300 hover:bg-slate-50/50 cursor-pointer shadow-[0_2px_6px_rgba(15,23,42,0.02)] hover:shadow-[0_4px_10px_rgba(15,23,42,0.045)]')
+          : `${themeClass('bg-slate-900/40 border-slate-850/80 cursor-pointer', 'bg-white border-slate-200/90 cursor-pointer shadow-[0_2px_6px_rgba(15,23,42,0.02)]')} ${getCategoryHoverClasses()}`
       }`}
     >
       <div className="flex items-center gap-3.5 pr-4 flex-grow">
