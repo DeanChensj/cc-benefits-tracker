@@ -106,7 +106,7 @@ export const downloadICSFile = (ownedCards: OwnedCardInstance[], loyaltyAwards?:
 
   // Integrate standalone loyalty awards into active calendar events subscription cleanly
   (loyaltyAwards || []).forEach((award) => {
-    if (award.isUsed || !award.expirationDate) return;
+    if (award.usedQuantity === award.quantity || !award.expirationDate) return;
 
     const isCustom = award.templateId === 'custom';
     const info = isCustom ? {

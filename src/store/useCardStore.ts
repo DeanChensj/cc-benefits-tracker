@@ -64,7 +64,7 @@ export interface CardStore {
   updateSignupBonusValue: (instanceId: string, value: number) => void;
 
   // Standalone Loyalty Vouchers Actions
-  addLoyaltyAward: (award: Omit<LoyaltyAward, 'id' | 'isUsed' | 'lastModified'>) => void;
+  addLoyaltyAward: (award: Omit<LoyaltyAward, 'id' | 'usedQuantity' | 'lastModified'>) => void;
   toggleLoyaltyAward: (awardId: string) => void;
   deleteLoyaltyAward: (awardId: string) => void;
   updateLoyaltyAward: (awardId: string, updates: Partial<LoyaltyAward>) => void;
@@ -521,7 +521,7 @@ export const useCardStore = create<CardStore>()(
           const newAward: LoyaltyAward = {
             ...award,
             id: uniqueId,
-            isUsed: false,
+            usedQuantity: 0,
             lastModified: Date.now()
           };
           const nextAwards = [...state.loyaltyAwards, newAward];
@@ -536,7 +536,7 @@ export const useCardStore = create<CardStore>()(
         set((state) => {
           const nextAwards = state.loyaltyAwards.map((a) =>
             a.id === awardId
-              ? { ...a, isUsed: !a.isUsed, lastModified: Date.now() }
+              ? { ...a, usedQuantity: a.usedQuantity === a.quantity ? 0 : a.quantity, lastModified: Date.now() }
               : a
           );
           syncPushToCloud(state.gdriveToken, state.ownedCards, state.logs);

@@ -99,7 +99,7 @@ export interface LoyaltyAward {
   templateId: string; // References key of AWARD_TEMPLATES (e.g. 'hyatt-sua' or 'custom')
   expirationDate?: string; // 'YYYY-MM-DD' (optional)
   quantity: number;
-  isUsed: boolean;
+  usedQuantity: number; // Track used count instead of binary isUsed!
   lastModified: number; // LWW timestamp
   parentCardId?: string; // Optional: if attached to a card
   notes?: string;

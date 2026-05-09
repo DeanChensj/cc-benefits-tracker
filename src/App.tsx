@@ -71,6 +71,7 @@ function App() {
     updateSignupBonusValue,
     toggleLoyaltyAward,
     deleteLoyaltyAward,
+    updateLoyaltyAward,
     pruneExpiredLogs,
     resetAll 
   } = useCardStore();
@@ -83,6 +84,13 @@ function App() {
   const [filterCategory, setFilterCategory] = useState<string>(() => localStorage.getItem('cc-tracker-filter-category') || 'all');
   const [sortBy, setSortBy] = useState<'urgency' | 'value-desc' | 'value-asc' | 'expiry'>(() => (localStorage.getItem('cc-tracker-sort-by') as any) || 'urgency');
   const [filterCardInstanceId, setFilterCardInstanceId] = useState<string>(() => localStorage.getItem('cc-tracker-filter-card') || 'all');
+
+  const handleFilterCardInstanceChange = (id: string) => {
+    setFilterCardInstanceId(id);
+    localStorage.setItem('cc-tracker-filter-card', id);
+    setFilterCategory('all');
+    localStorage.setItem('cc-tracker-filter-category', 'all');
+  };
   const [editingInstanceId, setEditingInstanceId] = useState<string | null>(null);
   const [isSyncModalOpen, setIsSyncModalOpen] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -342,14 +350,17 @@ function App() {
       value: award.customValue || 0
     } : AWARD_TEMPLATES[award.templateId];
 
-    const totalVal = info.value * award.quantity;
+    const usedQty = award.usedQuantity || 0;
+    const remainingQty = award.quantity - usedQty;
+    const remainingVal = info.value * remainingQty;
+    const isFullyUsed = usedQty === award.quantity;
 
     // Synthesize standard Benefit object
     const synthesizedBenefit: Benefit = {
       id: award.id,
-      name: info.name,
-      description: award.notes || `${info.brand} standalone award.`,
-      value: totalVal,
+      name: `${info.name} ${remainingQty > 1 ? `(${remainingQty}x)` : ''}`,
+      description: award.notes || `${info.brand} standalone award. ${isFullyUsed ? '(Fully Used)' : `(${usedQty}/${award.quantity} used)`}`,
+      value: isFullyUsed ? info.value * award.quantity : remainingVal,
       resetPeriod: 'fixed',
       expirationDate: award.expirationDate,
       category: (info.awardType === 'fnr' || info.awardType === 'sua' || info.awardType === 'goh' || info.awardType === 'companion' || info.awardType === 'swu') 
@@ -360,7 +371,7 @@ function App() {
     activeBenefits.push({
       benefit: synthesizedBenefit,
       logKey: award.id,
-      isUsed: award.isUsed,
+      isUsed: isFullyUsed,
       loyaltyAward: award
     });
   });
@@ -379,7 +390,12 @@ function App() {
   // Helper to calculate resolved value dynamically (supports progressive spends, binary logs, and standalone awards)
   const getResolvedValue = (ab: ActiveBenefit): number => {
     if (ab.loyaltyAward) {
-      return ab.isUsed ? ab.benefit.value : 0;
+      const isCustom = ab.loyaltyAward.templateId === 'custom';
+      const info = isCustom ? {
+        value: ab.loyaltyAward.customValue || 0
+      } : AWARD_TEMPLATES[ab.loyaltyAward.templateId];
+      const usedQty = ab.loyaltyAward.usedQuantity || 0;
+      return info.value * usedQty;
     }
 
     const logVal = logs[obfuscateKey(ab.logKey)];
@@ -398,8 +414,9 @@ function App() {
   };
 
   const getExpiredValue = (ab: ActiveBenefit): number => {
+    const usedQty = ab.loyaltyAward ? (ab.loyaltyAward.usedQuantity || 0) : 0;
     const isExpired = ab.loyaltyAward
-      ? (!ab.isUsed && !!ab.benefit.expirationDate && new Date(ab.benefit.expirationDate + 'T00:00:00') < currentDate)
+      ? (usedQty < ab.loyaltyAward.quantity && !!ab.benefit.expirationDate && new Date(ab.benefit.expirationDate + 'T00:00:00') < currentDate)
       : (ab.benefit.resetPeriod === 'fixed' && !!ab.benefit.expirationDate && new Date(ab.benefit.expirationDate + 'T00:00:00') < currentDate);
       
     if (!isExpired) return 0;
@@ -576,7 +593,7 @@ function App() {
 
           <div className="flex items-center gap-2 sm:gap-3 flex-wrap justify-end sm:justify-start self-end sm:self-auto animate-fade-in">
             {/* Year-End Savings Wrapped Button (Viral Growth Magnet!) */}
-            {ownedCards.length > 0 && (
+            {(ownedCards.length > 0 || loyaltyAwards.length > 0) && (
               <button
                 onClick={() => setIsWrappedModalOpen(true)}
                 className="flex items-center gap-1 px-3 py-2 rounded-xl border bg-gradient-to-tr from-purple-600/15 via-indigo-600/10 to-purple-600/15 border-purple-500/30 hover:border-purple-400/50 text-purple-400 hover:text-purple-300 font-extrabold text-xs transition duration-300 active:scale-90 cursor-pointer shadow-md shadow-purple-500/5 animate-pulse"
@@ -888,7 +905,7 @@ function App() {
                   : themeClass('text-slate-400 hover:text-white hover:bg-slate-855', 'text-slate-505 hover:text-slate-900 hover:bg-slate-300/30')
               }`}
             >
-              My Cards ({ownedCards.length})
+              {language === 'zh' ? '我的钱包' : 'My Wallet'} ({ownedCards.length + loyaltyAwards.length})
             </button>
           </div>
 
@@ -915,7 +932,7 @@ function App() {
           filterCategory={filterCategory}
           setFilterCategory={setFilterCategory}
           filterCardInstanceId={filterCardInstanceId}
-          setFilterCardInstanceId={setFilterCardInstanceId}
+          setFilterCardInstanceId={handleFilterCardInstanceChange}
           sortBy={sortBy}
           setSortBy={setSortBy}
           themeClass={themeClass}
@@ -925,7 +942,7 @@ function App() {
         {/* TABS 1 & 2: CHECKLIST VIEW */}
         {(activeTab === 'todo' || activeTab === 'all') && (
           <section>
-            {ownedCards.length === 0 ? (
+            {ownedCards.length === 0 && loyaltyAwards.length === 0 ? (
               <EmptyWalletState onBrowse={() => setActiveTab('cards')} themeClass={themeClass} />
             ) : sortedBenefits.length === 0 ? (
               <div className={`text-center py-16 border rounded-2xl p-8 ${
@@ -1312,64 +1329,92 @@ function App() {
                           info.brand.toLowerCase() === 'amex' ? 'from-[#c5a059] to-[#9c7a3c] text-white' :
                           'from-slate-600 to-slate-800 text-white';
 
-                        return (
-                          <div 
-                            key={award.id}
-                            className={`p-4 rounded-xl border relative overflow-hidden group flex flex-col justify-between transition duration-200 ${
-                              award.isUsed ? 'opacity-45' : ''
-                            } ${
-                              themeClass('bg-slate-955/40 border-slate-900 hover:border-slate-850', 'bg-slate-50/50 border-slate-200 hover:border-slate-250 hover:bg-slate-50 shadow-sm')
-                            }`}
-                          >
-                            <div className="flex gap-3 items-start pb-2">
-                              {/* Mini Voucher Card Preview */}
-                              <div className={`w-14 h-9 rounded-md bg-gradient-to-r ${brandColor} shrink-0 relative shadow-md border border-white/10 flex items-center justify-center overflow-hidden`}>
-                                <span className="text-[9px] font-black uppercase tracking-widest scale-90">{info.brand.substring(0, 4)}</span>
-                              </div>
+                         const usedQty = award.usedQuantity || 0;
+                         const isFullyUsed = usedQty === award.quantity;
 
-                              <div className="min-w-0 flex-grow">
-                                <div className="flex items-center justify-between gap-2 flex-wrap">
-                                  <span className={`text-[8px] font-bold px-1 py-0.5 rounded uppercase tracking-wide ${
-                                    themeClass('bg-slate-900 text-slate-400', 'bg-white text-slate-500 border border-slate-200')
-                                  }`}>
-                                    {info.awardType} • {award.quantity}x
-                                  </span>
-                                  <span className="text-[9px] font-extrabold text-amber-500">${totalVal} USD</span>
-                                </div>
-                                <h4 className={`text-xs font-black mt-1.5 truncate ${award.isUsed ? 'line-through text-slate-500' : themeClass('text-white', 'text-slate-900')}`}>{info.name}</h4>
-                                
-                                {award.expirationDate && (
-                                  <p className={`text-[9px] font-bold mt-1 ${
-                                    getDaysLeftForDate(award.expirationDate, currentDate) < 10 ? 'text-red-500 animate-pulse' : 'text-slate-500'
-                                  }`}>
-                                    Expires: {award.expirationDate} ({getDaysLeftForDate(award.expirationDate, currentDate)} days left)
-                                  </p>
-                                )}
-                                {award.notes && (
-                                  <p className="text-[9px] italic text-slate-500 mt-1 leading-relaxed truncate">
-                                    {award.notes}
-                                  </p>
-                                )}
-                              </div>
-                            </div>
+                         return (
+                           <div 
+                             key={award.id}
+                             className={`p-4 rounded-xl border relative overflow-hidden group flex flex-col justify-between transition duration-200 ${
+                               isFullyUsed ? 'opacity-45' : ''
+                             } ${
+                               themeClass('bg-slate-955/40 border-slate-900 hover:border-slate-850', 'bg-slate-50/50 border-slate-200 hover:border-slate-250 hover:bg-slate-50 shadow-sm')
+                             }`}
+                           >
+                             <div className="flex gap-3 items-start pb-2">
+                               {/* Mini Voucher Card Preview */}
+                               <div className={`w-14 h-9 rounded-md bg-gradient-to-r ${brandColor} shrink-0 relative shadow-md border border-white/10 flex items-center justify-center overflow-hidden`}>
+                                 <span className="text-[9px] font-black uppercase tracking-widest scale-90">{info.brand.substring(0, 4)}</span>
+                               </div>
 
-                            {/* Card Actions */}
-                            <div className="flex items-center justify-between gap-2 mt-3 pt-3 border-t border-dashed border-slate-200/30 dark:border-slate-800/30">
-                              <button
-                                onClick={() => toggleLoyaltyAward(award.id)}
-                                className={`px-3 py-1 rounded-lg text-[10px] font-bold transition active:scale-95 cursor-pointer ${
-                                  award.isUsed
-                                    ? 'bg-slate-500/15 text-slate-400 hover:bg-slate-500/20'
-                                    : 'bg-emerald-500/10 hover:bg-emerald-500/15 text-emerald-500'
-                                }`}
-                              >
-                                {award.isUsed ? 'Mark Unused' : 'Mark Used'}
-                              </button>
-                              <button
-                                onClick={() => setDeleteAwardId(award.id)}
-                                className={`p-1.5 rounded-lg hover:bg-red-500/10 text-slate-505 hover:text-red-500 transition active:scale-90 cursor-pointer`}
-                                title="Delete Voucher"
-                              >
+                               <div className="min-w-0 flex-grow">
+                                 <div className="flex items-center justify-between gap-2 flex-wrap">
+                                   <span className={`text-[8px] font-bold px-1 py-0.5 rounded uppercase tracking-wide ${
+                                     themeClass('bg-slate-900 text-slate-400', 'bg-white text-slate-500 border border-slate-200')
+                                   }`}>
+                                     {info.awardType} • {award.quantity}x
+                                   </span>
+                                   <span className="text-[9px] font-extrabold text-amber-500">${totalVal} USD</span>
+                                 </div>
+                                 <h4 className={`text-xs font-black mt-1.5 truncate ${isFullyUsed ? 'line-through text-slate-500' : themeClass('text-white', 'text-slate-900')}`}>{info.name}</h4>
+                                 
+                                 {award.expirationDate && (
+                                   <p className={`text-[9px] font-bold mt-1 ${
+                                     getDaysLeftForDate(award.expirationDate, currentDate) < 10 ? 'text-red-500 animate-pulse' : 'text-slate-500'
+                                   }`}>
+                                     Expires: {award.expirationDate} ({getDaysLeftForDate(award.expirationDate, currentDate)} days left)
+                                   </p>
+                                 )}
+                                 {award.notes && (
+                                   <p className="text-[9px] italic text-slate-500 mt-1 leading-relaxed truncate">
+                                     {award.notes}
+                                   </p>
+                                 )}
+                               </div>
+                             </div>
+
+                             {/* Card Actions */}
+                             <div className="flex items-center justify-between gap-2 mt-3 pt-3 border-t border-dashed border-slate-200/30 dark:border-slate-800/30">
+                               {/* Multi-Quantity Redeemed Counter Incrementer */}
+                               <div className="flex items-center gap-1.5 shrink-0">
+                                 <button
+                                   disabled={usedQty <= 0}
+                                   onClick={() => updateLoyaltyAward(award.id, { usedQuantity: Math.max(0, usedQty - 1) })}
+                                   className={`w-5 h-5 rounded-md flex items-center justify-center font-bold text-[10px] transition active:scale-90 border select-none ${
+                                     usedQty <= 0
+                                       ? 'opacity-20 border-slate-800/60 text-slate-505 cursor-not-allowed'
+                                       : themeClass('bg-slate-900 border-slate-800 text-slate-300 hover:text-white cursor-pointer', 'bg-slate-100 border-slate-250 text-slate-600 hover:bg-slate-200 cursor-pointer')
+                                   }`}
+                                 >
+                                   -
+                                 </button>
+                                 
+                                 <span className={`text-[9px] font-extrabold px-1 select-none font-mono ${
+                                   isFullyUsed ? 'text-emerald-500 dark:text-emerald-400 line-through' : themeClass('text-slate-400', 'text-slate-700')
+                                 }`}>
+                                   {language === 'zh' 
+                                     ? `已用 ${usedQty}/${award.quantity}` 
+                                     : `Used ${usedQty}/${award.quantity}`}
+                                 </span>
+                                 
+                                 <button
+                                   disabled={isFullyUsed}
+                                   onClick={() => updateLoyaltyAward(award.id, { usedQuantity: Math.min(award.quantity, usedQty + 1) })}
+                                   className={`w-5 h-5 rounded-md flex items-center justify-center font-bold text-[10px] transition active:scale-90 border select-none ${
+                                     isFullyUsed
+                                       ? 'opacity-20 border-slate-800/60 text-slate-555 cursor-not-allowed'
+                                       : themeClass('bg-slate-900 border-slate-800 text-slate-300 hover:text-white cursor-pointer', 'bg-slate-100 border-slate-250 text-slate-600 hover:bg-slate-200 cursor-pointer')
+                                   }`}
+                                 >
+                                   +
+                                 </button>
+                               </div>
+
+                               <button
+                                 onClick={() => setDeleteAwardId(award.id)}
+                                 className={`p-1.5 rounded-lg hover:bg-red-500/10 text-slate-505 hover:text-red-500 transition active:scale-90 cursor-pointer`}
+                                 title="Delete Voucher"
+                               >
                                 <Trash2 className="w-3.5 h-3.5" />
                               </button>
                             </div>
