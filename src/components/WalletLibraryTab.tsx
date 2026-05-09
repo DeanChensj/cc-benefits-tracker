@@ -25,6 +25,7 @@ interface WalletLibraryTabProps {
   onEditCard: (instance: OwnedCardInstance) => void;
   deckSubTab: 'cards' | 'awards' | 'templates';
   setDeckSubTab: (tab: 'cards' | 'awards' | 'templates') => void;
+  updateAwardUsedQuantity: (awardId: string, qty: number) => void;
 }
 interface BankHeaderProps {
   bankName: 'Amex' | 'Chase' | 'Citi' | 'Other';
@@ -152,12 +153,15 @@ export function WalletLibraryTab({
   setSelectedTemplates,
   onEditCard,
   deckSubTab,
-  setDeckSubTab
+  setDeckSubTab,
+  updateAwardUsedQuantity
 }: WalletLibraryTabProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [expandedCardIds, setExpandedCardIds] = useState<Record<string, boolean>>({});
   const [collapsedWalletBanks, setCollapsedWalletBanks] = useState<Record<string, boolean>>({});
   const [isClaimedArchiveCollapsed, setIsClaimedArchiveCollapsed] = useState(true);
+  const [awardSearchQuery, setAwardSearchQuery] = useState('');
+  const [awardSortBy, setAwardSortBy] = useState<'expiry' | 'value-desc' | 'value-asc'>('expiry');
 
 
 
@@ -351,8 +355,43 @@ export function WalletLibraryTab({
       )}
 
       {deckSubTab === 'awards' && (() => {
-        const activeAwards = loyaltyAwards.filter((a) => (a.usedQuantity || 0) < a.quantity);
-        const inactiveAwards = loyaltyAwards.filter((a) => (a.usedQuantity || 0) >= a.quantity);
+        const filteredAwards = loyaltyAwards.filter((a) => {
+          if (awardSearchQuery) {
+            const query = awardSearchQuery.toLowerCase();
+            const isCustom = a.templateId === 'custom';
+            const info = isCustom ? {
+              name: a.customName || 'Custom Voucher',
+              brand: a.customBrand || 'Other',
+            } : AWARD_TEMPLATES[a.templateId];
+            const name = info.name.toLowerCase();
+            const brand = info.brand.toLowerCase();
+            const notes = (a.notes || '').toLowerCase();
+            if (!name.includes(query) && !brand.includes(query) && !notes.includes(query)) return false;
+          }
+          return true;
+        });
+
+        const sortedAwards = [...filteredAwards].sort((a, b) => {
+          const isCustomA = a.templateId === 'custom';
+          const infoA = isCustomA ? { value: a.customValue || 0 } : AWARD_TEMPLATES[a.templateId];
+          const isCustomB = b.templateId === 'custom';
+          const infoB = isCustomB ? { value: b.customValue || 0 } : AWARD_TEMPLATES[b.templateId];
+
+          switch (awardSortBy) {
+            case 'value-desc':
+              return (infoB.value * b.quantity) - (infoA.value * a.quantity);
+            case 'value-asc':
+              return (infoA.value * a.quantity) - (infoB.value * b.quantity);
+            case 'expiry':
+            default:
+              const dateA = a.expirationDate ? new Date(a.expirationDate).getTime() : Infinity;
+              const dateB = b.expirationDate ? new Date(b.expirationDate).getTime() : Infinity;
+              return dateA - dateB;
+          }
+        });
+
+        const activeAwards = sortedAwards.filter((a) => (a.usedQuantity || 0) < a.quantity);
+        const inactiveAwards = sortedAwards.filter((a) => (a.usedQuantity || 0) >= a.quantity);
 
         const renderAwardCard = (award: typeof loyaltyAwards[0]) => {
           const isCustom = award.templateId === 'custom';
@@ -424,22 +463,29 @@ export function WalletLibraryTab({
                   <Trash2 className="w-3.5 h-3.5" />
                 </button>
 
-                <div className="mt-2 flex flex-col items-center">
-                  <span className="text-[8px] font-black tracking-widest uppercase opacity-70 block">Status</span>
-                  <span className={`text-[9px] font-black mt-1 px-2 py-0.5 rounded uppercase border tracking-wide ${
-                    isCompleted 
-                      ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' 
-                      : themeClass('bg-white/15 text-white border-white/10', 'bg-black/5 text-slate-800 border-black/5')
-                  }`}>
-                    {isCompleted ? 'Claimed' : 'Unused'}
-                  </span>
-                </div>
+                {/* Interactive Use Toggle Button */}
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    updateAwardUsedQuantity(award.id, isCompleted ? 0 : award.quantity);
+                  }}
+                  className={`w-full py-2 rounded-xl text-[10px] font-black uppercase tracking-wider transition z-30 cursor-pointer active:scale-95 mt-4 ${
+                    isCompleted
+                      ? 'bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/20'
+                      : themeClass(
+                          'bg-white/15 hover:bg-white/25 text-white border border-white/10',
+                          'bg-purple-600 hover:bg-purple-700 text-white'
+                        )
+                  }`}
+                >
+                  {isCompleted ? '✓ Claimed' : 'Claim'}
+                </button>
 
-                <div className="w-full">
+                <div className="w-full mt-2">
                   <span className={`text-[9px] font-black uppercase tracking-wider block ${
-                    isCompleted ? 'text-emerald-400' : theme.glowColor
+                    isCompleted ? 'text-emerald-400/60 line-through' : theme.glowColor
                   }`}>
-                    {isCompleted ? '✓ Claimed' : `Bal: $${info.value}`}
+                    {isCompleted ? 'Bal: $0' : `Bal: $${info.value}`}
                   </span>
                 </div>
               </div>
@@ -453,18 +499,40 @@ export function WalletLibraryTab({
             <div className={`border rounded-xl p-4 sm:p-6 transition duration-300 ${
               themeClass('bg-slate-900/30 border-slate-850', 'bg-white border-slate-200 shadow-sm')
             }`}>
-              <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-4 pb-2 border-b border-dashed border-slate-200/60 dark:border-slate-800/60">
-                <h3 className={`text-xs font-bold uppercase tracking-wider flex items-center gap-2 ${themeClass('text-slate-400', 'text-slate-555')}`}>
+              <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-4 pb-2 border-b border-dashed border-slate-200/60 dark:border-slate-800/60">
+                <h3 className={`text-xs font-bold uppercase tracking-wider flex items-center gap-2 shrink-0 ${themeClass('text-slate-400', 'text-slate-555')}`}>
                   <Sparkles className="w-4 h-4 text-purple-500 animate-spin-slow" />
-                  My Loyalty Awards & Vouchers ({activeAwards.length} active)
+                  My Vouchers ({activeAwards.length} active)
                 </h3>
-                <button
-                  onClick={() => setIsCreateAwardModalOpen(true)}
-                  className="flex items-center gap-1 bg-gradient-to-tr from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-550 text-white font-bold px-3 py-1.5 rounded-lg text-xs transition active:scale-95 shadow-md shadow-purple-500/10 cursor-pointer"
-                >
-                  <Plus className="w-3.5 h-3.5 stroke-[3]" />
-                  Register Standalone Award
-                </button>
+                <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
+                  <input
+                    type="text"
+                    placeholder="🔍 Search vouchers..."
+                    value={awardSearchQuery}
+                    onChange={(e) => setAwardSearchQuery(e.target.value)}
+                    className={`border text-xs rounded-xl px-3 py-1.5 focus:outline-none w-full sm:w-36 font-medium ${
+                      themeClass('bg-slate-955 border-slate-850 focus:border-purple-500 text-slate-200', 'bg-slate-50 border-slate-255 focus:border-purple-500 text-slate-800 shadow-inner')
+                    }`}
+                  />
+                  <select
+                    value={awardSortBy}
+                    onChange={(e) => setAwardSortBy(e.target.value as any)}
+                    className={`border text-[10px] font-bold rounded-xl px-2 py-1.5 focus:outline-none focus:border-purple-500 cursor-pointer ${
+                      themeClass('bg-slate-955 border-slate-850 text-slate-300', 'bg-slate-50 border-slate-255 text-slate-700 shadow-sm')
+                    }`}
+                  >
+                    <option value="expiry">📅 Expiry (Soonest)</option>
+                    <option value="value-desc">💵 Value: High to Low</option>
+                    <option value="value-asc">💵 Value: Low to High</option>
+                  </select>
+                  <button
+                    onClick={() => setIsCreateAwardModalOpen(true)}
+                    className="flex items-center gap-1 bg-gradient-to-tr from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-550 text-white font-bold px-3 py-1.5 rounded-lg text-xs transition active:scale-95 shadow-md shadow-purple-500/10 cursor-pointer"
+                  >
+                    <Plus className="w-3.5 h-3.5 stroke-[3]" />
+                    Register Standalone Award
+                  </button>
+                </div>
               </div>
 
               {loyaltyAwards.length === 0 ? (

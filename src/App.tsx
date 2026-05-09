@@ -795,6 +795,7 @@ function App() {
             onEditCard={(instance) => setActiveEditInstanceId(instance.id)}
             deckSubTab={deckSubTab}
             setDeckSubTab={setDeckSubTab}
+            updateAwardUsedQuantity={updateAwardUsedQuantity}
           />
         )}
       </main>
