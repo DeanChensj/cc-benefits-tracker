@@ -1474,12 +1474,41 @@ function App() {
       </main>
 
       {/* Premium Footer: Privacy & Performance Guard declaration */}
-      <footer className="mt-auto py-8 px-4 text-center space-y-1.5 shrink-0">
-        <p className={`text-[9px] font-bold tracking-wider uppercase ${themeClass('text-slate-500/80', 'text-slate-400')}`}>
-          💳 CC Benefits Tracker • Made with Passion for Savvy Churners
+      <footer className="mt-auto py-8 px-4 text-center space-y-3 shrink-0">
+        {/* Trust Badges for Local-First reassurance */}
+        <div className="flex flex-wrap justify-center items-center gap-2 max-w-2xl mx-auto">
+          <div className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[9.5px] font-extrabold border shadow-sm ${
+            themeClass('bg-slate-900/50 border-slate-850/60 text-slate-400', 'bg-slate-100/80 border-slate-200 text-slate-600')
+          }`}>
+            <span className="text-xs shrink-0">🛡️</span>
+            <span>{language === 'zh' ? '100% 本地数据存储' : '100% Local Data'}</span>
+          </div>
+          <div className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[9.5px] font-extrabold border shadow-sm ${
+            themeClass('bg-slate-900/50 border-slate-850/60 text-slate-400', 'bg-slate-100/80 border-slate-200 text-slate-600')
+          }`}>
+            <span className="text-xs shrink-0">🚫</span>
+            <span>{language === 'zh' ? '无 Plaid / 无需网银登录' : 'No Plaid / No Bank Logins'}</span>
+          </div>
+          <a
+            href="https://github.com/DeanChensj/cc-benefits-tracker"
+            target="_blank"
+            rel="noopener noreferrer"
+            className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[9.5px] font-extrabold border shadow-sm transition hover:scale-[1.02] cursor-pointer ${
+              themeClass('bg-slate-900/50 border-slate-850/60 text-slate-400 hover:text-purple-400 hover:border-purple-900/30', 'bg-slate-100/80 border-slate-200 text-slate-600 hover:text-purple-600 hover:border-purple-300')
+            }`}
+          >
+            <span className="text-xs shrink-0">⭐</span>
+            <span>{language === 'zh' ? 'GitHub 开源可审计' : 'Open Source on GitHub'}</span>
+          </a>
+        </div>
+
+        <p className={`text-[9px] font-bold tracking-wider uppercase ${themeClass('text-slate-500/80', 'text-slate-450')}`}>
+          💳 {language === 'zh' ? '信用卡权益追踪器 • 用心制作，献给聪明的卡神' : 'CC Benefits Tracker • Made with Passion for Savvy Churners'}
         </p>
-        <p className="text-[8.5px] leading-relaxed max-w-md mx-auto opacity-70 text-slate-500 dark:text-slate-400 font-medium">
-          🔒 <strong>Privacy & Performance Guard</strong>: Your credit card data is stored 100% locally on this device. To guarantee ultra-fast synchronization and zero cellular data waste, historical logs older than 24 months are automatically pruned.
+        <p className="text-[8.5px] leading-relaxed max-w-md mx-auto opacity-70 text-slate-500 dark:text-slate-450 font-medium">
+          🔒 {language === 'zh' 
+            ? '为了确保极致的渲染速度并最小化网络流量消耗，超过 24 个月前的历史打卡记录将被自动修剪清理。'
+            : 'Historical logs older than 24 months are automatically pruned to optimize loading speeds and minimize cellular data usage.'}
         </p>
       </footer>
 
