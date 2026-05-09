@@ -22,7 +22,7 @@ export const downloadICSFile = (
   logs: Record<string, LogEntry>,
   loyaltyAwards?: LoyaltyAward[]
 ) => {
-  let icsContent = [
+  const icsContent = [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
     'PRODID:-//Antigravity//PerkFolio//EN',
@@ -61,9 +61,9 @@ export const downloadICSFile = (
       const uid = `${cardInstance.id}-${benefit.id}@perkfolio`;
       const title = `💳 Use ${cardInstance.customName} - ${benefit.name}`;
       
-      let rrule = '';
+      let rrule: string;
       let dtstart: Date;
-      let description = `${benefit.description} (Value: $${benefit.value})`;
+      const description = `${benefit.description} (Value: $${benefit.value})`;
 
       if (benefit.resetPeriod === 'monthly') {
         // Start reminder on the 25th of the current/next month, recurring monthly
