@@ -252,8 +252,18 @@ export function WalletLibraryTab({
                   }`}
                 />
                 <button
-                  onClick={() => setIsCreateModalOpen(true)}
+                  onClick={() => {
+                    document.getElementById('templates-library-section')?.scrollIntoView({ behavior: 'smooth' });
+                  }}
                   className="flex items-center gap-1 bg-gradient-to-tr from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-550 text-white font-bold px-3 py-1.5 rounded-lg text-xs transition active:scale-95 shadow-md shadow-purple-500/10 cursor-pointer"
+                  title="Scroll to card templates catalog at the bottom"
+                >
+                  <Plus className="w-3.5 h-3.5 stroke-[3]" />
+                  Add Template Card
+                </button>
+                <button
+                  onClick={() => setIsCreateModalOpen(true)}
+                  className="flex items-center gap-1 border border-purple-500/20 hover:bg-purple-550/10 text-purple-400 font-bold px-3 py-1.5 rounded-lg text-xs transition active:scale-95 cursor-pointer"
                 >
                   <Plus className="w-3.5 h-3.5 stroke-[3]" />
                   Create Custom Card
@@ -341,9 +351,12 @@ export function WalletLibraryTab({
           </div>
 
           {/* 2. CARD TEMPLATE SELECTION LIBRARY */}
-          <div className={`border rounded-xl p-4 sm:p-6 transition duration-300 ${
-            themeClass('bg-slate-900/30 border-slate-850', 'bg-white border-slate-200 shadow-sm')
-          }`}>
+          <div 
+            id="templates-library-section"
+            className={`border rounded-xl p-4 sm:p-6 transition duration-300 ${
+              themeClass('bg-slate-900/30 border-slate-850', 'bg-white border-slate-200 shadow-sm')
+            }`}
+          >
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-5">
               <div>
                 <h3 className={`text-xs font-bold uppercase tracking-wider flex items-center gap-2 ${themeClass('text-slate-400', 'text-slate-555')}`}>
