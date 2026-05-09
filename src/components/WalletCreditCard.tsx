@@ -188,9 +188,16 @@ export function WalletCreditCard({
         </h4>
       )}
 
-      <p className={`text-[11px] mt-0.5 font-medium ${isSilverCard ? 'text-slate-900/80 font-semibold' : 'text-slate-350'}`}>
-        {benefits.length} perks (Potential value: ${getCardPotentialValue(benefits)}/yr)
-      </p>
+      {(() => {
+        const potentialVal = getCardPotentialValue(benefits);
+        return (
+          <p className={`text-[11px] mt-0.5 font-medium ${isSilverCard ? 'text-slate-900/80 font-semibold' : 'text-slate-300'}`}>
+            {potentialVal > 0 
+              ? `${benefits.length} perks (Potential value: $${potentialVal}/yr)` 
+              : 'Cashback Multipliers Tracker'}
+          </p>
+        );
+      })()}
 
       {/* Annual Fee Recoup Progress circular ring */}
       {cardFee > 0 ? (
@@ -379,15 +386,14 @@ export function WalletCreditCard({
                   />
                 </div>
               )}
-            </div>
           </div>
-        )}
-
-        {/* 3. Premium Custom Point Multipliers Editor */}
+        </div>
+      )}
+            {/* 3. Premium Custom Point Multipliers Editor */}
         {canCustomizePoints && (
           <div className="mt-3 pt-3 border-t border-dashed border-white/10 dark:border-black/5 space-y-2 text-left">
             <p className={`text-[8.5px] font-black uppercase tracking-widest flex items-center gap-1 ${
-              isSilverCard ? 'text-indigo-955' : 'text-purple-400 dark:text-purple-500'
+              isSilverCard ? 'text-indigo-955' : 'text-amber-400'
             }`}>
               <span>⚡ Custom Point Multipliers</span>
             </p>
@@ -396,9 +402,9 @@ export function WalletCreditCard({
               <div className={`flex items-center justify-between gap-2 border p-1.5 rounded-lg ${
                 isSilverCard 
                   ? 'bg-black/5 border-black/5 text-slate-900' 
-                  : 'bg-slate-955/25 border-white/5 text-slate-300'
+                  : 'bg-white/10 border-white/10 text-white'
               }`}>
-                <span className={`text-[9px] font-bold ${isSilverCard ? 'text-slate-850' : 'text-slate-400'}`}>🍽️ Dining</span>
+                <span className={`text-[9px] font-bold ${isSilverCard ? 'text-slate-850' : 'text-white/80'}`}>🍽️ Dining</span>
                 <input
                   type="number"
                   min="1"
@@ -414,8 +420,8 @@ export function WalletCreditCard({
                   }}
                   className={`w-9 text-center text-[10px] font-black rounded focus:outline-none py-0.2 ${
                     isSilverCard 
-                      ? 'bg-slate-950/15 border border-slate-950/20 text-slate-950' 
-                      : 'bg-slate-950 border border-slate-800 text-slate-200'
+                      ? 'bg-slate-950/15 border border-slate-950/20 text-slate-955' 
+                      : 'bg-black/20 border border-white/10 text-white focus:border-amber-400'
                   }`}
                 />
               </div>
@@ -423,9 +429,9 @@ export function WalletCreditCard({
               <div className={`flex items-center justify-between gap-2 border p-1.5 rounded-lg ${
                 isSilverCard 
                   ? 'bg-black/5 border-black/5 text-slate-900' 
-                  : 'bg-slate-955/25 border-white/5 text-slate-300'
+                  : 'bg-white/10 border-white/10 text-white'
               }`}>
-                <span className={`text-[9px] font-bold ${isSilverCard ? 'text-slate-855' : 'text-slate-400'}`}>✈️ Travel</span>
+                <span className={`text-[9px] font-bold ${isSilverCard ? 'text-slate-855' : 'text-white/80'}`}>✈️ Travel</span>
                 <input
                   type="number"
                   min="1"
@@ -441,8 +447,8 @@ export function WalletCreditCard({
                   }}
                   className={`w-9 text-center text-[10px] font-black rounded focus:outline-none py-0.2 ${
                     isSilverCard 
-                      ? 'bg-slate-950/15 border border-slate-950/20 text-slate-950' 
-                      : 'bg-slate-950 border border-slate-800 text-slate-200'
+                      ? 'bg-slate-950/15 border border-slate-950/20 text-slate-955' 
+                      : 'bg-black/20 border border-white/10 text-white focus:border-amber-400'
                   }`}
                 />
               </div>
@@ -450,9 +456,9 @@ export function WalletCreditCard({
               <div className={`flex items-center justify-between gap-2 border p-1.5 rounded-lg ${
                 isSilverCard 
                   ? 'bg-black/5 border-black/5 text-slate-900' 
-                  : 'bg-slate-955/25 border-white/5 text-slate-300'
+                  : 'bg-white/10 border-white/10 text-white'
               }`}>
-                <span className={`text-[9px] font-bold ${isSilverCard ? 'text-slate-855' : 'text-slate-400'}`}>🛍️ Groceries</span>
+                <span className={`text-[9px] font-bold ${isSilverCard ? 'text-slate-855' : 'text-white/80'}`}>🛍️ Groceries</span>
                 <input
                   type="number"
                   min="1"
@@ -468,8 +474,8 @@ export function WalletCreditCard({
                   }}
                   className={`w-9 text-center text-[10px] font-black rounded focus:outline-none py-0.2 ${
                     isSilverCard 
-                      ? 'bg-slate-950/15 border border-slate-950/20 text-slate-955' 
-                      : 'bg-slate-950 border border-slate-800 text-slate-200'
+                      ? 'bg-slate-955 border border-slate-950/20 text-slate-955' 
+                      : 'bg-black/20 border border-white/10 text-white focus:border-amber-400'
                   }`}
                 />
               </div>
@@ -477,9 +483,9 @@ export function WalletCreditCard({
               <div className={`flex items-center justify-between gap-2 border p-1.5 rounded-lg ${
                 isSilverCard 
                   ? 'bg-black/5 border-black/5 text-slate-900' 
-                  : 'bg-slate-955/25 border-white/5 text-slate-300'
+                  : 'bg-white/10 border-white/10 text-white'
               }`}>
-                <span className={`text-[9px] font-bold ${isSilverCard ? 'text-slate-855' : 'text-slate-400'}`}>🎬 Streaming</span>
+                <span className={`text-[9px] font-bold ${isSilverCard ? 'text-slate-855' : 'text-white/80'}`}>🎬 Streaming</span>
                 <input
                   type="number"
                   min="1"
@@ -496,7 +502,7 @@ export function WalletCreditCard({
                   className={`w-9 text-center text-[10px] font-black rounded focus:outline-none py-0.2 ${
                     isSilverCard 
                       ? 'bg-slate-950/15 border border-slate-950/20 text-slate-950' 
-                      : 'bg-slate-950 border border-slate-800 text-slate-200'
+                      : 'bg-black/20 border border-white/10 text-white focus:border-amber-400'
                   }`}
                 />
               </div>
@@ -507,7 +513,7 @@ export function WalletCreditCard({
 
       <div className="mt-3 pt-3 border-t border-white/10 flex items-center justify-between gap-2 flex-wrap">
         <div className="flex items-center gap-1.5">
-          <label className={`text-[10px] font-bold ${isSilverCard ? 'text-slate-800' : 'text-slate-350'}`}>
+          <label className={`text-[10px] font-bold ${isSilverCard ? 'text-slate-800' : 'text-slate-300'}`}>
             Opened:
           </label>
           <input
