@@ -590,16 +590,16 @@ function App() {
             </div>
           </div>
 
-          <div className="flex items-center gap-2 sm:gap-3 flex-wrap justify-end sm:justify-start self-end sm:self-auto animate-fade-in">
+          <div className="flex items-center gap-1.5 sm:gap-2.5 flex-wrap justify-end sm:justify-start self-end sm:self-auto animate-fade-in">
             {/* Year-End Savings Wrapped Button (Viral Growth Magnet!) */}
             {(ownedCards.length > 0 || loyaltyAwards.length > 0) && (
               <button
                 onClick={() => setActiveModal('wrapped')}
-                className="flex items-center gap-1 px-3 py-2 rounded-xl border bg-gradient-to-tr from-purple-600/15 via-indigo-600/10 to-purple-600/15 border-purple-500/30 hover:border-purple-400/50 text-purple-400 hover:text-purple-300 font-extrabold text-xs transition duration-300 active:scale-90 cursor-pointer shadow-md shadow-purple-500/5 animate-pulse"
+                className="flex items-center gap-1 px-2 py-1.5 sm:px-3 sm:py-2 rounded-xl border bg-gradient-to-tr from-purple-600/15 via-indigo-600/10 to-purple-600/15 border-purple-500/30 hover:border-purple-400/50 text-purple-400 hover:text-purple-300 font-extrabold text-xs transition duration-300 active:scale-90 cursor-pointer shadow-md shadow-purple-500/5 animate-pulse"
                 title="View and Share your Personal Churner Savings Wrapped Poster!"
               >
-                <Sparkles className="w-3.5 h-3.5 text-amber-400 shrink-0 animate-spin-slow" />
-                <span>Wrapped 👑</span>
+                <Sparkles className="w-3.5 h-3.5 text-amber-400 shrink-0 animate-spin-slow hidden sm:block" />
+                <span>Wrapped</span>
               </button>
             )}
 
