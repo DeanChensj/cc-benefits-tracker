@@ -626,9 +626,9 @@ export const CARDS_DB: CardTemplate[] = [
     benefits: [
       {
         id: 'marriott-brilliant-dining',
-        name: '$300 Dining Credit',
+        name: '$300 Dining Credit ($25/mo)',
         description: 'Get up to $25 back per month in statement credits for global restaurant purchases.',
-        value: 300,
+        value: 25,
         resetPeriod: 'monthly',
         category: 'dining'
       },
@@ -671,9 +671,9 @@ export const CARDS_DB: CardTemplate[] = [
     benefits: [
       {
         id: 'biz-gold-office-transit',
-        name: '$240 Office Supply & Transit',
+        name: '$240 Office Supply & Transit ($20/mo)',
         description: 'Get up to $20 back per month in statement credits for U.S. office supply store or transit purchases.',
-        value: 240,
+        value: 20,
         resetPeriod: 'monthly',
         category: 'shopping'
       }

@@ -11,8 +11,10 @@ If any discrepancies are found, output a consolidated markdown table highlightin
 If no changes or discrepancies are detected anywhere in the database, output exactly: NO_CHANGE.
 
 Guidelines:
-1. Focus on high-end premium cards first (annual fee >= $250) such as Amex Platinum, Chase Sapphire Reserve, Capital One Venture X.
-2. Keep the output clear, concise, and strictly focused on discrepancies. Do not list cards that match perfectly.`;
+1. Do not care about or flag discrepancies regarding monetary/dollar valuations of Free Night Awards, hotel vouchers, or Companion Certificates (e.g., assigning $300 or $450 valuations to certificate rewards is an intentional layout choice in our database for math recoup calculations).
+2. Note that Amex Delta SkyMiles Platinum officially has a monthly $10 Resy credit and an annual $150 Delta Stays credit. Do not flag these as missing or incorrect.
+3. Focus on high-end premium cards first (annual fee >= $250) such as Amex Platinum, Chase Sapphire Reserve, Capital One Venture X.
+4. Keep the output clear, concise, and strictly focused on discrepancies. Do not list cards that match perfectly.`;
 
   // Hydrate templates with officialUrl for the prompt context
   const auditableTemplates = CARDS_DB.filter((c: any) => !!c.officialUrl).map((c: any) => ({
