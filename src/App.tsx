@@ -599,7 +599,7 @@ function App() {
                 title="View and Share your Personal Churner Savings Wrapped Poster!"
               >
                 <Sparkles className="w-3.5 h-3.5 text-amber-400 shrink-0 animate-spin-slow hidden sm:block" />
-                <span>Wrapped</span>
+                <span>Wrapped 👑</span>
               </button>
             )}
 
