@@ -1711,6 +1711,7 @@ function App() {
         isOpen={isSyncModalOpen} 
         onClose={() => setIsSyncModalOpen(false)} 
         ownedCards={ownedCards}
+        logs={logs}
         loyaltyAwards={loyaltyAwards}
         theme={theme}
       />

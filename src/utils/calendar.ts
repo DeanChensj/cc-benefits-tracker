@@ -1,6 +1,8 @@
 import { CARDS_DB, AWARD_TEMPLATES } from '../data/cards.db';
 import type { Benefit, LoyaltyAward } from '../data/cards.db';
 import type { OwnedCardInstance } from '../store/useCardStore';
+import { obfuscateKey } from './dateUtils';
+import type { LogEntry } from './dateUtils';
 
 // Format date to ICS format (YYYYMMDD or YYYYMMDDTHHMMSS)
 const formatICSDate = (date: Date): string => {
@@ -15,7 +17,11 @@ const formatICSDateTimeUTC = (date: Date): string => {
   return date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
 };
 
-export const downloadICSFile = (ownedCards: OwnedCardInstance[], loyaltyAwards?: LoyaltyAward[]) => {
+export const downloadICSFile = (
+  ownedCards: OwnedCardInstance[], 
+  logs: Record<string, LogEntry>,
+  loyaltyAwards?: LoyaltyAward[]
+) => {
   let icsContent = [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
@@ -39,6 +45,18 @@ export const downloadICSFile = (ownedCards: OwnedCardInstance[], loyaltyAwards?:
     }
 
     benefits.forEach((benefit) => {
+      const logKey = `${cardInstance.id}:${benefit.id}`;
+      const parsedKey = obfuscateKey(logKey);
+      const logEntry = logs[parsedKey];
+
+      // Smart Export Filter: Skip already resolved or fully spent perks!
+      if (benefit.spendingLimit) {
+        const spent = logEntry && logEntry.spentProgress !== undefined ? logEntry.spentProgress : 0;
+        if (spent >= benefit.spendingLimit) return;
+      } else {
+        const isResolved = logEntry ? logEntry.resolved : false;
+        if (isResolved) return;
+      }
       // Ensure unique UID per instance
       const uid = `${cardInstance.id}-${benefit.id}@cc-benefits-tracker`;
       const title = `💳 Use ${cardInstance.customName} - ${benefit.name}`;
