@@ -379,7 +379,7 @@ function App() {
     const synthesizedBenefit: Benefit = {
       id: award.id,
       name: `${info.name} ${remainingQty > 1 ? `(${remainingQty}x)` : ''}`,
-      description: award.notes || `${info.brand} standalone award. ${isFullyUsed ? '(Fully Used)' : `(${usedQty}/${award.quantity} used)`}`,
+      description: award.notes || info.description || `${info.brand} loyalty reward certificate.`,
       value: info.value * award.quantity,
       resetPeriod: 'fixed',
       expirationDate: award.expirationDate,

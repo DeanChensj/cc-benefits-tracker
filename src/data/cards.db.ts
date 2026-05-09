@@ -26,6 +26,7 @@ export interface StaticAwardTemplate {
   programType: 'hotel' | 'airline' | 'bank' | 'other';
   awardType: 'fnr' | 'sua' | 'goh' | 'companion' | 'swu' | 'points' | 'other';
   value: number; // Pre-configured estimated USD cash value
+  description?: string; // Descriptive text explaining what this certificate actually does!
 }
 
 export const AWARD_TEMPLATES: Record<string, StaticAwardTemplate> = {
@@ -34,63 +35,72 @@ export const AWARD_TEMPLATES: Record<string, StaticAwardTemplate> = {
     brand: 'Hyatt',
     programType: 'hotel',
     awardType: 'sua',
-    value: 50
+    value: 50,
+    description: 'Confirm a suite upgrade at booking for stays up to 7 nights.'
   },
   'hyatt-goh': {
     name: 'Hyatt Guest of Honor Award',
     brand: 'Hyatt',
     programType: 'hotel',
     awardType: 'goh',
-    value: 80
+    value: 80,
+    description: 'Gift Hyatt Globalist in-hotel benefits to family or friends.'
   },
   'marriott-nua': {
     name: 'Marriott Nightly Upgrade Award (NUA)',
     brand: 'Marriott',
     programType: 'hotel',
     awardType: 'sua',
-    value: 40
+    value: 40,
+    description: 'Request a premium room or suite upgrade per night.'
   },
   'marriott-85k-fnr': {
     name: 'Marriott 85K Free Night Award',
     brand: 'Marriott',
     programType: 'hotel',
     awardType: 'fnr',
-    value: 450
+    value: 450,
+    description: 'Redeem for a free night up to 85,000 points at Marriott hotels.'
   },
   'marriott-50k-fnr': {
     name: 'Marriott 50K Free Night Award',
     brand: 'Marriott',
     programType: 'hotel',
     awardType: 'fnr',
-    value: 250
+    value: 250,
+    description: 'Redeem for a free night up to 50,000 points at Marriott hotels.'
   },
   'alaska-companion': {
     name: 'Alaska Companion Fare Certificate',
     brand: 'Alaska',
     programType: 'airline',
     awardType: 'companion',
-    value: 150
+    value: 150,
+    description: 'Book a companion round-trip fare from $121 ($99 fare + taxes).'
   },
   'delta-companion': {
     name: 'Delta Companion Certificate',
     brand: 'Delta',
     programType: 'airline',
     awardType: 'companion',
-    value: 200
+    value: 200,
+    description: 'Receive a companion domestic round-trip ticket upon card renewal.'
   },
   'aa-swu': {
     name: 'AA Systemwide Upgrade (SWU)',
     brand: 'AA',
     programType: 'airline',
     awardType: 'swu',
-    value: 200
+    value: 200,
+    description: 'Confirm a one-way systemwide upgrade to business or first class.'
   },
   'custom': {
     name: 'Custom Voucher',
     brand: 'Other',
     programType: 'other',
     awardType: 'other',
-    value: 0
+    value: 0,
+    description: 'Custom standalone loyalty award or certificate.'
   }
 };
 
