@@ -395,9 +395,11 @@ export function WalletLibraryTab({
                   <h4 className="text-sm font-black mt-2 truncate leading-tight">
                     {info.name}
                   </h4>
-                  <p className="text-[11px] mt-2 leading-relaxed font-medium truncate opacity-90">
-                    {award.notes || 'Voucher registered successfully.'}
-                  </p>
+                  {award.notes && (
+                    <p className="text-[11px] mt-2 leading-relaxed font-medium truncate opacity-90">
+                      {award.notes}
+                    </p>
+                  )}
                 </div>
 
                 <div className="mt-3 text-[9px] font-bold opacity-80 flex items-center gap-1 flex-wrap">
