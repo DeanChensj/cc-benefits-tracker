@@ -907,7 +907,7 @@ function App() {
                   : themeClass('text-slate-400 hover:text-white hover:bg-slate-855', 'text-slate-505 hover:text-slate-900 hover:bg-slate-300/30')
               }`}
             >
-              To-Do ({activeBenefits.filter(b => !b.isUsed).length})
+              Active ({activeBenefits.filter(b => !b.isUsed).length})
             </button>
             <button
               onClick={() => setActiveTab('all')}
@@ -1129,7 +1129,9 @@ function App() {
                               <div className="flex items-center gap-2 min-w-0">
                                 <span className="text-xs font-bold truncate">{cardName}</span>
                                 <span className={`text-[8px] font-extrabold px-1.5 py-0.5 rounded-md tracking-wide shrink-0 bg-white/20 text-white`}>
-                                  {resolvedCount}/{totalCount} Done
+                                  {activeTab === 'todo' 
+                                    ? `${items.length} Active` 
+                                    : `${resolvedCount}/${totalCount} Done`}
                                 </span>
                               </div>
                               <span className="text-[9px] font-black opacity-80 px-1.5">
