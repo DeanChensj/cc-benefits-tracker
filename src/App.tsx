@@ -10,6 +10,7 @@ import { CreateCardModal } from './components/CreateCardModal';
 import { CreateAwardModal } from './components/CreateAwardModal';
 import { AddOfferModal } from './components/AddOfferModal';
 import { EditCardModal } from './components/EditCardModal';
+import { CardDetailDrawer } from './components/CardDetailDrawer';
 import { Toast } from './components/Toast';
 import { DeleteConfirmModal } from './components/DeleteConfirmModal';
 import { ConfirmationModal } from './components/ConfirmationModal';
@@ -89,6 +90,7 @@ function App() {
   const [deleteAwardId, setDeleteAwardId] = useState<string | null>(null);
   const [collapsedGroups, setCollapsedGroups] = useState<Record<string, boolean>>({});
   const [selectedTemplates, setSelectedTemplates] = useState<string[]>([]);
+  const [activeTemplateDetail, setActiveTemplateDetail] = useState<CardTemplate | null>(null);
   const [activeEditInstanceId, setActiveEditInstanceId] = useState<string | null>(null);
   const activeEditInstance = ownedCards.find((c) => c.id === activeEditInstanceId) || null;
 
@@ -789,13 +791,13 @@ function App() {
             setDeleteCardInstanceId={setDeleteCardInstanceId}
             setDeleteAwardId={setDeleteAwardId}
             themeClass={themeClass}
-            theme={theme}
             selectedTemplates={selectedTemplates}
             setSelectedTemplates={setSelectedTemplates}
             onEditCard={(instance) => setActiveEditInstanceId(instance.id)}
             deckSubTab={deckSubTab}
             setDeckSubTab={setDeckSubTab}
             updateAwardUsedQuantity={updateAwardUsedQuantity}
+            onViewTemplateDetail={setActiveTemplateDetail}
           />
         )}
       </main>
@@ -990,7 +992,6 @@ function App() {
         </div>
       )}
 
-      {/* Edit Card Instance Configuration popover Modal Sheet */}
       <EditCardModal
         isOpen={!!activeEditInstanceId}
         instance={activeEditInstance}
@@ -1001,6 +1002,18 @@ function App() {
         setCardOpenDate={setCardOpenDate}
         renameCard={renameCard}
         themeClass={themeClass}
+      />
+
+      {/* Card Detail Popover Drawer */}
+      <CardDetailDrawer 
+        isOpen={!!activeTemplateDetail}
+        card={activeTemplateDetail}
+        onClose={() => setActiveTemplateDetail(null)}
+        onAdd={() => {
+          handleAddCard(activeTemplateDetail ? activeTemplateDetail.id : '');
+          setActiveTemplateDetail(null);
+        }}
+        theme={theme}
       />
 
       {/* Premium Floating Toast Notification */}

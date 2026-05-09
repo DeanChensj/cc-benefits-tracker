@@ -4,26 +4,22 @@ import { CARDS_DB } from '../data/cards.db';
 import type { CardTemplate } from '../data/cards.db';
 import { getCardPotentialValue } from '../utils/valuationUtils';
 import { BankHeader } from './WalletLibraryTab'; // Re-use bank header styles
-import { CardDetailDrawer } from './CardDetailDrawer';
 
 interface CardTemplatesCatalogProps {
   themeClass: (dark: string, light: string) => string;
-  theme: 'dark' | 'light';
   selectedTemplates: string[];
   setSelectedTemplates: React.Dispatch<React.SetStateAction<string[]>>;
-  handleAddCard: (templateId: string) => void;
+  onViewTemplateDetail: (card: CardTemplate) => void;
 }
 
 export function CardTemplatesCatalog({
   themeClass,
-  theme,
   selectedTemplates,
   setSelectedTemplates,
-  handleAddCard,
+  onViewTemplateDetail,
 }: CardTemplatesCatalogProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [templateFeeFilter, setTemplateFeeFilter] = useState<'all' | 'free' | 'mid' | 'premium'>('all');
-  const [activeTemplateDetail, setActiveTemplateDetail] = useState<CardTemplate | null>(null);
   const [collapsedTemplatesBanks, setCollapsedTemplatesBanks] = useState<Record<string, boolean>>({});
 
   // Filter templates
@@ -137,7 +133,7 @@ export function CardTemplatesCatalog({
                     return (
                       <div
                         key={card.id}
-                        onClick={() => setActiveTemplateDetail(card)}
+                        onClick={() => onViewTemplateDetail(card)}
                         className={`p-4 rounded-xl border flex flex-col justify-between transition cursor-pointer hover:scale-[1.01] duration-200 relative overflow-hidden group/card after:absolute after:top-0 after:-left-[150%] after:w-[60%] after:h-full after:bg-gradient-to-r after:from-transparent after:via-white/15 dark:after:via-white/10 after:to-transparent after:skew-x-12 after:transition-all after:duration-700 hover:after:left-[150%] ${
                           isSelected
                             ? 'ring-2 ring-purple-500 border-purple-500 bg-purple-500/5'
@@ -212,14 +208,6 @@ export function CardTemplatesCatalog({
         })}
       </div>
 
-      {/* Card Detail Popover Drawer */}
-      <CardDetailDrawer 
-        isOpen={!!activeTemplateDetail}
-        card={activeTemplateDetail}
-        onClose={() => setActiveTemplateDetail(null)}
-        onAdd={() => handleAddCard(activeTemplateDetail ? activeTemplateDetail.id : '')}
-        theme={theme}
-      />
     </div>
   );
 }

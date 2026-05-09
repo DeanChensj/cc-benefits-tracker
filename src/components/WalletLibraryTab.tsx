@@ -3,7 +3,7 @@ import { Plus, Sparkles, CreditCard, Trash2, Compass } from 'lucide-react';
 import { WalletCreditCard } from './WalletCreditCard';
 import { CardTemplatesCatalog } from './CardTemplatesCatalog';
 import { CARDS_DB, AWARD_TEMPLATES } from '../data/cards.db';
-import type { LoyaltyAward } from '../data/cards.db';
+import type { LoyaltyAward, CardTemplate } from '../data/cards.db';
 import type { OwnedCardInstance } from '../store/useCardStore';
 
 interface WalletLibraryTabProps {
@@ -19,13 +19,13 @@ interface WalletLibraryTabProps {
   setDeleteCardInstanceId: (instanceId: string | null) => void;
   setDeleteAwardId: (awardId: string | null) => void;
   themeClass: (dark: string, light: string) => string;
-  theme: 'dark' | 'light';
   selectedTemplates: string[];
   setSelectedTemplates: React.Dispatch<React.SetStateAction<string[]>>;
   onEditCard: (instance: OwnedCardInstance) => void;
   deckSubTab: 'cards' | 'awards' | 'templates';
   setDeckSubTab: (tab: 'cards' | 'awards' | 'templates') => void;
   updateAwardUsedQuantity: (awardId: string, qty: number) => void;
+  onViewTemplateDetail: (card: CardTemplate) => void;
 }
 interface BankHeaderProps {
   bankName: 'Amex' | 'Chase' | 'Citi' | 'Other';
@@ -148,13 +148,13 @@ export function WalletLibraryTab({
   setDeleteCardInstanceId,
   setDeleteAwardId,
   themeClass,
-  theme,
   selectedTemplates,
   setSelectedTemplates,
   onEditCard,
   deckSubTab,
   setDeckSubTab,
-  updateAwardUsedQuantity
+  updateAwardUsedQuantity,
+  onViewTemplateDetail
 }: WalletLibraryTabProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [expandedCardIds, setExpandedCardIds] = useState<Record<string, boolean>>({});
@@ -347,10 +347,9 @@ export function WalletLibraryTab({
       {deckSubTab === 'templates' && (
         <CardTemplatesCatalog
           themeClass={themeClass}
-          theme={theme}
           selectedTemplates={selectedTemplates}
           setSelectedTemplates={setSelectedTemplates}
-          handleAddCard={handleAddCard}
+          onViewTemplateDetail={onViewTemplateDetail}
         />
       )}
 
