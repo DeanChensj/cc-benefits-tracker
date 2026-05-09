@@ -167,7 +167,7 @@ export function WalletLibraryTab({
   return (
     <div className="space-y-6 animate-fade-in">
       {/* Tri-Deck Segmented Switcher (0% Visual Bloat!) */}
-      <div className="flex justify-center mb-2 animate-fade-in">
+      <div className="flex justify-center animate-fade-in">
         <div className={`flex gap-0.5 p-0.5 rounded-xl border w-full max-w-[360px] ${
           themeClass('bg-slate-955 border-slate-850/80', 'bg-slate-200/40 border-slate-300/60')
         }`}>
@@ -483,7 +483,7 @@ export function WalletLibraryTab({
 
                   {/* Section 2: Inactive/Claimed Vouchers Archive */}
                   {inactiveAwards.length > 0 && (
-                    <div className="mt-8 pt-6 border-t border-dashed border-slate-200 dark:border-slate-800/60 space-y-3.5">
+                    <div className="mt-6 pt-6 border-t border-dashed border-slate-200 dark:border-slate-800/60 space-y-3.5">
                       <div className="flex items-center gap-2">
                         <span className={`text-[10px] font-black uppercase tracking-widest ${themeClass('text-slate-400', 'text-slate-500')}`}>
                           📁 Claimed Vouchers Archive ({inactiveAwards.length} claimed)
