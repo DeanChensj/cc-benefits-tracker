@@ -129,12 +129,18 @@ export const ChecklistCardRow = React.memo(function ChecklistCardRow({
                   style={{ width: `${spentPercent}%` }}
                 />
               </div>
-              <div className="flex justify-between items-center mt-1 text-[9px] font-semibold text-slate-500 dark:text-slate-450">
-                <span>Spent: ${spent} / ${benefit.spendingLimit}</span>
-                <span className={isUsed ? 'text-emerald-500 dark:text-emerald-400' : ''}>
-                  Cashback: ${cashbackEarned} / ${benefit.value} ({Math.round((benefit.value / (benefit.spendingLimit || 1)) * 100)}%)
-                </span>
-              </div>
+               {benefit.value === benefit.spendingLimit ? (
+                <div className="flex justify-between items-center mt-1 text-[9px] font-semibold text-slate-500 dark:text-slate-450">
+                  <span>Spent: ${spent} / ${benefit.spendingLimit} ({Math.round(spentPercent)}%)</span>
+                </div>
+              ) : (
+                <div className="flex justify-between items-center mt-1 text-[9px] font-semibold text-slate-500 dark:text-slate-450">
+                  <span>Spent: ${spent} / ${benefit.spendingLimit} ({Math.round(spentPercent)}%)</span>
+                  <span className={isUsed ? 'text-emerald-500 dark:text-emerald-400' : ''}>
+                    Cashback: ${cashbackEarned} / ${benefit.value}
+                  </span>
+                </div>
+              )}
             </div>
           )}
         </div>
