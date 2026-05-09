@@ -33,7 +33,9 @@ import {
   Calendar,
   DollarSign,
   Clock,
-  Sparkles
+  Sparkles,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
 
 
@@ -1021,19 +1023,22 @@ function App() {
         theme={theme}
       />
 
-      {/* Floating Sandbox Time Machine Console (Premium Glassmorphic Capsule) */}
-      <div className="fixed bottom-6 left-6 z-45 animate-scale-up">
-        <div className={`p-2.5 border rounded-2xl shadow-2xl flex items-center gap-2.5 backdrop-blur-md transition-all duration-300 ${
+      {/* Floating Sandbox Time Machine Console (Premium Glassmorphic Pill Capsule) */}
+      <div className="fixed max-sm:top-[68px] max-sm:bottom-auto max-sm:left-1/2 max-sm:-translate-x-1/2 sm:bottom-6 sm:left-6 z-30 animate-scale-up">
+        <div className={`p-1.5 pl-3 pr-2 border rounded-full shadow-2xl flex items-center gap-2 backdrop-blur-md transition-all duration-300 ${
           themeClass(
             'bg-slate-900/95 border-slate-850/80 text-white shadow-slate-950/50',
             'bg-white/95 border-slate-255 text-slate-800 shadow-slate-300/30'
           )
         }`}>
+          {/* Clock Icon descriptor */}
+          <Clock className="w-3.5 h-3.5 text-purple-500 dark:text-purple-400 shrink-0" />
+          
           {/* Sandbox state indicator light */}
           {(() => {
             const isSandbox = currentDate.getMonth() !== new Date().getMonth() || currentDate.getFullYear() !== new Date().getFullYear();
             return (
-              <div className="flex items-center gap-2 shrink-0">
+              <div className="flex items-center gap-1.5 shrink-0">
                 <span className={`relative flex h-2 w-2 ${isSandbox ? 'block' : 'hidden'}`}>
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
                   <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
@@ -1041,7 +1046,7 @@ function App() {
                 {isSandbox && (
                   <button
                     onClick={() => setCurrentDate(new Date())}
-                    className={`px-1.5 py-0.5 rounded text-[7.5px] font-black tracking-wider uppercase border hover:scale-[1.03] transition cursor-pointer active:scale-95 ${
+                    className={`px-2 py-0.5 rounded-full text-[7px] font-black tracking-wider uppercase border hover:scale-[1.03] transition cursor-pointer active:scale-95 ${
                       themeClass('bg-amber-500/15 text-amber-400 border-amber-500/30 hover:bg-amber-500/25', 'bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100')
                     }`}
                     title="Reset to Today"
@@ -1054,25 +1059,25 @@ function App() {
           })()}
           
           {/* Month switcher buttons */}
-          <div className={`flex items-center rounded-xl p-0.5 text-[11px] font-extrabold border ${
+          <div className={`flex items-center rounded-full p-0.5 text-[11px] font-extrabold border ${
             themeClass('bg-slate-950/50 border-slate-850/70 text-slate-300', 'bg-slate-100/60 border-slate-200 text-slate-750 shadow-inner')
           }`}>
             <button 
               onClick={() => adjustMonth(-1)} 
-              className={`px-2 py-1 rounded-lg transition cursor-pointer ${themeClass('hover:bg-slate-900', 'hover:bg-slate-305')}`}
+              className={`p-1 rounded-full transition cursor-pointer flex items-center justify-center ${themeClass('hover:bg-slate-900 text-slate-300', 'hover:bg-slate-200 text-slate-700')}`}
               title="Previous Month"
             >
-              ◀
+              <ChevronLeft className="w-3.5 h-3.5" />
             </button>
-            <span className={`px-2.5 py-1 min-w-[95px] text-center font-extrabold text-[10px] tracking-wider uppercase`}>
+            <span className={`px-2 py-1 min-w-[80px] text-center font-extrabold text-[9.5px] tracking-wider uppercase`}>
               {currentMonthStr.substring(0, 3)} {currentYear}
             </span>
             <button 
               onClick={() => adjustMonth(1)} 
-              className={`px-2 py-1 rounded-lg transition cursor-pointer ${themeClass('hover:bg-slate-900', 'hover:bg-slate-305')}`}
+              className={`p-1 rounded-full transition cursor-pointer flex items-center justify-center ${themeClass('hover:bg-slate-900 text-slate-300', 'hover:bg-slate-200 text-slate-700')}`}
               title="Next Month"
             >
-              ▶
+              <ChevronRight className="w-3.5 h-3.5" />
             </button>
           </div>
         </div>
