@@ -486,132 +486,157 @@ export function WalletLibraryTab({
         </div>
       )}
 
-      {deckSubTab === 'awards' && (
-        <div className="space-y-6 animate-fade-in">
-          {/* Standalone Loyalty Vouchers Box */}
-          <div className={`border rounded-xl p-4 sm:p-6 transition duration-300 ${
-            themeClass('bg-slate-900/30 border-slate-850', 'bg-white border-slate-200 shadow-sm')
-          }`}>
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-4 pb-2 border-b border-dashed border-slate-200/60 dark:border-slate-800/60">
-              <h3 className={`text-xs font-bold uppercase tracking-wider flex items-center gap-2 ${themeClass('text-slate-400', 'text-slate-555')}`}>
-                <Sparkles className="w-4 h-4 text-purple-500 animate-spin-slow" />
-                My Loyalty Awards & Vouchers ({loyaltyAwards.length} active)
-              </h3>
-              <button
-                onClick={() => setIsCreateAwardModalOpen(true)}
-                className="flex items-center gap-1 bg-gradient-to-tr from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-550 text-white font-bold px-3 py-1.5 rounded-lg text-xs transition active:scale-95 shadow-md shadow-purple-500/10 cursor-pointer"
-              >
-                <Plus className="w-3.5 h-3.5 stroke-[3]" />
-                Register Standalone Award
-              </button>
-            </div>
+      {deckSubTab === 'awards' && (() => {
+        const activeAwards = loyaltyAwards.filter((a) => (a.usedQuantity || 0) < a.quantity);
+        const inactiveAwards = loyaltyAwards.filter((a) => (a.usedQuantity || 0) >= a.quantity);
 
-            {loyaltyAwards.length === 0 ? (
-              <div className="text-center py-10">
-                <p className="text-2xl mb-2">🎁</p>
-                <p className={`text-xs font-bold ${themeClass('text-slate-300', 'text-slate-800')}`}>No standalone vouchers registered!</p>
-                <p className={`text-[10px] mt-1 leading-normal ${themeClass('text-slate-450', 'text-slate-500')}`}>
-                  Track card-independent travel vouchers, hotel free night certificates, points bundles, or airline companion awards.
-                </p>
+        const renderAwardCard = (award: typeof loyaltyAwards[0]) => {
+          const isCustom = award.templateId === 'custom';
+          const info = isCustom ? {
+            name: award.customName || 'Custom Voucher',
+            brand: award.customBrand || 'Other',
+            programType: award.customProgramType || 'other',
+            awardType: award.customAwardType || 'other',
+            value: award.customValue || 0
+          } : AWARD_TEMPLATES[award.templateId];
+
+          const usedQty = award.usedQuantity || 0;
+          const isCompleted = usedQty === award.quantity;
+          const theme = getAwardTheme(info.brand, info.awardType || '', themeClass);
+
+          return (
+            <div
+              key={award.id}
+              className={`rounded-2xl border flex justify-between transition duration-200 relative overflow-hidden select-none min-h-[160px] bg-gradient-to-tr ${
+                isCompleted ? 'opacity-50 grayscale-[30%]' : ''
+              } ${theme.bgClass}`}
+            >
+              {/* Background Angled Watermark */}
+              <div className="absolute right-[32%] bottom-[-10px] select-none pointer-events-none opacity-[0.03] text-[50px] font-black tracking-widest uppercase font-sans -rotate-12 leading-none z-0">
+                {theme.watermark}
               </div>
-            ) : (
-              <div className="grid sm:grid-cols-2 gap-4">
-                {loyaltyAwards.map((award) => {
-                  const isCustom = award.templateId === 'custom';
-                  const info = isCustom ? {
-                    name: award.customName || 'Custom Voucher',
-                    brand: award.customBrand || 'Other',
-                    programType: award.customProgramType || 'other',
-                    awardType: award.customAwardType || 'other',
-                    value: award.customValue || 0
-                  } : AWARD_TEMPLATES[award.templateId];
 
-                  const usedQty = award.usedQuantity || 0;
-                  const isCompleted = usedQty === award.quantity;
+              {/* 1. Left Column: Main Ticket Body (70%) */}
+              <div className="flex-grow p-4 relative text-left min-w-0 flex flex-col justify-between z-10 pr-2">
+                <div>
+                  <div className="flex items-center gap-1.5">
+                    <span className={`text-[8px] font-black px-1.5 py-0.5 rounded uppercase tracking-wider border ${theme.brandTagClass}`}>
+                      {info.brand}
+                    </span>
+                    {info.programType && (
+                      <span className={`text-[7.5px] font-bold uppercase tracking-wide opacity-75`}>
+                        • {info.programType}
+                      </span>
+                    )}
+                  </div>
+                  <h4 className="text-sm font-black mt-2 truncate leading-tight">
+                    {info.name}
+                  </h4>
+                  <p className="text-[11px] mt-2 leading-relaxed font-medium truncate opacity-90">
+                    {award.notes || 'Voucher registered successfully.'}
+                  </p>
+                </div>
 
-                        const theme = getAwardTheme(info.brand, info.awardType || '', themeClass);
+                <div className="mt-3 text-[9px] font-bold opacity-80 flex items-center gap-1 flex-wrap">
+                  <span>Value:</span>
+                  <span className="font-black text-sm leading-none">${info.value}</span>
+                  <span className="opacity-60">each</span>
+                </div>
+              </div>
 
-                  return (
-                    <div
-                      key={award.id}
-                      className={`rounded-2xl border flex justify-between transition duration-200 relative overflow-hidden select-none min-h-[160px] bg-gradient-to-tr ${
-                        isCompleted ? 'opacity-50 grayscale-[30%]' : ''
-                      } ${theme.bgClass}`}
-                    >
-                      {/* Background Angled Watermark */}
-                      <div className="absolute right-[32%] bottom-[-10px] select-none pointer-events-none opacity-[0.03] text-[50px] font-black tracking-widest uppercase font-sans -rotate-12 leading-none z-0">
-                        {theme.watermark}
+              {/* 2. Right Column: Ticket Stub Receipt (30%) */}
+              <div className="w-28 shrink-0 p-4 flex flex-col justify-between items-center border-l-2 border-dashed border-white/10 dark:border-black/25 relative text-center z-10">
+                {/* Circular Punch Tear Notches */}
+                <div className={`absolute -top-2 -left-[9px] w-4.5 h-4.5 rounded-full z-20 ${themeClass('bg-slate-955', 'bg-slate-55')}`} />
+                <div className={`absolute -bottom-2 -left-[9px] w-4.5 h-4.5 rounded-full z-20 ${themeClass('bg-slate-955', 'bg-slate-55')}`} />
+
+                <button
+                  onClick={() => setDeleteAwardId(award.id)}
+                  className="absolute top-2 right-2 text-red-400 hover:text-red-300 p-1 rounded hover:bg-red-500/10 transition cursor-pointer active:scale-90 z-30"
+                  title="Delete standalone award"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                </button>
+
+                <div className="mt-2 flex flex-col items-center">
+                  <span className="text-[8px] font-black tracking-widest uppercase opacity-70 block">Status</span>
+                  <span className={`text-[9px] font-black mt-1 px-2 py-0.5 rounded uppercase border tracking-wide ${
+                    isCompleted 
+                      ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' 
+                      : themeClass('bg-white/15 text-white border-white/10', 'bg-black/5 text-slate-800 border-black/5')
+                  }`}>
+                    {isCompleted ? 'Claimed' : 'Unused'}
+                  </span>
+                </div>
+
+                <div className="w-full">
+                  <span className={`text-[9px] font-black uppercase tracking-wider block ${
+                    isCompleted ? 'text-emerald-400' : theme.glowColor
+                  }`}>
+                    {isCompleted ? '✓ Claimed' : `Bal: $${info.value}`}
+                  </span>
+                </div>
+              </div>
+            </div>
+          );
+        };
+
+        return (
+          <div className="space-y-6 animate-fade-in">
+            {/* Standalone Loyalty Vouchers Box */}
+            <div className={`border rounded-xl p-4 sm:p-6 transition duration-300 ${
+              themeClass('bg-slate-900/30 border-slate-850', 'bg-white border-slate-200 shadow-sm')
+            }`}>
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-4 pb-2 border-b border-dashed border-slate-200/60 dark:border-slate-800/60">
+                <h3 className={`text-xs font-bold uppercase tracking-wider flex items-center gap-2 ${themeClass('text-slate-400', 'text-slate-555')}`}>
+                  <Sparkles className="w-4 h-4 text-purple-500 animate-spin-slow" />
+                  My Loyalty Awards & Vouchers ({activeAwards.length} active)
+                </h3>
+                <button
+                  onClick={() => setIsCreateAwardModalOpen(true)}
+                  className="flex items-center gap-1 bg-gradient-to-tr from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-550 text-white font-bold px-3 py-1.5 rounded-lg text-xs transition active:scale-95 shadow-md shadow-purple-500/10 cursor-pointer"
+                >
+                  <Plus className="w-3.5 h-3.5 stroke-[3]" />
+                  Register Standalone Award
+                </button>
+              </div>
+
+              {loyaltyAwards.length === 0 ? (
+                <div className="text-center py-10">
+                  <p className="text-2xl mb-2">🎁</p>
+                  <p className={`text-xs font-bold ${themeClass('text-slate-300', 'text-slate-800')}`}>No standalone vouchers registered!</p>
+                  <p className={`text-[10px] mt-1 leading-normal ${themeClass('text-slate-450', 'text-slate-500')}`}>
+                    Track card-independent travel vouchers, hotel free night certificates, points bundles, or airline companion awards.
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-8">
+                  {/* Section 1: Active Vouchers Grid */}
+                  {activeAwards.length > 0 && (
+                    <div className="grid sm:grid-cols-2 gap-4">
+                      {activeAwards.map(renderAwardCard)}
+                    </div>
+                  )}
+
+                  {/* Section 2: Inactive/Claimed Vouchers Archive */}
+                  {inactiveAwards.length > 0 && (
+                    <div className="mt-8 pt-6 border-t border-dashed border-slate-200 dark:border-slate-800/60 space-y-3.5">
+                      <div className="flex items-center gap-2">
+                        <span className={`text-[10px] font-black uppercase tracking-widest ${themeClass('text-slate-400', 'text-slate-500')}`}>
+                          📁 Claimed Vouchers Archive ({inactiveAwards.length} claimed)
+                        </span>
                       </div>
-
-                      {/* 1. Left Column: Main Ticket Body (70%) */}
-                      <div className="flex-grow p-4 relative text-left min-w-0 flex flex-col justify-between z-10 pr-2">
-                        <div>
-                          <div className="flex items-center gap-1.5">
-                            <span className={`text-[8px] font-black px-1.5 py-0.5 rounded uppercase tracking-wider border ${theme.brandTagClass}`}>
-                              {info.brand}
-                            </span>
-                            {info.programType && (
-                              <span className={`text-[7.5px] font-bold uppercase tracking-wide opacity-75`}>
-                                • {info.programType}
-                              </span>
-                            )}
-                          </div>
-                          <h4 className="text-sm font-black mt-2 truncate leading-tight">
-                            {info.name}
-                          </h4>
-                          <p className="text-[11px] mt-2 leading-relaxed font-medium truncate opacity-90">
-                            {award.notes || 'Voucher registered successfully.'}
-                          </p>
-                        </div>
-
-                        <div className="mt-3 text-[9px] font-bold opacity-80 flex items-center gap-1 flex-wrap">
-                          <span>Value:</span>
-                          <span className="font-black text-sm leading-none">${info.value}</span>
-                          <span className="opacity-60">each</span>
-                        </div>
-                      </div>
-
-                      {/* 2. Right Column: Ticket Stub Receipt (30%) */}
-                      <div className="w-28 shrink-0 p-4 flex flex-col justify-between items-center border-l-2 border-dashed border-white/10 dark:border-black/25 relative text-center z-10">
-                        {/* Circular Punch Tear Notches */}
-                        <div className={`absolute -top-2 -left-[9px] w-4.5 h-4.5 rounded-full z-20 ${themeClass('bg-slate-955', 'bg-slate-55')}`} />
-                        <div className={`absolute -bottom-2 -left-[9px] w-4.5 h-4.5 rounded-full z-20 ${themeClass('bg-slate-955', 'bg-slate-55')}`} />
-
-                        <button
-                          onClick={() => setDeleteAwardId(award.id)}
-                          className="absolute top-2 right-2 text-red-400 hover:text-red-300 p-1 rounded hover:bg-red-500/10 transition cursor-pointer active:scale-90 z-30"
-                          title="Delete standalone award"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
-
-                        <div className="mt-2 flex flex-col items-center">
-                          <span className="text-[8px] font-black tracking-widest uppercase opacity-70 block">Status</span>
-                          <span className={`text-[9px] font-black mt-1 px-2 py-0.5 rounded uppercase border tracking-wide ${
-                            isCompleted 
-                              ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' 
-                              : themeClass('bg-white/15 text-white border-white/10', 'bg-black/5 text-slate-800 border-black/5')
-                          }`}>
-                            {isCompleted ? 'Claimed' : 'Unused'}
-                          </span>
-                        </div>
-
-                        <div className="w-full">
-                          <span className={`text-[9px] font-black uppercase tracking-wider block ${
-                            isCompleted ? 'text-emerald-400' : theme.glowColor
-                          }`}>
-                            {isCompleted ? '✓ Claimed' : `Bal: $${info.value}`}
-                          </span>
-                        </div>
+                      <div className="grid sm:grid-cols-2 gap-4 opacity-60 grayscale-[30%] hover:opacity-85 hover:grayscale-[10%] transition duration-300">
+                        {inactiveAwards.map(renderAwardCard)}
                       </div>
                     </div>
-                  );
-                })}
-              </div>
-            )}
+                  )}
+                </div>
+              )}
+            </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
 
 
 
