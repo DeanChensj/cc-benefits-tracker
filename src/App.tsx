@@ -16,12 +16,11 @@ import { ConfirmationModal } from './components/ConfirmationModal';
 import { EmptyWalletState } from './components/EmptyWalletState';
 import { CheckoutWinnersRow } from './components/CheckoutWinnersRow';
 import { AnnualFeeWarningsWidget } from './components/AnnualFeeWarningsWidget';
-import { FilterHubPanel } from './components/FilterHubPanel';
-import { ChecklistCardRow } from './components/ChecklistCardRow';
 import { WalletCreditCard } from './components/WalletCreditCard';
 import { SavingsWrappedModal } from './components/SavingsWrappedModal';
 import { CloudSyncBanner } from './components/CloudSyncBanner';
-import { getLocalDateString, getDaysLeft, getDaysLeftForDate, getUrgencyScore, getAnnualFeeWarningInfo, parseLogEntry, obfuscateKey, getCardPotentialValue } from './utils/dateUtils';
+import { ActiveChecklistTab } from './components/ActiveChecklistTab';
+import { getLocalDateString, getDaysLeftForDate, getAnnualFeeWarningInfo, parseLogEntry, obfuscateKey, getCardPotentialValue } from './utils/dateUtils';
 import { loadGoogleGsiScript, requestGDriveToken, fetchUserEmail } from './utils/gdrive';
 import { 
   CreditCard, 
@@ -84,16 +83,6 @@ function App() {
   // Date to evaluate states against (defaults to current system date)
   const [currentDate, setCurrentDate] = useState(new Date());
   const [activeTab, setActiveTab] = useState<'todo' | 'all' | 'cards'>(() => (localStorage.getItem('cc-tracker-active-tab') as any) || 'todo');
-  const [filterCategory, setFilterCategory] = useState<string>(() => localStorage.getItem('cc-tracker-filter-category') || 'all');
-  const [sortBy, setSortBy] = useState<'urgency' | 'value-desc' | 'value-asc' | 'expiry'>(() => (localStorage.getItem('cc-tracker-sort-by') as any) || 'urgency');
-  const [filterCardInstanceId, setFilterCardInstanceId] = useState<string>(() => localStorage.getItem('cc-tracker-filter-card') || 'all');
-
-  const handleFilterCardInstanceChange = (id: string) => {
-    setFilterCardInstanceId(id);
-    localStorage.setItem('cc-tracker-filter-card', id);
-    setFilterCategory('all');
-    localStorage.setItem('cc-tracker-filter-category', 'all');
-  };
   const [editingInstanceId, setEditingInstanceId] = useState<string | null>(null);
   const [isSyncModalOpen, setIsSyncModalOpen] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -187,18 +176,6 @@ function App() {
   useEffect(() => {
     localStorage.setItem('cc-tracker-active-tab', activeTab);
   }, [activeTab]);
-
-  useEffect(() => {
-    localStorage.setItem('cc-tracker-filter-category', filterCategory);
-  }, [filterCategory]);
-
-  useEffect(() => {
-    localStorage.setItem('cc-tracker-sort-by', sortBy);
-  }, [sortBy]);
-
-  useEffect(() => {
-    localStorage.setItem('cc-tracker-filter-card', filterCardInstanceId);
-  }, [filterCardInstanceId]);
 
   // Auto-Refocus Sync: Trigger background two-way sync merge when browser tab is focused
   useEffect(() => {
@@ -532,55 +509,7 @@ function App() {
     return !isExpired;
   }) as any;
 
-  // Filtered benefits for view
-  const filteredBenefits = activeBenefits.filter((ab) => {
-    if (activeTab === 'todo' && ab.isUsed) return false;
-    if (filterCategory !== 'all') {
-      if (filterCardInstanceId === 'awards') {
-        if (!ab.loyaltyAward) return false;
-        const awardType = ab.loyaltyAward.templateId === 'custom'
-          ? (ab.loyaltyAward.customAwardType || 'other')
-          : (AWARD_TEMPLATES[ab.loyaltyAward.templateId]?.awardType || 'other');
-        if (awardType !== filterCategory) return false;
-      } else {
-        if (ab.benefit.category !== filterCategory) return false;
-      }
-    }
-    if (filterCardInstanceId !== 'all') {
-      if (filterCardInstanceId === 'awards') {
-        if (!ab.loyaltyAward) return false;
-      } else {
-        if (!ab.cardInstance || ab.cardInstance.id !== filterCardInstanceId) return false;
-      }
-    }
-    return true;
-  });
 
-  // Helpers & Sorting delegated to utility helpers
-  const sortedBenefits = [...filteredBenefits].sort((a, b) => {
-    // Keep resolved/used items at the bottom of all sorting strategies
-    if (a.isUsed !== b.isUsed) {
-      return a.isUsed ? 1 : -1;
-    }
-
-    switch (sortBy) {
-      case 'value-desc':
-        return b.benefit.value - a.benefit.value;
-      case 'value-asc':
-        return a.benefit.value - b.benefit.value;
-      case 'expiry':
-        const daysA = a.loyaltyAward
-          ? (a.benefit.expirationDate ? getDaysLeftForDate(a.benefit.expirationDate, currentDate) : 9999)
-          : (getDaysLeft(a, currentDate) ?? 9999);
-        const daysB = b.loyaltyAward
-          ? (b.benefit.expirationDate ? getDaysLeftForDate(b.benefit.expirationDate, currentDate) : 9999)
-          : (getDaysLeft(b, currentDate) ?? 9999);
-        return daysA - daysB;
-      case 'urgency':
-      default:
-        return getUrgencyScore(a, currentDate) - getUrgencyScore(b, currentDate);
-    }
-  });
 
   const addOfferCard = ownedCards.find((c) => c.id === addOfferInstanceId);
 
@@ -797,251 +726,31 @@ function App() {
         {/* 0.5. Annual Fee Anniversary Warning Widget (Fully Conditional) */}
         <AnnualFeeWarningsWidget annualFeeWarnings={annualFeeWarnings} activeTab={activeTab} dismissWarning={dismissWarning} showToast={showToast} themeClass={themeClass} />
 
-        {/* Premium Glassmorphic Filters Control Panel */}
-        <FilterHubPanel
-          ownedCards={ownedCards}
-          loyaltyAwards={loyaltyAwards}
-          activeTab={activeTab}
-          filterCategory={filterCategory}
-          setFilterCategory={setFilterCategory}
-          filterCardInstanceId={filterCardInstanceId}
-          setFilterCardInstanceId={handleFilterCardInstanceChange}
-          sortBy={sortBy}
-          setSortBy={setSortBy}
-          themeClass={themeClass}
-          isGroupedView={isGroupedView || false}
-          setIsGroupedView={setIsGroupedView}
-        />
 
         {/* TABS 1 & 2: CHECKLIST VIEW */}
         {(activeTab === 'todo' || activeTab === 'all') && (
           <section>
             {ownedCards.length === 0 && loyaltyAwards.length === 0 ? (
               <EmptyWalletState onBrowse={() => setActiveTab('cards')} themeClass={themeClass} />
-            ) : sortedBenefits.length === 0 ? (
-              <div className={`text-center py-16 border rounded-2xl p-8 ${
-                themeClass('bg-slate-900/20 border-slate-800/40', 'bg-white border-slate-200 shadow-sm')
-              }`}>
-                <CheckCircle2 className="w-10 h-10 text-emerald-505/50 mx-auto mb-4" />
-                <h3 className={`text-lg font-semibold ${themeClass('text-slate-300', 'text-slate-800')}`}>All benefits resolved!</h3>
-                <p className="text-xs text-slate-505 max-w-xs mx-auto mt-1">
-                  Nice job! You have maximized all tracked credits for this period.
-                </p>
-              </div>
             ) : (
-              <div className="space-y-4">
-                {/* Quick-Action Monthly Repeating Shelf */}
-                {(() => {
-                  const quickMonthlyBenefits = activeBenefits.filter((ab) => {
-                    if (ab.isUsed) return false;
-                    return ab.benefit.resetPeriod === 'monthly';
-                  });
-
-                  if (quickMonthlyBenefits.length === 0) return null;
-
-                  return (
-                    <div className="mb-4 animate-fade-in">
-                      <h4 className={`text-[9px] font-black uppercase tracking-wider mb-2 flex items-center gap-1.5 ${
-                        themeClass('text-slate-400', 'text-slate-500')
-                      }`}>
-                        <span className="animate-pulse text-purple-400">⚡</span>
-                        Quick-Log Monthly Credits
-                      </h4>
-                      <div className="flex gap-2 overflow-x-auto pb-2 pt-1 scrollbar-none -mx-4 px-4">
-                        {quickMonthlyBenefits.map((ab) => {
-                          const cardLabel = ab.cardInstance 
-                            ? ab.cardInstance.customName 
-                            : (ab.loyaltyAward ? (AWARD_TEMPLATES[ab.loyaltyAward.templateId]?.brand || ab.loyaltyAward.customBrand || 'Award') : 'Award');
-                          
-                          const emoji = ab.benefit.category === 'dining' ? '🍽️' :
-                            ab.benefit.category === 'travel' ? '✈️' :
-                            ab.benefit.category === 'shopping' ? '🛍️' :
-                            ab.benefit.category === 'entertainment' ? '🎭' : '💳';
-
-                          return (
-                            <button
-                              key={ab.logKey}
-                              onClick={() => {
-                                if (ab.benefit.spendingLimit) {
-                                  updateProgressLog(ab.logKey, ab.benefit.spendingLimit);
-                                } else {
-                                  toggleBenefit(ab.logKey);
-                                }
-                                showToast(`🎉 Claimed $${ab.benefit.value} ${ab.benefit.name}!`);
-                              }}
-                              className={`flex items-center gap-2 px-3 py-2 rounded-xl border text-left transition active:scale-95 hover:scale-[1.01] duration-200 cursor-pointer shrink-0 shadow-sm ${
-                                themeClass('bg-slate-900/50 hover:bg-slate-900 border-slate-850 text-slate-200 hover:border-purple-900/30', 'bg-white hover:bg-slate-50 border-slate-200 text-slate-750 hover:border-purple-200')
-                              }`}
-                            >
-                              <div className="text-xs shrink-0">{emoji}</div>
-                              <div className="min-w-0 max-w-[120px]">
-                                <p className={`text-[7px] font-bold uppercase tracking-wide truncate opacity-70`}>{cardLabel}</p>
-                                <p className="text-[9px] font-extrabold truncate mt-0.5">{ab.benefit.name}</p>
-                              </div>
-                              <div className={`text-[8px] font-extrabold px-1.5 py-0.5 rounded-lg shrink-0 ml-1 ${
-                                themeClass('bg-purple-500/10 text-purple-400 border border-purple-500/20', 'bg-purple-50 text-purple-600 border border-purple-200')
-                              }`}>
-                                ${ab.benefit.value}
-                              </div>
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  );
-                })()}
-
-                {!isGroupedView ? (
-                  <div className="space-y-3">
-                    {sortedBenefits.map((ab) => {
-                      const isExpired = ab.loyaltyAward 
-                        ? (!ab.isUsed && !!ab.benefit.expirationDate && new Date(ab.benefit.expirationDate + 'T00:00:00') < currentDate)
-                        : (!ab.isUsed && ab.benefit.resetPeriod === 'fixed' && !!ab.benefit.expirationDate && new Date(ab.benefit.expirationDate + 'T00:00:00') < currentDate);
-
-                      const daysLeft = ab.loyaltyAward
-                        ? (ab.benefit.expirationDate ? getDaysLeftForDate(ab.benefit.expirationDate, currentDate) : null)
-                        : getDaysLeft(ab, currentDate);
-
-                      const isProgressive = !!ab.benefit.spendingLimit;
-                      const spent = isProgressive ? (Number(logs[ab.logKey]) || 0) : 0;
-                      const spentPercent = isProgressive ? Math.min((spent / (ab.benefit.spendingLimit || 1)) * 100, 100) : 0;
-                      const cashbackEarned = isProgressive ? Math.round((ab.benefit.value * Math.min(spent / (ab.benefit.spendingLimit || 1), 1)) * 100) / 100 : 0;
-
-                      return (
-                        <ChecklistCardRow
-                          key={ab.logKey}
-                          ab={ab}
-                          logs={logs}
-                          daysLeft={daysLeft}
-                          isExpired={isExpired}
-                          isProgressive={isProgressive}
-                          spent={spent}
-                          spentPercent={spentPercent}
-                          cashbackEarned={cashbackEarned}
-                          toggleBenefit={(key) => {
-                            if (ab.loyaltyAward) {
-                              toggleLoyaltyAward(key);
-                            } else {
-                              toggleBenefit(key);
-                            }
-                          }}
-                          updateProgressLog={updateProgressLog}
-                          themeClass={themeClass}
-                        />
-                      );
-                    })}
-                  </div>
-                ) : (() => {
-                  const grouped = sortedBenefits.reduce((acc, ab) => {
-                    const key = ab.cardInstance ? ab.cardInstance.id : 'awards';
-                    if (!acc[key]) acc[key] = [];
-                    acc[key].push(ab);
-                    return acc;
-                  }, {} as Record<string, typeof sortedBenefits>);
-
-                  return (
-                    <div className="space-y-4">
-                      {Object.entries(grouped).map(([key, items]) => {
-                        const isAwards = key === 'awards';
-                        const card = !isAwards ? ownedCards.find((c) => c.id === key) : null;
-                        if (!isAwards && !card) return null;
-
-                        const template = card && card.templateId !== 'custom'
-                          ? CARDS_DB.find((t) => t.id === card.templateId)
-                          : null;
-
-                        const cardName = isAwards 
-                          ? '🎁 Standalone Vouchers' 
-                          : (card?.customName || template?.name || 'Credit Card');
-
-                        const brandColor = isAwards 
-                          ? 'from-purple-600 to-indigo-800 text-white'
-                          : (card?.color || template?.color || 'from-slate-600 to-slate-800 text-white');
-
-                        const isCollapsed = !!collapsedGroups[key];
-
-                        const resolvedCount = items.filter(ab => ab.isUsed).length;
-                        const totalCount = items.length;
-
-                        return (
-                          <div 
-                            key={key}
-                            className={`border rounded-2xl overflow-hidden transition duration-200 ${
-                              themeClass('bg-slate-900/10 border-slate-850/60', 'bg-slate-50/30 border-slate-200')
-                            }`}
-                          >
-                            {/* Collapsible Section Card Header */}
-                            <div
-                              onClick={() => setCollapsedGroups(prev => ({ ...prev, [key]: !prev[key] }))}
-                              className={`flex items-center justify-between p-3 cursor-pointer select-none bg-gradient-to-r ${brandColor} border-b ${
-                                themeClass('border-slate-900/40', 'border-slate-200/40')
-                              }`}
-                            >
-                              <div className="flex items-center gap-2 min-w-0">
-                                <span className="text-xs font-bold truncate">{cardName}</span>
-                                <span className={`text-[8px] font-extrabold px-1.5 py-0.5 rounded-md tracking-wide shrink-0 bg-white/20 text-white`}>
-                                  {activeTab === 'todo' 
-                                    ? `${items.length} Active` 
-                                    : `${resolvedCount}/${totalCount} Done`}
-                                </span>
-                              </div>
-                              <span className="text-[9px] font-black opacity-80 px-1.5">
-                                {isCollapsed ? '▶ Expand' : '▼ Collapse'}
-                              </span>
-                            </div>
-
-                            {/* Group checklist rows */}
-                            <div className={`transition-all duration-300 ease-in-out overflow-hidden ${
-                              isCollapsed 
-                                ? 'max-h-0 opacity-0 pointer-events-none' 
-                                : 'max-h-[1200px] opacity-100 p-3 space-y-2.5'
-                            } ${themeClass('bg-slate-955/20', 'bg-white/50')}`}>
-                                {items.map((ab) => {
-                                  const isExpired = ab.loyaltyAward 
-                                    ? (!ab.isUsed && !!ab.benefit.expirationDate && new Date(ab.benefit.expirationDate + 'T00:00:00') < currentDate)
-                                    : (!ab.isUsed && ab.benefit.resetPeriod === 'fixed' && !!ab.benefit.expirationDate && new Date(ab.benefit.expirationDate + 'T00:00:00') < currentDate);
-
-                                  const daysLeft = ab.loyaltyAward
-                                    ? (ab.benefit.expirationDate ? getDaysLeftForDate(ab.benefit.expirationDate, currentDate) : null)
-                                    : getDaysLeft(ab, currentDate);
-
-                                  const isProgressive = !!ab.benefit.spendingLimit;
-                                  const spent = isProgressive ? (Number(logs[ab.logKey]) || 0) : 0;
-                                  const spentPercent = isProgressive ? Math.min((spent / (ab.benefit.spendingLimit || 1)) * 100, 100) : 0;
-                                  const cashbackEarned = isProgressive ? Math.round((ab.benefit.value * Math.min(spent / (ab.benefit.spendingLimit || 1), 1)) * 100) / 100 : 0;
-
-                                  return (
-                                    <ChecklistCardRow
-                                      key={ab.logKey}
-                                      ab={ab}
-                                      logs={logs}
-                                      daysLeft={daysLeft}
-                                      isExpired={isExpired}
-                                      isProgressive={isProgressive}
-                                      spent={spent}
-                                      spentPercent={spentPercent}
-                                      cashbackEarned={cashbackEarned}
-                                      toggleBenefit={(key) => {
-                                        if (ab.loyaltyAward) {
-                                          toggleLoyaltyAward(key);
-                                        } else {
-                                          toggleBenefit(key);
-                                        }
-                                      }}
-                                      updateProgressLog={updateProgressLog}
-                                      themeClass={themeClass}
-                                    />
-                                  );
-                                })}
-                              </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  );
-                })()}
-            </div>
-          )}
+              <ActiveChecklistTab
+                activeBenefits={activeBenefits}
+                logs={logs}
+                currentDate={currentDate}
+                activeTab={activeTab}
+                themeClass={themeClass}
+                showToast={showToast}
+                updateProgressLog={updateProgressLog}
+                toggleBenefit={toggleBenefit}
+                toggleLoyaltyAward={toggleLoyaltyAward}
+                ownedCards={ownedCards}
+                loyaltyAwards={loyaltyAwards}
+                isGroupedView={isGroupedView || false}
+                setIsGroupedView={setIsGroupedView}
+                collapsedGroups={collapsedGroups}
+                setCollapsedGroups={setCollapsedGroups}
+              />
+            )}
           </section>
         )}
 
