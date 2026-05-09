@@ -296,7 +296,7 @@ export function WalletCreditCard({
       }`}>
         {/* Benefits preview inline list */}
         <div className="space-y-1 text-left">
-          {benefits.slice(0, 3).map((b) => (
+          {benefits.map((b) => (
             <div key={b.id} className={`flex items-center justify-between text-[10px] p-1 rounded ${
               isSilverCard 
                 ? 'bg-slate-950/10 border border-black/5 text-slate-900 font-bold' 
@@ -306,9 +306,6 @@ export function WalletCreditCard({
               <span className={`font-bold ${isSilverCard ? 'text-slate-950 font-black' : 'text-white'}`}>${b.value}</span>
             </div>
           ))}
-          {benefits.length > 3 && (
-            <p className={`text-[9px] text-right font-medium ${isSilverCard ? 'text-slate-900/70 font-semibold' : 'text-slate-400'}`}>+ {benefits.length - 3} more perks</p>
-          )}
         </div>
 
         {/* Google Drive / Instance Custom Offers List */}
