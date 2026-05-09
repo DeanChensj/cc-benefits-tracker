@@ -432,7 +432,7 @@ export function WalletLibraryTab({
                       </span>
                     )}
                   </div>
-                  <h4 className="text-sm font-black mt-2 truncate leading-tight">
+                  <h4 className="text-sm font-black mt-2 break-words line-clamp-2 leading-tight">
                     {info.name}
                   </h4>
                   {award.notes && (
