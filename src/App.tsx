@@ -81,15 +81,10 @@ function App() {
   // Date to evaluate states against (defaults to current system date)
   const [currentDate, setCurrentDate] = useState(new Date());
   const [activeTab, setActiveTab] = useState<'todo' | 'all' | 'cards'>(() => (localStorage.getItem('cc-tracker-active-tab') as any) || 'todo');
-  const [isSyncModalOpen, setIsSyncModalOpen] = useState(false);
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [isCreateAwardModalOpen, setIsCreateAwardModalOpen] = useState(false);
-  const [isWrappedModalOpen, setIsWrappedModalOpen] = useState(false);
+  const [activeModal, setActiveModal] = useState<'sync' | 'create-card' | 'create-award' | 'wrapped' | 'disconnect-gdrive' | 'wipe' | null>(null);
   const [addOfferInstanceId, setAddOfferInstanceId] = useState<string | null>(null);
   const [deleteCardInstanceId, setDeleteCardInstanceId] = useState<string | null>(null);
   const [deleteAwardId, setDeleteAwardId] = useState<string | null>(null);
-  const [isGDriveDisconnectOpen, setIsGDriveDisconnectOpen] = useState(false);
-  const [isWipeDataOpen, setIsWipeDataOpen] = useState(false);
   const [collapsedGroups, setCollapsedGroups] = useState<Record<string, boolean>>({});
   const [selectedTemplates, setSelectedTemplates] = useState<string[]>([]);
   const [activeEditInstanceId, setActiveEditInstanceId] = useState<string | null>(null);
@@ -281,13 +276,13 @@ function App() {
   };
 
   const handleDisconnectGoogleDrive = () => {
-    setIsGDriveDisconnectOpen(true);
+    setActiveModal('disconnect-gdrive');
   };
 
   const handleConfirmDisconnectGoogleDrive = () => {
     setGDriveCredentials(null, null);
     showToast('🚪 Unlinked Google Drive account successfully.', 'info');
-    setIsGDriveDisconnectOpen(false);
+    setActiveModal(null);
   };
 
 
@@ -531,7 +526,7 @@ function App() {
             {/* Year-End Savings Wrapped Button (Viral Growth Magnet!) */}
             {(ownedCards.length > 0 || loyaltyAwards.length > 0) && (
               <button
-                onClick={() => setIsWrappedModalOpen(true)}
+                onClick={() => setActiveModal('wrapped')}
                 className="flex items-center gap-1 px-3 py-2 rounded-xl border bg-gradient-to-tr from-purple-600/15 via-indigo-600/10 to-purple-600/15 border-purple-500/30 hover:border-purple-400/50 text-purple-400 hover:text-purple-300 font-extrabold text-xs transition duration-300 active:scale-90 cursor-pointer shadow-md shadow-purple-500/5 animate-pulse"
                 title="View and Share your Personal Churner Savings Wrapped Poster!"
               >
@@ -574,7 +569,7 @@ function App() {
             {/* Calendar Sync Button */}
             {ownedCards.length > 0 && (
               <button
-                onClick={() => setIsSyncModalOpen(true)}
+                onClick={() => setActiveModal('sync')}
                 className={`p-2 rounded-xl border transition duration-300 active:scale-90 cursor-pointer ${
                   themeClass(
                     'bg-slate-900 border-slate-800 hover:bg-slate-800 text-amber-500',
@@ -740,8 +735,8 @@ function App() {
             handleAddCustomCard={handleAddCustomCard}
             removeInstanceOffer={removeInstanceOffer}
             setAddOfferInstanceId={setAddOfferInstanceId}
-            setIsCreateModalOpen={setIsCreateModalOpen}
-            setIsCreateAwardModalOpen={setIsCreateAwardModalOpen}
+            setIsCreateModalOpen={(open) => setActiveModal(open ? 'create-card' : null)}
+            setIsCreateAwardModalOpen={(open) => setActiveModal(open ? 'create-award' : null)}
             setDeleteCardInstanceId={setDeleteCardInstanceId}
             setDeleteAwardId={setDeleteAwardId}
             themeClass={themeClass}
@@ -792,8 +787,8 @@ function App() {
 
       {/* Calendar Sync Modal */}
       <CalendarSyncModal 
-        isOpen={isSyncModalOpen} 
-        onClose={() => setIsSyncModalOpen(false)} 
+        isOpen={activeModal === 'sync'} 
+        onClose={() => setActiveModal(null)} 
         ownedCards={ownedCards}
         logs={logs}
         loyaltyAwards={loyaltyAwards}
@@ -802,8 +797,8 @@ function App() {
 
       {/* Create Custom Card Modal */}
       <CreateCardModal 
-        isOpen={isCreateModalOpen} 
-        onClose={() => setIsCreateModalOpen(false)} 
+        isOpen={activeModal === 'create-card'} 
+        onClose={() => setActiveModal(null)} 
         theme={theme}
         addCustomCard={handleAddCustomCard}
         getLocalDateString={getLocalDateString}
@@ -860,45 +855,45 @@ function App() {
 
       {/* Google Drive Disconnect Confirmation Modal */}
       <ConfirmationModal
-        isOpen={isGDriveDisconnectOpen}
+        isOpen={activeModal === 'disconnect-gdrive'}
         title="Disconnect Google Drive?"
         message="Are you sure you want to disconnect and unlink Google Drive? Your local data will remain intact, but automated cloud synchronization will cease."
         confirmText="Disconnect"
         cancelText="Cancel"
         onConfirm={handleConfirmDisconnectGoogleDrive}
-        onCancel={() => setIsGDriveDisconnectOpen(false)}
+        onCancel={() => setActiveModal(null)}
         theme={theme}
         type="warning"
       />
 
       {/* Wipe App Data Confirmation Modal */}
       <ConfirmationModal
-        isOpen={isWipeDataOpen}
+        isOpen={activeModal === 'wipe'}
         title="Wipe All App Data?"
         message="Are you absolutely sure you want to reset all card instances and checklist logs? This action is permanent and cannot be undone."
         confirmText="Wipe Data"
         cancelText="Keep Data"
         onConfirm={() => {
           resetAll();
-          setIsWipeDataOpen(false);
+          setActiveModal(null);
           showToast('🗑️ All card data and logs have been wiped.', 'warning');
         }}
-        onCancel={() => setIsWipeDataOpen(false)}
+        onCancel={() => setActiveModal(null)}
         theme={theme}
         type="danger"
       />
 
       {/* Standalone Loyalty Award Vouchers Constructor Modal */}
       <CreateAwardModal
-        isOpen={isCreateAwardModalOpen}
-        onClose={() => setIsCreateAwardModalOpen(false)}
+        isOpen={activeModal === 'create-award'}
+        onClose={() => setActiveModal(null)}
         themeClass={themeClass}
       />
 
       {/* Premium Savings Wrapped Poster Modal */}
       <SavingsWrappedModal
-        isOpen={isWrappedModalOpen}
-        onClose={() => setIsWrappedModalOpen(false)}
+        isOpen={activeModal === 'wrapped'}
+        onClose={() => setActiveModal(null)}
         ownedCards={ownedCards}
         loyaltyAwards={loyaltyAwards}
         resolvedValue={resolvedValue}
