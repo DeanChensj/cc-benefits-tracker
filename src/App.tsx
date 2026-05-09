@@ -687,8 +687,31 @@ function App() {
 
       <main className="max-w-4xl mx-auto px-4 py-8">
         
-        {/* Stats Cards */}
-        <section className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+        {/* Stats Panel */}
+        {/* Mobile Compact Stats Bar (Saves massive vertical height!) */}
+        <section className="block md:hidden border rounded-2xl p-2.5 transition duration-300 mb-4 shadow-sm bg-slate-900/20 border-slate-900/30 dark:bg-slate-55/40 dark:border-slate-250/80 backdrop-blur-md">
+          <div className="grid grid-cols-4 gap-1 text-center divide-x divide-slate-200/20 dark:divide-black/10">
+            <div className="px-0.5">
+              <p className={`text-[8px] font-extrabold uppercase tracking-widest ${themeClass('text-slate-500', 'text-slate-505')}`}>Potential</p>
+              <p className={`text-xs font-black mt-0.5 ${themeClass('text-white', 'text-slate-855')}`}>${totalPotentialValue}</p>
+            </div>
+            <div className="px-0.5">
+              <p className={`text-[8px] font-extrabold uppercase tracking-widest ${themeClass('text-slate-500', 'text-slate-505')}`}>Saved</p>
+              <p className="text-xs font-black text-emerald-500 mt-0.5">${resolvedValue}</p>
+            </div>
+            <div className="px-0.5">
+              <p className={`text-[8px] font-extrabold uppercase tracking-widest ${themeClass('text-slate-500', 'text-slate-505')}`}>Remaining</p>
+              <p className="text-xs font-black text-amber-500 mt-0.5">${pendingValue}</p>
+            </div>
+            <div className="px-0.5">
+              <p className={`text-[8px] font-extrabold uppercase tracking-widest ${themeClass('text-slate-500', 'text-slate-505')}`}>Maximized</p>
+              <p className="text-xs font-black text-purple-500 dark:text-purple-400 mt-0.5">{utilizationRate}%</p>
+            </div>
+          </div>
+        </section>
+
+        {/* Desktop Full Cards Grid */}
+        <section className="hidden md:grid grid-cols-4 gap-3 mb-6">
           <div className={`border rounded-xl p-3 sm:p-4 transition duration-300 ${
             themeClass('bg-slate-900/50 border-slate-800/60', 'bg-white border-slate-200 shadow-sm')
           }`}>
@@ -758,7 +781,7 @@ function App() {
         </section>
 
         {/* Tabs panel */}
-        <div className={`flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 border-b pb-4 ${themeClass('border-slate-900', 'border-slate-200')}`}>
+        <div className={`flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 mb-4 sm:mb-6 border-b pb-3 sm:pb-4 ${themeClass('border-slate-900', 'border-slate-200')}`}>
           <div className={`flex gap-1 p-1 rounded-xl self-start ${themeClass('bg-slate-900/80', 'bg-slate-200/60')}`}>
             <button
               onClick={() => setActiveTab('todo')}

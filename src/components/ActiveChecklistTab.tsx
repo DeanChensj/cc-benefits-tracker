@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Search } from 'lucide-react';
+import { Search, Filter } from 'lucide-react';
 import { FilterHubPanel } from './FilterHubPanel';
 import { ChecklistCardRow } from './ChecklistCardRow';
 import { AWARD_TEMPLATES, CARDS_DB } from '../data/cards.db';
@@ -9,10 +9,11 @@ import type { ActiveBenefit } from '../utils/dateUtils';
 import type { OwnedCardInstance } from '../store/useCardStore';
 import { obfuscateKey } from '../utils/cryptoUtils';
 import { parseLogEntry } from '../utils/logUtils';
+import type { LogEntry } from '../utils/logUtils';
 
 interface ActiveChecklistTabProps {
   activeBenefits: ActiveBenefit[];
-  logs: Record<string, any>;
+  logs: Record<string, LogEntry>;
   currentDate: Date;
   activeTab: 'todo' | 'cards';
   themeClass: (dark: string, light: string) => string;
@@ -47,6 +48,7 @@ export function ActiveChecklistTab({
   const [sortBy, setSortBy] = useState<'urgency' | 'expiry' | 'value-desc' | 'value-asc'>('urgency');
   const [isClaimedCollapsed, setIsClaimedCollapsed] = useState(true);
   const [isExpiredCollapsed, setIsExpiredCollapsed] = useState(true);
+  const [isFiltersExpanded, setIsFiltersExpanded] = useState(false);
 
   // Core helper to evaluate benefit expiration dynamically in sandbox
   const isBenefitExpired = (ab: ActiveBenefit): boolean => {
@@ -100,7 +102,7 @@ export function ActiveChecklistTab({
         return b.benefit.value - a.benefit.value;
       case 'value-asc':
         return a.benefit.value - b.benefit.value;
-      case 'expiry':
+      case 'expiry': {
         const daysA = a.loyaltyAward
           ? (a.benefit.expirationDate ? getDaysLeftForDate(a.benefit.expirationDate, currentDate) : 9999)
           : (getDaysLeft(a, currentDate) ?? 9999);
@@ -108,6 +110,7 @@ export function ActiveChecklistTab({
           ? (b.benefit.expirationDate ? getDaysLeftForDate(b.benefit.expirationDate, currentDate) : 9999)
           : (getDaysLeft(b, currentDate) ?? 9999);
         return daysA - daysB;
+      }
       case 'urgency':
       default:
         return getUrgencyScore(a, currentDate) - getUrgencyScore(b, currentDate);
@@ -151,36 +154,59 @@ export function ActiveChecklistTab({
   };
 
   return (
-    <div className="space-y-6 animate-fade-in">
-      {/* Dynamic Filters Panel */}
-      <FilterHubPanel
-        ownedCards={ownedCards}
-        loyaltyAwards={loyaltyAwards}
-        activeTab={activeTab}
-        filterCategory={filterCategory}
-        setFilterCategory={setFilterCategory}
-        filterCardInstanceId={filterCardInstanceId}
-        setFilterCardInstanceId={setFilterCardInstanceId}
-        sortBy={sortBy}
-        setSortBy={setSortBy}
-        themeClass={themeClass}
-        isGroupedView={isGroupedView}
-        setIsGroupedView={setIsGroupedView}
-      />
+    <div className="space-y-4 sm:space-y-6 animate-fade-in">
+      {/* Search & Filter Action Bar */}
+      <div className="flex gap-2 items-center">
+        <div className="relative flex-grow">
+          <Search className={`absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 ${
+            themeClass('text-slate-500', 'text-slate-400')
+          }`} />
+          <input
+            type="text"
+            placeholder="Search by card name, bank, or perk details..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className={`w-full pl-10 pr-4 py-2.5 rounded-2xl border text-xs focus:outline-none focus:ring-1 focus:ring-purple-500 transition-all duration-300 ${
+              themeClass('bg-slate-955 border-slate-850 text-slate-200 placeholder-slate-550 focus:border-purple-500', 'bg-white border-slate-200 text-slate-800 placeholder-slate-400 focus:border-purple-500 shadow-sm')
+            }`}
+          />
+        </div>
 
-      {/* Native Search Box */}
-      <div className="relative">
-        <Search className={`absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 ${
-          themeClass('text-slate-500', 'text-slate-400')
-        }`} />
-        <input
-          type="text"
-          placeholder="Search by card name, bank, or perk details..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className={`w-full pl-10 pr-4 py-2.5 rounded-2xl border text-xs focus:outline-none focus:ring-1 focus:ring-purple-500 transition-all duration-300 ${
-            themeClass('bg-slate-955 border-slate-850 text-slate-200 placeholder-slate-550 focus:border-purple-500', 'bg-white border-slate-200 text-slate-800 placeholder-slate-400 focus:border-purple-500 shadow-sm')
+        <button
+          onClick={() => setIsFiltersExpanded(!isFiltersExpanded)}
+          className={`flex items-center gap-1.5 px-4 py-2.5 rounded-2xl border text-xs font-bold transition duration-200 active:scale-95 shrink-0 cursor-pointer select-none sm:hidden ${
+            isFiltersExpanded
+              ? 'bg-purple-600 text-white border-transparent shadow-md shadow-purple-600/20'
+              : themeClass(
+                  'bg-slate-900 hover:bg-slate-850 border-slate-800 text-slate-300',
+                  'bg-white hover:bg-slate-50 border-slate-250 text-slate-750 shadow-sm'
+                )
           }`}
+        >
+          <Filter className="w-4 h-4" />
+          <span>Filters</span>
+        </button>
+      </div>
+
+      {/* Dynamic Filters Panel (Collapsible on Mobile, Always Open on Desktop) */}
+      <div className={`transition-all duration-300 ease-in-out overflow-hidden ${
+        isFiltersExpanded 
+          ? 'max-h-[320px] opacity-100 pointer-events-auto' 
+          : 'max-h-0 opacity-0 pointer-events-none max-sm:mb-0'
+      } sm:max-h-[200px] sm:opacity-100 sm:pointer-events-auto`}>
+        <FilterHubPanel
+          ownedCards={ownedCards}
+          loyaltyAwards={loyaltyAwards}
+          activeTab={activeTab}
+          filterCategory={filterCategory}
+          setFilterCategory={setFilterCategory}
+          filterCardInstanceId={filterCardInstanceId}
+          setFilterCardInstanceId={setFilterCardInstanceId}
+          sortBy={sortBy}
+          setSortBy={setSortBy}
+          themeClass={themeClass}
+          isGroupedView={isGroupedView}
+          setIsGroupedView={setIsGroupedView}
         />
       </div>
 
