@@ -1,3 +1,4 @@
+import React from 'react';
 import { CheckCircle2 } from 'lucide-react';
 import type { ActiveBenefit, LogEntry } from '../utils/dateUtils';
 import { AWARD_TEMPLATES } from '../data/cards.db';
@@ -17,7 +18,7 @@ interface ChecklistCardRowProps {
   themeClass: (dark: string, light: string) => string;
 }
 
-export function ChecklistCardRow({
+export const ChecklistCardRow = React.memo(function ChecklistCardRow({
   ab,
   logs,
   daysLeft,
@@ -207,4 +208,4 @@ export function ChecklistCardRow({
       </div>
     </div>
   );
-}
+});

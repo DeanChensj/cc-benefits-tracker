@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { Search } from 'lucide-react';
 import { FilterHubPanel } from './FilterHubPanel';
 import { ChecklistCardRow } from './ChecklistCardRow';
@@ -47,6 +47,15 @@ export function ActiveChecklistTab({
   const [filterCategory, setFilterCategory] = useState('all');
   const [filterCardInstanceId, setFilterCardInstanceId] = useState('all');
   const [sortBy, setSortBy] = useState<'urgency' | 'expiry' | 'value-desc' | 'value-asc'>('urgency');
+
+  const handleToggleBenefit = useCallback((key: string) => {
+    const ab = activeBenefits.find(b => b.logKey === key);
+    if (ab?.loyaltyAward) {
+      toggleLoyaltyAward(key);
+    } else {
+      toggleBenefit(key);
+    }
+  }, [activeBenefits, toggleBenefit, toggleLoyaltyAward]);
 
   // Filtered benefits for view
   const filteredBenefits = activeBenefits.filter((ab) => {
@@ -242,13 +251,7 @@ export function ActiveChecklistTab({
                     spent={spent}
                     spentPercent={spentPercent}
                     cashbackEarned={cashbackEarned}
-                    toggleBenefit={(key) => {
-                      if (ab.loyaltyAward) {
-                        toggleLoyaltyAward(key);
-                      } else {
-                        toggleBenefit(key);
-                      }
-                    }}
+                    toggleBenefit={handleToggleBenefit}
                     updateProgressLog={updateProgressLog}
                     themeClass={themeClass}
                   />
@@ -344,13 +347,7 @@ export function ActiveChecklistTab({
                               spent={spent}
                               spentPercent={spentPercent}
                               cashbackEarned={cashbackEarned}
-                              toggleBenefit={(key) => {
-                                if (ab.loyaltyAward) {
-                                  toggleLoyaltyAward(key);
-                                } else {
-                                  toggleBenefit(key);
-                                }
-                              }}
+                              toggleBenefit={handleToggleBenefit}
                               updateProgressLog={updateProgressLog}
                               themeClass={themeClass}
                             />
