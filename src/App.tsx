@@ -26,7 +26,6 @@ import { parseLogEntry } from './utils/logUtils';
 import { obfuscateKey } from './utils/cryptoUtils';
 import { loadGoogleGsiScript, requestGDriveToken, fetchUserEmail } from './utils/gdrive';
 import { 
-  CreditCard, 
   CheckCircle2, 
   RefreshCw,
   Sun,
@@ -513,10 +512,60 @@ function App() {
       }`}>
         <div className="max-w-4xl mx-auto flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className={`p-2 rounded-xl text-slate-950 ${
-              themeClass('bg-gradient-to-tr from-amber-500 to-yellow-600', 'bg-gradient-to-tr from-purple-600 to-indigo-600 text-white')
-            }`}>
-              <CreditCard className="w-6 h-6 stroke-[2]" />
+            <div className="flex items-center justify-center shrink-0">
+              <svg 
+                className="w-7.5 h-7.5 shrink-0 drop-shadow-[0_2px_8px_rgba(197,160,89,0.15)]" 
+                viewBox="0 0 24 24" 
+                fill="none" 
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <defs>
+                  <linearGradient id="logoGold" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor="#c5a059" />
+                    <stop offset="50%" stopColor="#fdf2d5" />
+                    <stop offset="100%" stopColor="#9c7a3c" />
+                  </linearGradient>
+                </defs>
+                {/* Background Card Outline Tilted */}
+                <rect 
+                  x="2" 
+                  y="5" 
+                  width="17" 
+                  height="11" 
+                  rx="1.5" 
+                  stroke="url(#logoGold)" 
+                  strokeWidth="1.5" 
+                  opacity="0.45" 
+                  transform="rotate(-12 10.5 10.5)" 
+                />
+                {/* Foreground Card Filled with Premium Gold Gradient */}
+                <rect 
+                  x="4" 
+                  y="7" 
+                  width="17" 
+                  height="11" 
+                  rx="1.5" 
+                  fill="url(#logoGold)" 
+                />
+                {/* Micro EMV Chip cutout */}
+                <rect 
+                  x="6" 
+                  y="9" 
+                  width="3" 
+                  height="2.2" 
+                  rx="0.4" 
+                  fill="#090d16" 
+                  opacity="0.9" 
+                />
+                {/* Micro contactless waves */}
+                <path 
+                  d="M 11.5 9.2 A 1.5 1.5 0 0 1 11.5 11.3 M 12.3 8.5 A 2.5 2.5 0 0 1 12.3 12" 
+                  stroke="#ffffff" 
+                  strokeWidth="0.65" 
+                  strokeLinecap="round" 
+                  opacity="0.75" 
+                />
+              </svg>
             </div>
             <div>
               <div className="flex items-baseline gap-2 flex-wrap">
