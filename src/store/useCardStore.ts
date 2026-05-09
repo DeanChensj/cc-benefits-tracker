@@ -19,6 +19,7 @@ export interface OwnedCardInstance {
   multipliers?: Record<string, number | undefined>;
   signupBonusActive?: boolean; // True if user secured the SUB!
   signupBonusValue?: number; // Valuation of the secured SUB
+  lastModified?: number; // Instance-level LWW timestamp
 }
 
 export interface CardStore {
@@ -28,6 +29,8 @@ export interface CardStore {
   theme: 'dark' | 'light'; // App theme selection
   language: 'zh' | 'en'; // App language selection
   walletLastModified?: number; // Global card wallet modified timestamp
+  deletedCardIds?: string[]; // Tombstone cards tracker
+  deletedAwardIds?: string[]; // Tombstone awards tracker
   
   // Google Drive Sync States
   gdriveToken: string | null; // Temporary in-memory OAuth access token
@@ -148,8 +151,17 @@ const syncPushToCloud = async (
   if (!token) return;
   try {
     const fileId = await findSyncFile(token);
-    const loyaltyAwards = useCardStore.getState()?.loyaltyAwards || [];
-    await uploadSyncFile(token, fileId, { ownedCards, logs, loyaltyAwards });
+    const storeState = useCardStore.getState();
+    const loyaltyAwards = storeState?.loyaltyAwards || [];
+    const deletedCardIds = storeState?.deletedCardIds || [];
+    const deletedAwardIds = storeState?.deletedAwardIds || [];
+    await uploadSyncFile(token, fileId, { 
+      ownedCards, 
+      logs, 
+      loyaltyAwards,
+      deletedCardIds,
+      deletedAwardIds
+    });
   } catch (err) {
     console.error('Silent background cloud sync failed:', err);
   }
@@ -161,6 +173,8 @@ export const useCardStore = create<CardStore>()(
       ownedCards: [],
       loyaltyAwards: [],
       logs: {},
+      deletedCardIds: [],
+      deletedAwardIds: [],
       theme: (typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: light)').matches) ? 'light' : 'dark',
       language: (typeof navigator !== 'undefined' && navigator.language.startsWith('zh')) ? 'zh' : 'en',
       
@@ -187,6 +201,7 @@ export const useCardStore = create<CardStore>()(
             cardOpenDate: todayStr,
             annualFee: template.annualFee,
             instanceOffers: [], // Initialize empty offers array
+            lastModified: Date.now()
           };
 
           const nextCards = [...state.ownedCards, newInstance];
@@ -205,6 +220,7 @@ export const useCardStore = create<CardStore>()(
             ...customCard,
             id: uniqueId,
             instanceOffers: [], // Initialize empty offers array
+            lastModified: Date.now()
           };
           
           const nextCards = [...state.ownedCards, newInstance];
@@ -227,11 +243,13 @@ export const useCardStore = create<CardStore>()(
             return acc;
           }, {} as Record<string, LogEntry>);
 
+          const nextDeleted = Array.from(new Set([...(state.deletedCardIds || []), instanceId]));
           syncPushToCloud(state.gdriveToken, nextCards, nextLogs);
 
           return {
             ownedCards: nextCards,
             logs: nextLogs,
+            deletedCardIds: nextDeleted,
             walletLastModified: Date.now(),
           };
         }),
@@ -239,7 +257,7 @@ export const useCardStore = create<CardStore>()(
       renameCard: (instanceId, customName) =>
         set((state) => {
           const nextCards = state.ownedCards.map((c) =>
-            c.id === instanceId ? { ...c, customName: customName } : c
+            c.id === instanceId ? { ...c, customName: customName, lastModified: Date.now() } : c
           );
           syncPushToCloud(state.gdriveToken, nextCards, state.logs);
 
@@ -252,7 +270,7 @@ export const useCardStore = create<CardStore>()(
       setCardOpenDate: (instanceId, dateStr) =>
         set((state) => {
           const nextCards = state.ownedCards.map((c) =>
-            c.id === instanceId ? { ...c, cardOpenDate: dateStr } : c
+            c.id === instanceId ? { ...c, cardOpenDate: dateStr, lastModified: Date.now() } : c
           );
           syncPushToCloud(state.gdriveToken, nextCards, state.logs);
 
@@ -328,7 +346,7 @@ export const useCardStore = create<CardStore>()(
         })),
 
       syncWithGDrive: async () => {
-        const { gdriveToken, ownedCards, loyaltyAwards, logs, walletLastModified } = get();
+        const { gdriveToken, ownedCards, loyaltyAwards, logs, walletLastModified, deletedCardIds, deletedAwardIds } = get();
         if (!gdriveToken) return;
 
         set({ syncStatus: 'syncing' });
@@ -339,6 +357,8 @@ export const useCardStore = create<CardStore>()(
               ownedCards, 
               loyaltyAwards,
               logs, 
+              deletedCardIds: deletedCardIds || [],
+              deletedAwardIds: deletedAwardIds || [],
               walletLastModified: walletLastModified || Date.now() 
             };
             await uploadSyncFile(gdriveToken, null, dataToUpload);
@@ -352,18 +372,68 @@ export const useCardStore = create<CardStore>()(
             const remoteAwards = remoteData.loyaltyAwards || [];
             const remoteLogs = remoteData.logs || {};
 
-            // LWW Wallet Sync Shield: Compare global card wallet modified timestamps
+            // 1. Merge Tombstone Deletion Trackers
+            const localDeletedCards = deletedCardIds || [];
+            const remoteDeletedCards = remoteData.deletedCardIds || [];
+            const mergedDeletedCards = Array.from(new Set([...localDeletedCards, ...remoteDeletedCards]));
+
+            const localDeletedAwards = deletedAwardIds || [];
+            const remoteDeletedAwards = remoteData.deletedAwardIds || [];
+            const mergedDeletedAwards = Array.from(new Set([...localDeletedAwards, ...remoteDeletedAwards]));
+
+            // 2. Instance-level LWW ownedCards Merge (Tombstone Excluded)
+            const cardMap = new Map<string, OwnedCardInstance>();
+            remoteCards.forEach((c: OwnedCardInstance) => {
+              if (!mergedDeletedCards.includes(c.id)) {
+                cardMap.set(c.id, c);
+              }
+            });
+            ownedCards.forEach((c: OwnedCardInstance) => {
+              if (mergedDeletedCards.includes(c.id)) {
+                cardMap.delete(c.id);
+                return;
+              }
+              const existing = cardMap.get(c.id);
+              if (!existing) {
+                cardMap.set(c.id, c);
+              } else {
+                const localTime = c.lastModified || 0;
+                const remoteTime = existing.lastModified || 0;
+                if (localTime > remoteTime) {
+                  cardMap.set(c.id, c);
+                }
+              }
+            });
+            const mergedCards = Array.from(cardMap.values());
+
+            // 3. Instance-level LWW loyaltyAwards Merge (Tombstone Excluded)
+            const awardMap = new Map<string, LoyaltyAward>();
+            remoteAwards.forEach((a: LoyaltyAward) => {
+              if (!mergedDeletedAwards.includes(a.id)) {
+                awardMap.set(a.id, a);
+              }
+            });
+            loyaltyAwards.forEach((a: LoyaltyAward) => {
+              if (mergedDeletedAwards.includes(a.id)) {
+                awardMap.delete(a.id);
+                return;
+              }
+              const existing = awardMap.get(a.id);
+              if (!existing) {
+                awardMap.set(a.id, a);
+              } else {
+                const localTime = a.lastModified || 0;
+                const remoteTime = existing.lastModified || 0;
+                if (localTime > remoteTime) {
+                  awardMap.set(a.id, a);
+                }
+              }
+            });
+            const mergedAwards = Array.from(awardMap.values());
+
+            // 4. LogEntry-level LWW checklist merge (unchanged)
             const localWalletTime = walletLastModified || 0;
             const remoteWalletTime = remoteData.walletLastModified || 0;
-            
-            const mergedCards = remoteWalletTime > localWalletTime 
-              ? remoteCards 
-              : ownedCards;
-
-            const mergedAwards = remoteWalletTime > localWalletTime 
-              ? remoteAwards 
-              : loyaltyAwards;
-            
             const finalWalletTime = Math.max(localWalletTime, remoteWalletTime);
 
             const mergedLogs = { ...logs };
@@ -371,21 +441,17 @@ export const useCardStore = create<CardStore>()(
 
             Object.entries(remoteLogs).forEach(([key, val]) => {
               const remoteVal = val as LogEntry;
-
-              // 2-Year Pruning Shield: Check if this remote key is expired.
               const plainKey = deobfuscateKey(key);
               const logYear = getYearFromPlainKey(plainKey);
               if (logYear !== null && (currentYear - logYear > 1)) {
-                return; // Skip, do not merge!
+                return;
               }
 
               if (mergedLogs[key] === undefined) {
                 mergedLogs[key] = remoteVal;
               } else {
-                // Both have this key. Keep the latest click update based on UNIX timestamp!
                 const localTime = mergedLogs[key].timestamp || 0;
                 const remoteTime = remoteVal.timestamp || 0;
-                
                 if (remoteTime > localTime) {
                   mergedLogs[key] = remoteVal;
                 }
@@ -394,7 +460,9 @@ export const useCardStore = create<CardStore>()(
 
             const finalMergedData = { 
               ownedCards: mergedCards, 
+              deletedCardIds: mergedDeletedCards,
               loyaltyAwards: mergedAwards,
+              deletedAwardIds: mergedDeletedAwards,
               logs: mergedLogs, 
               walletLastModified: finalWalletTime 
             };
@@ -402,7 +470,9 @@ export const useCardStore = create<CardStore>()(
 
             set({
               ownedCards: mergedCards,
+              deletedCardIds: mergedDeletedCards,
               loyaltyAwards: mergedAwards,
+              deletedAwardIds: mergedDeletedAwards,
               logs: mergedLogs,
               walletLastModified: finalWalletTime,
               syncStatus: 'synced',
@@ -427,6 +497,7 @@ export const useCardStore = create<CardStore>()(
               return {
                 ...c,
                 instanceOffers: [...(c.instanceOffers || []), newOffer],
+                lastModified: Date.now()
               };
             }
             return c;
@@ -446,6 +517,7 @@ export const useCardStore = create<CardStore>()(
               return {
                 ...c,
                 instanceOffers: (c.instanceOffers || []).filter((o) => o.id !== offerId),
+                lastModified: Date.now()
               };
             }
             return c;
@@ -462,7 +534,7 @@ export const useCardStore = create<CardStore>()(
         set((state) => {
           const nextCards = state.ownedCards.map((c) => {
             if (c.id === instanceId) {
-              return { ...c, multipliers };
+              return { ...c, multipliers, lastModified: Date.now() };
             }
             return c;
           });
@@ -485,7 +557,8 @@ export const useCardStore = create<CardStore>()(
               return {
                 ...c,
                 signupBonusActive: !c.signupBonusActive,
-                signupBonusValue: defaultVal
+                signupBonusValue: defaultVal,
+                lastModified: Date.now()
               };
             }
             return c;
@@ -503,7 +576,8 @@ export const useCardStore = create<CardStore>()(
             if (c.id === instanceId) {
               return {
                 ...c,
-                signupBonusValue: Math.max(0, value)
+                signupBonusValue: Math.max(0, value),
+                lastModified: Date.now()
               };
             }
             return c;
@@ -549,9 +623,11 @@ export const useCardStore = create<CardStore>()(
       deleteLoyaltyAward: (awardId) =>
         set((state) => {
           const nextAwards = state.loyaltyAwards.filter((a) => a.id !== awardId);
+          const nextDeleted = Array.from(new Set([...(state.deletedAwardIds || []), awardId]));
           syncPushToCloud(state.gdriveToken, state.ownedCards, state.logs);
           return {
             loyaltyAwards: nextAwards,
+            deletedAwardIds: nextDeleted,
             walletLastModified: Date.now()
           };
         }),
@@ -619,6 +695,8 @@ export const useCardStore = create<CardStore>()(
           ownedCards: [],
           loyaltyAwards: [],
           logs: {},
+          deletedCardIds: [],
+          deletedAwardIds: [],
           // Keep theme preference intact
         })),
     }),
@@ -651,6 +729,8 @@ export const useCardStore = create<CardStore>()(
           loyaltyAwards: state.loyaltyAwards,
           logs: state.logs,
           walletLastModified: state.walletLastModified,
+          deletedCardIds: state.deletedCardIds || [],
+          deletedAwardIds: state.deletedAwardIds || [],
           theme: state.theme,
           language: state.language,
           customClientId: state.customClientId,
