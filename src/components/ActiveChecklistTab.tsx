@@ -7,6 +7,8 @@ import type { LoyaltyAward } from '../data/cards.db';
 import { getDaysLeft, getDaysLeftForDate, getUrgencyScore } from '../utils/dateUtils';
 import type { ActiveBenefit } from '../utils/dateUtils';
 import type { OwnedCardInstance } from '../store/useCardStore';
+import { obfuscateKey } from '../utils/cryptoUtils';
+import { parseLogEntry } from '../utils/logUtils';
 
 interface ActiveChecklistTabProps {
   activeBenefits: ActiveBenefit[];
@@ -236,7 +238,9 @@ export function ActiveChecklistTab({
                   : getDaysLeft(ab, currentDate);
 
                 const isProgressive = !!ab.benefit.spendingLimit;
-                const spent = isProgressive ? (Number(logs[ab.logKey]) || 0) : 0;
+                const logEntry = logs[obfuscateKey(ab.logKey)];
+                const parsed = parseLogEntry(logEntry);
+                const spent = isProgressive ? (parsed?.spentProgress || 0) : 0;
                 const spentPercent = isProgressive ? Math.min((spent / (ab.benefit.spendingLimit || 1)) * 100, 100) : 0;
                 const cashbackEarned = isProgressive ? Math.round((ab.benefit.value * Math.min(spent / (ab.benefit.spendingLimit || 1), 1)) * 100) / 100 : 0;
 
@@ -299,7 +303,7 @@ export function ActiveChecklistTab({
                       {/* Collapsible Section Card Header */}
                       <div
                         onClick={() => setCollapsedGroups(prev => ({ ...prev, [key]: !prev[key] }))}
-                        className={`flex items-center justify-between p-3 cursor-pointer select-none bg-gradient-to-r ${brandColor} border-b ${
+                        className={`flex items-center justify-between p-3 cursor-pointer select-none bg-gradient-to-r ${brandColor} text-white border-b ${
                           themeClass('border-slate-900/40', 'border-slate-200/40')
                         }`}
                       >
@@ -332,7 +336,9 @@ export function ActiveChecklistTab({
                             : getDaysLeft(ab, currentDate);
 
                           const isProgressive = !!ab.benefit.spendingLimit;
-                          const spent = isProgressive ? (Number(logs[ab.logKey]) || 0) : 0;
+                          const logEntry = logs[obfuscateKey(ab.logKey)];
+                          const parsed = parseLogEntry(logEntry);
+                          const spent = isProgressive ? (parsed?.spentProgress || 0) : 0;
                           const spentPercent = isProgressive ? Math.min((spent / (ab.benefit.spendingLimit || 1)) * 100, 100) : 0;
                           const cashbackEarned = isProgressive ? Math.round((ab.benefit.value * Math.min(spent / (ab.benefit.spendingLimit || 1), 1)) * 100) / 100 : 0;
 
