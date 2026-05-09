@@ -46,6 +46,22 @@ export const AWARD_TEMPLATES: Record<string, StaticAwardTemplate> = {
     value: 80,
     description: 'Gift Hyatt Globalist in-hotel benefits to family or friends.'
   },
+  'hyatt-c4-fnr': {
+    name: 'Hyatt Category 1-4 Free Night Award',
+    brand: 'Hyatt',
+    programType: 'hotel',
+    awardType: 'fnr',
+    value: 150,
+    description: 'Redeem for a free night at any Category 1-4 Hyatt hotel or resort.'
+  },
+  'hyatt-c7-fnr': {
+    name: 'Hyatt Category 1-7 Free Night Award',
+    brand: 'Hyatt',
+    programType: 'hotel',
+    awardType: 'fnr',
+    value: 450,
+    description: 'Redeem for a free night at any Category 1-7 Hyatt hotel or resort.'
+  },
   'marriott-nua': {
     name: 'Marriott Nightly Upgrade Award (NUA)',
     brand: 'Marriott',
