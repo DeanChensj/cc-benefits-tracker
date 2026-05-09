@@ -684,7 +684,7 @@ function App() {
         </div>
       </header>
 
-      <main className="max-w-4xl mx-auto px-4 py-8">
+      <main className="max-w-4xl mx-auto px-4 pt-4 sm:pt-5 pb-8">
         
         {/* Stats Panel */}
         {/* Mobile Compact Stats Bar (Saves massive vertical height!) */}
@@ -710,7 +710,7 @@ function App() {
         </section>
 
         {/* Desktop Full Cards Grid */}
-        <section className="hidden md:grid grid-cols-4 gap-3 mb-6">
+        <section className="hidden md:grid grid-cols-4 gap-3 mb-4">
           <div className={`border rounded-xl p-3 sm:p-4 transition duration-300 ${
             themeClass('bg-slate-900/50 border-slate-800/60', 'bg-white border-slate-200 shadow-sm')
           }`}>

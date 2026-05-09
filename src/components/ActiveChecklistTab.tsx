@@ -154,7 +154,7 @@ export function ActiveChecklistTab({
   };
 
   return (
-    <div className="space-y-4 sm:space-y-6 animate-fade-in">
+    <div className="space-y-4 animate-fade-in">
       {/* Search & Filter Action Bar */}
       <div className="flex gap-2 items-center">
         <div className="relative flex-grow">
@@ -210,7 +210,7 @@ export function ActiveChecklistTab({
         />
       </div>
 
-      <div className="space-y-6">
+      <div className="space-y-4">
         {/* A. ACTIVE ITEMS VIEW BLOCK */}
         {activeItems.length === 0 ? (
           <div className={`p-8 rounded-2xl text-center border border-dashed max-w-md mx-auto ${
@@ -230,7 +230,7 @@ export function ActiveChecklistTab({
               if (quickMonthlyBenefits.length === 0) return null;
 
               return (
-                <div className="mb-4 animate-fade-in">
+                <div className="-mt-1 md:-mt-2.5 animate-fade-in">
                   <h4 className={`text-[9px] font-black uppercase tracking-wider mb-2 flex items-center gap-1.5 ${
                     themeClass('text-slate-400', 'text-slate-500')
                   }`}>
