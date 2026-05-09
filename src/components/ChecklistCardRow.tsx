@@ -139,27 +139,58 @@ export function ChecklistCardRow({
 
       <div className="flex items-center gap-3.5 shrink-0 justify-end sm:justify-start">
         {/* Interactive Numerical Spent Input Box */}
-        {isProgressive && (
-          <div 
-            className="flex items-center gap-1" 
-            onClick={(e) => e.stopPropagation()} // Prevent row click toggle
-          >
-            <span className="text-[10px] font-bold text-slate-400">$</span>
-            <input
-              type="number"
-              disabled={isExpired}
-              placeholder="0"
-              value={(() => { const p = parseLogEntry(logs[obfuscateKey(logKey)]); return p && p.spentProgress !== undefined ? String(p.spentProgress) : ''; })()}
-              onChange={(e) => {
-                const val = Number(e.target.value);
-                updateProgressLog(logKey, val);
-              }}
-              className={`w-16 border text-center text-xs rounded px-1.5 py-0.5 focus:outline-none font-mono font-bold transition ${
-                themeClass('bg-slate-955 border-slate-850 text-white focus:border-purple-500', 'bg-slate-100 border-slate-250 text-slate-900 focus:border-purple-500 shadow-inner')
-              }`}
-            />
-          </div>
-        )}
+        {isProgressive && (() => {
+          const getStepAmount = (limit: number): number => {
+            if (limit <= 15) return limit; // e.g., $10 or $15 monthly credits
+            if (limit <= 50) return 10;
+            if (limit <= 250) return 50;
+            return 100;
+          };
+          const limit = benefit.spendingLimit || 0;
+          const step = getStepAmount(limit);
+          const currentProgress = (() => { 
+            const p = parseLogEntry(logs[obfuscateKey(logKey)]); 
+            return p && p.spentProgress !== undefined ? p.spentProgress : 0; 
+          })();
+          const isFullyResolved = currentProgress >= limit;
+
+          return (
+            <div 
+              className="flex items-center gap-1.5" 
+              onClick={(e) => e.stopPropagation()} // Prevent row click toggle
+            >
+              <span className="text-[10px] font-bold text-slate-400">$</span>
+              <input
+                type="number"
+                disabled={isExpired}
+                placeholder="0"
+                value={currentProgress || ''}
+                onChange={(e) => {
+                  const val = Number(e.target.value);
+                  updateProgressLog(logKey, val);
+                }}
+                className={`w-14 border text-center text-xs rounded px-1.5 py-0.5 focus:outline-none font-mono font-bold transition ${
+                  themeClass('bg-slate-955 border-slate-850 text-white focus:border-purple-500', 'bg-slate-100 border-slate-250 text-slate-900 focus:border-purple-500 shadow-inner')
+                }`}
+              />
+              <button
+                disabled={isExpired || isFullyResolved}
+                onClick={() => {
+                  const newSpent = Math.min(currentProgress + step, limit);
+                  updateProgressLog(logKey, newSpent);
+                }}
+                className={`px-1.5 py-0.5 rounded text-[9px] font-black border transition active:scale-[0.93] shrink-0 cursor-pointer ${
+                  isFullyResolved 
+                    ? 'opacity-35 cursor-not-allowed border-slate-800/40 text-slate-500'
+                    : themeClass('bg-purple-500/10 text-purple-400 hover:text-purple-300 border-purple-500/20 hover:bg-purple-500/20', 'bg-purple-50 text-purple-600 hover:bg-purple-100 border-purple-200')
+                }`}
+                title={`Add $${step}`}
+              >
+                +{step}
+              </button>
+            </div>
+          );
+        })()}
 
         <div className="text-right flex flex-col items-end justify-center min-w-[80px]">
           <span className={`text-base font-bold ${isExpired || isUsed ? 'text-slate-400 dark:text-slate-500' : themeClass('text-white', 'text-slate-900')}`}>

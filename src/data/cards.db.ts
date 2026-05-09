@@ -144,7 +144,8 @@ export const CARDS_DB: CardTemplate[] = [
         description: '$50 semi-annually (Jan-Jun, Jul-Dec) statement credit for Resy bookings',
         value: 50,
         resetPeriod: 'semi-annual',
-        category: 'dining'
+        category: 'dining',
+        spendingLimit: 50
       },
       {
         id: 'amex-gold-dunkin',
@@ -187,7 +188,8 @@ export const CARDS_DB: CardTemplate[] = [
         description: '$200/calendar year statement credit for airline baggage & lounge incidentals',
         value: 200,
         resetPeriod: 'annual-calendar',
-        category: 'travel'
+        category: 'travel',
+        spendingLimit: 200
       },
       {
         id: 'amex-plat-hotel',
@@ -195,7 +197,8 @@ export const CARDS_DB: CardTemplate[] = [
         description: '$300 statement credit twice a year for prepaid Fine Hotels & Resorts bookings',
         value: 300,
         resetPeriod: 'semi-annual',
-        category: 'travel'
+        category: 'travel',
+        spendingLimit: 300
       },
       {
         id: 'amex-plat-walmart',
@@ -227,7 +230,8 @@ export const CARDS_DB: CardTemplate[] = [
         description: '$100 quarterly statement credit for dining at Resy restaurants',
         value: 100,
         resetPeriod: 'quarterly',
-        category: 'dining'
+        category: 'dining',
+        spendingLimit: 100
       },
       {
         id: 'amex-plat-uber-one',
@@ -441,7 +445,8 @@ export const CARDS_DB: CardTemplate[] = [
         description: '$300 annual travel statement credit for flights, hotels, transit, and tolls',
         value: 300,
         resetPeriod: 'annual-anniversary',
-        category: 'travel'
+        category: 'travel',
+        spendingLimit: 300
       },
       {
         id: 'csr-stubhub',
