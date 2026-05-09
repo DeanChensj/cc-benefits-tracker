@@ -9,7 +9,7 @@ export const deobfuscateKey = (obfuscated: string): string => {
   try {
     const scrambled = decodeURIComponent(escape(atob(obfuscated)));
     return scrambled.split('').map(c => String.fromCharCode(c.charCodeAt(0) ^ CIPHER_KEY)).join('');
-  } catch (err) {
+  } catch {
     return obfuscated;
   }
 };

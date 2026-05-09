@@ -56,7 +56,7 @@ export const getLogEntryDate = (cycle: string, resetPeriod: string): Date => {
     if (resetPeriod === 'fixed') {
       return new Date(cycle + 'T12:00:00');
     }
-  } catch (err) {
+  } catch {
     // fallback
   }
   return new Date();
