@@ -222,7 +222,8 @@ export const CARDS_DB: CardTemplate[] = [
         description: '$75 quarterly statement credit at Lululemon stores or online',
         value: 75,
         resetPeriod: 'quarterly',
-        category: 'shopping'
+        category: 'shopping',
+        spendingLimit: 75
       },
       {
         id: 'amex-plat-resy-plat',
@@ -591,7 +592,8 @@ export const CARDS_DB: CardTemplate[] = [
         description: '$300/year credit for Capital One Travel portal bookings',
         value: 300,
         resetPeriod: 'annual-anniversary',
-        category: 'travel'
+        category: 'travel',
+        spendingLimit: 300
       }
     ]
   },
