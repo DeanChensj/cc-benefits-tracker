@@ -8,7 +8,6 @@ import { WalletAiAssistant } from './components/WalletAiAssistant';
 import { CalendarSyncModal } from './components/CalendarSyncModal';
 import { CreateCardModal } from './components/CreateCardModal';
 import { CreateAwardModal } from './components/CreateAwardModal';
-import { CardDetailDrawer } from './components/CardDetailDrawer';
 import { AddOfferModal } from './components/AddOfferModal';
 import { Toast } from './components/Toast';
 import { DeleteConfirmModal } from './components/DeleteConfirmModal';
@@ -16,24 +15,19 @@ import { ConfirmationModal } from './components/ConfirmationModal';
 import { EmptyWalletState } from './components/EmptyWalletState';
 import { CheckoutWinnersRow } from './components/CheckoutWinnersRow';
 import { AnnualFeeWarningsWidget } from './components/AnnualFeeWarningsWidget';
-import { WalletCreditCard } from './components/WalletCreditCard';
 import { SavingsWrappedModal } from './components/SavingsWrappedModal';
 import { CloudSyncBanner } from './components/CloudSyncBanner';
 import { ActiveChecklistTab } from './components/ActiveChecklistTab';
-import { getLocalDateString, getDaysLeftForDate, getAnnualFeeWarningInfo, parseLogEntry, obfuscateKey, getCardPotentialValue } from './utils/dateUtils';
+import { WalletLibraryTab } from './components/WalletLibraryTab';
+import { getLocalDateString, getAnnualFeeWarningInfo, parseLogEntry, obfuscateKey } from './utils/dateUtils';
 import { loadGoogleGsiScript, requestGDriveToken, fetchUserEmail } from './utils/gdrive';
 import { 
   CreditCard, 
-  Download, 
-  Upload, 
   CheckCircle2, 
-  Check,
   RefreshCw,
-  Plus,
   Sun,
   Moon,
   Calendar,
-  Trash2,
   DollarSign,
   Clock,
   Sparkles
@@ -71,7 +65,6 @@ function App() {
     updateSignupBonusValue,
     toggleLoyaltyAward,
     deleteLoyaltyAward,
-    updateLoyaltyAward,
     pruneExpiredLogs,
     resetAll 
   } = useCardStore();
@@ -83,14 +76,8 @@ function App() {
   // Date to evaluate states against (defaults to current system date)
   const [currentDate, setCurrentDate] = useState(new Date());
   const [activeTab, setActiveTab] = useState<'todo' | 'all' | 'cards'>(() => (localStorage.getItem('cc-tracker-active-tab') as any) || 'todo');
-  const [editingInstanceId, setEditingInstanceId] = useState<string | null>(null);
   const [isSyncModalOpen, setIsSyncModalOpen] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [templateFeeFilter, setTemplateFeeFilter] = useState<'all' | 'free' | 'mid' | 'premium'>('all');
-
-  const [activeTemplateDetail, setActiveTemplateDetail] = useState<CardTemplate | null>(null);
-  const [deckSubTab, setDeckSubTab] = useState<'cards' | 'awards'>(() => (localStorage.getItem('cc-tracker-deck-sub-tab') as any) || 'cards');
   const [isCreateAwardModalOpen, setIsCreateAwardModalOpen] = useState(false);
   const [isWrappedModalOpen, setIsWrappedModalOpen] = useState(false);
   const [addOfferInstanceId, setAddOfferInstanceId] = useState<string | null>(null);
@@ -98,16 +85,8 @@ function App() {
   const [deleteAwardId, setDeleteAwardId] = useState<string | null>(null);
   const [isGDriveDisconnectOpen, setIsGDriveDisconnectOpen] = useState(false);
   const [isWipeDataOpen, setIsWipeDataOpen] = useState(false);
-  const [expandedCardIds, setExpandedCardIds] = useState<Record<string, boolean>>({});
   const [collapsedGroups, setCollapsedGroups] = useState<Record<string, boolean>>({});
   const [selectedTemplates, setSelectedTemplates] = useState<string[]>([]);
-  
-  const toggleCardExpanded = (instanceId: string) => {
-    setExpandedCardIds((prev) => ({
-      ...prev,
-      [instanceId]: !prev[instanceId]
-    }));
-  };
 
   const [dismissedWarningCardIds, setDismissedWarningCardIds] = useState<Record<string, boolean>>({});
   
@@ -138,9 +117,6 @@ function App() {
     showToast(`🎉 Added ${cardName} to your Wallet!`);
   };
 
-  const handleRemoveCard = (instanceId: string) => {
-    setDeleteCardInstanceId(instanceId);
-  };
 
   const handleConfirmRemoveCard = () => {
     if (!deleteCardInstanceId) return;
@@ -223,49 +199,6 @@ function App() {
     setIsGDriveDisconnectOpen(false);
   };
 
-  const exportBackup = () => {
-    const { ownedCards, loyaltyAwards, logs } = useCardStore.getState();
-    const backupData = {
-      version: '1.1.0',
-      timestamp: new Date().toISOString(),
-      ownedCards,
-      loyaltyAwards,
-      logs
-    };
-    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(backupData, null, 2));
-    const downloadAnchor = document.createElement('a');
-    downloadAnchor.setAttribute("href", dataStr);
-    downloadAnchor.setAttribute("download", `cc-tracker-backup-${new Date().toISOString().split('T')[0]}.json`);
-    document.body.appendChild(downloadAnchor);
-    downloadAnchor.click();
-    downloadAnchor.remove();
-    showToast('💾 Backup exported successfully!', 'info');
-  };
-
-  const importBackup = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const fileReader = new FileReader();
-    if (e.target.files && e.target.files[0]) {
-      fileReader.readAsText(e.target.files[0], "UTF-8");
-      fileReader.onload = (event) => {
-        try {
-          const parsed = JSON.parse(event.target?.result as string);
-          if (parsed.ownedCards && parsed.logs) {
-            useCardStore.setState({
-              ownedCards: parsed.ownedCards,
-              loyaltyAwards: parsed.loyaltyAwards || [],
-              logs: parsed.logs,
-              walletLastModified: Date.now()
-            });
-            showToast('🎉 Backup restored successfully!');
-          } else {
-            showToast('❌ Invalid backup file structure.', 'error');
-          }
-        } catch (err) {
-          showToast('❌ Failed to parse backup file.', 'error');
-        }
-      };
-    }
-  };
 
   // Flat list of all active benefits based on instances
   interface ActiveBenefit {
@@ -756,499 +689,28 @@ function App() {
 
         {/* TAB 3: MY CARDS MANAGER */}
         {activeTab === 'cards' && (
-          <section className="space-y-6 animate-fade-in">
-            {/* Double-Deck Segmented Switcher (0% Visual Bloat!) */}
-            <div className="flex justify-center mb-2 animate-fade-in">
-              <div className={`flex gap-0.5 p-0.5 rounded-xl border w-full max-w-[280px] ${
-                themeClass('bg-slate-950 border-slate-850/80', 'bg-slate-200/40 border-slate-300/60')
-              }`}>
-                <button
-                  onClick={() => {
-                    setDeckSubTab('cards');
-                    localStorage.setItem('cc-tracker-deck-sub-tab', 'cards');
-                  }}
-                  className={`flex-1 py-1.5 rounded-lg text-[10px] font-extrabold transition flex items-center justify-center gap-1.5 cursor-pointer ${
-                    deckSubTab === 'cards'
-                      ? 'bg-gradient-to-tr from-purple-600 to-indigo-600 text-white shadow-sm shadow-purple-500/10'
-                      : themeClass('text-slate-400 hover:text-slate-200', 'text-slate-505 hover:text-slate-800')
-                  }`}
-                >
-                  <CreditCard className="w-3 h-3" />
-                  <span>Cards ({ownedCards.length})</span>
-                </button>
-                <button
-                  onClick={() => {
-                    setDeckSubTab('awards');
-                    localStorage.setItem('cc-tracker-deck-sub-tab', 'awards');
-                  }}
-                  className={`flex-1 py-1.5 rounded-lg text-[10px] font-extrabold transition flex items-center justify-center gap-1.5 cursor-pointer ${
-                    deckSubTab === 'awards'
-                      ? 'bg-gradient-to-tr from-purple-600 to-indigo-600 text-white shadow-sm shadow-purple-500/10'
-                      : themeClass('text-slate-400 hover:text-slate-200', 'text-slate-505 hover:text-slate-800')
-                  }`}
-                >
-                  <Sparkles className="w-3 h-3" />
-                  <span>Awards ({loyaltyAwards.length})</span>
-                </button>
-              </div>
-            </div>
-
-            {deckSubTab === 'cards' && (
-              <div className="space-y-6 animate-fade-in">
-                {/* 1. MY WALLET (Active Cards) */}
-                <div className={`border rounded-xl p-4 sm:p-6 transition duration-300 ${
-                  themeClass('bg-slate-900/30 border-slate-850', 'bg-white border-slate-200 shadow-sm')
-                }`}>
-                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-4 pb-2 border-b border-dashed border-slate-200/60 dark:border-slate-800/60">
-                    <h3 className={`text-xs font-bold uppercase tracking-wider flex items-center gap-2 ${themeClass('text-slate-400', 'text-slate-505')}`}>
-                      <CreditCard className="w-4 h-4 text-purple-500" />
-                      My Wallet ({ownedCards.length} active cards)
-                    </h3>
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <input
-                        type="text"
-                        placeholder="🔍 Search cards..."
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        className={`border text-xs rounded-xl px-3 py-1.5 focus:outline-none w-44 font-medium ${
-                          themeClass('bg-slate-955 border-slate-800 focus:border-purple-500 text-slate-200', 'bg-slate-50 border-slate-250 focus:border-purple-500 text-slate-805 shadow-inner')
-                        }`}
-                      />
-                      <button
-                        onClick={() => setIsCreateModalOpen(true)}
-                        className="flex items-center gap-1 bg-gradient-to-tr from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-550 text-white font-bold px-3 py-1.5 rounded-lg text-xs transition active:scale-95 shadow-md shadow-purple-500/10 cursor-pointer"
-                      >
-                        <Plus className="w-3.5 h-3.5 stroke-[3]" />
-                        Create Custom Card
-                      </button>
-                    </div>
-                  </div>
-
-                  {ownedCards.length === 0 ? (
-                    <div className="text-center py-10">
-                      <p className={`text-xs ${themeClass('text-slate-500', 'text-slate-400')}`}>Your wallet is empty. Add cards from the library below! 🛒</p>
-                    </div>
-                  ) : (
-                    <div className="grid sm:grid-cols-2 gap-4">
-                      {ownedCards.filter((instance) => {
-                        const temp = CARDS_DB.find((t) => t.id === instance.templateId);
-                        const cardName = instance.templateId === 'custom' ? instance.customName : (temp?.name || '');
-                        const cardBank = instance.templateId === 'custom' ? (instance.bank || '') : (temp?.bank || '');
-                        return (
-                          cardName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          cardBank.toLowerCase().includes(searchQuery.toLowerCase())
-                        );
-                      }).map((instance) => {
-                        const isCardExpanded = !!expandedCardIds[instance.id];
-                        return (
-                          <WalletCreditCard
-                            key={instance.id}
-                            instance={instance}
-                            editingInstanceId={editingInstanceId}
-                            setEditingInstanceId={setEditingInstanceId}
-                            isCardExpanded={isCardExpanded}
-                            toggleCardExpanded={toggleCardExpanded}
-                            getCardRecoupedValue={getCardRecoupedValue}
-                            handleAddCard={handleAddCard}
-                            handleAddCustomCard={handleAddCustomCard}
-                            handleRemoveCard={handleRemoveCard}
-                            renameCard={renameCard}
-                            setCardOpenDate={setCardOpenDate}
-                            removeInstanceOffer={removeInstanceOffer}
-                            updateCardMultipliers={updateCardMultipliers}
-                            toggleSignupBonus={toggleSignupBonus}
-                            updateSignupBonusValue={updateSignupBonusValue}
-                            setAddOfferInstanceId={setAddOfferInstanceId}
-                            themeClass={themeClass}
-                          />
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
-
-                {/* 2. ADD CARD LIBRARY */}
-                <div className={`border rounded-xl p-4 sm:p-6 transition duration-300 ${
-                  themeClass('bg-slate-900/30 border-slate-850', 'bg-white border-slate-200 shadow-sm')
-                }`}>
-                  <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-5 pb-3 border-b border-dashed border-slate-200/60 dark:border-slate-800/60">
-                    <h3 className={`text-xs font-bold uppercase tracking-wider flex items-center gap-2 ${themeClass('text-slate-400', 'text-slate-555')}`}>
-                      <Plus className="w-4 h-4 text-amber-500" />
-                      Add New Cards (Templates)
-                    </h3>
-                    <div className="flex flex-col sm:flex-row sm:items-center gap-3 flex-wrap shrink-0">
-                      {/* Minimalist Annual Fee Segment Selector */}
-                      <div className={`flex items-center gap-0.5 p-0.5 rounded-xl border shrink-0 ${
-                        themeClass('bg-slate-955/30 border-slate-850/80', 'bg-slate-50 border-slate-200/80 shadow-inner')
-                      }`}>
-                        {(['all', 'free', 'mid', 'premium'] as const).map((filter) => (
-                          <button
-                            key={filter}
-                            type="button"
-                            onClick={() => setTemplateFeeFilter(filter)}
-                            className={`px-2.5 py-1 rounded-lg text-[9px] font-bold transition uppercase tracking-wider cursor-pointer ${
-                              templateFeeFilter === filter
-                                ? themeClass('bg-slate-955 text-amber-400 border border-slate-850/50 shadow-sm', 'bg-white text-purple-600 border border-slate-200 shadow-sm')
-                                : 'text-slate-500 hover:text-slate-400 dark:hover:text-slate-300'
-                            }`}
-                          >
-                            {filter === 'all' ? 'All' :
-                             filter === 'free' ? 'Free ($0)' :
-                             filter === 'mid' ? 'Mid (<$300)' : 'Prem ($300+)'}
-                          </button>
-                        ))}
-                      </div>
-
-                      <input
-                        type="text"
-                        placeholder="🔍 Search card templates..."
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        className={`border text-xs rounded-xl px-3 py-1.5 focus:outline-none w-48 font-medium ${
-                          themeClass('bg-slate-955 border-slate-800 focus:border-purple-500 text-slate-200', 'bg-slate-50 border-slate-250 focus:border-purple-500 text-slate-800 shadow-inner')
-                        }`}
-                      />
-                    </div>
-                  </div>
-
-                  <div className="space-y-8">
-                    {(['Amex', 'Chase', 'Citi', 'Other'] as const).map((bankName) => {
-                      const bankCards = CARDS_DB.filter((c) => c.bank === bankName).filter((c) => {
-                        // Search Query Check
-                        const matchesSearch = c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                                              c.bank.toLowerCase().includes(searchQuery.toLowerCase());
-                        if (!matchesSearch) return false;
-
-                        // Annual Fee Filter Check
-                        if (templateFeeFilter === 'free') return c.annualFee === 0;
-                        if (templateFeeFilter === 'mid') return c.annualFee > 0 && c.annualFee < 300;
-                        if (templateFeeFilter === 'premium') return c.annualFee >= 300;
-                        return true;
-                      });
-                      if (bankCards.length === 0) return null;
-
-                      return (
-                        <div key={bankName} className="space-y-3.5">
-                          <div className={`flex items-center gap-2 border-b pb-2 ${themeClass('border-slate-900', 'border-slate-200')}`}>
-                            <div className={`w-2 h-2 rounded-full ${
-                              bankName === 'Amex' ? 'bg-amber-500' :
-                              bankName === 'Chase' ? 'bg-blue-500' :
-                              bankName === 'Citi' ? 'bg-red-500' : 'bg-orange-500'
-                            }`} />
-                            <h4 className={`text-xs font-bold uppercase tracking-wider ${themeClass('text-slate-400', 'text-slate-500')}`}>
-                              {bankName === 'Amex' ? 'American Express' : bankName === 'Citi' ? 'Citibank' : bankName === 'Other' ? 'Other Banks' : bankName} Templates
-                            </h4>
-                            <span className="text-[10px] text-slate-600 font-semibold ml-auto">
-                              {bankCards.length} templates
-                            </span>
-                          </div>
-
-                          <div className="grid sm:grid-cols-2 gap-4">
-                            {bankCards.map((card) => (
-                              <div 
-                                key={card.id}
-                                onClick={() => setActiveTemplateDetail(card)}
-                                className={`p-4 rounded-xl border flex flex-col justify-between transition cursor-pointer hover:scale-[1.01] duration-200 relative overflow-hidden group/card after:absolute after:top-0 after:-left-[150%] after:w-[60%] after:h-full after:bg-gradient-to-r after:from-transparent after:via-white/15 dark:after:via-white/10 after:to-transparent after:skew-x-12 after:transition-all after:duration-700 hover:after:left-[150%] ${
-                                  themeClass('bg-slate-955 border-slate-900 hover:border-slate-850', 'bg-slate-50/50 border-slate-200 hover:border-slate-300 hover:bg-slate-50 shadow-sm')
-                                }`}
-                              >
-                                <div className="flex gap-3.5 items-start flex-grow pb-2">
-                                  {/* Mini CSS Metallic Vector Credit Card Preview */}
-                                  <div className={`w-16 h-10 rounded-md bg-gradient-to-r ${card.color} shrink-0 relative shadow-md border border-white/10 overflow-hidden`}>
-                                    {/* Chip */}
-                                    <div className="w-2.5 h-2 bg-amber-400/30 border border-amber-400/20 rounded-sm absolute top-1.5 left-1.5" />
-                                    {/* Generic Logo Watermark */}
-                                    <div className="absolute bottom-1 right-1.5 text-[4px] font-black uppercase tracking-widest text-white/20 font-sans">
-                                      {card.bank}
-                                    </div>
-                                  </div>
-
-                                  <div className="min-w-0 flex-grow">
-                                    <div className="flex items-center justify-between gap-2 flex-wrap">
-                                      <span className={`text-[9px] font-semibold uppercase tracking-wider ${themeClass('text-slate-500', 'text-slate-550')}`}>{card.bank}</span>
-                                      <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wide ${
-                                        card.annualFee > 0 
-                                          ? themeClass('bg-slate-955 text-amber-400 border border-slate-850/80', 'bg-slate-100 text-purple-600 border border-slate-200')
-                                          : 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/10'
-                                      }`}>
-                                        {card.annualFee > 0 ? `Fee: $${card.annualFee}` : 'No Fee'}
-                                      </span>
-                                    </div>
-                                    <h4 className={`text-sm font-extrabold mt-1.5 ${themeClass('text-white', 'text-slate-900')}`}>{card.name}</h4>
-                                    <p className={`text-[11px] mt-1.5 leading-relaxed font-medium ${themeClass('text-slate-405', 'text-slate-555')}`}>
-                                      Contains <span className="font-bold text-purple-500 dark:text-amber-400">{card.benefits.length}</span> built-in perks <br />
-                                      (Potential value: <span className={`font-bold ${themeClass('text-white', 'text-slate-955')}`}>${getCardPotentialValue(card.benefits)}/yr</span>)
-                                    </p>
-                                    <span className="text-[9px] text-purple-500 dark:text-purple-455 font-bold mt-2.5 block animate-pulse">
-                                      🔍 Click card to view details
-                                    </span>
-                                  </div>
-                                </div>
-
-                                {(() => {
-                                  const isSelected = selectedTemplates.includes(card.id);
-                                  return (
-                                    <button
-                                      onClick={(e) => {
-                                        e.stopPropagation(); // Prevent modal drawer trigger
-                                        setSelectedTemplates((prev) =>
-                                          prev.includes(card.id)
-                                            ? prev.filter((id) => id !== card.id)
-                                            : [...prev, card.id]
-                                        );
-                                      }}
-                                      className={`w-full mt-4 flex items-center justify-center gap-1.5 font-bold py-2.5 rounded-xl text-xs transition active:scale-[0.97] border cursor-pointer ${
-                                        isSelected
-                                          ? 'bg-purple-600 text-white border-transparent shadow-md shadow-purple-600/20'
-                                          : themeClass('bg-slate-900/50 border-slate-800 text-slate-300 hover:border-slate-700', 'bg-white border-slate-200 text-slate-600 hover:border-slate-300 shadow-sm')
-                                      }`}
-                                    >
-                                      {isSelected ? (
-                                        <>
-                                          <Check className="w-3.5 h-3.5 stroke-[3]" />
-                                          Selected
-                                        </>
-                                      ) : (
-                                        <>
-                                          <Plus className="w-3.5 h-3.5 stroke-[3]" />
-                                          Select Template
-                                        </>
-                                      )}
-                                    </button>
-                                  );
-                                })()}
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-
-              </div>
-            )}
-
-            {deckSubTab === 'awards' && (
-              <div className="space-y-6 animate-fade-in">
-                {/* Standalone Loyalty Vouchers Box */}
-                <div className={`border rounded-xl p-4 sm:p-6 transition duration-300 ${
-                  themeClass('bg-slate-900/30 border-slate-850', 'bg-white border-slate-200 shadow-sm')
-                }`}>
-                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-4 pb-2 border-b border-dashed border-slate-200/60 dark:border-slate-800/60">
-                    <h3 className={`text-xs font-bold uppercase tracking-wider flex items-center gap-2 ${themeClass('text-slate-400', 'text-slate-555')}`}>
-                      <Sparkles className="w-4 h-4 text-purple-500 animate-pulse" />
-                      Loyalty Awards & Standalone Vouchers ({loyaltyAwards.length} active)
-                    </h3>
-                    <button
-                      onClick={() => setIsCreateAwardModalOpen(true)}
-                      className="flex items-center gap-1 bg-gradient-to-tr from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-550 text-white font-bold px-3 py-1.5 rounded-lg text-xs transition active:scale-95 shadow-md shadow-purple-500/10 cursor-pointer"
-                    >
-                      <Plus className="w-3.5 h-3.5 stroke-[3]" />
-                      Add Standalone Voucher
-                    </button>
-                  </div>
-
-                  {(() => {
-                    const filteredAwards = loyaltyAwards.filter((award) => {
-                      const isCustom = award.templateId === 'custom';
-                      const info = isCustom ? {
-                        name: award.customName || 'Custom Voucher',
-                        brand: award.customBrand || 'Other'
-                      } : AWARD_TEMPLATES[award.templateId];
-
-                      const searchLower = searchQuery.toLowerCase();
-                      return (
-                        info.name.toLowerCase().includes(searchLower) ||
-                        info.brand.toLowerCase().includes(searchLower) ||
-                        (award.notes && award.notes.toLowerCase().includes(searchLower))
-                      );
-                    });
-
-                    if (loyaltyAwards.length === 0) {
-                      return (
-                        <div className="text-center py-10">
-                          <p className={`text-xs ${themeClass('text-slate-500', 'text-slate-400')}`}>No standalone awards or vouchers inside your card collection yet. Click Add Standalone Voucher above! 🎁</p>
-                        </div>
-                      );
-                    }
-
-                    if (filteredAwards.length === 0) {
-                      return (
-                        <div className="text-center py-10 animate-fade-in">
-                          <p className={`text-xs ${themeClass('text-slate-500', 'text-slate-400')}`}>🔍 No vouchers matching your search query.</p>
-                        </div>
-                      );
-                    }
-
-                    return (
-                      <div className="grid sm:grid-cols-2 gap-4">
-                        {filteredAwards.map((award) => {
-                        const isCustom = award.templateId === 'custom';
-                        const info = isCustom ? {
-                          name: award.customName || 'Custom Voucher',
-                          brand: award.customBrand || 'Other',
-                          programType: award.customProgramType || 'other',
-                          awardType: award.customAwardType || 'other',
-                          value: award.customValue || 0
-                        } : AWARD_TEMPLATES[award.templateId];
-
-                        const totalVal = info.value * award.quantity;
-
-                        // Sleek, dynamic brand color gradients matching luxury styles!
-                        const brandColor = 
-                          info.brand.toLowerCase() === 'hyatt' ? 'from-emerald-500 to-teal-700 text-white' :
-                          info.brand.toLowerCase() === 'marriott' ? 'from-indigo-900 via-stone-950 to-stone-900 text-white' :
-                          info.brand.toLowerCase() === 'hilton' ? 'from-amber-500 to-yellow-650 text-white' :
-                          info.brand.toLowerCase() === 'ihg' ? 'from-amber-900 via-neutral-955 to-neutral-955 text-white' :
-                          info.brand.toLowerCase() === 'delta' ? 'from-sky-600 to-blue-800 text-white' :
-                          info.brand.toLowerCase() === 'alaska' ? 'from-emerald-600 to-indigo-800 text-white' :
-                          info.brand.toLowerCase() === 'united' ? 'from-blue-700 to-blue-950 text-white' :
-                          info.brand.toLowerCase() === 'aa' ? 'from-slate-500 via-slate-600 to-zinc-700 text-white' :
-                          info.brand.toLowerCase() === 'amex' ? 'from-[#c5a059] to-[#9c7a3c] text-white' :
-                          'from-slate-600 to-slate-800 text-white';
-
-                         const usedQty = award.usedQuantity || 0;
-                         const isFullyUsed = usedQty === award.quantity;
-
-                         return (
-                           <div 
-                             key={award.id}
-                             className={`p-4 rounded-xl border relative overflow-hidden group flex flex-col justify-between transition duration-200 ${
-                               isFullyUsed ? 'opacity-45' : ''
-                             } ${
-                               themeClass('bg-slate-955/40 border-slate-900 hover:border-slate-850', 'bg-slate-50/50 border-slate-200 hover:border-slate-250 hover:bg-slate-50 shadow-sm')
-                             }`}
-                           >
-                             <div className="flex gap-3 items-start pb-2">
-                               {/* Mini Voucher Card Preview */}
-                               <div className={`w-14 h-9 rounded-md bg-gradient-to-r ${brandColor} shrink-0 relative shadow-md border border-white/10 flex items-center justify-center overflow-hidden`}>
-                                 <span className="text-[9px] font-black uppercase tracking-widest scale-90">{info.brand.substring(0, 4)}</span>
-                               </div>
-
-                               <div className="min-w-0 flex-grow">
-                                 <div className="flex items-center justify-between gap-2 flex-wrap">
-                                   <span className={`text-[8px] font-bold px-1 py-0.5 rounded uppercase tracking-wide ${
-                                     themeClass('bg-slate-900 text-slate-400', 'bg-white text-slate-500 border border-slate-200')
-                                   }`}>
-                                     {info.awardType} • {award.quantity}x
-                                   </span>
-                                   <span className="text-[9px] font-extrabold text-amber-500">${totalVal} USD</span>
-                                 </div>
-                                 <h4 className={`text-xs font-black mt-1.5 truncate ${isFullyUsed ? 'line-through text-slate-500' : themeClass('text-white', 'text-slate-900')}`}>{info.name}</h4>
-                                 
-                                 {award.expirationDate && (
-                                   <p className={`text-[9px] font-bold mt-1 ${
-                                     getDaysLeftForDate(award.expirationDate, currentDate) < 10 ? 'text-red-500 animate-pulse' : 'text-slate-500'
-                                   }`}>
-                                     Expires: {award.expirationDate} ({getDaysLeftForDate(award.expirationDate, currentDate)} days left)
-                                   </p>
-                                 )}
-                                 {award.notes && (
-                                   <p className="text-[9px] italic text-slate-500 mt-1 leading-relaxed truncate">
-                                     {award.notes}
-                                   </p>
-                                 )}
-                               </div>
-                             </div>
-
-                             {/* Card Actions */}
-                             <div className="flex items-center justify-between gap-2 mt-3 pt-3 border-t border-dashed border-slate-200/30 dark:border-slate-800/30">
-                               {/* Multi-Quantity Redeemed Counter Incrementer */}
-                               <div className="flex items-center gap-1.5 shrink-0">
-                                 <button
-                                   disabled={usedQty <= 0}
-                                   onClick={() => updateLoyaltyAward(award.id, { usedQuantity: Math.max(0, usedQty - 1) })}
-                                   className={`w-5 h-5 rounded-md flex items-center justify-center font-bold text-[10px] transition active:scale-90 border select-none ${
-                                     usedQty <= 0
-                                       ? 'opacity-20 border-slate-800/60 text-slate-505 cursor-not-allowed'
-                                       : themeClass('bg-slate-900 border-slate-800 text-slate-300 hover:text-white cursor-pointer', 'bg-slate-100 border-slate-250 text-slate-600 hover:bg-slate-200 cursor-pointer')
-                                   }`}
-                                 >
-                                   -
-                                 </button>
-                                 
-                                 <span className={`text-[9px] font-extrabold px-1 select-none font-mono ${
-                                   isFullyUsed ? 'text-emerald-500 dark:text-emerald-400 line-through' : themeClass('text-slate-400', 'text-slate-700')
-                                 }`}>
-                                    { `Used ${usedQty}/${award.quantity}` }
-
-
-                                 </span>
-                                 
-                                 <button
-                                   disabled={isFullyUsed}
-                                   onClick={() => updateLoyaltyAward(award.id, { usedQuantity: Math.min(award.quantity, usedQty + 1) })}
-                                   className={`w-5 h-5 rounded-md flex items-center justify-center font-bold text-[10px] transition active:scale-90 border select-none ${
-                                     isFullyUsed
-                                       ? 'opacity-20 border-slate-800/60 text-slate-555 cursor-not-allowed'
-                                       : themeClass('bg-slate-900 border-slate-800 text-slate-300 hover:text-white cursor-pointer', 'bg-slate-100 border-slate-250 text-slate-600 hover:bg-slate-200 cursor-pointer')
-                                   }`}
-                                 >
-                                   +
-                                 </button>
-                               </div>
-
-                               <button
-                                 onClick={() => setDeleteAwardId(award.id)}
-                                 className={`p-1.5 rounded-lg hover:bg-red-500/10 text-slate-505 hover:text-red-500 transition active:scale-90 cursor-pointer`}
-                                 title="Delete Voucher"
-                               >
-                                <Trash2 className="w-3.5 h-3.5" />
-                              </button>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  );
-                })()}
-                </div>
-              </div>
-            )}
-
-            {/* Portability tools */}
-            <div className={`border rounded-xl p-5 transition duration-300 ${
-              themeClass('bg-slate-900/20 border-slate-900', 'bg-white border-slate-200 shadow-sm')
-            }`}>
-              <h4 className={`text-xs font-bold uppercase tracking-wider mb-3 ${themeClass('text-slate-400', 'text-slate-600')}`}>Data Portability & Safety</h4>
-
-              <div className="flex flex-wrap gap-3">
-                <button
-                  onClick={exportBackup}
-                  className={`flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-lg border transition ${
-                    themeClass('bg-slate-900 hover:bg-slate-855 border-slate-800 text-slate-300', 'bg-white hover:bg-slate-100 border-slate-250 text-slate-600 shadow-sm')
-                  }`}
-                >
-                  <Download className="w-3.5 h-3.5 text-slate-505" />
-                  Export JSON Backup
-                </button>
-
-                <label className={`flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-lg border cursor-pointer transition ${
-                  themeClass('bg-slate-900 hover:bg-slate-855 border-slate-800 text-slate-300', 'bg-white hover:bg-slate-100 border-slate-250 text-slate-600 shadow-sm')
-                }`}>
-                  <Upload className="w-3.5 h-3.5 text-slate-505" />
-                  Restore Backup
-                  <input
-                    type="file"
-                    accept=".json"
-                    onChange={importBackup}
-                    className="hidden"
-                  />
-                </label>
-
-                <button
-                  onClick={() => setIsWipeDataOpen(true)}
-                  className={`flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-lg border transition ml-auto cursor-pointer ${
-                    themeClass('bg-red-555/10 hover:bg-red-555/20 border-red-500/20 text-red-400', 'bg-red-500/5 hover:bg-red-500/10 border-red-300/30 text-red-500 shadow-sm')
-                  }`}
-                >
-                  <Trash2 className="w-3.5 h-3.5" />
-                  Wipe App Data
-                </button>
-              </div>
-            </div>
-          </section>
+          <WalletLibraryTab
+            ownedCards={ownedCards}
+            loyaltyAwards={loyaltyAwards}
+            getCardRecoupedValue={getCardRecoupedValue}
+            handleAddCard={handleAddCard}
+            handleAddCustomCard={handleAddCustomCard}
+            renameCard={renameCard}
+            setCardOpenDate={setCardOpenDate}
+            removeInstanceOffer={removeInstanceOffer}
+            updateCardMultipliers={updateCardMultipliers}
+            toggleSignupBonus={toggleSignupBonus}
+            updateSignupBonusValue={updateSignupBonusValue}
+            setAddOfferInstanceId={setAddOfferInstanceId}
+            setIsCreateModalOpen={setIsCreateModalOpen}
+            setIsCreateAwardModalOpen={setIsCreateAwardModalOpen}
+            setDeleteCardInstanceId={setDeleteCardInstanceId}
+            setDeleteAwardId={setDeleteAwardId}
+            themeClass={themeClass}
+            theme={theme}
+            selectedTemplates={selectedTemplates}
+            setSelectedTemplates={setSelectedTemplates}
+          />
         )}
       </main>
 
@@ -1309,14 +771,6 @@ function App() {
         showToast={showToast}
       />
 
-      {/* Card Detail popover Sheet Drawer */}
-      <CardDetailDrawer 
-        isOpen={!!activeTemplateDetail}
-        card={activeTemplateDetail}
-        onClose={() => setActiveTemplateDetail(null)}
-        onAdd={() => handleAddCard(activeTemplateDetail ? activeTemplateDetail.id : '')}
-        theme={theme}
-      />
 
       {/* Add Custom Offer Modal */}
       <AddOfferModal
@@ -1411,6 +865,8 @@ function App() {
         resolvedValue={resolvedValue}
         themeClass={themeClass}
       />
+
+
 
       {/* Floating Sticky Batch Action Bar */}
       {selectedTemplates.length > 0 && (
