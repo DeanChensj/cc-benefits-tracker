@@ -59,17 +59,6 @@ export function CalendarSyncModal({ isOpen, onClose, ownedCards, logs, loyaltyAw
         </button>
 
         <div className={`space-y-4 border-t pt-4 ${themeClass('border-slate-800', 'border-slate-200')}`}>
-          {/* Smart Exporter Reassurance Card */}
-          <div className={`p-3 rounded-xl border space-y-2 text-left ${
-            themeClass('bg-slate-955/40 border-slate-850 text-slate-400', 'bg-slate-50 border-slate-200 text-slate-600')
-          }`}>
-            <p className={`text-[10px] font-extrabold flex items-center gap-1 ${themeClass('text-purple-400', 'text-purple-600')}`}>
-              {t('calFilterTitle')}
-            </p>
-            <p className="text-[9px] leading-normal">
-              {t('calFilterDesc')}
-            </p>
-          </div>
 
           <h4 className={`text-[10px] font-bold uppercase tracking-wider ${themeClass('text-slate-500', 'text-slate-400')}`}>{t('calSystemHeader')}</h4>
           

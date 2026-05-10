@@ -138,7 +138,7 @@ const translationsEn = {
 
   // 1. CalendarSyncModal i18n
   calSyncTitle: 'Sync Reminders to Calendar',
-  calSyncDesc: 'Generate and download standard apple/google compatible iCalendar files. Load them to automate periodic reminder alerts.',
+  calSyncDesc: 'Exports standard .ics calendar reminders for monthly credit resets, voucher expiries, and spent milestones. 💡 TIP: Create a new dedicated calendar (e.g., "💳 PerkFolio") first, then import this file into it. You can easily toggle it on/off or delete it in one click without cluttering your primary schedule!',
   calFilterTitle: 'Smart Exclude Filter Active:',
   calFilterDesc: 'Resolved monthly perks, claimed vouchers, or fully completed spending progress milestones are dynamically omitted from this export session.',
   calSystemHeader: 'Import Instructions by System:',
@@ -425,7 +425,7 @@ const translationsZh: typeof translationsEn = {
 
   // 1. CalendarSyncModal i18n
   calSyncTitle: '同步到个人手机/系统日历',
-  calSyncDesc: '一键生成并下载标准的 iCalendar (.ics) 格式提醒文件，您可以将其导入到 iPhone Apple Calendar 或 Google Calendar 中，实现重要福利临期自动短信与弹窗通知。',
+  calSyncDesc: '一键生成并下载标准的 .ics 格式日历提醒文件，包含信用卡重置、房券过期与消费达标提醒。💡 贴心建议：请先在日历中【新建一个独立日历分类】（如：“💳 PerkFolio”）再导入该文件。方便您随时一键整体隐藏或删除，绝不污染主日程！',
   calFilterTitle: '已启用智能除外过滤器：',
   calFilterDesc: '为了避免垃圾信息，本月已经完成打卡回本的福利项目、已经被彻底核销 of 独立房券，以及已经完成消费进度的卡片，在本次导出中将被自动剔除，不生成日历闹钟。',
   calSystemHeader: '各主流系统日历导入指南：',
