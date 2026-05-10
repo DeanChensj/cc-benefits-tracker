@@ -506,14 +506,15 @@ export function SavingsWrappedModal({
               <text x="40" y="584" fill="url(#brushedGold)" fontSize="7.5" fontWeight="950" letterSpacing="1.5" fontFamily="Inter, system-ui, sans-serif">PERKFOLIO</text>
 
               {/* Dynamic scannable QR Code (100% CORS-free static inline Base64 PNG!) */}
-              <rect x="300" y="590" width="42" height="42" rx="6" fill="none" stroke="url(#brushedGold)" strokeWidth="1.5" strokeDasharray="16, 3" />
+              <rect x="290" y="580" width="52" height="52" rx="8" fill="none" stroke="url(#brushedGold)" strokeWidth="1.5" strokeDasharray="16, 3" />
               <image 
                 crossOrigin="anonymous"
-                href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAHgAAAB4AQMAAAADqqSRAAAABlBMVEX///8AAABVwtN+AAAACXBIWXMAAA7EAAAOxAGVKw4bAAABK0lEQVQ4jaWUQcrEMAiFhSxyqdBcK4uCQhe5ViCXykLGeabMz8/s7Fga+LIQn3lK9BVstrIQVdNq9gpzI2rczbRQITrizKtlk6SllKrP2PPN8ZxxSEHGRww9rVEaVP70Rdj7iYvT5Xz6G+EdWc7y/1EDzLaQ0jRNjxHmbL1bX6dXo9ATZslm0hh2GndpMea+vKakVeuuL8h58WLknEqU8EcZZoAmOavdeuJM7uhrjuQXPzOLf3RiQEeBy6LccneFl/dm64uzsHWpNjHjR5wRjCfCfsCEUZwz/AWPahpJbz1RNhQEf6Od9RVmj4b58mKqxdnn2/XAYNgvFOZ2P8k2p894mH0/Lk9X94g94u1vRcrjGUu+zP1sI863JVxPqTPOe796O6f7kX7mr3gD/EZ+7qmgE4sAAAAASUVORK5CYII="
-                x="303" 
-                y="593" 
-                width="36" 
-                height="36" 
+                shapeRendering="crispEdges"
+                href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAJYAAACWAQMAAAAGz+OhAAAABlBMVEX///8AAABVwtN+AAAACXBIWXMAAA7EAAAOxAGVKw4bAAABGUlEQVRIib2VuxHDMAxD6XOhUiN4FC+Wi+zNPIpGcKnCF4Qg80/KiDw3eo1gUARFflSB1jbukqrIxEP7OzvpPXnDPvM0LSJDEMs48jYCPE0rsEYy1ZKwSDhTG9qnls7MvFecannvR1/mb02ZCmlv768ve1SbLl8D1ZGpliNTDrCketYvhmnPsYvOtLmuIIhJhhDPUCGUU1oIG/d5tCCxAPO3FsHoAahFfz0xxtCBid4r7G8dcO9vBGNo4CEE9DmIHS6nMjGa+xzBaL3nBm4rKYJ5MaJNCKrEMM9Ji8fBo7KFMN8LIrMuQdMyBDHfv9z7Bc95C2Objba1PZBx/zKsdMLWIGbeHyI2zeWlH33Z/a3pbHEpAIhhP+oK4mLkPA2/DKQAAAAASUVORK5CYII="
+                x="293" 
+                y="583" 
+                width="46" 
+                height="46" 
               />
             </svg>
           </div>
