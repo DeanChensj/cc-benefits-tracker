@@ -57,8 +57,8 @@ export function CardDetailDrawer({ isOpen, card, onClose, onAdd, theme }: CardDe
         onClick={(e) => e.stopPropagation()} // Prevent backdrop click close
         className={`w-full sm:max-w-md border shadow-2xl flex flex-col overflow-hidden transition-all duration-300 transition-colors focus:outline-none
           max-sm:rounded-t-2xl max-sm:max-h-[80vh] max-sm:max-h-[80dvh] max-sm:animate-slide-sheet max-sm:w-screen max-sm:pb-6
-          sm:rounded-2xl sm:max-h-[600px] sm:animate-scale-up ${
-            themeClass('bg-slate-900/90 border-slate-800/60 text-slate-100 backdrop-blur-xl shadow-slate-950/50', 'bg-white/95 border-slate-200/90 text-slate-800 backdrop-blur-xl shadow-slate-300/30')
+          sm:rounded-2xl sm:max-h-[600px] sm:animate-scale-up max-sm:border-t sm:border-t ${
+            themeClass('bg-slate-900/80 border-slate-800/70 text-slate-100 backdrop-blur-md saturate-[170%] border-t-white/15 shadow-slate-950/50', 'bg-white/85 border-slate-200 text-slate-800 backdrop-blur-md saturate-[170%] border-t-white/45 shadow-slate-300/30')
           }`}
       >
         {/* Mobile Drag/Capsule Pull Bar */}

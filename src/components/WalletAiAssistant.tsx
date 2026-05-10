@@ -306,8 +306,10 @@ Additional Rules:
 
       {/* Chat Drawer Container */}
       {isOpen && (
-        <div className={`fixed bottom-24 right-6 w-[380px] max-w-[calc(100vw-32px)] h-[480px] border rounded-2xl shadow-2xl z-40 flex flex-col overflow-hidden animate-scale-up transition-colors duration-300 ${
-          theme === 'dark' ? 'bg-slate-900 border-slate-800 text-slate-100' : 'bg-white border-slate-200 text-slate-800'
+        <div className={`fixed bottom-24 right-6 w-[380px] max-w-[calc(100vw-32px)] h-[480px] border border-t rounded-2xl shadow-2xl z-40 flex flex-col overflow-hidden animate-scale-up transition-colors duration-300 ${
+          theme === 'dark' 
+            ? 'bg-slate-900/80 backdrop-blur-md saturate-[170%] border-slate-800/70 border-t-white/15 text-slate-100' 
+            : 'bg-white/85 backdrop-blur-md saturate-[170%] border-slate-200 border-t-white/45 text-slate-800'
         }`}>
           
           {/* Header */}

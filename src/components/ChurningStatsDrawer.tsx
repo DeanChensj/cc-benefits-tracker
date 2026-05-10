@@ -77,8 +77,8 @@ export function ChurningStatsDrawer({ isOpen, onClose, ownedCards, theme }: Chur
         onClick={(e) => e.stopPropagation()}
         className={`w-full sm:max-w-md flex flex-col overflow-hidden transition-all duration-300 transition-colors focus:outline-none
           max-sm:h-[85vh] max-sm:h-[85dvh] max-sm:rounded-t-2xl max-sm:animate-slide-sheet max-sm:pb-6
-          sm:h-full sm:rounded-none sm:border-l ${
-            themeClass('bg-slate-900/90 border-slate-800/60 text-slate-100 backdrop-blur-xl shadow-slate-950/50', 'bg-white/95 border-slate-200 text-slate-800 backdrop-blur-xl shadow-slate-300/30')
+          sm:h-full sm:rounded-none sm:border-l sm:border-t-0 max-sm:border-t ${
+            themeClass('bg-slate-900/80 border-slate-800/70 text-slate-100 backdrop-blur-md saturate-[170%] border-t-white/15 shadow-slate-950/50', 'bg-white/85 border-slate-200 text-slate-800 backdrop-blur-md saturate-[170%] border-t-white/45 shadow-slate-300/30')
           }`}
       >
         {/* Mobile Drag Pull Bar */}
