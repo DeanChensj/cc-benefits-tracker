@@ -3,7 +3,7 @@ import { useRef, useState, useEffect } from 'react';
 import type { OwnedCardInstance } from '../store/useCardStore';
 import { CARDS_DB, AWARD_TEMPLATES } from '../data/cards.db';
 import type { LoyaltyAward } from '../data/cards.db';
-import { X, Download, Sparkles, RefreshCw } from 'lucide-react';
+import { X, Sparkles } from 'lucide-react';
 import { useCardStore } from '../store/useCardStore';
 import { translations } from '../utils/i18n';
 
@@ -29,7 +29,6 @@ export function SavingsWrappedModal({
   const language = useCardStore((state) => state.language);
   const t = (key: keyof typeof translations['en']) => translations[language][key] || translations['en'][key];
 
-  const [isGenerating, setIsGenerating] = useState(false);
   const [posterLang, setPosterLang] = useState<'en' | 'zh'>(language); 
   const [posterDataUrl, setPosterDataUrl] = useState<string | null>(null);
   const svgRef = useRef<SVGSVGElement>(null);
@@ -188,64 +187,7 @@ export function SavingsWrappedModal({
 
   if (!isOpen) return null;
 
-  // 6. Rasterize SVG to PNG and trigger native camera roll download (CORS sandbox bypass!)
-  const handleExportPoster = async () => {
-    if (!svgRef.current) return;
-    setIsGenerating(true);
 
-    try {
-      const svgElement = svgRef.current;
-      const svgString = new XMLSerializer().serializeToString(svgElement);
-      const svgBlob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
-      const URL = window.URL || window.webkitURL || window;
-      const blobURL = URL.createObjectURL(svgBlob);
-      
-      const image = new Image();
-      image.src = blobURL;
-      
-      image.onload = () => {
-        try {
-          const canvas = document.createElement('canvas');
-          canvas.width = 760;  // 2x retina scale
-          canvas.height = 1350;
-          const ctx = canvas.getContext('2d');
-          
-          if (ctx) {
-            ctx.drawImage(image, 0, 0, 760, 1350);
-            canvas.toBlob((pngBlob) => {
-              if (pngBlob) {
-                const pngBlobUrl = URL.createObjectURL(pngBlob);
-                const downloadLink = document.createElement('a');
-                downloadLink.href = pngBlobUrl;
-                downloadLink.download = `Savings_Wrapped_${posterLang === 'zh' ? 'CN' : 'EN'}_${new Date().getFullYear()}.png`;
-                document.body.appendChild(downloadLink);
-                downloadLink.click();
-                document.body.removeChild(downloadLink);
-                
-                setTimeout(() => {
-                  URL.revokeObjectURL(pngBlobUrl);
-                }, 500);
-              }
-            }, 'image/png');
-          }
-        } catch (err) {
-          console.warn('⚠️ Canvas PNG export blocked. Falling back to crisp SVG vector download!', err);
-          const downloadLink = document.createElement('a');
-          downloadLink.href = blobURL;
-          downloadLink.download = `Savings_Wrapped_${posterLang === 'zh' ? 'CN' : 'EN'}_${new Date().getFullYear()}.svg`;
-          document.body.appendChild(downloadLink);
-          downloadLink.click();
-          document.body.removeChild(downloadLink);
-        } finally {
-          URL.revokeObjectURL(blobURL);
-          setIsGenerating(false);
-        }
-      };
-    } catch (err) {
-      console.error('Failed to rasterize poster:', err);
-      setIsGenerating(false);
-    }
-  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 bg-black/65 backdrop-blur-sm overflow-y-auto scrollbar-thin">
@@ -523,28 +465,11 @@ export function SavingsWrappedModal({
         {/* Modal Actions */}
         <div className="p-4 border-t border-dashed border-slate-800/30 dark:border-white/5 shrink-0 flex flex-col gap-2 bg-slate-955 dark:bg-slate-950/40">
           {/* Premium, faded, glowing bilingual long-press saving advice note */}
-          <p className="text-[9px] text-center font-semibold tracking-wide text-slate-400 dark:text-slate-500 animate-pulse">
+          <p className="text-[9.5px] text-center font-semibold tracking-wide text-slate-450 dark:text-slate-500 animate-pulse py-1">
             {posterLang === 'zh'
-              ? '💡 提示：长按上方海报图片可直接保存到手机“照片”相册！'
+              ? '💡 贴心提示：长按上方海报图片即可直接保存至系统相册！'
               : '💡 Tip: Long-press the poster image above to save directly to your Photos!'}
           </p>
-          <button
-            onClick={handleExportPoster}
-            disabled={isGenerating}
-            className="flex-grow bg-gradient-to-tr from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-550 text-white font-bold py-2.5 rounded-xl text-xs transition active:scale-95 flex items-center justify-center gap-1.5 shadow-lg shadow-purple-500/15 cursor-pointer"
-          >
-            {isGenerating ? (
-              <>
-                <RefreshCw className="w-4 h-4 animate-spin" />
-                <span>{language === 'zh' ? '正在合成超清海报...' : 'Generating Image...'}</span>
-              </>
-            ) : (
-              <>
-                <Download className="w-4 h-4" />
-                <span>{language === 'zh' ? '一键保存海报至相册 (.png)' : 'Save Poster to Camera Roll'}</span>
-              </>
-            )}
-          </button>
         </div>
       </div>
     </div>
