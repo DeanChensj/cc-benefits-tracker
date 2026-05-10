@@ -1,6 +1,6 @@
 import { X, Plus, Info, Calendar, Heart, ExternalLink } from 'lucide-react';
 import type { CardTemplate } from '../data/cards.db';
-import { CARD_MULTIPLIERS } from '../data/cards.db';
+import { CARD_MULTIPLIERS, getCardTemplateCurrency } from '../data/cards.db';
 import { getAnnualValue } from '../utils/valuationUtils';
 import { useCardStore } from '../store/useCardStore';
 import { translations } from '../utils/i18n';
@@ -42,7 +42,9 @@ export function CardDetailDrawer({ isOpen, card, onClose, onAdd, theme }: CardDe
   const cardColor = card.color || 'from-slate-800 to-slate-900';
   
   const multipliers = CARD_MULTIPLIERS[card.id] || null;
-  const hasMultipliers = multipliers && Object.values(multipliers).some(v => v && v > 1);
+  const hasMultipliers = multipliers && Object.values(multipliers).some((v) => typeof v === 'number' && v > 1);
+  const currency = getCardTemplateCurrency(card.id);
+  const cpp = useCardStore.getState().pointValuations?.[currency] || 1.0;
 
   return (
     // Backdrop overlay
@@ -129,9 +131,16 @@ export function CardDetailDrawer({ isOpen, card, onClose, onAdd, theme }: CardDe
             <div className={`p-3 rounded-xl border text-left space-y-2 ${
               themeClass('bg-white/5 border-white/5', 'bg-slate-955/5 border-slate-800/10')
             }`}>
-              <p className={`text-[9.5px] font-extrabold uppercase tracking-wider ${themeClass('text-purple-400', 'text-purple-600')}`}>
-                {t('cardMultipliersTitle')}
-              </p>
+              <div className="flex items-center justify-between min-w-0 gap-1.5">
+                <p className={`text-[9.5px] font-extrabold uppercase tracking-wider truncate ${themeClass('text-purple-400', 'text-purple-600')}`}>
+                  {t(`curr_${currency.replace('-', '_')}` as keyof typeof translations['en'])}
+                </p>
+                {currency !== 'cash' && (
+                  <span className="text-[7.5px] font-black px-1 py-0.2 rounded bg-purple-500/10 dark:bg-purple-500/20 text-purple-450 dark:text-purple-300 border border-purple-500/15 shrink-0">
+                    {cpp} cpp
+                  </span>
+                )}
+              </div>
               <div className="flex flex-wrap gap-1.5 pt-0.5">
                 {multipliers && Object.entries(multipliers)
                   .filter(([, val]) => val && val > 1)

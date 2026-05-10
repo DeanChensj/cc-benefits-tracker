@@ -31,7 +31,7 @@ interface WalletLibraryTabProps {
   setDeckSubTab: (tab: 'cards' | 'awards' | 'templates') => void;
   updateAwardUsedQuantity: (awardId: string, qty: number) => void;
   onViewTemplateDetail: (card: CardTemplate) => void;
-  checkoutWinners: Record<string, { cardName: string; multiplier: number; bank: string } | null> | null;
+  checkoutWinners: Record<string, { cardName: string; multiplier: number; ros: number; currency: string; bank: string } | null> | null;
 }
 interface BankHeaderProps {
   bankName: 'Amex' | 'Chase' | 'Citi' | 'Other';
@@ -402,25 +402,57 @@ export function WalletLibraryTab({
                     <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-300 transform ${isAdvancedOfflineOpen ? 'rotate-180' : 'rotate-0'}`} />
                   </button>
 
-                  <div className={`transition-all duration-305 overflow-hidden ${isAdvancedOfflineOpen ? 'max-h-[240px] opacity-100 mt-3.5' : 'max-h-0 opacity-0 pointer-events-none'}`}>
-                    <div className={`p-4 rounded-2xl border text-left space-y-3 ${
-                      themeClass('bg-slate-950/40 border-slate-850 text-slate-400', 'bg-slate-50 border-slate-200 text-slate-600')
+                  <div className={`transition-all duration-350 overflow-hidden ${isAdvancedOfflineOpen ? 'max-h-[550px] opacity-100 mt-3.5' : 'max-h-0 opacity-0 pointer-events-none'}`}>
+                    <div className={`p-4 rounded-2xl border text-left space-y-4 ${
+                      themeClass('bg-slate-955/40 border-slate-850 text-slate-400', 'bg-slate-50 border-slate-200 text-slate-600')
                     }`}>
-                      <p className="text-[10px] leading-relaxed opacity-90 font-medium">
-                        {language === 'zh' 
-                          ? 'PerkFolio 所有数据均以 100% 安全加密形式保存在您的本地浏览器缓存中。若您想重新配置整个卡包，可点击下方按钮清除本地数据并重置状态，重置后数据将彻底抹除且不可恢复。' 
-                          : 'PerkFolio stores all your data strictly inside your browser LocalStorage. If you want to hard-reset your workspace, you can click the button below to wipe all local state. This action is permanent and cannot be undone.'}
-                      </p>
-                      <div className="flex justify-end">
+                      {/* 🎯 Points Valuations Editor inside Advanced Settings Accordion */}
+                      <div className="space-y-2">
+                        <p className={`text-[9.5px] font-extrabold uppercase tracking-widest ${themeClass('text-purple-400', 'text-purple-650')}`}>
+                          {t('valEditorTitle')}
+                        </p>
+                        <p className="text-[10px] leading-normal opacity-85 font-medium">
+                          {t('valEditorDesc')}
+                        </p>
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1">
+                          {Object.entries(useCardStore.getState().pointValuations || {})
+                            .filter(([currency]) => currency !== 'cash')
+                            .map(([currency, cpp]) => (
+                            <div key={currency} className={`p-1.5 rounded-lg border flex flex-col gap-1.5 ${
+                              themeClass('bg-slate-900/40 border-slate-850', 'bg-slate-50 border-slate-200')
+                            }`}>
+                              <label className="text-[8px] font-black uppercase tracking-wider truncate">{currency.replace('-', ' ')}</label>
+                              <div className="flex items-center gap-1 justify-between">
+                                <input
+                                  type="number"
+                                  step="0.1"
+                                  min="0"
+                                  value={cpp}
+                                  onChange={(e) => useCardStore.getState().updatePointValuation(currency, Math.max(0, Number(e.target.value)))}
+                                  className={`w-12 border text-center text-[10px] font-mono font-black rounded-md py-0.5 focus:outline-none transition ${
+                                    themeClass('bg-slate-955 border-slate-800 text-white focus:border-purple-500', 'bg-white border-slate-250 text-slate-900 focus:border-purple-500 shadow-inner')
+                                  }`}
+                                />
+                                <span className="text-[8px] opacity-50">cpp</span>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className="pt-3 border-t border-dashed border-slate-200/30 dark:border-slate-800/40 flex items-center justify-between gap-3">
+                        <p className="text-[9px] opacity-75 leading-normal max-w-xs font-medium">
+                          {t('dangerZoneDesc')}
+                        </p>
                         <button
                           type="button"
                           onClick={() => {
                             setIsAdvancedOfflineOpen(false);
                             onWipe();
                           }}
-                          className="bg-red-500/5 hover:bg-red-500/10 border border-red-500/20 text-red-500 dark:text-red-400 font-extrabold py-2 px-4 rounded-xl text-[10px] transition active:scale-95 cursor-pointer text-center"
+                          className="bg-red-500/5 hover:bg-red-500/10 border border-red-500/20 text-red-500 dark:text-red-400 font-extrabold py-2 px-4 rounded-xl text-[10px] transition active:scale-95 cursor-pointer text-center shrink-0"
                         >
-                          🚨 {language === 'zh' ? '全盘抹除本地数据' : 'Wipe All Local Data'}
+                          {t('wipeAllDataBtn')}
                         </button>
                       </div>
                     </div>

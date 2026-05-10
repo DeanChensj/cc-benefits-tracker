@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { CARDS_DB } from '../data/cards.db';
+import { CARDS_DB, DEFAULT_VALUATIONS } from '../data/cards.db';
 import type { Benefit, LoyaltyAward } from '../data/cards.db';
 import { findSyncFile, uploadSyncFile, downloadSyncFile } from '../utils/gdrive';
 import type { LogEntry } from '../utils/logUtils';
@@ -34,6 +34,8 @@ export interface CardStore {
   deletedAwardIds?: string[]; // Tombstone awards tracker
   isGroupedView?: boolean; // Persisted flat/group view mode
   setIsGroupedView: (isGrouped: boolean) => void;
+  pointValuations?: Record<string, number>; // Custom points valuations
+  updatePointValuation: (currency: string, value: number) => void;
   
   // Google Drive Sync States
   gdriveToken: string | null; // Temporary in-memory OAuth access token
@@ -96,17 +98,20 @@ export const getLogKey = (
   const month = currentDate.getMonth() + 1; // 1-12
 
   switch (resetPeriod) {
-    case 'monthly':
+    case 'monthly': {
       const monthStr = month.toString().padStart(2, '0');
       return `${year}-${monthStr}:${instanceId}:${benefitId}`;
+    }
 
-    case 'quarterly':
+    case 'quarterly': {
       const quarter = Math.ceil(month / 3); // Q1, Q2, Q3, Q4
       return `${year}-Q${quarter}:${instanceId}:${benefitId}`;
+    }
 
-    case 'semi-annual':
+    case 'semi-annual': {
       const half = month <= 6 ? 'H1' : 'H2';
       return `${year}-${half}:${instanceId}:${benefitId}`;
+    }
 
     case 'annual-calendar':
       return `${year}:${instanceId}:${benefitId}`;
@@ -148,7 +153,7 @@ export const getYearFromPlainKey = (plainKey: string): number | null => {
 };
 
 // In-memory reference to the background sync debounce timer
-let syncTimeout: any = null;
+let syncTimeout: ReturnType<typeof setTimeout> | null = null;
 
 // Helper to push updates to Google Drive silently in the background with a 5-second debounce buffer
 const syncPushToCloud = async (
@@ -180,8 +185,10 @@ const syncPushToCloud = async (
     } catch (err) {
       console.error('Silent background cloud sync failed:', err);
     }
-  }, 5000); // 5-second debounce buffer to prevent high-frequency API throttling
+  }, 5000);
 };
+
+
 
 export const useCardStore = create<CardStore>()(
   persist(
@@ -194,6 +201,7 @@ export const useCardStore = create<CardStore>()(
       theme: (typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: light)').matches) ? 'light' : 'dark',
       language: (typeof navigator !== 'undefined' && navigator.language.startsWith('zh')) ? 'zh' : 'en',
       isGroupedView: false,
+      pointValuations: DEFAULT_VALUATIONS,
       
       // Google Drive Initial States (Not persisted in LocalStorage for absolute safety!)
       gdriveToken: null,
@@ -721,7 +729,7 @@ export const useCardStore = create<CardStore>()(
           let prunedAny = false;
 
           Object.keys(nextLogs).forEach((key) => {
-            const val = nextLogs[key] as any;
+            const val = nextLogs[key] as string | number | boolean | LogEntry | null | undefined;
 
             // 1. Self-Healing Migration: Check if it is a legacy plain key (contains ':')
             if (key.includes(':')) {
@@ -765,8 +773,19 @@ export const useCardStore = create<CardStore>()(
           logs: {},
           deletedCardIds: [],
           deletedAwardIds: [],
-          // Keep theme preference intact
         })),
+
+      updatePointValuation: (currency, value) =>
+        set((state) => {
+          const nextValuations = {
+            ...(state.pointValuations || DEFAULT_VALUATIONS),
+            [currency]: value
+          };
+          return {
+            pointValuations: nextValuations,
+            walletLastModified: Date.now()
+          };
+        }),
     }),
     {
       name: 'cc-benefits-tracker-storage',
@@ -800,6 +819,7 @@ export const useCardStore = create<CardStore>()(
           deletedCardIds: state.deletedCardIds || [],
           deletedAwardIds: state.deletedAwardIds || [],
           isGroupedView: state.isGroupedView || false,
+          pointValuations: state.pointValuations || DEFAULT_VALUATIONS,
           theme: state.theme,
           language: state.language,
           customClientId: state.customClientId,

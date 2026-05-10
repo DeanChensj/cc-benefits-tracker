@@ -9,12 +9,15 @@ export interface Benefit {
   spendingLimit?: number; // e.g., 1500 for CFF 5%, 6000 for BCP 6% (only for progressive limit perks)
 }
 
+export type PointCurrency = 'amex-mr' | 'chase-ur' | 'citi-typ' | 'capitalone-miles' | 'hyatt' | 'marriott' | 'ihg' | 'hilton' | 'aa-miles' | 'ua-miles' | 'delta-miles' | 'cash';
+
 export interface CardTemplate {
   id: string;
   name: string;
   bank: 'Amex' | 'Chase' | 'Citi' | 'Other';
   color: string; // Tailwind gradient classes
   annualFee: number; // USD Annual Fee of the card
+  pointCurrency?: PointCurrency; // Associated reward currency (defaults to cash)
   benefits: Benefit[];
   officialUrl?: string; // Official card application / detail landing page URL
   signupBonusValue?: number; // Pre-populated signup bonus value in USD
@@ -821,4 +824,49 @@ export const CARD_MULTIPLIERS: Record<string, { dining?: number; travel?: number
   'amex-bce': { shopping: 3 }, // 3x groceries/online
   'citi-premier': { travel: 3, dining: 3, shopping: 3 }, // 3x travel/dining/supermarket
   'citi-aa-platinum-select': { travel: 2, dining: 2, shopping: 2 } // 2x AA Flights/Dining/Gas Stations
+};
+
+export const getCardTemplateCurrency = (templateId: string): PointCurrency => {
+  if (templateId.startsWith('amex-delta-')) {
+    return 'delta-miles';
+  }
+  if (templateId.startsWith('chase-united-')) {
+    return 'ua-miles';
+  }
+  if (templateId.startsWith('citi-aa-')) {
+    return 'aa-miles';
+  }
+  if (templateId.startsWith('amex-')) {
+    if (templateId === 'amex-marriott-brilliant') return 'marriott';
+    if (templateId === 'amex-hilton-aspire') return 'hilton';
+    return 'amex-mr';
+  }
+  if (templateId.startsWith('chase-')) {
+    if (templateId === 'chase-hyatt') return 'hyatt';
+    if (templateId === 'chase-marriott-boundless') return 'marriott';
+    if (templateId === 'chase-ihg-premier') return 'ihg';
+    return 'chase-ur';
+  }
+  if (templateId.startsWith('citi-')) {
+    return 'citi-typ';
+  }
+  if (templateId.startsWith('capitalone-')) {
+    return 'capitalone-miles';
+  }
+  return 'cash';
+};
+
+export const DEFAULT_VALUATIONS: Record<PointCurrency, number> = {
+  'chase-ur': 1.6,
+  'amex-mr': 1.6,
+  'capitalone-miles': 1.8,
+  'citi-typ': 1.8,
+  'hyatt': 1.4,
+  'marriott': 0.8,
+  'ihg': 0.5,
+  'hilton': 0.5,
+  'aa-miles': 1.5,
+  'ua-miles': 1.3,
+  'delta-miles': 1.2,
+  'cash': 1.0,
 };

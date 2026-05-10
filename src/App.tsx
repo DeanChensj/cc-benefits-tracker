@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 // Meticulously audited and verified PWA release build with dynamic re-auth and contrast fixes
-import { CARDS_DB, CARD_MULTIPLIERS, AWARD_TEMPLATES } from './data/cards.db';
+import { CARDS_DB, CARD_MULTIPLIERS, AWARD_TEMPLATES, getCardTemplateCurrency } from './data/cards.db';
 import type { CardTemplate, Benefit, LoyaltyAward } from './data/cards.db';
 import { useCardStore, getLogKey } from './store/useCardStore';
 import type { OwnedCardInstance } from './store/useCardStore';
@@ -246,6 +246,33 @@ function App() {
 
   // Load Google Identity Services script dynamically on mount
   useEffect(() => {
+    // Self-Healing Migration: Automatically heal stored point valuations defaults
+    const storedValuations = useCardStore.getState().pointValuations;
+    if (storedValuations) {
+      if (storedValuations['chase-ur'] === 2.0 || storedValuations['chase-ur'] === 1.8) {
+        useCardStore.getState().updatePointValuation('chase-ur', 1.6);
+      }
+      if (storedValuations['amex-mr'] === 2.0 || storedValuations['amex-mr'] === 1.8) {
+        useCardStore.getState().updatePointValuation('amex-mr', 1.6);
+      }
+      if (storedValuations['hyatt'] === 2.1) {
+        useCardStore.getState().updatePointValuation('hyatt', 1.4);
+      }
+      
+      // Dynamically populate missing new point currencies
+      const newDefaults: Record<string, number> = {
+        'hilton': 0.5,
+        'aa-miles': 1.5,
+        'ua-miles': 1.3,
+        'delta-miles': 1.2
+      };
+      Object.entries(newDefaults).forEach(([currency, defVal]) => {
+        if (storedValuations[currency] === undefined) {
+          useCardStore.getState().updatePointValuation(currency, defVal);
+        }
+      });
+    }
+
     // Dynamically prune expired打卡 logs older than 2 years to maintain tiny capped DB footprint!
     pruneExpiredLogs(currentDate);
 
@@ -455,12 +482,14 @@ function App() {
       .filter((w): w is NonNullable<typeof w> => w !== null);
   }, [ownedCards, currentDate, dismissedWarningCardIds]);
 
-  // Calculate the Checkout Winners in active cards
+  // Calculate the Checkout Winners in active cards using Points Valuations & ROS% (Return-on-Spend)
+  const pointValuations = useCardStore((state) => state.pointValuations || {});
+
   const checkoutWinners = (() => {
     if (ownedCards.length === 0) return null;
 
     const categories = ['dining', 'travel', 'shopping', 'entertainment'] as const;
-    const winners: Record<string, { cardName: string; multiplier: number; bank: string } | null> = {
+    const winners: Record<string, { cardName: string; multiplier: number; ros: number; currency: string; bank: string } | null> = {
       dining: null,
       travel: null,
       shopping: null,
@@ -468,8 +497,8 @@ function App() {
     };
 
     categories.forEach((cat) => {
-      let maxVal = 0;
-      let bestCard: { cardName: string; multiplier: number; bank: string } | null = null;
+      let maxRos = 0;
+      let bestCard: { cardName: string; multiplier: number; ros: number; currency: string; bank: string } | null = null;
 
       ownedCards.forEach((instance) => {
         let mult = 0;
@@ -480,13 +509,21 @@ function App() {
           // 2. Fallback to static standard template multipliers
           mult = CARD_MULTIPLIERS[instance.templateId]?.[cat] || 0;
         }
-        
-        if (mult > maxVal) {
-          maxVal = mult;
+
+        // 3. Resolve point type & valuation (cpp)
+        const currency = instance.templateId === 'custom' ? 'cash' : getCardTemplateCurrency(instance.templateId);
+        const cpp = pointValuations[currency] !== undefined ? pointValuations[currency] : 1.0;
+        const ros = mult * cpp;
+
+        // We track and recommend strictly by ROS% (Return on Spend)
+        if (ros > maxRos) {
+          maxRos = ros;
           const template = CARDS_DB.find((t) => t.id === instance.templateId);
           bestCard = {
             cardName: instance.customName,
             multiplier: mult,
+            ros,
+            currency,
             bank: instance.bank || template?.bank || 'Card'
           };
         }

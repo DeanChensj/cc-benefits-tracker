@@ -1,5 +1,5 @@
 import { Plus, Trash2, ExternalLink, Edit3, ChevronDown } from 'lucide-react';
-import { CARDS_DB, CARD_MULTIPLIERS } from '../data/cards.db';
+import { CARDS_DB, CARD_MULTIPLIERS, getCardTemplateCurrency } from '../data/cards.db';
 import type { OwnedCardInstance } from '../store/useCardStore';
 import { useCardStore } from '../store/useCardStore';
 import { translations, formatCardName } from '../utils/i18n';
@@ -52,6 +52,8 @@ export function WalletCreditCard({
 
   const multipliers = instance.multipliers || (instance.templateId !== 'custom' ? CARD_MULTIPLIERS[instance.templateId] : null);
   const hasMultipliers = multipliers && Object.values(multipliers).some((v) => typeof v === 'number' && v > 1);
+  const currency = instance.templateId === 'custom' ? 'cash' : getCardTemplateCurrency(instance.templateId);
+  const cpp = useCardStore.getState().pointValuations?.[currency] || 1.0;
 
 
   return (
@@ -317,9 +319,16 @@ export function WalletCreditCard({
               <div className="col-span-6 flex flex-col justify-center min-w-0">
                 {hasMultipliers ? (
                   <div className="space-y-1">
-                    <p className={`text-[8.2px] font-black uppercase tracking-wider ${themeClass('text-slate-400', 'text-slate-500')}`}>
-                      {t('cardMultipliersTitle')}
-                    </p>
+                    <div className="flex items-center justify-between min-w-0 gap-1.5">
+                      <p className={`text-[8.2px] font-black uppercase tracking-wider truncate ${themeClass('text-purple-450 dark:text-purple-400', 'text-purple-650')}`}>
+                        {t(`curr_${currency.replace('-', '_')}` as keyof typeof translations['en'])}
+                      </p>
+                      {currency !== 'cash' && (
+                        <span className="text-[7.5px] font-black px-1 py-0.2 rounded bg-purple-500/10 dark:bg-purple-500/20 text-purple-450 dark:text-purple-300 border border-purple-500/15 shrink-0">
+                          {cpp} cpp
+                        </span>
+                      )}
+                    </div>
                     <div className="flex flex-wrap gap-1 pt-0.5">
                       {multipliers && Object.entries(multipliers)
                         .filter(([, val]) => val && val > 1)
@@ -344,11 +353,18 @@ export function WalletCreditCard({
                   </div>
                 ) : (
                   <div className="space-y-0.5">
-                    <p className={`text-[8.2px] font-black uppercase tracking-wider ${themeClass('text-slate-400', 'text-slate-500')}`}>
-                      {t('cardMultipliersTitle')}
-                    </p>
+                    <div className="flex items-center justify-between min-w-0 gap-1.5">
+                      <p className={`text-[8.2px] font-black uppercase tracking-wider truncate ${themeClass('text-purple-450 dark:text-purple-400', 'text-purple-650')}`}>
+                        {t(`curr_${currency.replace('-', '_')}` as keyof typeof translations['en'])}
+                      </p>
+                      {currency !== 'cash' && (
+                        <span className="text-[7.5px] font-black px-1 py-0.2 rounded bg-purple-500/10 dark:bg-purple-500/20 text-purple-450 dark:text-purple-300 border border-purple-500/15 shrink-0">
+                          {cpp} cpp
+                        </span>
+                      )}
+                    </div>
                     <p className={`text-[9px] font-bold italic mt-1 ${themeClass('text-slate-455', 'text-slate-500')}`}>
-                      {language === 'zh' ? '无多倍返点' : 'Flat Rate Card'}
+                      {language === 'zh' ? '常驻无多倍返点' : 'Flat Rate Card'}
                     </p>
                   </div>
                 )}

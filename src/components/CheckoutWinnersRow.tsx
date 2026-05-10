@@ -4,6 +4,8 @@ import { translations } from '../utils/i18n';
 interface BestCard {
   cardName: string;
   multiplier: number;
+  ros: number;
+  currency: string;
   bank: string;
 }
 
@@ -41,12 +43,15 @@ export function CheckoutWinnersRow({ checkoutWinners, activeTab, deckSubTab }: C
           <div 
             key={category}
             className={`flex items-center gap-1.5 text-[10px] font-bold px-2.5 py-1 rounded-xl border shrink-0 ${badgeColor}`}
-            title={language === 'zh' ? `👑 ${bestCard.cardName} 是您当前卡包在此消费类别下返现/回本倍数最高的信用卡！` : `${bestCard.cardName} has the highest points in this category!`}
+            title={language === 'zh' 
+              ? `👑 ${bestCard.cardName} 实际消费收益率为 ${bestCard.ros.toFixed(1)}% (${bestCard.multiplier}x 积点)` 
+              : `👑 ${bestCard.cardName} Return-on-Spend is ${bestCard.ros.toFixed(1)}% (${bestCard.multiplier}x multipliers)`
+            }
           >
             <span>{emoji} {catName}:</span>
             <span className="opacity-75 font-black">{bestCard.cardName}</span>
             <span className="bg-white/15 px-1.5 py-0.2 rounded text-[8px] font-extrabold shrink-0">
-              {bestCard.multiplier}x
+              {bestCard.ros.toFixed(1)}%
             </span>
             <span>👑</span>
           </div>

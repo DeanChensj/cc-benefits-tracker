@@ -291,6 +291,27 @@ const translationsEn = {
   catShoppingBadge: 'Groceries / Shopping',
   catEntertainmentBadge: 'Entertainment',
   catOtherBadge: 'Other / Flat',
+
+  // 15. Advanced settings & valuations editor keys
+  valEditorTitle: '🎯 Points Valuations Editor (cpp)',
+  valEditorDesc: 'Adjust your point values in Cents Per Point (cpp). PerkFolio calculates exact Return-on-Spend (ROS%) to generate mathematically accurate card recommendations.',
+  dangerZoneDesc: '🚨 Danger Zone: Hard reset will permanently erase all your cards, logs, checklist states, and customized settings. This action is irreversible.',
+  wipeAllDataBtn: 'Wipe All Local Data',
+
+  // 16. Point Currency Names
+  earningCurrencyLabel: 'Earning Program',
+  curr_amex_mr: 'Amex Membership Rewards (MR)',
+  curr_chase_ur: 'Chase Ultimate Rewards (UR)',
+  curr_citi_typ: 'Citi ThankYou Points (TYP)',
+  curr_capitalone_miles: 'Capital One Miles',
+  curr_hyatt: 'Hyatt Points',
+  curr_marriott: 'Marriott Bonvoy Points',
+  curr_ihg: 'IHG One Rewards Points',
+  curr_hilton: 'Hilton Honors Points',
+  curr_aa_miles: 'American Airlines Miles (AA)',
+  curr_ua_miles: 'United Airlines Miles (UA)',
+  curr_delta_miles: 'Delta SkyMiles',
+  curr_cash: 'Cashback (USD)',
 };
 
 const translationsZh: typeof translationsEn = {
@@ -586,6 +607,27 @@ const translationsZh: typeof translationsEn = {
   catShoppingBadge: '超市/网购',
   catEntertainmentBadge: '娱乐/流媒体',
   catOtherBadge: '其他/无门槛',
+
+  // 15. Advanced settings & valuations editor keys
+  valEditorTitle: '🎯 点数估值微调面板 (Cents Per Point / cpp)',
+  valEditorDesc: '系统会根据以下点数估值自动计算每张卡的“实际消费收益率(ROS%)”并进行精确推荐。您可以按个人消费习惯自由微调各项点数价值（如 Amex MR/Chase UR 等）：',
+  dangerZoneDesc: '🚨 危险区：点击以下按钮将清除当前浏览器中所有的卡片组合、打卡报销日志和AI对话缓存。重置后数据不可恢复。',
+  wipeAllDataBtn: '全盘抹除本地数据',
+
+  // 16. Point Currency Names
+  earningCurrencyLabel: '返点积累币种',
+  curr_amex_mr: '运通 Amex MR',
+  curr_chase_ur: '大通 Chase UR',
+  curr_citi_typ: '花旗 Citi TYP',
+  curr_capitalone_miles: '第一资本 C1 Miles',
+  curr_hyatt: '凯悦 Hyatt 点数',
+  curr_marriott: '万豪 Marriott 点数',
+  curr_ihg: '洲际 IHG 点数',
+  curr_hilton: '希尔顿 Hilton 点数',
+  curr_aa_miles: '美航 AA 里程',
+  curr_ua_miles: '美联航 UA 里程',
+  curr_delta_miles: '达美 Delta 里程',
+  curr_cash: '现金返现 (美元)',
 };
 
 export const translations: Record<'en' | 'zh', typeof translationsEn> = {
