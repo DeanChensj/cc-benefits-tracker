@@ -321,6 +321,16 @@ const translationsEn = {
   // 18. Onboarding welcome banner
   onboardBannerTitle: '🚀 Welcome to PerkFolio!',
   onboardBannerDesc: 'Pick and add your credit cards below to instantly unlock your custom checklist actions, annual fee recoup analytics, and real-time rewards recommendations!',
+
+  // 19. Churning stats keys
+  churnChaseStatusHeader: 'Chase 5/24 Status',
+  churnChaseLockedLabel: 'Locked 🚨',
+  churnChaseActiveLabel: 'Active 🟢',
+  churnAmexCoolingPeriod: 'Amex Cooling Period ⚠️',
+  churnAmexSafeRange: 'Amex Safe Range 🟢',
+  churnActiveTimelineHeader: 'Active Timeline',
+  churnTimelineClear: 'Your 5/24 timeline is completely clear! (0/24)',
+  churnOpenedLabel: 'Opened:',
 };
 
 const translationsZh: typeof translationsEn = {
@@ -646,6 +656,16 @@ const translationsZh: typeof translationsEn = {
   // 18. Onboarding welcome banner
   onboardBannerTitle: '🚀 欢迎来到卡神钱包 PerkFolio！',
   onboardBannerDesc: '在下方挑选并【添加】您持有的信用卡，即可瞬间解锁属于您的专属打卡报销待办、年费回本精算以及消费刷卡收益率排行榜！',
+
+  // 19. Churning stats keys
+  churnChaseStatusHeader: 'Chase 5/24 状态精算',
+  churnChaseLockedLabel: '通道锁定 🚨',
+  churnChaseActiveLabel: '申卡活跃 🟢',
+  churnAmexCoolingPeriod: '运通开卡冷却中 ⚠️',
+  churnAmexSafeRange: '运通开卡安全期 🟢',
+  churnActiveTimelineHeader: '24个月内申卡时间线',
+  churnTimelineClear: '您的 5/24 时间线极度干净！(0/24)',
+  churnOpenedLabel: '开卡日期:',
 };
 
 export const translations: Record<'en' | 'zh', typeof translationsEn> = {

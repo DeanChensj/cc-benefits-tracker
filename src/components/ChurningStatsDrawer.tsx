@@ -105,7 +105,7 @@ export function ChurningStatsDrawer({ isOpen, onClose, ownedCards, theme }: Chur
           {/* 1. CHASE 5/24 GAUGE DASHBOARD */}
           <div className="space-y-3.5">
             <h5 className={`text-[10px] font-extrabold uppercase tracking-widest ${themeClass('text-slate-450', 'text-slate-550')}`}>
-              CHASE 5/24 STATUS
+              {t('churnChaseStatusHeader')}
             </h5>
 
             {/* 3D Gauge visual card */}
@@ -118,7 +118,7 @@ export function ChurningStatsDrawer({ isOpen, onClose, ownedCards, theme }: Chur
                     ? 'bg-rose-500/10 text-rose-500 border-rose-500/20 dark:bg-rose-500/5 animate-pulse'
                     : 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20 dark:bg-emerald-500/5'
                 }`}>
-                  {chaseCount >= 5 ? 'LOCKED 🚨' : 'ACTIVE 🟢'}
+                  {chaseCount >= 5 ? t('churnChaseLockedLabel') : t('churnChaseActiveLabel')}
                 </span>
                 <p className={`text-xs leading-relaxed ${themeClass('text-slate-400', 'text-slate-550')}`}>
                   {chaseCount >= 5 ? t('churnChaseLocked') : chaseCount >= 3 ? t('churnChaseWarning') : t('churnChaseSafe')}
@@ -152,7 +152,7 @@ export function ChurningStatsDrawer({ isOpen, onClose, ownedCards, theme }: Chur
               )}
               <div className="space-y-0.5 min-w-0 flex-grow">
                 <h6 className={`text-xs font-bold truncate ${themeClass('text-slate-200', 'text-slate-800')}`}>
-                  {isAmexCooling ? 'Amex Cooling Period ⚠️' : 'Amex Safe Range 🟢'}
+                  {isAmexCooling ? t('churnAmexCoolingPeriod') : t('churnAmexSafeRange')}
                 </h6>
                 <p className={`text-[10px] leading-normal ${themeClass('text-slate-400', 'text-slate-500')}`}>
                   {isAmexCooling 
@@ -165,14 +165,14 @@ export function ChurningStatsDrawer({ isOpen, onClose, ownedCards, theme }: Chur
 
           {/* 3. ACTIVE 24-MONTH CARDS TIMELINE */}
           <div className="space-y-3.5">
-            <h5 className={`text-[10px] font-extrabold uppercase tracking-widest ${themeClass('text-slate-450', 'text-slate-550')}`}>
-              ACTIVE TIMELINE ({active524Cards.length})
+            <h5 className={`text-[10px] font-extrabold uppercase tracking-widest ${themeClass('text-slate-455', 'text-slate-555')}`}>
+              {t('churnActiveTimelineHeader')} ({active524Cards.length})
             </h5>
 
             {active524Cards.length === 0 ? (
               <div className="text-center py-8 text-slate-500 space-y-1">
                 <Compass className="w-6 h-6 text-slate-400 mx-auto opacity-70" />
-                <p className="text-xs font-medium">Your 5/24 timeline is completely clear! (0/24)</p>
+                <p className="text-xs font-medium">{t('churnTimelineClear')}</p>
               </div>
             ) : (
               <div className="space-y-2.5">
@@ -189,7 +189,7 @@ export function ChurningStatsDrawer({ isOpen, onClose, ownedCards, theme }: Chur
                       </h6>
                       <div className="flex items-center gap-1.5 text-[9px] font-bold text-slate-450 shrink-0">
                         <span className="px-1 rounded bg-purple-500/10 text-purple-500 dark:text-purple-400 border border-purple-500/15">{c.bank}</span>
-                        <span>Opened: {c.openDateStr}</span>
+                        <span>{t('churnOpenedLabel')} {c.openDateStr}</span>
                       </div>
                     </div>
 
