@@ -227,7 +227,7 @@ export function CardDetailDrawer({ isOpen, card, onClose, onAdd, theme }: CardDe
               onAdd();
               onClose();
             }}
-            className="w-2/3 bg-gradient-to-tr from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-550 text-white font-bold py-3 rounded-xl text-xs transition active:scale-[0.98] flex items-center justify-center gap-1 shadow-lg shadow-purple-500/10 cursor-pointer"
+            className="w-2/3 bg-gradient-to-tr from-slate-800 to-slate-900 hover:from-slate-750 hover:to-slate-850 text-white dark:from-slate-100 dark:to-slate-200 dark:hover:from-white dark:hover:to-slate-50 dark:text-slate-950 border border-slate-700/25 font-bold py-3 rounded-xl text-xs transition active:scale-[0.98] flex items-center justify-center gap-1 shadow cursor-pointer"
           >
             <Plus className="w-4 h-4 stroke-[3]" />
             {t('addCardToWallet')}

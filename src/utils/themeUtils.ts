@@ -56,12 +56,12 @@ export function getAwardTheme(
   }
   return {
     bgClass: themeClass(
-      'from-purple-950 via-purple-955/95 to-slate-955 border-purple-500/10 text-purple-400 shadow-[0_8px_25px_rgba(168,85,247,0.05)]', 
-      'from-purple-50/30 via-purple-50/20 to-fuchsia-100/40 border-purple-600/20 text-purple-800 shadow-sm'
+      'from-slate-905 via-slate-905/95 to-zinc-950 border-slate-700/20 text-slate-400 shadow-[0_8px_25px_rgba(148,163,184,0.05)]', 
+      'from-slate-50/45 via-slate-50/35 to-zinc-100/45 border-slate-250 text-slate-700 shadow-sm'
     ),
-    brandTagClass: themeClass('bg-purple-500/10 text-purple-400 border-purple-500/20', 'bg-purple-600/10 text-purple-800 border-purple-600/20'),
+    brandTagClass: themeClass('bg-slate-500/10 text-slate-400 border-slate-700/20', 'bg-slate-200/50 text-slate-700 border-slate-300/50'),
     subTextClass: themeClass('text-slate-400', 'text-slate-600'),
     watermark: 'VOUCHER',
-    glowColor: themeClass('text-purple-400', 'text-purple-600')
+    glowColor: themeClass('text-slate-400', 'text-slate-600')
   };
 }

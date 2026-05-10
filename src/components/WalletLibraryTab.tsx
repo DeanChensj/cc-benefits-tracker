@@ -141,18 +141,18 @@ export function WalletLibraryTab({
     <div className="space-y-6 animate-fade-in">
       {/* Tri-Deck Segmented Switcher (0% Visual Bloat!) */}
       <div className="flex justify-center animate-fade-in">
-        <div className={`flex gap-0.5 p-0.5 rounded-xl border w-full max-w-[360px] ${
-          themeClass('bg-slate-955 border-slate-850/80', 'bg-slate-200/40 border-slate-300/60')
+        <div className={`flex gap-0.5 p-0.5 rounded-xl border w-full max-w-[360px] transition-colors duration-300 ${
+          themeClass('bg-zen-dark-card border-slate-850', 'bg-slate-200/50 border-slate-300/60 shadow-inner')
         }`}>
           <button
             onClick={() => {
               setDeckSubTab('cards');
               localStorage.setItem('cc-tracker-deck-sub-tab', 'cards');
             }}
-            className={`flex-1 py-1.5 rounded-lg text-[10px] font-extrabold transition flex items-center justify-center gap-1.5 cursor-pointer ${
+            className={`flex-1 py-1.5 rounded-lg text-[10px] font-extrabold transition-all duration-250 flex items-center justify-center gap-1.5 cursor-pointer ${
               deckSubTab === 'cards'
-                ? 'bg-gradient-to-tr from-purple-600 to-indigo-600 text-white shadow-sm shadow-purple-500/10'
-                : themeClass('text-slate-400 hover:text-slate-200', 'text-slate-555 hover:text-slate-855')
+                ? themeClass('bg-slate-100 hover:bg-white text-slate-950 shadow-md', 'bg-slate-900 hover:bg-slate-800 text-white shadow-sm')
+                : themeClass('text-slate-300 hover:text-slate-50 hover:bg-slate-800/40', 'text-slate-555 hover:text-slate-855')
             }`}
           >
             <CreditCard className="w-3 h-3" />
@@ -163,10 +163,10 @@ export function WalletLibraryTab({
               setDeckSubTab('awards');
               localStorage.setItem('cc-tracker-deck-sub-tab', 'awards');
             }}
-            className={`flex-1 py-1.5 rounded-lg text-[10px] font-extrabold transition flex items-center justify-center gap-1.5 cursor-pointer ${
+            className={`flex-1 py-1.5 rounded-lg text-[10px] font-extrabold transition-all duration-250 flex items-center justify-center gap-1.5 cursor-pointer ${
               deckSubTab === 'awards'
-                ? 'bg-gradient-to-tr from-purple-600 to-indigo-600 text-white shadow-sm shadow-purple-500/10'
-                : themeClass('text-slate-400 hover:text-slate-200', 'text-slate-555 hover:text-slate-855')
+                ? themeClass('bg-slate-100 hover:bg-white text-slate-950 shadow-md', 'bg-slate-900 hover:bg-slate-800 text-white shadow-sm')
+                : themeClass('text-slate-300 hover:text-slate-50 hover:bg-slate-800/40', 'text-slate-555 hover:text-slate-855')
             }`}
           >
             <Sparkles className="w-3 h-3" />
@@ -177,10 +177,10 @@ export function WalletLibraryTab({
               setDeckSubTab('templates');
               localStorage.setItem('cc-tracker-deck-sub-tab', 'templates');
             }}
-            className={`flex-1 py-1.5 rounded-lg text-[10px] font-extrabold transition flex items-center justify-center gap-1.5 cursor-pointer ${
+            className={`flex-1 py-1.5 rounded-lg text-[10px] font-extrabold transition-all duration-250 flex items-center justify-center gap-1.5 cursor-pointer ${
               deckSubTab === 'templates'
-                ? 'bg-gradient-to-tr from-purple-600 to-indigo-600 text-white shadow-sm shadow-purple-500/10'
-                : themeClass('text-slate-400 hover:text-slate-200', 'text-slate-555 hover:text-slate-855')
+                ? themeClass('bg-slate-100 hover:bg-white text-slate-950 shadow-md', 'bg-slate-900 hover:bg-slate-800 text-white shadow-sm')
+                : themeClass('text-slate-300 hover:text-slate-50 hover:bg-slate-800/40', 'text-slate-555 hover:text-slate-855')
             }`}
           >
             <Compass className="w-3 h-3" />
@@ -225,8 +225,8 @@ export function WalletLibraryTab({
                   placeholder={t('searchCardsPlaceholder')}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className={`border text-xs rounded-xl px-3 py-1.5 focus:outline-none w-full md:w-36 font-medium ${
-                    themeClass('bg-slate-955 border-slate-850 focus:border-purple-500 text-slate-200', 'bg-slate-50 border-slate-255 focus:border-purple-500 text-slate-800 shadow-inner')
+                  className={`border text-xs rounded-xl px-3 py-1.5 focus:outline-none focus:border-teal-600 focus:ring-2 focus:ring-teal-550/10 w-full md:w-36 font-medium transition ${
+                    themeClass('bg-slate-950 border-slate-850 text-slate-200', 'bg-slate-55 border-slate-255 text-slate-800 shadow-inner')
                   }`}
                 />
                 <button
@@ -234,7 +234,7 @@ export function WalletLibraryTab({
                     setDeckSubTab('templates');
                     localStorage.setItem('cc-tracker-deck-sub-tab', 'templates');
                   }}
-                  className="flex items-center gap-1 bg-gradient-to-tr from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-550 text-white font-bold px-3 py-1.5 rounded-lg text-xs transition active:scale-95 shadow-md shadow-purple-500/10 cursor-pointer"
+                  className="flex items-center gap-1 bg-gradient-to-tr from-slate-800 to-slate-900 hover:from-slate-750 hover:to-slate-850 text-white dark:from-slate-100 dark:to-slate-200 dark:hover:from-white dark:hover:to-slate-50 dark:text-slate-950 border border-slate-700/25 font-bold px-3 py-1.5 rounded-lg text-xs transition active:scale-95 shadow shadow-black/5 cursor-pointer"
                   title="Switch to template library catalog to add cards"
                 >
                   <Plus className="w-3.5 h-3.5 stroke-[3]" />
@@ -242,7 +242,7 @@ export function WalletLibraryTab({
                 </button>
                 <button
                   onClick={() => setIsCreateModalOpen(true)}
-                  className="flex items-center gap-1 border border-purple-500/20 hover:bg-purple-550/10 text-purple-400 font-bold px-3 py-1.5 rounded-lg text-xs transition active:scale-95 cursor-pointer"
+                  className="flex items-center gap-1 border border-slate-500/20 hover:bg-slate-500/5 text-slate-500 dark:text-slate-300 font-bold px-3 py-1.5 rounded-lg text-xs transition active:scale-95 cursor-pointer"
                 >
                   <Plus className="w-3.5 h-3.5 stroke-[3]" />
                   {t('createCustomBtn')}

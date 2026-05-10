@@ -298,7 +298,7 @@ Additional Rules:
       {/* Floating Toggle Bubble */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="fixed bottom-6 right-6 bg-gradient-to-tr from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-550 text-white p-4 rounded-full shadow-2xl z-40 transition duration-300 active:scale-90 hover:rotate-6 flex items-center gap-1.5 font-semibold text-xs cursor-pointer"
+        className="fixed bottom-6 right-6 bg-gradient-to-tr from-slate-800 to-slate-900 hover:from-slate-750 hover:to-slate-850 text-white dark:from-slate-100 dark:to-slate-200 dark:hover:from-white dark:hover:to-slate-50 dark:text-slate-950 border border-slate-700/25 p-4 rounded-full shadow-2xl z-40 transition duration-300 active:scale-90 hover:rotate-6 flex items-center gap-1.5 font-semibold text-xs cursor-pointer"
       >
         <MessageSquare className="w-5 h-5 fill-white/10" />
         <span>{t('aiTitle')}</span>

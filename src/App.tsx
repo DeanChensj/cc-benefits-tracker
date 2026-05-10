@@ -572,11 +572,11 @@ function App() {
 
   return (
     <div className={`min-h-screen font-sans selection:bg-amber-500 selection:text-slate-900 transition-colors duration-300 ${
-      themeClass('bg-slate-955 text-slate-100 border-slate-900', 'bg-slate-50 text-slate-800 border-slate-200')
+      themeClass('bg-zen-dark text-slate-100 border-slate-900', 'bg-zen-light text-slate-800 border-slate-200')
     }`}>
       {/* Header */}
       <header className={`border-b backdrop-blur-md sticky top-0 z-10 px-4 py-4 transition-colors duration-300 ${
-        themeClass('border-slate-900 bg-slate-950/80', 'border-slate-200 bg-white/80')
+        themeClass('border-slate-900 bg-zen-dark-card/80', 'border-slate-200 bg-zen-light-card/80')
       }`}>
         <div className="max-w-4xl mx-auto flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div className="flex items-center gap-3">
@@ -841,23 +841,25 @@ function App() {
 
         {/* Tabs panel */}
         <div className={`flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 mb-4 sm:mb-6 border-b pb-3 sm:pb-4 ${themeClass('border-slate-900', 'border-slate-200')}`}>
-          <div className={`flex gap-1 p-1 rounded-xl self-start ${themeClass('bg-slate-900/80', 'bg-slate-200/60')}`}>
+          <div className={`flex gap-1 p-1 rounded-xl border transition-colors duration-300 self-start ${
+            themeClass('bg-zen-dark-card border-slate-850', 'bg-slate-200/50 border-slate-300/60 shadow-inner')
+          }`}>
             <button
               onClick={() => setActiveTab('todo')}
-              className={`px-4 py-2 text-sm font-semibold rounded-lg transition cursor-pointer ${
+              className={`px-4 py-2 text-sm font-extrabold rounded-lg transition-all duration-250 cursor-pointer ${
                 activeTab === 'todo'
-                  ? 'bg-amber-500 text-slate-955'
-                  : themeClass('text-slate-400 hover:text-white hover:bg-slate-855', 'text-slate-505 hover:text-slate-900 hover:bg-slate-300/30')
+                  ? themeClass('bg-slate-100 hover:bg-white text-slate-950 shadow-md', 'bg-slate-900 hover:bg-slate-800 text-white shadow-sm')
+                  : themeClass('text-slate-300 hover:text-slate-50 hover:bg-slate-800/40', 'text-slate-500 hover:text-slate-900 hover:bg-slate-300/30')
               }`}
             >
               {t('checklist')} ({activeBenefits.filter(b => !b.isUsed).length})
             </button>
             <button
               onClick={() => setActiveTab('cards')}
-              className={`px-4 py-2 text-sm font-semibold rounded-lg transition cursor-pointer ${
+              className={`px-4 py-2 text-sm font-extrabold rounded-lg transition-all duration-250 cursor-pointer ${
                 activeTab === 'cards'
-                  ? 'bg-amber-500 text-slate-955'
-                  : themeClass('text-slate-400 hover:text-white hover:bg-slate-855', 'text-slate-505 hover:text-slate-900 hover:bg-slate-300/30')
+                  ? themeClass('bg-slate-100 hover:bg-white text-slate-950 shadow-md', 'bg-slate-900 hover:bg-slate-800 text-white shadow-sm')
+                  : themeClass('text-slate-300 hover:text-slate-50 hover:bg-slate-800/40', 'text-slate-505 hover:text-slate-900 hover:bg-slate-300/30')
               }`}
             >
               {t('myWallet')} ({ownedCards.length + loyaltyAwards.length})

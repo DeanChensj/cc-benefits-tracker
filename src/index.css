@@ -1,5 +1,24 @@
 @import "tailwindcss";
 
+@theme {
+  --color-purple-50: var(--color-teal-50);
+  --color-purple-100: var(--color-teal-100);
+  --color-purple-200: var(--color-teal-200);
+  --color-purple-300: var(--color-teal-300);
+  --color-purple-400: var(--color-teal-400);
+  --color-purple-450: var(--color-teal-400);
+  --color-purple-455: var(--color-teal-400);
+  --color-purple-350: var(--color-teal-600);
+  --color-purple-505: var(--color-teal-500);
+  --color-purple-500: var(--color-teal-500);
+  --color-purple-600: var(--color-teal-600);
+  --color-purple-700: var(--color-teal-700);
+  --color-purple-800: var(--color-teal-800);
+  --color-purple-900: var(--color-teal-900);
+  --color-purple-950: var(--color-teal-950);
+  --color-slate-955: #1c1e26;
+}
+
 /* Premium micro-animations for modal overlay opening */
 @utility animate-fade-in {
   animation: fadeIn 0.15s ease-out forwards;
@@ -87,4 +106,18 @@
   to {
     transform: translateY(0);
   }
+}
+
+/* Zen Graphite Minimalist Design Tokens */
+@utility bg-zen-dark {
+  background-color: #12131a;
+}
+@utility bg-zen-dark-card {
+  background-color: #1b1c25;
+}
+@utility bg-zen-light {
+  background-color: #faf9f6;
+}
+@utility bg-zen-light-card {
+  background-color: #ffffff;
 }

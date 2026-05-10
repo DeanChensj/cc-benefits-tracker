@@ -115,7 +115,7 @@ export function CreateAwardModal({ isOpen, onClose, themeClass }: CreateAwardMod
         <form onSubmit={handleSubmit} className="flex-grow overflow-y-auto p-4 flex flex-col gap-4 max-h-[75vh] max-h-[75dvh] scrollbar-thin text-left">
           {/* Description Tip */}
           <div className={`p-3 rounded-xl flex gap-2.5 border text-[10px] font-medium leading-relaxed ${
-            themeClass('bg-purple-500/5 border-purple-500/10 text-purple-300', 'bg-purple-500/5 border-purple-500/10 text-purple-700')
+            themeClass('bg-teal-500/5 border-teal-500/10 text-teal-300', 'bg-teal-500/5 border-teal-500/10 text-teal-750')
           }`}>
             <Info className="w-4 h-4 shrink-0 animate-pulse" />
             <span>{t('awardFormDescText')}</span>
@@ -135,7 +135,7 @@ export function CreateAwardModal({ isOpen, onClose, themeClass }: CreateAwardMod
                 setCustomBrand('');
                 setCustomValue('');
               }}
-              className={`w-full text-xs font-bold rounded-xl px-3 py-2.5 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/10 border transition ${
+              className={`w-full text-xs font-bold rounded-xl px-3 py-2.5 focus:outline-none focus:border-teal-600 focus:ring-2 focus:ring-teal-550/10 border transition ${
                 themeClass('bg-slate-950 border-slate-850 text-white', 'bg-slate-55 border-slate-255 text-slate-800')
               }`}
             >
@@ -212,7 +212,7 @@ export function CreateAwardModal({ isOpen, onClose, themeClass }: CreateAwardMod
                   placeholder={t('awardFormNamePlace')}
                   value={customName}
                   onChange={(e) => setCustomName(e.target.value)}
-                  className={`w-full text-xs font-semibold rounded-xl px-3 py-2 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/10 border transition ${
+                  className={`w-full text-xs font-semibold rounded-xl px-3 py-2 focus:outline-none focus:border-teal-600 focus:ring-2 focus:ring-teal-550/10 border transition ${
                     themeClass('bg-slate-950 border-slate-850 text-white', 'bg-slate-55 border-slate-255 text-slate-800')
                   }`}
                 />
@@ -228,7 +228,7 @@ export function CreateAwardModal({ isOpen, onClose, themeClass }: CreateAwardMod
                     placeholder={t('awardFormBrandPlace')}
                     value={customBrand}
                     onChange={(e) => setCustomBrand(e.target.value)}
-                    className={`w-full text-xs font-semibold rounded-xl px-3 py-2 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/10 border transition ${
+                    className={`w-full text-xs font-semibold rounded-xl px-3 py-2 focus:outline-none focus:border-teal-600 focus:ring-2 focus:ring-teal-550/10 border transition ${
                       themeClass('bg-slate-950 border-slate-850 text-white', 'bg-slate-55 border-slate-255 text-slate-800')
                     }`}
                   />
@@ -242,7 +242,7 @@ export function CreateAwardModal({ isOpen, onClose, themeClass }: CreateAwardMod
                     placeholder="e.g. 100"
                     value={customValue}
                     onChange={(e) => setCustomValue(e.target.value)}
-                    className={`w-full text-xs font-semibold rounded-xl px-3 py-2 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/10 border transition ${
+                    className={`w-full text-xs font-semibold rounded-xl px-3 py-2 focus:outline-none focus:border-teal-600 focus:ring-2 focus:ring-teal-550/10 border transition ${
                       themeClass('bg-slate-950 border-slate-850 text-white', 'bg-slate-55 border-slate-255 text-slate-800')
                     }`}
                   />
@@ -256,7 +256,7 @@ export function CreateAwardModal({ isOpen, onClose, themeClass }: CreateAwardMod
                   <select
                     value={customProgramType}
                     onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setCustomProgramType(e.target.value as 'hotel' | 'airline' | 'bank' | 'other')}
-                    className={`w-full text-xs font-semibold rounded-xl px-2.5 py-2 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/10 border transition ${
+                    className={`w-full text-xs font-semibold rounded-xl px-2.5 py-2 focus:outline-none focus:border-teal-600 focus:ring-2 focus:ring-teal-550/10 border transition ${
                       themeClass('bg-slate-955 border-slate-850 text-white', 'bg-slate-55 border-slate-255 text-slate-800')
                     }`}
                   >
@@ -272,7 +272,7 @@ export function CreateAwardModal({ isOpen, onClose, themeClass }: CreateAwardMod
                   <select
                     value={customAwardType}
                     onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setCustomAwardType(e.target.value as 'fnr' | 'sua' | 'goh' | 'companion' | 'swu' | 'points' | 'other')}
-                    className={`w-full text-xs font-semibold rounded-xl px-2.5 py-2 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/10 border transition ${
+                    className={`w-full text-xs font-semibold rounded-xl px-2.5 py-2 focus:outline-none focus:border-teal-600 focus:ring-2 focus:ring-teal-550/10 border transition ${
                       themeClass('bg-slate-955 border-slate-850 text-white', 'bg-slate-55 border-slate-255 text-slate-800')
                     }`}
                   >
@@ -300,7 +300,7 @@ export function CreateAwardModal({ isOpen, onClose, themeClass }: CreateAwardMod
                 type="date"
                 value={expirationDate}
                 onChange={(e) => setExpirationDate(e.target.value)}
-                className={`w-full text-xs font-bold rounded-xl pl-10 pr-3.5 py-2.5 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/10 border transition ${
+                className={`w-full text-xs font-bold rounded-xl pl-10 pr-3.5 py-2.5 focus:outline-none focus:border-teal-600 focus:ring-2 focus:ring-teal-550/10 border transition ${
                   themeClass('bg-slate-955 border-slate-850 text-white', 'bg-slate-55 border-slate-255 text-slate-800')
                 }`}
               />
@@ -317,7 +317,7 @@ export function CreateAwardModal({ isOpen, onClose, themeClass }: CreateAwardMod
               placeholder={t('awardFormNotesPlace')}
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              className={`w-full text-xs font-bold rounded-xl px-3.5 py-2.5 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/10 border transition ${
+              className={`w-full text-xs font-bold rounded-xl px-3.5 py-2.5 focus:outline-none focus:border-teal-600 focus:ring-2 focus:ring-teal-550/10 border transition ${
                 themeClass('bg-slate-955 border-slate-850 text-white', 'bg-slate-55 border-slate-255 text-slate-800')
               }`}
             />
@@ -339,7 +339,7 @@ export function CreateAwardModal({ isOpen, onClose, themeClass }: CreateAwardMod
             </button>
             <button
               type="submit"
-              className="flex-1 bg-gradient-to-tr from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-550 text-white font-bold py-2.5 rounded-xl text-xs transition active:scale-95 flex items-center justify-center gap-1 shadow-lg shadow-purple-500/15 cursor-pointer"
+              className="flex-1 bg-gradient-to-tr from-slate-800 to-slate-900 hover:from-slate-750 hover:to-slate-850 text-white dark:from-slate-100 dark:to-slate-200 dark:hover:from-white dark:hover:to-slate-50 dark:text-slate-950 border border-slate-700/25 font-bold py-2.5 rounded-xl text-xs transition active:scale-95 flex items-center justify-center gap-1 shadow-sm cursor-pointer"
             >
               <Plus className="w-4 h-4" />
               <span>{t('awardFormSubmitBtn')}</span>

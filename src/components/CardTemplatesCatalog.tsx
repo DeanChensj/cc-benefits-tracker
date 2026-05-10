@@ -75,9 +75,9 @@ export function CardTemplatesCatalog({
             <button
               key={filter}
               onClick={() => setTemplateFeeFilter(filter)}
-              className={`px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-wider transition cursor-pointer active:scale-95 ${
+              className={`px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all duration-250 cursor-pointer ${
                 templateFeeFilter === filter
-                  ? 'bg-gradient-to-tr from-purple-600 to-indigo-600 text-white shadow'
+                  ? themeClass('bg-slate-100 hover:bg-white text-slate-950 shadow-md', 'bg-slate-900 hover:bg-slate-800 text-white shadow-sm')
                   : themeClass('text-slate-400 hover:text-slate-200', 'text-slate-500 hover:text-slate-855')
               }`}
             >
@@ -100,8 +100,8 @@ export function CardTemplatesCatalog({
           placeholder={language === 'zh' ? '🔍 搜索卡片模板名称或银行（如：Chase, Amex Gold）...' : '🔍 Search templates by name or bank (e.g. Chase, Amex Gold)...'}
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className={`w-full border text-xs rounded-xl px-3 py-2 focus:outline-none font-medium transition ${
-            themeClass('bg-slate-955 border-slate-850 focus:border-purple-500 text-slate-200', 'bg-slate-50 border-slate-255 focus:border-purple-500 text-slate-800 shadow-inner')
+          className={`w-full border text-xs rounded-xl px-3 py-2 focus:outline-none focus:border-teal-600 focus:ring-2 focus:ring-teal-550/10 font-medium transition ${
+            themeClass('bg-slate-955 border-slate-850 text-slate-200', 'bg-slate-50 border-slate-255 text-slate-800 shadow-inner')
           }`}
         />
       </div>
@@ -144,7 +144,7 @@ export function CardTemplatesCatalog({
                         onClick={() => onViewTemplateDetail(card)}
                         className={`p-4 rounded-xl border flex flex-col justify-between transition cursor-pointer hover:scale-[1.01] duration-200 relative overflow-hidden group/card after:absolute after:top-0 after:-left-[150%] after:w-[60%] after:h-full after:bg-gradient-to-r after:from-transparent after:via-white/15 dark:after:via-white/10 after:to-transparent after:skew-x-12 after:transition-all after:duration-700 hover:after:left-[150%] ${
                           isSelected
-                            ? 'ring-2 ring-purple-500 border-purple-500 bg-purple-500/5'
+                            ? 'ring-2 ring-teal-600 border-teal-600 bg-teal-500/5'
                             : themeClass('bg-slate-900/50 border-slate-850 hover:border-slate-800', 'bg-slate-50/50 border-slate-200 hover:border-slate-300 hover:bg-slate-50 shadow-sm')
                         }`}
                       >
@@ -165,7 +165,7 @@ export function CardTemplatesCatalog({
                               </span>
                               <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wide border ${
                                 card.annualFee > 0
-                                  ? themeClass('bg-slate-955 text-amber-400 border-slate-850/80', 'bg-slate-100 text-purple-600 border-slate-200')
+                                  ? themeClass('bg-slate-955 text-amber-400 border-slate-850/80', 'bg-slate-100 text-teal-750 border-slate-200')
                                   : 'bg-emerald-500/10 text-emerald-500 border border-emerald-505/10'
                               }`}>
                                 {card.annualFee > 0 
@@ -176,10 +176,10 @@ export function CardTemplatesCatalog({
                             <h4 className={`text-sm font-extrabold mt-1.5 ${themeClass('text-white', 'text-slate-900')}`}>{card.name}</h4>
                             <p className={`text-[11px] mt-1.5 leading-relaxed font-medium ${themeClass('text-slate-405', 'text-slate-555')}`}>
                               {language === 'zh' 
-                                ? <>包含 <span className="font-bold text-purple-500 dark:text-amber-400">{card.benefits.length}</span> 项卡片专属权益 <br /> (潜在年回本价值: <span className={`font-bold ${themeClass('text-white', 'text-slate-955')}`}>${getCardPotentialValue(card.benefits)}/年</span>)</>
-                                : <>Contains <span className="font-bold text-purple-500 dark:text-amber-400">{card.benefits.length}</span> built-in perks <br /> (Potential value: <span className={`font-bold ${themeClass('text-white', 'text-slate-955')}`}>${getCardPotentialValue(card.benefits)}/yr</span>)</>}
+                                ? <>包含 <span className="font-bold text-teal-600 dark:text-amber-400">{card.benefits.length}</span> 项卡片专属权益 <br /> (潜在年回本价值: <span className={`font-bold ${themeClass('text-white', 'text-slate-955')}`}>${getCardPotentialValue(card.benefits)}/年</span>)</>
+                                : <>Contains <span className="font-bold text-teal-600 dark:text-amber-400">{card.benefits.length}</span> built-in perks <br /> (Potential value: <span className={`font-bold ${themeClass('text-white', 'text-slate-955')}`}>${getCardPotentialValue(card.benefits)}/yr</span>)</>}
                             </p>
-                            <span className="text-[9px] text-purple-500 dark:text-purple-455 font-bold mt-2.5 block animate-pulse">
+                            <span className="text-[9px] text-teal-650 dark:text-teal-400 font-bold mt-2.5 block animate-pulse">
                               {language === 'zh' ? '🔍 点击卡片查看详细福利列表' : '🔍 Click card to view details'}
                             </span>
                           </div>
@@ -193,7 +193,7 @@ export function CardTemplatesCatalog({
                           }}
                           className={`w-full mt-4 flex items-center justify-center gap-1.5 font-bold py-2.5 rounded-xl text-xs transition active:scale-[0.97] border cursor-pointer ${
                             isSelected
-                              ? 'bg-purple-600 text-white border-transparent shadow-md shadow-purple-600/20'
+                              ? 'bg-teal-600 text-white border-transparent shadow shadow-teal-600/10'
                               : themeClass('bg-slate-900/50 border-slate-800 text-slate-300 hover:border-slate-700', 'bg-white border-slate-200 text-slate-600 hover:border-slate-300 shadow-sm')
                           }`}
                         >

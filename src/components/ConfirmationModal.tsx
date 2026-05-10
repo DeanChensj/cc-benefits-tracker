@@ -30,14 +30,14 @@ export function ConfirmationModal({
   return (
     <div 
       onClick={onCancel}
-      className="fixed inset-0 bg-slate-950/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in"
+      className="fixed inset-0 bg-slate-955/40 dark:bg-slate-950/75 backdrop-blur-md saturate-[170%] z-50 flex items-center justify-center p-4 animate-fade-in"
     >
       <div 
         onClick={(e) => e.stopPropagation()}
-        className={`w-full max-w-sm rounded-2xl border p-6 text-center space-y-4 shadow-2xl animate-scale-up ${
+        className={`w-full max-w-sm rounded-2xl border border-t p-6 text-center space-y-4 shadow-2xl animate-scale-up transition-colors duration-300 ${
         themeClass(
-          'bg-slate-900 border-slate-850 text-slate-200 shadow-slate-950/50',
-          'bg-white border-slate-200 text-slate-800 shadow-slate-200/30'
+          'bg-slate-900/80 border-slate-800/70 border-t-white/15 text-slate-200 backdrop-blur-md saturate-[170%] shadow-slate-950/50',
+          'bg-white/85 border-slate-200 border-t-white/45 text-slate-800 backdrop-blur-md saturate-[170%] shadow-slate-200/30'
         )
       }`}>
         {/* Header Icon depending on type */}
@@ -83,7 +83,7 @@ export function ConfirmationModal({
                 ? 'bg-gradient-to-tr from-rose-600 to-red-600 hover:from-rose-550 hover:to-red-550 shadow-rose-500/10'
                 : type === 'warning'
                 ? 'bg-gradient-to-tr from-amber-500 to-orange-550 hover:from-amber-450 hover:to-orange-500 shadow-amber-500/10'
-                : 'bg-gradient-to-tr from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-550 shadow-blue-500/10'
+                : 'bg-gradient-to-tr from-slate-800 to-slate-900 hover:from-slate-750 hover:to-slate-850 text-white dark:from-slate-100 dark:to-slate-200 dark:hover:from-white dark:text-slate-950 border border-slate-700/25'
             }`}
           >
             {confirmText}
