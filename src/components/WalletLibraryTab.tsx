@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Plus, Sparkles, CreditCard, Trash2, Compass } from 'lucide-react';
+import { Plus, Sparkles, CreditCard, Trash2, Compass, ChevronDown } from 'lucide-react';
 import { WalletCreditCard } from './WalletCreditCard';
 import { CardTemplatesCatalog } from './CardTemplatesCatalog';
 import { CheckoutWinnersRow } from './CheckoutWinnersRow';
@@ -22,6 +22,7 @@ interface WalletLibraryTabProps {
   setIsCreateAwardModalOpen: (open: boolean) => void;
   setDeleteCardInstanceId: (instanceId: string | null) => void;
   setDeleteAwardId: (awardId: string | null) => void;
+  onWipe: () => void;
   themeClass: (dark: string, light: string) => string;
   selectedTemplates: string[];
   setSelectedTemplates: React.Dispatch<React.SetStateAction<string[]>>;
@@ -159,6 +160,7 @@ export function WalletLibraryTab({
   setIsCreateAwardModalOpen,
   setDeleteCardInstanceId,
   setDeleteAwardId,
+  onWipe,
   themeClass,
   selectedTemplates,
   setSelectedTemplates,
@@ -179,6 +181,7 @@ export function WalletLibraryTab({
   const [awardSearchQuery, setAwardSearchQuery] = useState('');
   const [awardSortBy, setAwardSortBy] = useState<'expiry' | 'value-desc' | 'value-asc'>('expiry');
   const [isChurningDrawerOpen, setIsChurningDrawerOpen] = useState(false);
+  const [isAdvancedOfflineOpen, setIsAdvancedOfflineOpen] = useState(false);
 
   // Calculate Chase 5/24 status dynamically
   const now = new Date();
@@ -386,6 +389,43 @@ export function WalletLibraryTab({
                     </div>
                   );
                 })}
+                {/* ⚙️ Advanced Local Settings Accordion Section */}
+                <div className="pt-4 mt-6 border-t border-dashed border-slate-200 dark:border-slate-800/60 text-left">
+                  <button
+                    type="button"
+                    onClick={() => setIsAdvancedOfflineOpen(!isAdvancedOfflineOpen)}
+                    className={`text-[9.5px] font-extrabold uppercase tracking-widest flex items-center justify-between w-full transition cursor-pointer ${
+                      themeClass('text-slate-450 hover:text-slate-300', 'text-slate-505 hover:text-slate-800')
+                    }`}
+                  >
+                    <span>{language === 'zh' ? '⚙️ 高级本地配置' : '⚙️ Advanced Offline Settings'}</span>
+                    <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-300 transform ${isAdvancedOfflineOpen ? 'rotate-180' : 'rotate-0'}`} />
+                  </button>
+
+                  <div className={`transition-all duration-305 overflow-hidden ${isAdvancedOfflineOpen ? 'max-h-[240px] opacity-100 mt-3.5' : 'max-h-0 opacity-0 pointer-events-none'}`}>
+                    <div className={`p-4 rounded-2xl border text-left space-y-3 ${
+                      themeClass('bg-slate-950/40 border-slate-850 text-slate-400', 'bg-slate-50 border-slate-200 text-slate-600')
+                    }`}>
+                      <p className="text-[10px] leading-relaxed opacity-90 font-medium">
+                        {language === 'zh' 
+                          ? 'PerkFolio 所有数据均以 100% 安全加密形式保存在您的本地浏览器缓存中。若您想重新配置整个卡包，可点击下方按钮清除本地数据并重置状态，重置后数据将彻底抹除且不可恢复。' 
+                          : 'PerkFolio stores all your data strictly inside your browser LocalStorage. If you want to hard-reset your workspace, you can click the button below to wipe all local state. This action is permanent and cannot be undone.'}
+                      </p>
+                      <div className="flex justify-end">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setIsAdvancedOfflineOpen(false);
+                            onWipe();
+                          }}
+                          className="bg-red-500/5 hover:bg-red-500/10 border border-red-500/20 text-red-500 dark:text-red-400 font-extrabold py-2 px-4 rounded-xl text-[10px] transition active:scale-95 cursor-pointer text-center"
+                        >
+                          🚨 {language === 'zh' ? '全盘抹除本地数据' : 'Wipe All Local Data'}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             )}
         </div>

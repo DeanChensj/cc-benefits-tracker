@@ -865,6 +865,7 @@ function App() {
             setIsCreateAwardModalOpen={(open) => setActiveModal(open ? 'create-award' : null)}
             setDeleteCardInstanceId={setDeleteCardInstanceId}
             setDeleteAwardId={setDeleteAwardId}
+            onWipe={() => setActiveModal('wipe')}
             themeClass={themeClass}
             selectedTemplates={selectedTemplates}
             setSelectedTemplates={setSelectedTemplates}
