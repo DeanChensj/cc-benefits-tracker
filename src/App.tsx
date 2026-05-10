@@ -879,7 +879,7 @@ function App() {
       </main>
 
       {/* Premium Footer: Privacy & Performance Guard declaration */}
-      <footer className="mt-auto py-8 px-4 text-center space-y-3 shrink-0">
+      <footer className="mt-auto pt-8 pb-24 sm:pb-8 px-4 text-center space-y-3 shrink-0">
         {/* Trust Badges for Local-First reassurance */}
         <div className="flex flex-wrap justify-center items-center gap-2 max-w-2xl mx-auto">
           <div className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[9.5px] font-extrabold border shadow-sm ${
