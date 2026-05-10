@@ -1,6 +1,6 @@
 import { Trash2 } from 'lucide-react';
 import { useCardStore } from '../store/useCardStore';
-import { translations } from '../utils/i18n';
+import { translations, formatCardNameForToast } from '../utils/i18n';
 
 interface DeleteConfirmModalProps {
   isOpen: boolean;
@@ -33,10 +33,10 @@ export function DeleteConfirmModal({ isOpen, cardName, onConfirm, onCancel, them
           <h3 className={`text-sm font-black ${themeClass('text-white', 'text-slate-900')}`}>
             {t('deleteCardConfirmTitle')}
           </h3>
-          <p className="text-[11px] text-slate-505 leading-normal">
+          <p className={`text-[11px] leading-normal ${themeClass('text-slate-400', 'text-slate-500')}`}>
             {t('deleteCardConfirmMessage1')}
-            <span className="font-bold text-slate-900 dark:text-white">
-              {language === 'zh' ? `“${cardName}”` : `"${cardName}"`}
+            <span className={`font-extrabold ${themeClass('text-white', 'text-slate-900')}`}>
+              {language === 'zh' ? `“${formatCardNameForToast(cardName)}”` : `"${formatCardNameForToast(cardName)}"`}
             </span>
             {t('deleteCardConfirmMessage2')}
           </p>

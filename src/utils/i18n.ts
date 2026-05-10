@@ -562,3 +562,11 @@ export const formatCardName = (name: string): string => {
     .replace(/\bAmerican Express Gold\b/g, 'Amex Gold')
     .replace(/\bAmerican Express Platinum\b/g, 'Amex Platinum');
 };
+
+export const formatCardNameForToast = (name: string): string => {
+  const formatted = formatCardName(name);
+  if (formatted.length > 2) {
+    return formatted.substring(0, 2) + '\u200b' + formatted.substring(2);
+  }
+  return formatted;
+};

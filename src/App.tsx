@@ -4,7 +4,7 @@ import { CARDS_DB, CARD_MULTIPLIERS, AWARD_TEMPLATES } from './data/cards.db';
 import type { CardTemplate, Benefit, LoyaltyAward } from './data/cards.db';
 import { useCardStore, getLogKey } from './store/useCardStore';
 import type { OwnedCardInstance } from './store/useCardStore';
-import { translations } from './utils/i18n';
+import { translations, formatCardNameForToast } from './utils/i18n';
 import { WalletAiAssistant } from './components/WalletAiAssistant';
 import { CalendarSyncModal } from './components/CalendarSyncModal';
 import { CreateCardModal } from './components/CreateCardModal';
@@ -220,7 +220,7 @@ function App() {
     addCard(templateId);
     setDeckSubTab('cards');
     localStorage.setItem('cc-tracker-deck-sub-tab', 'cards');
-    showToast(language === 'zh' ? `🎉 已成功添加 ${cardName} 至您的卡包！` : `🎉 Added ${cardName} to your Wallet!`);
+    showToast(language === 'zh' ? `🎉 已成功添加 ${formatCardNameForToast(cardName)} 至您的卡包！` : `🎉 Added ${formatCardNameForToast(cardName)} to your Wallet!`);
   };
 
 
@@ -231,7 +231,7 @@ function App() {
       const template = CARDS_DB.find((t) => t.id === instance.templateId);
       const cardName = instance.templateId === 'custom' ? instance.customName : (template?.name || 'Card');
       removeCard(deleteCardInstanceId);
-      showToast(language === 'zh' ? `🗑️ 已成功注销并移除 "${cardName}"` : `🗑️ Removed "${cardName}" from Wallet`, 'warning');
+      showToast(language === 'zh' ? `🗑️ 已成功注销并移除 "${formatCardNameForToast(cardName)}"` : `🗑️ Removed "${formatCardNameForToast(cardName)}" from Wallet`, 'error');
     }
     setDeleteCardInstanceId(null);
   };
@@ -986,7 +986,7 @@ function App() {
           if (deleteAwardId) {
             deleteLoyaltyAward(deleteAwardId);
             setDeleteAwardId(null);
-            showToast(language === 'zh' ? '🗑️ 独立卡券已成功从钱包中删除！' : '🗑️ Standalone voucher deleted successfully.', 'warning');
+            showToast(language === 'zh' ? '🗑️ 独立卡券已成功从钱包中删除！' : '🗑️ Standalone voucher deleted successfully.', 'error');
           }
         }}
         onCancel={() => setDeleteAwardId(null)}
