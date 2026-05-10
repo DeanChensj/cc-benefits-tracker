@@ -1013,6 +1013,7 @@ function App() {
         ownedCards={ownedCards}
         loyaltyAwards={loyaltyAwards}
         resolvedValue={resolvedValue}
+        expiredValue={expiredValue}
         themeClass={themeClass}
       />
 

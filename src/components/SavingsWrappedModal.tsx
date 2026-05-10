@@ -11,6 +11,7 @@ interface SavingsWrappedModalProps {
   ownedCards: OwnedCardInstance[];
   loyaltyAwards: LoyaltyAward[];
   resolvedValue: number;
+  expiredValue: number;
   themeClass: (dark: string, light: string) => string;
 }
 
@@ -20,6 +21,7 @@ export function SavingsWrappedModal({
   ownedCards,
   loyaltyAwards,
   resolvedValue,
+  expiredValue,
   themeClass,
 }: SavingsWrappedModalProps) {
   const [isGenerating, setIsGenerating] = useState(false);
@@ -84,6 +86,8 @@ export function SavingsWrappedModal({
       row1: 'Statement Perks Recouped:',
       row2: 'Secured Signup Bonuses (SUBs):',
       row3: 'Active Portfolio Wallet Size:',
+      row4: 'Expired / Wasted Value:',
+      perfectWasted: '🟢 Zero Waste - Perfect!',
       battleships: '👑 TOP BATTLESHIPS IN WALLET',
       rankLabel: 'CHURNER RANK:',
       scannerLabel: '100% LOCAL-FIRST • ZERO-TRACK PRIVACY',
@@ -98,6 +102,8 @@ export function SavingsWrappedModal({
       row1: '已点掉 statement 福利:',
       row2: '已斩获开卡礼 (SUBs):',
       row3: '钱包 active 战神卡片数:',
+      row4: '因粗心过期浪费损耗:',
+      perfectWasted: '🟢 零过期损耗 - 完美规避！',
       battleships: '👑 钱包主力冲锋战神卡',
       rankLabel: '薅羊毛段位评级:',
       scannerLabel: '100% 本地数据运行 • 零追踪隐私保障',
@@ -353,6 +359,15 @@ export function SavingsWrappedModal({
                 <filter id="shadow3d" x="-10%" y="-10%" width="130%" height="130%">
                   <feDropShadow dx="0" dy="8" stdDeviation="8" floodColor="#000000" floodOpacity="0.4" />
                 </filter>
+                
+                {/* Elegant Neon Text Glow Filter */}
+                <filter id="goldGlow" x="-20%" y="-20%" width="140%" height="140%">
+                  <feGaussianBlur stdDeviation="2.5" result="blur" />
+                  <feMerge>
+                    <feMergeNode in="blur" />
+                    <feMergeNode in="SourceGraphic" />
+                  </feMerge>
+                </filter>
               </defs>
 
               {/* Deep Cyber Space Background */}
@@ -360,8 +375,8 @@ export function SavingsWrappedModal({
               <circle cx="80" cy="100" r="200" fill="#4f46e5" fillOpacity="0.15" filter="blur(60px)" />
               <circle cx="300" cy="500" r="200" fill="#a855f7" fillOpacity="0.12" filter="blur(70px)" />
 
-              {/* Grid Matrix Overlays */}
-              <g stroke="rgba(255, 255, 255, 0.02)" strokeWidth="1">
+              {/* Grid Matrix Overlays (High-fidelity faint grid texture) */}
+              <g stroke="rgba(255, 255, 255, 0.008)" strokeWidth="1">
                 <line x1="0" y1="135" x2="380" y2="135" />
                 <line x1="0" y1="270" x2="380" y2="270" />
                 <line x1="0" y1="405" x2="380" y2="405" />
@@ -414,8 +429,8 @@ export function SavingsWrappedModal({
                 {dict.subtitle}
               </text>
               
-              {/* Courier Premium Monospaced Cash savings number */}
-              <text x="190" y="215" fill="url(#brushedGold)" fontSize="46" fontWeight="950" textAnchor="middle" fontFamily="Courier, monospace">
+              {/* Courier Premium Monospaced Cash savings number (With luxury gold glow) */}
+              <text x="190" y="215" fill="url(#brushedGold)" fontSize="46" fontWeight="950" textAnchor="middle" fontFamily="Courier, monospace" filter="url(#goldGlow)">
                 ${totalSavings}
               </text>
 
@@ -423,9 +438,14 @@ export function SavingsWrappedModal({
               <text x="40" y="270" fill="#94a3b8" fontSize="8" fontWeight="850" letterSpacing="0.5" fontFamily="Inter, system-ui, sans-serif">
                 {dict.rankLabel}
               </text>
-              <text x="340" y="270" fill={rankColor} fontSize="9" fontWeight="950" textAnchor="end" fontFamily="Inter, system-ui, sans-serif">
-                {activeRank}
-              </text>
+              
+              {/* Premium VIP Rank Badge Pass Pill Container */}
+              <g>
+                <rect x="200" y="258" width="140" height="16" rx="8" fill="rgba(255, 255, 255, 0.03)" stroke={rankColor} strokeWidth="0.75" opacity="0.8" />
+                <text x="270" y="269" fill={rankColor} fontSize="7.5" fontWeight="950" textAnchor="middle" fontFamily="Inter, system-ui, sans-serif">
+                  {activeRank}
+                </text>
+              </g>
               
               {/* 1. Viral relative comparison "Defeated 99.2%" rank statement */}
               <text x="190" y="288" fill="url(#brushedGold)" fontSize="7.5" fontWeight="950" textAnchor="middle" letterSpacing="0.5" fontFamily="Inter, system-ui, sans-serif">
@@ -452,16 +472,22 @@ export function SavingsWrappedModal({
               <text x="40" y="392" fill="#94a3b8" fontSize="8.5" fontWeight="700" fontFamily="Inter, system-ui, sans-serif">{dict.row3}</text>
               <text x="340" y="392" fill="#ffffff" fontSize="10" fontWeight="900" textAnchor="end" fontFamily="Courier, monospace">{ownedCards.length}</text>
 
+              {/* Row 4 */}
+              <text x="40" y="417" fill="#94a3b8" fontSize="8.5" fontWeight="700" fontFamily="Inter, system-ui, sans-serif">{dict.row4}</text>
+              <text x="340" y="417" fill={expiredValue > 0 ? '#fb7185' : '#34d399'} fontSize={expiredValue > 0 ? '10' : '8'} fontWeight="900" textAnchor="end" fontFamily={expiredValue > 0 ? 'Courier, monospace' : 'Inter, system-ui, sans-serif'}>
+                {expiredValue > 0 ? `-$${expiredValue}` : dict.perfectWasted}
+              </text>
+
               {/* dashed vector divider */}
-              <line x1="40" y1="407" x2="340" y2="407" stroke="rgba(255, 255, 255, 0.12)" strokeWidth="1" strokeDasharray="4 3" />
+              <line x1="40" y1="432" x2="340" y2="432" stroke="rgba(255, 255, 255, 0.12)" strokeWidth="1" strokeDasharray="4 3" />
 
               {/* Battleships */}
-              <text x="40" y="428" fill="url(#brushedGold)" fontSize="9.5" fontWeight="950" letterSpacing="1" fontFamily="Inter, system-ui, sans-serif">
+              <text x="40" y="452" fill="url(#brushedGold)" fontSize="9.5" fontWeight="950" letterSpacing="1" fontFamily="Inter, system-ui, sans-serif">
                 {dict.battleships}
               </text>
 
               {cardRecoups.slice(0, 3).map((c, idx) => {
-                const yPos = 445 + idx * 34;
+                const yPos = 466 + idx * 32;
                 return (
                   <g key={idx}>
                     <rect x="40" y={yPos} width="300" height="26" rx="8" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.05)" strokeWidth="1" />
@@ -490,30 +516,30 @@ export function SavingsWrappedModal({
 
               {/* Advanced scanner barcode footer */}
               <g stroke="rgba(255, 255, 255, 0.15)" strokeWidth="1.5" opacity="0.7">
-                <line x1="40" y1="585" x2="40" y2="610" strokeWidth="3" />
-                <line x1="46" y1="585" x2="46" y2="610" strokeWidth="1" />
-                <line x1="50" y1="585" x2="50" y2="610" strokeWidth="2" />
-                <line x1="56" y1="585" x2="56" y2="610" strokeWidth="4" />
-                <line x1="64" y1="585" x2="64" y2="610" strokeWidth="1" />
-                <line x1="68" y1="585" x2="68" y2="610" strokeWidth="3" />
-                <line x1="74" y1="585" x2="74" y2="610" strokeWidth="2" />
-                <line x1="80" y1="585" x2="80" y2="610" strokeWidth="4" />
-                <line x1="88" y1="585" x2="88" y2="610" strokeWidth="1" />
-                <line x1="92" y1="585" x2="92" y2="610" strokeWidth="2" />
+                <line x1="40" y1="597" x2="40" y2="622" strokeWidth="3" />
+                <line x1="46" y1="597" x2="46" y2="622" strokeWidth="1" />
+                <line x1="50" y1="597" x2="50" y2="622" strokeWidth="2" />
+                <line x1="56" y1="597" x2="56" y2="622" strokeWidth="4" />
+                <line x1="64" y1="597" x2="64" y2="622" strokeWidth="1" />
+                <line x1="68" y1="597" x2="68" y2="622" strokeWidth="3" />
+                <line x1="74" y1="597" x2="74" y2="622" strokeWidth="2" />
+                <line x1="80" y1="597" x2="80" y2="622" strokeWidth="4" />
+                <line x1="88" y1="597" x2="88" y2="622" strokeWidth="1" />
+                <line x1="92" y1="597" x2="92" y2="622" strokeWidth="2" />
               </g>
-              <text x="100" y="595" fill="#94a3b8" fontSize="6.2" fontWeight="900" letterSpacing="0.5" fontFamily="Inter, system-ui, sans-serif">{"SERIAL NO. " + personalSerial}</text>
-              <text x="100" y="605" fill="rgba(255, 255, 255, 0.5)" fontSize="6.5" fontWeight="700" fontFamily="Inter, system-ui, sans-serif">{dict.scannerLabel}</text>
+              <text x="100" y="607" fill="#94a3b8" fontSize="6.2" fontWeight="900" letterSpacing="0.5" fontFamily="Inter, system-ui, sans-serif">{"SERIAL NO. " + personalSerial}</text>
+              <text x="100" y="617" fill="rgba(255, 255, 255, 0.5)" fontSize="6.5" fontWeight="700" fontFamily="Inter, system-ui, sans-serif">{dict.scannerLabel}</text>
 
               {/* Luxury gold-brushed brand name text filling the bottom-left space perfectly! */}
-              <text x="40" y="572" fill="url(#brushedGold)" fontSize="7.5" fontWeight="950" letterSpacing="1.5" fontFamily="Inter, system-ui, sans-serif">PERKFOLIO</text>
+              <text x="40" y="584" fill="url(#brushedGold)" fontSize="7.5" fontWeight="950" letterSpacing="1.5" fontFamily="Inter, system-ui, sans-serif">PERKFOLIO</text>
 
               {/* Dynamic scannable QR Code (100% CORS-free static inline Base64 PNG!) */}
-              <rect x="300" y="578" width="42" height="42" rx="6" fill="none" stroke="url(#brushedGold)" strokeWidth="1.5" strokeDasharray="16, 3" />
+              <rect x="300" y="590" width="42" height="42" rx="6" fill="none" stroke="url(#brushedGold)" strokeWidth="1.5" strokeDasharray="16, 3" />
               <image 
                 crossOrigin="anonymous"
                 href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAHgAAAB4AQMAAAADqqSRAAAABlBMVEX///8AAABVwtN+AAAACXBIWXMAAA7EAAAOxAGVKw4bAAABK0lEQVQ4jaWUQcrEMAiFhSxyqdBcK4uCQhe5ViCXykLGeabMz8/s7Fga+LIQn3lK9BVstrIQVdNq9gpzI2rczbRQITrizKtlk6SllKrP2PPN8ZxxSEHGRww9rVEaVP70Rdj7iYvT5Xz6G+EdWc7y/1EDzLaQ0jRNjxHmbL1bX6dXo9ATZslm0hh2GndpMea+vKakVeuuL8h58WLknEqU8EcZZoAmOavdeuJM7uhrjuQXPzOLf3RiQEeBy6LccneFl/dm64uzsHWpNjHjR5wRjCfCfsCEUZwz/AWPahpJbz1RNhQEf6Od9RVmj4b58mKqxdnn2/XAYNgvFOZ2P8k2p894mH0/Lk9X94g94u1vRcrjGUu+zP1sI863JVxPqTPOe796O6f7kX7mr3gD/EZ+7qmgE4sAAAAASUVORK5CYII="
                 x="303" 
-                y="581" 
+                y="593" 
                 width="36" 
                 height="36" 
               />
