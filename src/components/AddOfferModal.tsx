@@ -12,8 +12,6 @@ interface AddOfferModalProps {
 }
 
 export function AddOfferModal({ isOpen, onClose, cardName, onAdd, theme, showToast }: AddOfferModalProps) {
-  if (!isOpen) return null;
-
   const themeClass = (dark: string, light: string) => theme === 'dark' ? dark : light;
 
   // Get today's date string + 3 months as default expiration
@@ -34,6 +32,48 @@ export function AddOfferModal({ isOpen, onClose, cardName, onAdd, theme, showToa
   const [expirationDate, setExpirationDate] = useState(getDefaultExpirationDate());
   const [category, setCategory] = useState<'shopping' | 'dining' | 'travel' | 'entertainment' | 'other'>('shopping');
   const [description, setDescription] = useState('');
+
+  if (!isOpen) return null;
+
+  const templates = [
+    {
+      label: '🍽️ Dining',
+      name: 'Dining Offer',
+      value: 10,
+      spendingLimit: undefined,
+      resetPeriod: 'monthly' as const,
+      category: 'dining' as const,
+      description: '$10 statement credit for Dining'
+    },
+    {
+      label: '🛍️ Shopping',
+      name: 'Shopping Offer',
+      value: 20,
+      spendingLimit: 100,
+      resetPeriod: 'fixed' as const,
+      category: 'shopping' as const,
+      description: 'Spend $100 get $20 statement credit'
+    },
+    {
+      label: '✈️ Travel',
+      name: 'Travel Offer',
+      value: 50,
+      spendingLimit: 250,
+      resetPeriod: 'fixed' as const,
+      category: 'travel' as const,
+      description: 'Spend $250 get $50 statement credit'
+    }
+  ];
+
+  const handleApplyTemplate = (t: typeof templates[0]) => {
+    setName(t.name);
+    setValue(t.value);
+    setSpendingLimit(t.spendingLimit);
+    setResetPeriod(t.resetPeriod);
+    setCategory(t.category);
+    setDescription(t.description);
+    setExpirationDate(getDefaultExpirationDate());
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -96,6 +136,30 @@ export function AddOfferModal({ isOpen, onClose, cardName, onAdd, theme, showToa
           </button>
         </div>
 
+        {/* Quick Templates Selector */}
+        <div className="mb-3.5 text-left">
+          <label className={`block text-[9px] font-bold uppercase tracking-wider mb-1.5 ${themeClass('text-slate-400', 'text-slate-505')}`}>
+            ⚡ Quick Templates
+          </label>
+          <div className="flex gap-1.5 flex-wrap select-none">
+            {templates.map((t, idx) => (
+              <button
+                key={idx}
+                type="button"
+                onClick={() => handleApplyTemplate(t)}
+                className={`px-2.5 py-1.5 rounded-xl border text-[10px] font-black transition cursor-pointer active:scale-95 ${
+                  themeClass(
+                    'bg-slate-955 border-slate-800 hover:bg-slate-850 text-slate-300 hover:text-white',
+                    'bg-slate-50 border-slate-250 hover:bg-slate-100 text-slate-600 hover:text-slate-855 shadow-sm'
+                  )
+                }`}
+              >
+                {t.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-3.5 text-[11px]">
           <div>
@@ -153,7 +217,7 @@ export function AddOfferModal({ isOpen, onClose, cardName, onAdd, theme, showToa
               </label>
               <select
                 value={resetPeriod}
-                onChange={(e) => setResetPeriod(e.target.value as any)}
+                onChange={(e) => setResetPeriod(e.target.value as 'fixed' | 'monthly' | 'quarterly' | 'semi-annual' | 'annual-calendar')}
                 className={`w-full border rounded-xl px-2 py-1.5 focus:outline-none cursor-pointer font-medium ${
                   themeClass('bg-slate-955 border-slate-800 text-slate-300', 'bg-slate-50 border-slate-250 text-slate-700')
                 }`}
@@ -172,7 +236,7 @@ export function AddOfferModal({ isOpen, onClose, cardName, onAdd, theme, showToa
               </label>
               <select
                 value={category}
-                onChange={(e) => setCategory(e.target.value as any)}
+                onChange={(e) => setCategory(e.target.value as 'shopping' | 'dining' | 'travel' | 'entertainment' | 'other')}
                 className={`w-full border rounded-xl px-2 py-1.5 focus:outline-none cursor-pointer font-medium ${
                   themeClass('bg-slate-955 border-slate-800 text-slate-300', 'bg-slate-50 border-slate-250 text-slate-700')
                 }`}
