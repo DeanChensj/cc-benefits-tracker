@@ -42,7 +42,7 @@ export function FilterHubPanel({
   const showCardFilter = ownedCards.length > 0 || loyaltyAwards.length > 0;
 
   return (
-    <div className={`grid grid-cols-1 ${showCardFilter ? 'sm:grid-cols-4' : 'sm:grid-cols-3'} gap-3 p-3 mb-6 rounded-2xl border backdrop-blur-md transition-all duration-300 ${
+    <div className={`grid grid-cols-1 ${showCardFilter ? 'sm:grid-cols-[1fr_1.3fr_1fr_1fr]' : 'sm:grid-cols-3'} gap-3 p-3 mb-6 rounded-2xl border backdrop-blur-md transition-all duration-300 ${
       themeClass(
         'bg-slate-900/30 border-slate-900/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.03)]',
         'bg-white/70 border-slate-200/80 shadow-[0_8px_20px_rgba(15,23,42,0.035)]'
@@ -83,14 +83,17 @@ export function FilterHubPanel({
 
       {/* 2. Card & Vouchers Instance Filter */}
       {showCardFilter && (
-        <div className={`flex items-center gap-2.5 border rounded-xl px-3 py-2.5 text-xs transition ${
-          themeClass('bg-slate-955/40 border-slate-850 hover:border-slate-800 text-slate-300', 'bg-slate-50/80 border-slate-250/60 hover:border-slate-300 text-slate-700')
-        }`}>
+        <div 
+          title={filterCardInstanceId === 'all' ? t('allPortfolios') : filterCardInstanceId === 'awards' ? t('standaloneVouchers') : (ownedCards.find(c => c.id === filterCardInstanceId)?.customName || '')}
+          className={`flex items-center gap-2.5 border rounded-xl px-3 py-2.5 text-xs transition ${
+            themeClass('bg-slate-955/40 border-slate-850 hover:border-slate-800 text-slate-300', 'bg-slate-50/80 border-slate-250/60 hover:border-slate-300 text-slate-700')
+          }`}
+        >
           <CreditCard className="w-4 h-4 text-slate-400 shrink-0" />
           <select
             value={filterCardInstanceId}
             onChange={(e) => setFilterCardInstanceId(e.target.value)}
-            className="w-full bg-transparent outline-none border-none cursor-pointer font-semibold text-xs focus:ring-0"
+            className="w-full bg-transparent outline-none border-none cursor-pointer font-semibold text-xs focus:ring-0 truncate pr-6"
           >
             <option value="all">{t('allPortfolios')}</option>
             {loyaltyAwards.length > 0 && (
