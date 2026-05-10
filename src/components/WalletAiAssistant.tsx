@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 import { useState, useEffect, useRef } from 'react';
-import type { OwnedCardInstance } from '../store/useCardStore';
+import type { OwnedCardInstance, AgentCommand } from '../store/useCardStore';
 import { useCardStore } from '../store/useCardStore';
 import { translations } from '../utils/i18n';
 import type { Benefit, LoyaltyAward } from '../data/cards.db';
@@ -40,7 +40,7 @@ interface ChatMessage {
 }
 
 export function WalletAiAssistant({ remainingBenefits, logs, theme, showToast, ownedCards, loyaltyAwards }: SpentAssistantProps) {
-  const language = useCardStore((state) => state.language);
+  const { language } = useCardStore();
   const t = (key: keyof typeof translations['en']) => translations[language][key] || translations['en'][key];
 
   const [isOpen, setIsOpen] = useState(false);
@@ -190,9 +190,36 @@ ${activeBenefitsText.length > 0 ? activeBenefitsText : 'No active dynamic card p
 Guidelines:
 1. Provide personalized financial recommendations, card spending selections (Dining, Travel, etc.), voucher tracking updates, or credit card general advice.
 2. Reference their specific cards, vouchers, or perks directly by bolding their names.
-3. Keep your answers accurate, extremely concise, clear, and formatted in tidy markdown.
-4. Keep the response strictly under 150 words.
-5. Respond strictly in ${language === 'zh' ? 'Chinese' : 'English'}.`;
+3. Keep your answers accurate, extremely concise, clear, and formatted in tidy markdown. Keep the response strictly under 150 words. Respond strictly in ${language === 'zh' ? 'Chinese' : 'English'}.
+
+=== AGENTIC ACTION COMMANDS ===
+You are equipped with tools to directly add cards to the user's wallet. If the user explicitly instructs, asks, or requests you to ADD, REGISTER, or CREATE cards (either standard templates or custom cards), you MUST append a structured JSON command block at the absolute end of your response.
+
+CRITICAL RULES & LIMITATIONS:
+1. ONLY append command blocks if the user explicitly asks you to ADD, CREATE, or REGISTER cards to their wallet. If the user is just asking general questions, comparing cards, or asking for advice, you MUST NEVER output any command blocks!
+2. You MUST write the command block as raw flat text inside |||COMMAND: and |||. Do NOT wrap the JSON inside markdown code blocks (never use \`\`\` or \`\`\`json inside the command block) otherwise the system parser will fail!
+
+Command Schemas:
+1. Add Template Card (with optional customName and cardOpenDate):
+|||COMMAND: { "action": "add_card", "templateId": "TEMPLATE_ID", "customName": "OPTIONAL_CUSTOM_NAME", "cardOpenDate": "OPTIONAL_OPEN_DATE_YYYY_MM_DD" }|||
+
+Valid TEMPLATE_IDs:
+- amex-gold, amex-platinum, amex-bcp, amex-delta-reserve, amex-biz-platinum, amex-hilton-aspire, amex-delta-platinum
+- chase-sapphire-reserve, chase-sapphire-preferred, chase-freedom-flex, chase-hyatt, chase-marriott-boundless, chase-ihg-premier, chase-freedom-unlimited, chase-ink-cash
+- capital-one-venture-x, discover-it-cashback, amex-marriott-brilliant, citi-custom-cash, amex-biz-gold, amex-bce, citi-premier, citi-aa-platinum-select
+
+2. Add Custom Card (with optional cardOpenDate):
+|||COMMAND: { "action": "add_custom", "name": "CARD_NAME", "bank": "BANK_NAME", "annualFee": ANNUAL_FEE_NUMBER, "cardOpenDate": "OPTIONAL_OPEN_DATE_YYYY_MM_DD" }|||
+
+3. Rename Card (oldName and newName are required):
+|||COMMAND: { "action": "rename_card", "oldName": "CURRENT_CUSTOM_NAME", "newName": "NEW_CUSTOM_NAME" }|||
+
+4. Update Card Opening Date (cardName and cardOpenDate are required):
+|||COMMAND: { "action": "set_card_date", "cardName": "CURRENT_CUSTOM_NAME", "cardOpenDate": "NEW_OPEN_DATE_YYYY_MM_DD" }|||
+
+Additional Rules:
+- You can output multiple commands on separate lines if the user asks to add multiple cards or make multiple updates!
+- Be extremely cheerful in your response, confirming what card(s) you have added or updated for them!`;
 
       const response = await fetch(
         `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${savedKey}`,
@@ -215,7 +242,45 @@ Guidelines:
       if (!response.ok) throw new Error('API Error');
 
       const data = await response.json();
-      const reply = data?.candidates?.[0]?.content?.parts?.[0]?.text || 'Sorry, I could not process that.';
+      let reply = data?.candidates?.[0]?.content?.parts?.[0]?.text || 'Sorry, I could not process that.';
+
+      // 🔍 Agentic Action Parser RegExp: intercept and execute direct wallet commands
+      const cmdRegex = /\|\|\|COMMAND:\s*(\[[\s\S]*?\]|\{[\s\S]*?\})\s*\|\|\|/g;
+      let match;
+      const matches: string[] = [];
+      
+      while ((match = cmdRegex.exec(reply)) !== null) {
+        matches.push(match[1]);
+      }
+
+      // Strip the commands from the visible chat bubble
+      reply = reply.replace(cmdRegex, '').trim();
+
+      // Parse and combine all commands into a single array transaction
+      const allCmds: AgentCommand[] = [];
+      matches.forEach((jsonStr) => {
+        try {
+          const sanitizedJson = jsonStr
+            .replace(/```json/gi, '')
+            .replace(/```/g, '')
+            .trim();
+          const parsed = JSON.parse(sanitizedJson);
+          if (Array.isArray(parsed)) {
+            allCmds.push(...parsed);
+          } else {
+            allCmds.push(parsed);
+          }
+        } catch (err) {
+          console.error('Agentic action parsing failed:', err);
+        }
+      });
+
+      if (allCmds.length > 0) {
+        const result = useCardStore.getState().executeAgentCommand(allCmds);
+        if (result.success && showToast) {
+          showToast(result.message, 'success');
+        }
+      }
 
       setChatHistory([...updatedHistory, { role: 'model', text: reply }]);
     } catch {

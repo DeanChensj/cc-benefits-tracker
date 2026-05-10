@@ -331,6 +331,11 @@ const translationsEn = {
   churnActiveTimelineHeader: 'Active Timeline',
   churnTimelineClear: 'Your 5/24 timeline is completely clear! (0/24)',
   churnOpenedLabel: 'Opened:',
+
+  // 20. Agentic AI Actions Toast notifications
+  aiToastAddCard: '⚡ AI Assistant added {card} to your wallet!',
+  aiToastAddCustom: '⚡ AI Assistant created custom card "{card}"!',
+  aiToastUpdateCard: '⚡ AI Assistant successfully updated: {card}!',
 };
 
 const translationsZh: typeof translationsEn = {
@@ -666,6 +671,11 @@ const translationsZh: typeof translationsEn = {
   churnActiveTimelineHeader: '24个月内申卡时间线',
   churnTimelineClear: '您的 5/24 时间线极度干净！(0/24)',
   churnOpenedLabel: '开卡日期:',
+
+  // 20. Agentic AI Actions Toast notifications
+  aiToastAddCard: '⚡ AI 助手已自动在卡包中添加了 {card}！',
+  aiToastAddCustom: '⚡ AI 助手已自动创建自定义卡 "{card}"！',
+  aiToastUpdateCard: '⚡ AI 助手已成功更新：{card}！',
 };
 
 export const translations: Record<'en' | 'zh', typeof translationsEn> = {

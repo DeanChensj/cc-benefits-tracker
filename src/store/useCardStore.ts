@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { CARDS_DB, DEFAULT_VALUATIONS } from '../data/cards.db';
 import type { Benefit, LoyaltyAward } from '../data/cards.db';
+import { translations } from '../utils/i18n';
 import { findSyncFile, uploadSyncFile, downloadSyncFile } from '../utils/gdrive';
 import type { LogEntry } from '../utils/logUtils';
 import { parseLogEntry } from '../utils/logUtils';
@@ -23,6 +24,19 @@ export interface OwnedCardInstance {
   lastModified?: number; // Instance-level LWW timestamp
 }
 
+export interface AgentCommand {
+  action: 'add_card' | 'add_custom' | 'rename_card' | 'set_card_date';
+  templateId?: string;
+  customName?: string;
+  cardOpenDate?: string;
+  name?: string;
+  bank?: string;
+  annualFee?: number;
+  oldName?: string;
+  newName?: string;
+  cardName?: string;
+}
+
 export interface CardStore {
   ownedCards: OwnedCardInstance[];
   loyaltyAwards: LoyaltyAward[];
@@ -36,6 +50,7 @@ export interface CardStore {
   setIsGroupedView: (isGrouped: boolean) => void;
   pointValuations?: Record<string, number>; // Custom points valuations
   updatePointValuation: (currency: string, value: number) => void;
+  executeAgentCommand: (cmds: AgentCommand[]) => { success: boolean; message: string };
   
   // Google Drive Sync States
   gdriveToken: string | null; // Temporary in-memory OAuth access token
@@ -765,6 +780,94 @@ export const useCardStore = create<CardStore>()(
           }
           return {};
         }),
+
+      executeAgentCommand: (cmds) => {
+        const state = get();
+        const language = state.language;
+        const t = (key: keyof typeof translations['en']) => translations[language][key] || translations['en'][key];
+        const addedNames: string[] = [];
+
+        try {
+          const commands: AgentCommand[] = Array.isArray(cmds) ? cmds : [cmds];
+
+          commands.forEach((cmd) => {
+            if (cmd.action === 'add_card' && cmd.templateId) {
+              const template = CARDS_DB.find((c) => c.id === cmd.templateId);
+              if (!template) throw new Error('Template not found');
+
+              // 1. Execute card addition
+              state.addCard(cmd.templateId);
+
+              // 2. Instantly retrieve the newly added card instance (last element)
+              const freshCards = get().ownedCards;
+              const newCard = freshCards[freshCards.length - 1];
+
+              if (newCard) {
+                // 3. Apply optional custom parameters
+                if (cmd.customName) {
+                  state.renameCard(newCard.id, cmd.customName);
+                }
+                if (cmd.cardOpenDate) {
+                  state.setCardOpenDate(newCard.id, cmd.cardOpenDate);
+                }
+              }
+              addedNames.push(cmd.customName || template.name);
+            } else if (cmd.action === 'add_custom' && cmd.name) {
+              const today = new Date();
+              const todayStr = `${today.getFullYear()}-${(today.getMonth() + 1).toString().padStart(2, '0')}-${today.getDate().toString().padStart(2, '0')}`;
+
+              state.addCustomCard({
+                templateId: 'custom',
+                customName: cmd.name,
+                bank: cmd.bank || 'Other',
+                annualFee: cmd.annualFee || 0,
+                cardOpenDate: cmd.cardOpenDate || todayStr,
+                instanceOffers: [],
+                lastModified: Date.now()
+              });
+              addedNames.push(cmd.name);
+            } else if (cmd.action === 'rename_card' && cmd.oldName && cmd.newName) {
+              const oldName = cmd.oldName;
+              const newName = cmd.newName;
+              const cardToRename = state.ownedCards.find(
+                (c) => c.customName.toLowerCase().trim() === oldName.toLowerCase().trim()
+              );
+              if (cardToRename) {
+                state.renameCard(cardToRename.id, newName);
+                addedNames.push(`"${oldName}" ➔ "${newName}"`);
+              } else {
+                throw new Error(`Card named "${oldName}" not found`);
+              }
+            } else if (cmd.action === 'set_card_date' && cmd.cardName && cmd.cardOpenDate) {
+              const cardName = cmd.cardName;
+              const cardOpenDate = cmd.cardOpenDate;
+              const cardToUpdate = state.ownedCards.find(
+                (c) => c.customName.toLowerCase().trim() === cardName.toLowerCase().trim()
+              );
+              if (cardToUpdate) {
+                state.setCardOpenDate(cardToUpdate.id, cardOpenDate);
+                addedNames.push(`"${cardName}" (${t('openDateLabel')}) ➔ ${cardOpenDate}`);
+              } else {
+                throw new Error(`Card named "${cardName}" not found`);
+              }
+            }
+          });
+
+          if (addedNames.length > 0) {
+            const cardNamesList = addedNames.join(' & ');
+            const isUpdate = commands.some((c) => c.action === 'rename_card' || c.action === 'set_card_date');
+            return {
+              success: true,
+              message: t(isUpdate ? 'aiToastUpdateCard' : 'aiToastAddCard').replace('{card}', cardNamesList)
+            };
+          }
+        } catch (err) {
+          console.error('Agent command execution failed:', err);
+          return { success: false, message: 'Execution failed' };
+        }
+
+        return { success: false, message: 'Unknown action' };
+      },
 
       resetAll: () =>
         set(() => ({
