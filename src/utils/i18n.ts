@@ -312,6 +312,11 @@ const translationsEn = {
   curr_ua_miles: 'UA Miles',
   curr_delta_miles: 'Delta Miles',
   curr_cash: 'Cashback',
+
+  // 17. Empty Wallet placeholder keys
+  emptyWalletTitle: 'Your Wallet is Empty',
+  emptyWalletDesc: 'Welcome! Open the card library to add card templates to start tracking statement credits and annual fee recoups.',
+  emptyWalletBtn: 'Browse Card Library',
 };
 
 const translationsZh: typeof translationsEn = {
@@ -628,6 +633,11 @@ const translationsZh: typeof translationsEn = {
   curr_ua_miles: '美联航 UA 里程',
   curr_delta_miles: '达美里程',
   curr_cash: '现金返现',
+
+  // 17. Empty Wallet placeholder keys
+  emptyWalletTitle: '您的卡包还是空的',
+  emptyWalletDesc: '欢迎使用！打开卡库选择并添加您的信用卡，即可开始追踪年费回本进度、打卡报销额度以及常驻消费收益率推荐！',
+  emptyWalletBtn: '去卡库浏览添加',
 };
 
 export const translations: Record<'en' | 'zh', typeof translationsEn> = {
