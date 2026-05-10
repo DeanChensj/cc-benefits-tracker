@@ -283,9 +283,9 @@ export function CreateCardModal({
                         <option value="monthly">{language === 'zh' ? '按月刷新' : 'Monthly'}</option>
                         <option value="quarterly">{language === 'zh' ? '按季度刷新' : 'Quarterly'}</option>
                         <option value="semi-annual">{language === 'zh' ? '每半年刷新' : 'Semi-Annual'}</option>
-                        <option value="annual-calendar">{language === 'zh' ? '自然年刷新 (Calendar)' : 'Annual (Calendar)'}</option>
-                        <option value="annual-anniversary">{language === 'zh' ? '周年刷新 (Anniversary)' : 'Annual (Anniversary)'}</option>
-                        <option value="fixed">{language === 'zh' ? '固定到期时间' : 'Fixed Expiration Date'}</option>
+                        <option value="annual-calendar">{language === 'zh' ? '自然年刷新 (Calendar Year)' : 'Calendar Year'}</option>
+                        <option value="annual-anniversary">{language === 'zh' ? '持卡年周年刷新 (Anniversary)' : 'Anniversary'}</option>
+                        <option value="fixed">{language === 'zh' ? '单次/固定到期' : 'One-Time / Fixed'}</option>
                       </select>
                     </div>
 

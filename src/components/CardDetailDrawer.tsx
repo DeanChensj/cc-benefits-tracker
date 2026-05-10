@@ -17,13 +17,20 @@ export function CardDetailDrawer({ isOpen, card, onClose, onAdd, theme }: CardDe
   const t = (key: keyof typeof translations['en']) => translations[language][key] || translations['en'][key];
 
   const getResetPeriodLabel = (period: string) => {
-    if (language !== 'zh') return period;
-    if (period === 'monthly') return '月度重置';
-    if (period === 'quarterly') return '季度重置';
-    if (period === 'semi-annual') return '半年度重置';
-    if (period === 'annual-calendar') return '年度重置';
-    if (period === 'annual-anniversary') return '周年重置';
-    return '固定周期';
+    if (language !== 'zh') {
+      if (period === 'monthly') return 'Monthly';
+      if (period === 'quarterly') return 'Quarterly';
+      if (period === 'semi-annual') return 'Semi-Annual';
+      if (period === 'annual-calendar') return 'Calendar Year';
+      if (period === 'annual-anniversary') return 'Anniversary';
+      return 'One-Time';
+    }
+    if (period === 'monthly') return '按月重置';
+    if (period === 'quarterly') return '按季重置';
+    if (period === 'semi-annual') return '每半年重置';
+    if (period === 'annual-calendar') return '自然年刷新';
+    if (period === 'annual-anniversary') return '持卡周年重置';
+    return '单次/固定到期';
   };
 
 

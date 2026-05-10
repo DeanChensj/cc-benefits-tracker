@@ -230,11 +230,11 @@ export function AddOfferModal({ isOpen, onClose, cardName, onAdd, theme, showToa
                   themeClass('bg-slate-955 border-slate-800 text-slate-300', 'bg-slate-50 border-slate-250 text-slate-700')
                 }`}
               >
-                <option value="fixed">{language === 'zh' ? '固定到期日' : 'Fixed Expiration'}</option>
+                <option value="fixed">{language === 'zh' ? '单次/固定到期' : 'One-Time / Fixed'}</option>
                 <option value="monthly">{language === 'zh' ? '按月刷新' : 'Monthly'}</option>
                 <option value="quarterly">{language === 'zh' ? '按季度刷新' : 'Quarterly'}</option>
                 <option value="semi-annual">{language === 'zh' ? '每半年刷新' : 'Semi-Annual'}</option>
-                <option value="annual-calendar">{language === 'zh' ? '自然年刷新' : 'Annual (Cal)'}</option>
+                <option value="annual-calendar">{language === 'zh' ? '自然年刷新 (Calendar Year)' : 'Calendar Year'}</option>
               </select>
             </div>
 
