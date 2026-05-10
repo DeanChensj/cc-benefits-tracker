@@ -317,6 +317,10 @@ const translationsEn = {
   emptyWalletTitle: 'Your Wallet is Empty',
   emptyWalletDesc: 'Welcome! Open the card library to add card templates to start tracking statement credits and annual fee recoups.',
   emptyWalletBtn: 'Browse Card Library',
+
+  // 18. Onboarding welcome banner
+  onboardBannerTitle: '🚀 Welcome to PerkFolio!',
+  onboardBannerDesc: 'Pick and add your credit cards below to instantly unlock your custom checklist actions, annual fee recoup analytics, and real-time rewards recommendations!',
 };
 
 const translationsZh: typeof translationsEn = {
@@ -638,6 +642,10 @@ const translationsZh: typeof translationsEn = {
   emptyWalletTitle: '您的卡包还是空的',
   emptyWalletDesc: '欢迎使用！打开卡库选择并添加您的信用卡，即可开始追踪年费回本进度、打卡报销额度以及常驻消费收益率推荐！',
   emptyWalletBtn: '去卡库浏览添加',
+
+  // 18. Onboarding welcome banner
+  onboardBannerTitle: '🚀 欢迎来到卡神钱包 PerkFolio！',
+  onboardBannerDesc: '在下方挑选并【添加】您持有的信用卡，即可瞬间解锁属于您的专属打卡报销待办、年费回本精算以及消费刷卡收益率排行榜！',
 };
 
 export const translations: Record<'en' | 'zh', typeof translationsEn> = {

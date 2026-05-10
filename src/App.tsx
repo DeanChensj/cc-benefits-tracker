@@ -84,8 +84,14 @@ function App() {
 
   // Date to evaluate states against (defaults to current system date)
   const [currentDate, setCurrentDate] = useState(new Date());
-  const [activeTab, setActiveTab] = useState<'todo' | 'cards'>(() => (localStorage.getItem('cc-tracker-active-tab') as 'todo' | 'cards') || 'todo');
+  const [activeTab, setActiveTab] = useState<'todo' | 'cards'>(() => {
+    const hasCards = useCardStore.getState().ownedCards.length > 0;
+    if (!hasCards) return 'cards';
+    return (localStorage.getItem('cc-tracker-active-tab') as 'todo' | 'cards') || 'todo';
+  });
   const [deckSubTab, setDeckSubTab] = useState<'cards' | 'awards' | 'templates'>(() => {
+    const hasCards = useCardStore.getState().ownedCards.length > 0;
+    if (!hasCards) return 'templates';
     return (localStorage.getItem('cc-tracker-deck-sub-tab') as 'cards' | 'awards' | 'templates') || 'cards';
   });
   const [activeModal, setActiveModal] = useState<'sync' | 'create-card' | 'create-award' | 'wrapped' | 'disconnect-gdrive' | 'wipe' | null>(null);
@@ -238,6 +244,8 @@ function App() {
 
   const handleAddCustomCard = (card: Omit<OwnedCardInstance, 'id'>) => {
     addCustomCard(card);
+    setDeckSubTab('cards');
+    localStorage.setItem('cc-tracker-deck-sub-tab', 'cards');
     showToast(language === 'zh' ? `🎉 已成功创建 "${card.customName}" 并放入您的卡包！` : `🎉 Created and added "${card.customName}" to your Wallet!`);
   };
 
@@ -272,6 +280,8 @@ function App() {
         }
       });
     }
+
+
 
     // Dynamically prune expired打卡 logs older than 2 years to maintain tiny capped DB footprint!
     pruneExpiredLogs(currentDate);
