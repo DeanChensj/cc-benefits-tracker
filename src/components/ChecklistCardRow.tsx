@@ -129,6 +129,15 @@ export const ChecklistCardRow = React.memo(function ChecklistCardRow({
         </div>
 
         <div className="flex-grow min-w-0">
+          {!isStandalone && cardInstance && (
+            <div className={`text-[9px] font-extrabold uppercase tracking-widest mb-1 flex items-center gap-1.5 ${
+              themeClass('text-purple-400/90', 'text-purple-650/90')
+            }`}>
+              <span className="opacity-70">💳</span>
+              <span>{cardInstance.customName}</span>
+            </div>
+          )}
+
           <div className="flex flex-wrap items-center gap-2">
             <span className={`text-sm font-semibold truncate ${
               isExpired ? 'text-slate-400 line-through' :
