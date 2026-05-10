@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 import { useState, useEffect, useRef } from 'react';
 import type { OwnedCardInstance } from '../store/useCardStore';
 import type { Benefit, LoyaltyAward } from '../data/cards.db';
@@ -104,7 +105,7 @@ export function WalletAiAssistant({ remainingBenefits, logs, theme, showToast, o
       } else {
         throw new Error('Verification failed');
       }
-    } catch (err) {
+    } catch {
       showToast?.('❌ Invalid API Key. Please try again.', 'error');
     } finally {
       setIsVerifying(false);
@@ -140,7 +141,7 @@ export function WalletAiAssistant({ remainingBenefits, logs, theme, showToast, o
       const cardsContext = ownedCards.map((c) => {
         const multipliersText = c.multipliers 
           ? Object.entries(c.multipliers)
-              .filter(([_, val]) => val !== undefined)
+              .filter(([, val]) => val !== undefined)
               .map(([cat, val]) => `${cat}: ${val}x`)
               .join(', ')
           : 'none';
@@ -150,8 +151,7 @@ export function WalletAiAssistant({ remainingBenefits, logs, theme, showToast, o
       // Serialize standalone loyaltyAwards context
       const awardsContext = loyaltyAwards.map((a) => {
         const usedQty = a.usedQuantity || 0;
-        const remaining = a.quantity - usedQty;
-        return `- [Voucher] **${a.customName || a.templateId}** (${remaining}x remaining out of ${a.quantity}, Used: ${usedQty}, Expiry: ${a.expirationDate || 'none'}, Notes: ${a.notes || 'none'})`;
+        return `- [Voucher] **${a.customName || a.templateId}** (Status: ${usedQty >= 1 ? 'Used' : 'Unused'}, Expiry: ${a.expirationDate || 'none'}, Notes: ${a.notes || 'none'})`;
       }).join('\n');
 
       // Serialize active benefits checklist context
@@ -212,7 +212,7 @@ Guidelines:
       const reply = data?.candidates?.[0]?.content?.parts?.[0]?.text || 'Sorry, I could not process that.';
 
       setChatHistory([...updatedHistory, { role: 'model', text: reply }]);
-    } catch (err) {
+    } catch {
       setChatHistory([
         ...updatedHistory,
         { role: 'model', text: "❌ **API Connection Failed.** Please ensure your network is connected and your API key is still valid." }

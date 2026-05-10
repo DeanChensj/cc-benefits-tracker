@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 import { useRef, useState, useEffect } from 'react';
 import type { OwnedCardInstance } from '../store/useCardStore';
 import { CARDS_DB, AWARD_TEMPLATES } from '../data/cards.db';
@@ -133,7 +134,7 @@ export function SavingsWrappedModal({
         brand: award.customBrand || 'Other'
       } : AWARD_TEMPLATES[award.templateId];
 
-      const labelName = `${info.name} (x${award.quantity})`;
+      const labelName = info.name;
       return {
         name: labelName.length > 22 ? `${labelName.substring(0, 20)}..` : labelName,
         subActive: false,
@@ -204,6 +205,7 @@ export function SavingsWrappedModal({
       }
       setPosterDataUrl(null);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, posterLang, totalSavings]);
 
   if (!isOpen) return null;

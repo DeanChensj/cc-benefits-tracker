@@ -124,7 +124,7 @@ export const downloadICSFile = (
 
   // Integrate standalone loyalty awards into active calendar events subscription cleanly
   (loyaltyAwards || []).forEach((award) => {
-    if (award.usedQuantity === award.quantity || !award.expirationDate) return;
+    if ((award.usedQuantity || 0) >= 1 || !award.expirationDate) return;
 
     const isCustom = award.templateId === 'custom';
     const info = isCustom ? {
@@ -134,7 +134,7 @@ export const downloadICSFile = (
     } : AWARD_TEMPLATES[award.templateId];
 
     const uid = `${award.id}@perkfolio`;
-    const title = `🎁 Expiring: ${info.name} (${award.quantity}x)`;
+    const title = `🎁 Expiring: ${info.name}`;
     const exp = new Date(award.expirationDate + 'T00:00:00');
     
     // Set alert 10 days before expiration date
@@ -143,7 +143,7 @@ export const downloadICSFile = (
     const dtend = new Date(dtstart.getTime() + 60 * 60 * 1000); // 1 hr duration
     const dtendStr = formatICSDate(dtend);
     
-    const description = `${award.notes || 'Standalone card voucher.'} (Total value: $${info.value * award.quantity})`;
+    const description = `${award.notes || 'Standalone card voucher.'} (Value: $${info.value})`;
 
     icsContent.push(
       'BEGIN:VEVENT',

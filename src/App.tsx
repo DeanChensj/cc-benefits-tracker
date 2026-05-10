@@ -375,15 +375,14 @@ function App() {
     } : AWARD_TEMPLATES[award.templateId];
 
     const usedQty = award.usedQuantity || 0;
-    const remainingQty = award.quantity - usedQty;
-    const isFullyUsed = usedQty === award.quantity;
+    const isFullyUsed = usedQty >= 1;
 
     // Synthesize standard Benefit object
     const synthesizedBenefit: Benefit = {
       id: award.id,
-      name: `${info.name} ${remainingQty > 1 ? `(${remainingQty}x)` : ''}`,
+      name: info.name,
       description: award.notes || info.description || `${info.brand} loyalty reward certificate.`,
-      value: info.value * award.quantity,
+      value: info.value,
       resetPeriod: 'fixed',
       expirationDate: award.expirationDate,
       category: (info.awardType === 'fnr' || info.awardType === 'sua' || info.awardType === 'goh' || info.awardType === 'companion' || info.awardType === 'swu') 
@@ -402,7 +401,7 @@ function App() {
   const getExpiredValue = (ab: ActiveBenefit): number => {
     const usedQty = ab.loyaltyAward ? (ab.loyaltyAward.usedQuantity || 0) : 0;
     const isExpired = ab.loyaltyAward
-      ? (usedQty < ab.loyaltyAward.quantity && !!ab.benefit.expirationDate && new Date(ab.benefit.expirationDate + 'T00:00:00') < currentDate)
+      ? (usedQty < 1 && !!ab.benefit.expirationDate && new Date(ab.benefit.expirationDate + 'T00:00:00') < currentDate)
       : (ab.benefit.resetPeriod === 'fixed' && !!ab.benefit.expirationDate && new Date(ab.benefit.expirationDate + 'T00:00:00') < currentDate);
       
     if (!isExpired) return 0;

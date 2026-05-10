@@ -384,9 +384,9 @@ export function WalletLibraryTab({
 
           switch (awardSortBy) {
             case 'value-desc':
-              return (infoB.value * b.quantity) - (infoA.value * a.quantity);
+              return infoB.value - infoA.value;
             case 'value-asc':
-              return (infoA.value * a.quantity) - (infoB.value * b.quantity);
+              return infoA.value - infoB.value;
             case 'expiry':
             default: {
               const dateA = a.expirationDate ? new Date(a.expirationDate).getTime() : Infinity;
@@ -396,8 +396,8 @@ export function WalletLibraryTab({
           }
         });
 
-        const activeAwards = sortedAwards.filter((a) => (a.usedQuantity || 0) < a.quantity);
-        const inactiveAwards = sortedAwards.filter((a) => (a.usedQuantity || 0) >= a.quantity);
+        const activeAwards = sortedAwards.filter((a) => (a.usedQuantity || 0) < 1);
+        const inactiveAwards = sortedAwards.filter((a) => (a.usedQuantity || 0) >= 1);
 
         const renderAwardCard = (award: typeof loyaltyAwards[0]) => {
           const isCustom = award.templateId === 'custom';
@@ -410,7 +410,7 @@ export function WalletLibraryTab({
           } : AWARD_TEMPLATES[award.templateId];
 
           const usedQty = award.usedQuantity || 0;
-          const isCompleted = usedQty === award.quantity;
+          const isCompleted = usedQty >= 1;
           const theme = getAwardTheme(info.brand, info.awardType || '', themeClass);
 
           return (
@@ -473,7 +473,7 @@ export function WalletLibraryTab({
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
-                    updateAwardUsedQuantity(award.id, isCompleted ? 0 : award.quantity);
+                    updateAwardUsedQuantity(award.id, isCompleted ? 0 : 1);
                   }}
                   className={`w-full py-2 rounded-xl text-[10px] font-black uppercase tracking-wider transition z-30 cursor-pointer active:scale-95 mt-4 ${
                     isCompleted
