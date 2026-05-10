@@ -24,7 +24,7 @@ export function CreateAwardModal({ isOpen, onClose, themeClass }: CreateAwardMod
 
   const getTranslatedAwardType = (a: string) => {
     if (language !== 'zh') return a;
-    if (a === 'fnr') return '免费协议房券 (FNA)';
+    if (a === 'fnr') return '免费房券 (FN)';
     if (a === 'sua') return '套房升级券 (SUA)';
     if (a === 'goh') return '嘉宾体验券 (GOH)';
     if (a === 'companion') return '同行免票券';
@@ -246,7 +246,7 @@ export function CreateAwardModal({ isOpen, onClose, themeClass }: CreateAwardMod
                       themeClass('bg-slate-955 border-slate-850 text-white', 'bg-white border-slate-250 text-slate-800')
                     }`}
                   >
-                    <option value="fnr">{language === 'zh' ? '免费房券 (FNA)' : 'Free Night (FNA)'}</option>
+                    <option value="fnr">{language === 'zh' ? '免费房券 (FN)' : 'Free Night (FN)'}</option>
                     <option value="sua">{language === 'zh' ? '套房升级 (SUA)' : 'Suite Upgrade (SUA)'}</option>
                     <option value="goh">{language === 'zh' ? '嘉宾体验 (GOH)' : 'Guest of Honor'}</option>
                     <option value="companion">{language === 'zh' ? '同行免票券' : 'Companion Pass'}</option>

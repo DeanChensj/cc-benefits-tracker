@@ -31,7 +31,7 @@ const translationsEn = {
   vouchersUsed: 'used',
   addVoucherBtn: 'Add Standalone Voucher',
   noVouchers: 'No standalone vouchers added yet!',
-  vouchersDesc: 'Add standalone certificates, free nights (FNA), or suite upgrades.',
+  vouchersDesc: 'Add standalone certificates, free nights (FN), or suite upgrades.',
   validUntil: 'Valid until',
   usedStatus: '✓ Claimed',
   claimBtn: 'Claim Voucher',
@@ -65,7 +65,7 @@ const translationsEn = {
   catOther: 'Other',
 
   // Standalone Vouchers dropdown values
-  awardFnr: '🏨 Free Night (FNA)',
+  awardFnr: '🏨 Free Night (FN)',
   awardSua: '🛋️ Suite Upgrade (SUA)',
   awardGoh: '🤝 Guest of Honor (GOH)',
   awardCompanion: '🎫 Companion Pass',
@@ -352,7 +352,7 @@ const translationsZh: typeof translationsEn = {
   vouchersUsed: '张已用',
   addVoucherBtn: '添加独立房券/里程券',
   noVouchers: '暂未添加任何独立卡券！',
-  vouchersDesc: '在这里记录免费住宿券 (FNA)、套房券 (SUA) 或同行免票券。',
+  vouchersDesc: '在这里记录免费住宿券 (FN)、套房券 (SUA) 或同行免票券。',
   validUntil: '有效期至',
   usedStatus: '✓ 已核销',
   claimBtn: '打卡核销此券',
@@ -386,7 +386,7 @@ const translationsZh: typeof translationsEn = {
   catOther: '🏷️ 其他杂项',
 
   // Standalone Vouchers dropdown values
-  awardFnr: '🏨 免费住宿券 (FNA)',
+  awardFnr: '🏨 免费住宿券 (FN)',
   awardSua: '🛋️ 套房升级券 (SUA)',
   awardGoh: '🤝 嘉宾体验券 (GOH)',
   awardCompanion: '🎫 同行免票券',
