@@ -1,5 +1,5 @@
 import { Plus, Trash2, ExternalLink, Edit3, ChevronDown } from 'lucide-react';
-import { CARDS_DB } from '../data/cards.db';
+import { CARDS_DB, CARD_MULTIPLIERS } from '../data/cards.db';
 import type { OwnedCardInstance } from '../store/useCardStore';
 import { useCardStore } from '../store/useCardStore';
 import { translations, formatCardName } from '../utils/i18n';
@@ -32,7 +32,7 @@ export function WalletCreditCard({
   themeClass,
 }: WalletCreditCardProps) {
   const language = useCardStore((state) => state.language);
-  const t = (key: keyof typeof translations['en']) => translations[language][key] || translations['en'][key];
+  const t = (key: keyof typeof translations['en']): string => (translations[language][key] || translations['en'][key]) as string;
 
   const template = CARDS_DB.find((t) => t.id === instance.templateId);
   const cardColor = instance.templateId === 'custom' 
@@ -49,6 +49,9 @@ export function WalletCreditCard({
   const isSilverCard = instance.templateId === 'amex-platinum' || 
                        instance.templateId === 'amex-biz-platinum' || 
                        instance.templateId === 'amex-gold';
+
+  const multipliers = instance.multipliers || (instance.templateId !== 'custom' ? CARD_MULTIPLIERS[instance.templateId] : null);
+  const hasMultipliers = multipliers && Object.values(multipliers).some((v) => typeof v === 'number' && v > 1);
 
 
   return (
@@ -199,60 +202,7 @@ export function WalletCreditCard({
           'bg-white/90 border-slate-200 shadow-slate-100/50'
         )
       }`}>
-        {/* Recoup Progress Circle (if cardFee > 0) */}
-        {cardFee > 0 ? (
-          <div className={`flex items-center gap-3 p-2 rounded-xl border text-left shadow-inner ${
-            themeClass('bg-white/5 border-white/5 text-slate-300', 'bg-slate-950/5 border-slate-800/10 text-slate-800')
-          }`}>
-            <div className="relative w-10 h-10 shrink-0 flex items-center justify-center">
-              <svg className="w-10 h-10 transform -rotate-90">
-                <circle
-                  cx="20"
-                  cy="20"
-                  r="15"
-                  className={`fill-none stroke-current ${themeClass('text-white/10', 'text-slate-200')}`}
-                  strokeWidth="3"
-                />
-                <circle
-                  cx="20"
-                  cy="20"
-                  r="15"
-                  className={`fill-none stroke-current transition-all duration-500 ${
-                    isRecouped 
-                      ? 'text-emerald-500 dark:text-emerald-400 drop-shadow-[0_0_2px_rgba(52,211,153,0.25)]' 
-                      : themeClass('text-purple-400', 'text-slate-700')
-                  }`}
-                  strokeWidth="3"
-                  strokeDasharray="94.25"
-                  strokeDashoffset={94.25 - (94.25 * Math.min(recouped / cardFee, 1))}
-                  strokeLinecap="round"
-                />
-              </svg>
-              <div className="absolute inset-0 flex items-center justify-center text-[8px] font-black">
-                {isRecouped ? (
-                  <span className="text-emerald-500 dark:text-emerald-400">✓</span>
-                ) : (
-                  <span className={themeClass('text-slate-300', 'text-slate-700')}>
-                    {Math.round((recouped / cardFee) * 100)}%
-                  </span>
-                )}
-              </div>
-            </div>
-            <div className="min-w-0 flex-grow">
-              <p className={`text-[9px] font-black uppercase tracking-wider ${themeClass('text-slate-400', 'text-slate-500')}`}>{t('annualFeeRecoup')}</p>
-              <p className={`text-xs font-extrabold mt-0.5 leading-none ${themeClass('text-slate-200', 'text-slate-800')}`}>
-                <span className={isRecouped ? 'text-emerald-600 dark:text-emerald-400 font-black' : ''}>
-                  ${recouped}
-                </span>
-                <span className={`text-[9.5px] font-bold ml-1 ${themeClass('text-slate-455', 'text-slate-500')}`}>/ ${cardFee} {t('feeLabel')}</span>
-              </p>
-            </div>
-          </div>
-        ) : (
-          <p className={`text-[9px] font-black flex items-center gap-1 px-1 ${themeClass('text-emerald-400', 'text-emerald-600')}`}>
-            <span>{t('freeCard')}</span>
-          </p>
-        )}
+
 
     {/* Accordion Toggle & Actions Panel */}
         <div className="mt-3 pt-3 border-t border-white/5 dark:border-slate-800 flex items-center gap-2">
@@ -262,18 +212,15 @@ export function WalletCreditCard({
               e.stopPropagation();
               toggleCardExpanded(instance.id);
             }}
-            className={`flex-grow px-2.5 py-1.5 rounded-lg border text-[9px] font-extrabold tracking-wider uppercase flex items-center justify-between transition active:scale-[0.98] cursor-pointer ${
+            className={`flex-grow px-2.5 py-1.5 rounded-lg border text-[9px] font-black tracking-wider uppercase flex items-center justify-between transition active:scale-[0.98] cursor-pointer ${
               themeClass(
-                'bg-white/5 hover:bg-white/10 border-white/10 text-slate-100 hover:text-white',
+                'bg-white/5 hover:bg-white/10 border-white/10 text-slate-150 hover:text-white',
                 'bg-slate-100 hover:bg-slate-200 border-slate-250 text-slate-700'
               )
             }`}
           >
             <span className="flex items-center gap-1">
-              {isCardExpanded ? t('hideDetails') : t('showDetails')}
-              <span className="text-[8px] opacity-75 lowercase font-semibold">
-                ({benefits.length} {t('perksSuffix')})
-              </span>
+              <span>📊 {isCardExpanded ? t('hideDetails') : t('showDetails')}</span>
             </span>
             <ChevronDown className={`w-3 h-3 transition-transform duration-300 transform ${
               isCardExpanded ? 'rotate-180' : 'rotate-0'
@@ -296,9 +243,119 @@ export function WalletCreditCard({
         {/* 2. Collapsible Drawer Panel */}
         <div className={`transition-all duration-300 ease-in-out overflow-hidden ${
           isCardExpanded
-            ? 'max-h-[1200px] opacity-100 border-t border-dashed border-white/10 dark:border-black/5 pt-3 mt-3'
+            ? 'max-h-[1200px] opacity-100 border-t border-dashed border-white/10 dark:border-black/5 pt-3.5 mt-3'
             : 'max-h-0 opacity-0 pointer-events-none'
         }`}>
+          {/* Upper Metadata block inside Collapsible drawer (Recoup Progress and Point Multipliers) */}
+          <div className="mb-3.5">
+            {/* 💳 Dual-Column Premium ROI & Earning Dashboard */}
+            <div className={`p-3 rounded-xl border text-left shadow-inner grid grid-cols-12 gap-3 ${
+              themeClass('bg-white/5 border-white/5 text-slate-300', 'bg-slate-955/5 border-slate-800/10 text-slate-800')
+            }`}>
+              {/* Left Column: Recoup Progress (cardFee > 0 ? Circle Progress : Free Card label) - col-span-5 */}
+              <div className="col-span-5 flex items-center gap-2.5 min-w-0">
+                {cardFee > 0 ? (
+                  <>
+                    <div className="relative w-9 h-9 shrink-0 flex items-center justify-center">
+                      <svg className="w-9 h-9 transform -rotate-90">
+                        <circle
+                          cx="18"
+                          cy="18"
+                          r="13.5"
+                          className={`fill-none stroke-current ${themeClass('text-white/10', 'text-slate-250')}`}
+                          strokeWidth="2.5"
+                        />
+                        <circle
+                          cx="18"
+                          cy="18"
+                          r="13.5"
+                          className={`fill-none stroke-current transition-all duration-500 ${
+                            isRecouped 
+                              ? 'text-emerald-500 dark:text-emerald-400 drop-shadow-[0_0_2px_rgba(52,211,153,0.25)]' 
+                              : themeClass('text-purple-400', 'text-slate-700')
+                          }`}
+                          strokeWidth="2.5"
+                          strokeDasharray="84.82"
+                          strokeDashoffset={84.82 - (84.82 * Math.min(recouped / cardFee, 1))}
+                          strokeLinecap="round"
+                        />
+                      </svg>
+                      <div className="absolute inset-0 flex items-center justify-center text-[8.2px] font-black">
+                        {isRecouped ? (
+                          <span className="text-emerald-500 dark:text-emerald-400">✓</span>
+                        ) : (
+                          <span className={themeClass('text-slate-300', 'text-slate-750')}>
+                            {Math.round((recouped / cardFee) * 100)}%
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <div className="min-w-0 flex-grow">
+                      <p className={`text-[8.2px] font-black uppercase tracking-wider ${themeClass('text-slate-400', 'text-slate-500')}`}>{t('annualFeeRecoup')}</p>
+                      <p className={`text-[10.5px] font-extrabold mt-0.5 leading-none ${themeClass('text-slate-200', 'text-slate-850')}`}>
+                        <span className={isRecouped ? 'text-emerald-600 dark:text-emerald-400 font-black' : ''}>
+                          ${recouped}
+                        </span>
+                        <span className={`text-[9px] font-bold ml-0.5 ${themeClass('text-slate-455', 'text-slate-500')}`}>/ ${cardFee}</span>
+                      </p>
+                    </div>
+                  </>
+                ) : (
+                  <div className="min-w-0 flex-grow">
+                    <p className={`text-[8.2px] font-black uppercase tracking-wider ${themeClass('text-slate-400', 'text-slate-500')}`}>{t('annualFeeRecoup')}</p>
+                    <p className={`text-[9.5px] font-black flex items-center gap-1 mt-1 ${themeClass('text-emerald-400', 'text-emerald-600')}`}>
+                      <span>{t('freeCard')}</span>
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              {/* Vertical Dashed Separator - col-span-1 */}
+              <div className="col-span-1 flex justify-center items-stretch border-r border-dashed border-slate-200/20 dark:border-slate-800/40 my-0.5" />
+
+              {/* Right Column: Earning Multipliers pills container - col-span-6 */}
+              <div className="col-span-6 flex flex-col justify-center min-w-0">
+                {hasMultipliers ? (
+                  <div className="space-y-1">
+                    <p className={`text-[8.2px] font-black uppercase tracking-wider ${themeClass('text-slate-400', 'text-slate-500')}`}>
+                      {t('cardMultipliersTitle')}
+                    </p>
+                    <div className="flex flex-wrap gap-1 pt-0.5">
+                      {multipliers && Object.entries(multipliers)
+                        .filter(([, val]) => val && val > 1)
+                        .map(([category, val]) => (
+                          <span 
+                            key={category}
+                            className={`inline-flex items-center gap-0.5 px-1.5 py-0.2 rounded-md text-[8.5px] font-black border shadow-sm select-none ${
+                              themeClass('bg-slate-955 border-slate-850 text-slate-300', 'bg-slate-100 border-slate-250 text-slate-700')
+                            }`}
+                            title={`${category}: ${val}x`}
+                          >
+                            <span>
+                              {category === 'dining' ? '🍽️' :
+                               category === 'travel' ? '✈️' :
+                               category === 'shopping' ? '🛒' : '🎬'}
+                            </span>
+                            <span className={themeClass('text-purple-400', 'text-purple-650 font-black')}>{val}x</span>
+                          </span>
+                        ))
+                      }
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-0.5">
+                    <p className={`text-[8.2px] font-black uppercase tracking-wider ${themeClass('text-slate-400', 'text-slate-500')}`}>
+                      {t('cardMultipliersTitle')}
+                    </p>
+                    <p className={`text-[9px] font-bold italic mt-1 ${themeClass('text-slate-455', 'text-slate-500')}`}>
+                      {language === 'zh' ? '无多倍返点' : 'Flat Rate Card'}
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
           {/* Benefits preview inline list */}
           <div className="space-y-1 text-left">
             {benefits.map((b) => (

@@ -283,6 +283,14 @@ const translationsEn = {
   churnAmexWarning: '⚠️ Cooling (Only {days} days elapsed since last Amex card opened)',
   churnExitDate: 'Exit date:',
   churnDaysLeft: 'days remaining',
+
+  // 14. Card Multipliers details keys
+  cardMultipliersTitle: 'Point Multipliers',
+  catDiningBadge: 'Dining',
+  catTravelBadge: 'Travel',
+  catShoppingBadge: 'Groceries / Shopping',
+  catEntertainmentBadge: 'Entertainment',
+  catOtherBadge: 'Other / Flat',
 };
 
 const translationsZh: typeof translationsEn = {
@@ -570,6 +578,14 @@ const translationsZh: typeof translationsEn = {
   churnAmexWarning: '⚠️ 冷却中 (距离上一张 Amex 激活仅过去 {days} 天)',
   churnExitDate: '出坑日期:',
   churnDaysLeft: '天后出坑',
+
+  // 14. Card Multipliers details keys
+  cardMultipliersTitle: '卡片常驻多倍返点比例',
+  catDiningBadge: '餐饮吃饭',
+  catTravelBadge: '旅行出行',
+  catShoppingBadge: '超市/网购',
+  catEntertainmentBadge: '娱乐/流媒体',
+  catOtherBadge: '其他/无门槛',
 };
 
 export const translations: Record<'en' | 'zh', typeof translationsEn> = {

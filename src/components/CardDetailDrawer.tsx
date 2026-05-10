@@ -1,5 +1,6 @@
 import { X, Plus, Info, Calendar, Heart, ExternalLink } from 'lucide-react';
 import type { CardTemplate } from '../data/cards.db';
+import { CARD_MULTIPLIERS } from '../data/cards.db';
 import { getAnnualValue } from '../utils/valuationUtils';
 import { useCardStore } from '../store/useCardStore';
 import { translations } from '../utils/i18n';
@@ -39,6 +40,9 @@ export function CardDetailDrawer({ isOpen, card, onClose, onAdd, theme }: CardDe
 
   const themeClass = (dark: string, light: string) => theme === 'dark' ? dark : light;
   const cardColor = card.color || 'from-slate-800 to-slate-900';
+  
+  const multipliers = CARD_MULTIPLIERS[card.id] || null;
+  const hasMultipliers = multipliers && Object.values(multipliers).some(v => v && v > 1);
 
   return (
     // Backdrop overlay
@@ -118,6 +122,40 @@ export function CardDetailDrawer({ isOpen, card, onClose, onAdd, theme }: CardDe
               <ExternalLink className="w-3.5 h-3.5" />
               <span>{t('viewOfficialDetails')}</span>
             </a>
+          )}
+
+          {/* Premium Card Point Multipliers section */}
+          {hasMultipliers && (
+            <div className={`p-3 rounded-xl border text-left space-y-2 ${
+              themeClass('bg-white/5 border-white/5', 'bg-slate-955/5 border-slate-800/10')
+            }`}>
+              <p className={`text-[9.5px] font-extrabold uppercase tracking-wider ${themeClass('text-purple-400', 'text-purple-600')}`}>
+                {t('cardMultipliersTitle')}
+              </p>
+              <div className="flex flex-wrap gap-1.5 pt-0.5">
+                {multipliers && Object.entries(multipliers)
+                  .filter(([, val]) => val && val > 1)
+                  .map(([category, val]) => (
+                    <span 
+                      key={category}
+                      className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[9.5px] font-black border shadow-sm select-none ${
+                        themeClass('bg-slate-955 border-slate-850 text-slate-300', 'bg-slate-100 border-slate-250 text-slate-700')
+                      }`}
+                      title={`${category}: ${val}x`}
+                    >
+                      <span>
+                        {category === 'dining' ? '🍽️' :
+                         category === 'travel' ? '✈️' :
+                         category === 'shopping' ? '🛒' : '🎬'}
+                      </span>
+                      <span>{t(`cat${category.charAt(0).toUpperCase() + category.slice(1)}Badge` as keyof typeof translations['en'])}</span>
+                      <span className={`w-1 h-1 rounded-full opacity-30 ${themeClass('bg-white', 'bg-slate-800')}`} />
+                      <span className={themeClass('text-purple-400', 'text-purple-650 font-black')}>{val}x</span>
+                    </span>
+                  ))
+                }
+              </div>
+            </div>
           )}
 
           {/* 📋 Built-in Perks List */}
