@@ -1,5 +1,5 @@
 import { Plus, Trash2, ExternalLink, Edit3, ChevronDown } from 'lucide-react';
-import { CARDS_DB, CARD_MULTIPLIERS, getCardTemplateCurrency } from '../data/cards.db';
+import { CARDS_DB, CARD_MULTIPLIERS } from '../data/cards.db';
 import type { OwnedCardInstance } from '../store/useCardStore';
 import { useCardStore } from '../store/useCardStore';
 import { translations, formatCardName } from '../utils/i18n';
@@ -52,7 +52,7 @@ export function WalletCreditCard({
 
   const multipliers = instance.multipliers || (instance.templateId !== 'custom' ? CARD_MULTIPLIERS[instance.templateId] : null);
   const hasMultipliers = multipliers && Object.values(multipliers).some((v) => typeof v === 'number' && v > 1);
-  const currency = instance.templateId === 'custom' ? 'cash' : getCardTemplateCurrency(instance.templateId);
+  const currency = instance.templateId === 'custom' ? 'cash' : (template?.pointCurrency || 'cash');
   const cpp = useCardStore.getState().pointValuations?.[currency] || 1.0;
 
 

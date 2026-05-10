@@ -1,6 +1,6 @@
 import { X, Plus, Info, Calendar, Heart, ExternalLink } from 'lucide-react';
 import type { CardTemplate } from '../data/cards.db';
-import { CARD_MULTIPLIERS, getCardTemplateCurrency } from '../data/cards.db';
+import { CARD_MULTIPLIERS } from '../data/cards.db';
 import { getAnnualValue } from '../utils/valuationUtils';
 import { useCardStore } from '../store/useCardStore';
 import { translations } from '../utils/i18n';
@@ -43,7 +43,7 @@ export function CardDetailDrawer({ isOpen, card, onClose, onAdd, theme }: CardDe
   
   const multipliers = CARD_MULTIPLIERS[card.id] || null;
   const hasMultipliers = multipliers && Object.values(multipliers).some((v) => typeof v === 'number' && v > 1);
-  const currency = getCardTemplateCurrency(card.id);
+  const currency = card.pointCurrency || 'cash';
   const cpp = useCardStore.getState().pointValuations?.[currency] || 1.0;
 
   return (

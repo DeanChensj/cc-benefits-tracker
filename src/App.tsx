@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 // Meticulously audited and verified PWA release build with dynamic re-auth and contrast fixes
-import { CARDS_DB, CARD_MULTIPLIERS, AWARD_TEMPLATES, getCardTemplateCurrency } from './data/cards.db';
+import { CARDS_DB, CARD_MULTIPLIERS, AWARD_TEMPLATES } from './data/cards.db';
 import type { CardTemplate, Benefit, LoyaltyAward } from './data/cards.db';
 import { useCardStore, getLogKey } from './store/useCardStore';
 import type { OwnedCardInstance } from './store/useCardStore';
@@ -510,15 +510,15 @@ function App() {
           mult = CARD_MULTIPLIERS[instance.templateId]?.[cat] || 0;
         }
 
-        // 3. Resolve point type & valuation (cpp)
-        const currency = instance.templateId === 'custom' ? 'cash' : getCardTemplateCurrency(instance.templateId);
+        // 3. Resolve point type statically & calculate return (cpp)
+        const template = CARDS_DB.find((t) => t.id === instance.templateId);
+        const currency = instance.templateId === 'custom' ? 'cash' : (template?.pointCurrency || 'cash');
         const cpp = pointValuations[currency] !== undefined ? pointValuations[currency] : 1.0;
         const ros = mult * cpp;
 
         // We track and recommend strictly by ROS% (Return on Spend)
         if (ros > maxRos) {
           maxRos = ros;
-          const template = CARDS_DB.find((t) => t.id === instance.templateId);
           bestCard = {
             cardName: instance.customName,
             multiplier: mult,

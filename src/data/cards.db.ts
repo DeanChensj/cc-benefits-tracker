@@ -148,6 +148,7 @@ export const CARDS_DB: CardTemplate[] = [
     bank: 'Amex',
     color: 'from-[#c5a059] via-[#fdf2d5] to-[#9c7a3c]',
     annualFee: 320,
+    pointCurrency: 'amex-mr',
     officialUrl: 'https://www.americanexpress.com/us/credit-cards/card/gold-card/',
     signupBonusValue: 800,
     benefits: [
@@ -192,6 +193,7 @@ export const CARDS_DB: CardTemplate[] = [
     bank: 'Amex',
     color: 'from-slate-400 via-slate-200 to-slate-600',
     annualFee: 895,
+    pointCurrency: 'amex-mr',
     officialUrl: 'https://www.americanexpress.com/us/credit-cards/card/platinum/',
     signupBonusValue: 1250,
     benefits: [
@@ -279,6 +281,7 @@ export const CARDS_DB: CardTemplate[] = [
     bank: 'Amex',
     color: 'from-cyan-600 via-blue-800 to-slate-900',
     annualFee: 95,
+    pointCurrency: 'cash',
     officialUrl: 'https://www.americanexpress.com/us/credit-cards/card/blue-cash-preferred/',
     benefits: [
       {
@@ -314,6 +317,7 @@ export const CARDS_DB: CardTemplate[] = [
     bank: 'Amex',
     color: 'from-blue-950 via-indigo-900 to-slate-950',
     annualFee: 650,
+    pointCurrency: 'delta-miles',
     benefits: [
       {
         id: 'delta-reserve-companion',
@@ -355,6 +359,7 @@ export const CARDS_DB: CardTemplate[] = [
     bank: 'Amex',
     color: 'from-zinc-400 via-zinc-200 to-zinc-600',
     annualFee: 695,
+    pointCurrency: 'amex-mr',
     officialUrl: 'https://www.americanexpress.com/us/credit-cards/business/business-credit-cards/american-express-business-platinum-credit-card-amex/',
     signupBonusValue: 1500,
     benefits: [
@@ -390,6 +395,7 @@ export const CARDS_DB: CardTemplate[] = [
     bank: 'Amex',
     color: 'from-indigo-900 via-violet-950 to-slate-950',
     annualFee: 550,
+    pointCurrency: 'hilton',
     officialUrl: 'https://www.americanexpress.com/us/credit-cards/card/hilton-honors-aspire/',
     benefits: [
       {
@@ -424,6 +430,7 @@ export const CARDS_DB: CardTemplate[] = [
     bank: 'Amex',
     color: 'from-blue-950 via-slate-900 to-red-950',
     annualFee: 350,
+    pointCurrency: 'delta-miles',
     officialUrl: 'https://www.americanexpress.com/us/credit-cards/card/delta-skymiles-platinum-american-express-card/',
     benefits: [
       {
@@ -466,6 +473,7 @@ export const CARDS_DB: CardTemplate[] = [
     bank: 'Chase',
     color: 'from-blue-700 to-indigo-900',
     annualFee: 795,
+    pointCurrency: 'chase-ur',
     officialUrl: 'https://creditcards.chase.com/rewards-credit-cards/sapphire/reserve',
     signupBonusValue: 900,
     benefits: [
@@ -510,6 +518,7 @@ export const CARDS_DB: CardTemplate[] = [
     bank: 'Chase',
     color: 'from-blue-850 via-blue-950 to-slate-950',
     annualFee: 95,
+    pointCurrency: 'chase-ur',
     officialUrl: 'https://creditcards.chase.com/rewards-credit-cards/sapphire/preferred',
     signupBonusValue: 750,
     benefits: [
@@ -529,6 +538,7 @@ export const CARDS_DB: CardTemplate[] = [
     bank: 'Chase',
     color: 'from-sky-900 via-indigo-950 to-black',
     annualFee: 0,
+    pointCurrency: 'chase-ur',
     officialUrl: 'https://creditcards.chase.com/cash-back-credit-cards/freedom/flex',
     benefits: [
       {
@@ -550,6 +560,7 @@ export const CARDS_DB: CardTemplate[] = [
     bank: 'Chase',
     color: 'from-blue-600 via-sky-850 to-slate-950',
     annualFee: 95,
+    pointCurrency: 'hyatt',
     officialUrl: 'https://creditcards.chase.com/travel-credit-cards/world-of-hyatt-credit-card',
     benefits: [
       {
@@ -568,6 +579,7 @@ export const CARDS_DB: CardTemplate[] = [
     bank: 'Chase',
     color: 'from-slate-900 via-indigo-950 to-black',
     annualFee: 95,
+    pointCurrency: 'marriott',
     officialUrl: 'https://creditcards.chase.com/travel-credit-cards/marriott-bonvoy/boundless',
     benefits: [
       {
@@ -586,6 +598,7 @@ export const CARDS_DB: CardTemplate[] = [
     bank: 'Chase',
     color: 'from-amber-900 via-neutral-950 to-neutral-950',
     annualFee: 95,
+    pointCurrency: 'ihg',
     officialUrl: 'https://creditcards.chase.com/travel-credit-cards/ihg-rewards-club/premier',
     benefits: [
       {
@@ -612,6 +625,7 @@ export const CARDS_DB: CardTemplate[] = [
     bank: 'Other',
     color: 'from-teal-600 to-emerald-800',
     annualFee: 395,
+    pointCurrency: 'capitalone-miles',
     officialUrl: 'https://www.capitalone.com/credit-cards/venture-x/',
     signupBonusValue: 750,
     benefits: [
@@ -632,6 +646,7 @@ export const CARDS_DB: CardTemplate[] = [
     bank: 'Other',
     color: 'from-orange-500 via-red-500 to-orange-600',
     annualFee: 0,
+    pointCurrency: 'cash',
     officialUrl: 'https://www.discover.com/credit-cards/cashback/',
     benefits: [
       {
@@ -651,6 +666,7 @@ export const CARDS_DB: CardTemplate[] = [
     bank: 'Amex',
     color: 'from-neutral-900 via-stone-950 to-stone-900',
     annualFee: 650,
+    pointCurrency: 'marriott',
     officialUrl: 'https://www.americanexpress.com/us/credit-cards/card/marriott-bonvoy-brilliant/',
     benefits: [
       {
@@ -677,6 +693,7 @@ export const CARDS_DB: CardTemplate[] = [
     bank: 'Citi',
     color: 'from-blue-600 to-blue-900',
     annualFee: 0,
+    pointCurrency: 'citi-typ',
     officialUrl: 'https://www.citi.com/credit-cards/citi-custom-cash-credit-card',
     benefits: [
       {
@@ -696,6 +713,7 @@ export const CARDS_DB: CardTemplate[] = [
     bank: 'Amex',
     color: 'from-amber-600 via-amber-700 to-amber-900',
     annualFee: 375,
+    pointCurrency: 'amex-mr',
     officialUrl: 'https://www.americanexpress.com/us/credit-cards/business/business-credit-cards/american-express-business-gold-card-amex/',
     benefits: [
       {
@@ -714,6 +732,7 @@ export const CARDS_DB: CardTemplate[] = [
     bank: 'Chase',
     color: 'from-slate-700 via-slate-800 to-slate-900',
     annualFee: 0,
+    pointCurrency: 'chase-ur',
     officialUrl: 'https://creditcards.chase.com/business-credit-cards/ink/cash',
     benefits: [
       {
@@ -733,6 +752,7 @@ export const CARDS_DB: CardTemplate[] = [
     bank: 'Chase',
     color: 'from-blue-500 to-indigo-700',
     annualFee: 0,
+    pointCurrency: 'chase-ur',
     officialUrl: 'https://creditcards.chase.com/cash-back-credit-cards/freedom/unlimited',
     benefits: []
   },
@@ -742,6 +762,7 @@ export const CARDS_DB: CardTemplate[] = [
     bank: 'Amex',
     color: 'from-sky-600 via-sky-700 to-blue-800',
     annualFee: 0,
+    pointCurrency: 'cash',
     officialUrl: 'https://www.americanexpress.com/us/credit-cards/card/blue-cash-everyday/',
     benefits: [
       {
@@ -768,6 +789,7 @@ export const CARDS_DB: CardTemplate[] = [
     bank: 'Citi',
     color: 'from-cyan-600 to-blue-800',
     annualFee: 95,
+    pointCurrency: 'citi-typ',
     officialUrl: 'https://www.citi.com/credit-cards/citi-strata-premier-credit-card',
     benefits: [
       {
@@ -786,6 +808,7 @@ export const CARDS_DB: CardTemplate[] = [
     bank: 'Citi',
     color: 'from-slate-500 via-slate-600 to-zinc-700',
     annualFee: 99,
+    pointCurrency: 'aa-miles',
     officialUrl: 'https://www.citi.com/credit-cards/citi-aadvantage-platinum-select-credit-card',
     benefits: [
       {
@@ -815,7 +838,7 @@ export const CARD_MULTIPLIERS: Record<string, { dining?: number; travel?: number
   'chase-hyatt': { travel: 4, dining: 2 }, // 4x Hyatt, 2x Dining
   'chase-marriott-boundless': { travel: 6, dining: 2 }, // 6x Marriott, 2x Dining
   'chase-ihg-premier': { travel: 10, dining: 5 }, // 10x IHG, 5x Dining
-  'capitalone-venture-x': { travel: 2, dining: 2, shopping: 2, entertainment: 2 }, // 2x everything
+  'capital-one-venture-x': { travel: 2, dining: 2, shopping: 2, entertainment: 2 }, // 2x everything
   'amex-marriott-brilliant': { travel: 6, dining: 3 }, // 6x Marriott, 3x Dining
   'citi-custom-cash': { shopping: 5 }, // 5x top category
   'amex-biz-gold': { travel: 4, shopping: 4 }, // 4x transit/office
@@ -826,35 +849,7 @@ export const CARD_MULTIPLIERS: Record<string, { dining?: number; travel?: number
   'citi-aa-platinum-select': { travel: 2, dining: 2, shopping: 2 } // 2x AA Flights/Dining/Gas Stations
 };
 
-export const getCardTemplateCurrency = (templateId: string): PointCurrency => {
-  if (templateId.startsWith('amex-delta-')) {
-    return 'delta-miles';
-  }
-  if (templateId.startsWith('chase-united-')) {
-    return 'ua-miles';
-  }
-  if (templateId.startsWith('citi-aa-')) {
-    return 'aa-miles';
-  }
-  if (templateId.startsWith('amex-')) {
-    if (templateId === 'amex-marriott-brilliant') return 'marriott';
-    if (templateId === 'amex-hilton-aspire') return 'hilton';
-    return 'amex-mr';
-  }
-  if (templateId.startsWith('chase-')) {
-    if (templateId === 'chase-hyatt') return 'hyatt';
-    if (templateId === 'chase-marriott-boundless') return 'marriott';
-    if (templateId === 'chase-ihg-premier') return 'ihg';
-    return 'chase-ur';
-  }
-  if (templateId.startsWith('citi-')) {
-    return 'citi-typ';
-  }
-  if (templateId.startsWith('capitalone-')) {
-    return 'capitalone-miles';
-  }
-  return 'cash';
-};
+
 
 export const DEFAULT_VALUATIONS: Record<PointCurrency, number> = {
   'chase-ur': 1.6,
