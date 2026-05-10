@@ -300,18 +300,18 @@ const translationsEn = {
 
   // 16. Point Currency Names
   earningCurrencyLabel: 'Earning Program',
-  curr_amex_mr: 'Amex Membership Rewards (MR)',
-  curr_chase_ur: 'Chase Ultimate Rewards (UR)',
-  curr_citi_typ: 'Citi ThankYou Points (TYP)',
-  curr_capitalone_miles: 'Capital One Miles',
+  curr_amex_mr: 'Amex MR',
+  curr_chase_ur: 'Chase UR',
+  curr_citi_typ: 'Citi TYP',
+  curr_capitalone_miles: 'C1 Miles',
   curr_hyatt: 'Hyatt Points',
-  curr_marriott: 'Marriott Bonvoy Points',
-  curr_ihg: 'IHG One Rewards Points',
-  curr_hilton: 'Hilton Honors Points',
-  curr_aa_miles: 'American Airlines Miles (AA)',
-  curr_ua_miles: 'United Airlines Miles (UA)',
-  curr_delta_miles: 'Delta SkyMiles',
-  curr_cash: 'Cashback (USD)',
+  curr_marriott: 'Marriott Points',
+  curr_ihg: 'IHG Points',
+  curr_hilton: 'Hilton Points',
+  curr_aa_miles: 'AA Miles',
+  curr_ua_miles: 'UA Miles',
+  curr_delta_miles: 'Delta Miles',
+  curr_cash: 'Cashback',
 };
 
 const translationsZh: typeof translationsEn = {
@@ -616,18 +616,18 @@ const translationsZh: typeof translationsEn = {
 
   // 16. Point Currency Names
   earningCurrencyLabel: '返点积累币种',
-  curr_amex_mr: '运通 Amex MR',
-  curr_chase_ur: '大通 Chase UR',
-  curr_citi_typ: '花旗 Citi TYP',
-  curr_capitalone_miles: '第一资本 C1 Miles',
-  curr_hyatt: '凯悦 Hyatt 点数',
-  curr_marriott: '万豪 Marriott 点数',
-  curr_ihg: '洲际 IHG 点数',
-  curr_hilton: '希尔顿 Hilton 点数',
+  curr_amex_mr: '运通 MR',
+  curr_chase_ur: '大通 UR',
+  curr_citi_typ: '花旗 TYP',
+  curr_capitalone_miles: 'C1 Miles',
+  curr_hyatt: '凯悦点数',
+  curr_marriott: '万豪点数',
+  curr_ihg: '洲际点数',
+  curr_hilton: '希尔顿点数',
   curr_aa_miles: '美航 AA 里程',
   curr_ua_miles: '美联航 UA 里程',
-  curr_delta_miles: '达美 Delta 里程',
-  curr_cash: '现金返现 (美元)',
+  curr_delta_miles: '达美里程',
+  curr_cash: '现金返现',
 };
 
 export const translations: Record<'en' | 'zh', typeof translationsEn> = {

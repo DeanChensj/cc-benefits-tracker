@@ -418,22 +418,22 @@ export function WalletLibraryTab({
                           {Object.entries(useCardStore.getState().pointValuations || {})
                             .filter(([currency]) => currency !== 'cash')
                             .map(([currency, cpp]) => (
-                            <div key={currency} className={`p-1.5 rounded-lg border flex flex-col gap-1.5 ${
+                            <div key={currency} className={`px-2 py-1 rounded-lg border flex items-center justify-between gap-1.5 ${
                               themeClass('bg-slate-900/40 border-slate-850', 'bg-slate-50 border-slate-200')
                             }`}>
-                              <label className="text-[8px] font-black uppercase tracking-wider truncate">{currency.replace('-', ' ')}</label>
-                              <div className="flex items-center gap-1 justify-between">
-                                <input
-                                  type="number"
-                                  step="0.1"
-                                  min="0"
-                                  value={cpp}
-                                  onChange={(e) => useCardStore.getState().updatePointValuation(currency, Math.max(0, Number(e.target.value)))}
-                                  className={`w-12 border text-center text-[10px] font-mono font-black rounded-md py-0.5 focus:outline-none transition ${
-                                    themeClass('bg-slate-955 border-slate-800 text-white focus:border-purple-500', 'bg-white border-slate-250 text-slate-900 focus:border-purple-500 shadow-inner')
-                                  }`}
-                                />
-                                <span className="text-[8px] opacity-50">cpp</span>
+                              <label className="text-[8.5px] font-black uppercase tracking-wider truncate">{currency.replace('-', ' ')}</label>
+                               <div className="flex items-center gap-1 shrink-0">
+                                 <input
+                                   type="number"
+                                   step="0.1"
+                                   min="0"
+                                   value={cpp}
+                                   onChange={(e) => useCardStore.getState().updatePointValuation(currency, Math.max(0, Number(e.target.value)))}
+                                   className={`w-10 border text-center text-[10px] font-mono font-black rounded-md py-0.5 focus:outline-none transition ${
+                                     themeClass('bg-slate-955 border-slate-800 text-white focus:border-purple-500', 'bg-white border-slate-250 text-slate-900 focus:border-purple-500 shadow-inner')
+                                   }`}
+                                 />
+                                 <span className="text-[8px] opacity-50 font-bold">cpp</span>
                               </div>
                             </div>
                           ))}
