@@ -2,7 +2,7 @@ import { Filter, CreditCard, ArrowUpDown } from 'lucide-react';
 import type { OwnedCardInstance } from '../store/useCardStore';
 import type { LoyaltyAward } from '../data/cards.db';
 import { useCardStore } from '../store/useCardStore';
-import { translations } from '../utils/i18n';
+import { translations, formatCardName } from '../utils/i18n';
 
 interface FilterHubPanelProps {
   ownedCards: OwnedCardInstance[];
@@ -84,7 +84,7 @@ export function FilterHubPanel({
       {/* 2. Card & Vouchers Instance Filter */}
       {showCardFilter && (
         <div 
-          title={filterCardInstanceId === 'all' ? t('allPortfolios') : filterCardInstanceId === 'awards' ? t('standaloneVouchers') : (ownedCards.find(c => c.id === filterCardInstanceId)?.customName || '')}
+          title={filterCardInstanceId === 'all' ? t('allPortfolios') : filterCardInstanceId === 'awards' ? t('standaloneVouchers') : formatCardName(ownedCards.find(c => c.id === filterCardInstanceId)?.customName || '')}
           className={`flex items-center gap-2.5 border rounded-xl px-3 py-2.5 text-xs transition ${
             themeClass('bg-slate-955/40 border-slate-850 hover:border-slate-800 text-slate-300', 'bg-slate-50/80 border-slate-250/60 hover:border-slate-300 text-slate-700')
           }`}
@@ -101,7 +101,7 @@ export function FilterHubPanel({
             )}
             {ownedCards.map((card) => (
               <option key={card.id} value={card.id}>
-                💳 {card.customName}
+                💳 {formatCardName(card.customName)}
               </option>
             ))}
           </select>

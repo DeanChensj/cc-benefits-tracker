@@ -7,7 +7,7 @@ import { obfuscateKey } from '../utils/cryptoUtils';
 import { AWARD_TEMPLATES } from '../data/cards.db';
 import { getStepAmount } from '../utils/valuationUtils';
 import { useCardStore } from '../store/useCardStore';
-import { translations } from '../utils/i18n';
+import { translations, formatCardName } from '../utils/i18n';
 
 interface ChecklistCardRowProps {
   ab: ActiveBenefit;
@@ -134,7 +134,7 @@ export const ChecklistCardRow = React.memo(function ChecklistCardRow({
               themeClass('text-purple-400/90', 'text-purple-650/90')
             }`}>
               <span className="opacity-70">💳</span>
-              <span>{cardInstance.customName}</span>
+              <span>{formatCardName(cardInstance.customName)}</span>
             </div>
           )}
 

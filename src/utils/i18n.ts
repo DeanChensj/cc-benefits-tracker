@@ -555,3 +555,10 @@ export const translations: Record<'en' | 'zh', typeof translationsEn> = {
   zh: translationsZh
 };
 export type i18nKey = keyof typeof translationsEn;
+
+export const formatCardName = (name: string): string => {
+  if (!name) return '';
+  return name
+    .replace(/\bAmerican Express Gold\b/g, 'Amex Gold')
+    .replace(/\bAmerican Express Platinum\b/g, 'Amex Platinum');
+};

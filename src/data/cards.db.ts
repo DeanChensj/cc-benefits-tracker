@@ -141,7 +141,7 @@ export interface LoyaltyAward {
 export const CARDS_DB: CardTemplate[] = [
   {
     id: 'amex-gold',
-    name: 'American Express Gold',
+    name: 'Amex Gold',
     bank: 'Amex',
     color: 'from-[#c5a059] via-[#fdf2d5] to-[#9c7a3c]',
     annualFee: 320,
@@ -185,7 +185,7 @@ export const CARDS_DB: CardTemplate[] = [
   },
   {
     id: 'amex-platinum',
-    name: 'American Express Platinum',
+    name: 'Amex Platinum',
     bank: 'Amex',
     color: 'from-slate-400 via-slate-200 to-slate-600',
     annualFee: 895,

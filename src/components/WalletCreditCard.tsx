@@ -2,7 +2,7 @@ import { Plus, Trash2, ExternalLink, Edit3, ChevronDown } from 'lucide-react';
 import { CARDS_DB } from '../data/cards.db';
 import type { OwnedCardInstance } from '../store/useCardStore';
 import { useCardStore } from '../store/useCardStore';
-import { translations } from '../utils/i18n';
+import { translations, formatCardName } from '../utils/i18n';
 
 interface WalletCreditCardProps {
   instance: OwnedCardInstance;
@@ -173,14 +173,14 @@ export function WalletCreditCard({
               title="Click to edit card details"
             >
               <h4 className="text-sm font-black uppercase tracking-wider truncate">
-                {instance.templateId === 'custom' ? instance.customName : (template?.name || 'Card')}
+                {formatCardName(instance.templateId === 'custom' ? instance.customName : (template?.name || 'Card'))}
               </h4>
               <Edit3 className="w-3 h-3 shrink-0 opacity-50 group-hover/edit:opacity-100" />
             </div>
             {/* Custom Sub-label displaying the user-defined customName */}
             {instance.templateId !== 'custom' && (
               <p className="text-[8px] uppercase tracking-widest opacity-75 mt-0.5 truncate font-bold">
-                {instance.customName}
+                {formatCardName(instance.customName)}
               </p>
             )}
           </div>
