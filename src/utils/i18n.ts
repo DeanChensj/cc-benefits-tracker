@@ -268,10 +268,21 @@ const translationsEn = {
   wrappedScannerLabel: '100% LOCAL-FIRST • ZERO-TRACK PRIVACY',
   wrappedSubBadge: 'SUB SECURED ✓',
   
-  // 12. Batch selection sticky bar
   batchSelection: 'Batch Selection',
   clearSelection: 'Clear',
   addToWallet: 'Add to Wallet',
+
+  // 13. Churning Stats Drawer keys
+  churnDrawerTitle: 'Churning Timeline Audit',
+  churnGuideTitle: '💡 Application Recommendations',
+  churnChaseSafe: '🟢 Your Chase corridor is wide open! Prioritize Sapphire or Freedom templates.',
+  churnChaseWarning: '⚠️ You are approaching Chase lock-out limits. Carefully plan your next Chase slots.',
+  churnChaseLocked: '🚨 5/24 Limit Locked! Chase will auto-decline new applications. Focus on Amex or Capital One.',
+  churnAmexTitle: 'Amex 1/90 Cooling Time',
+  churnAmexSafe: '🟢 Safe (Last Amex opened over 90 days ago)',
+  churnAmexWarning: '⚠️ Cooling (Only {days} days elapsed since last Amex card opened)',
+  churnExitDate: 'Exit date:',
+  churnDaysLeft: 'days remaining',
 };
 
 const translationsZh: typeof translationsEn = {
@@ -544,10 +555,21 @@ const translationsZh: typeof translationsEn = {
   wrappedScannerLabel: '100% 本地数据运行 • 零追踪隐私保障',
   wrappedSubBadge: '开卡礼已斩获 ✓',
   
-  // 12. Batch selection sticky bar
   batchSelection: '批量导入模式',
   clearSelection: '清空选择',
   addToWallet: '确认导入卡包',
+
+  // 13. Churning Stats Drawer keys
+  churnDrawerTitle: '持卡冷却时间线精算',
+  churnGuideTitle: '💡 精算办卡策略推荐',
+  churnChaseSafe: '🟢 您的 Chase 申卡通道极度安全！建议优先考虑 Sapphire 尊贵卡或 Freedom 系列。',
+  churnChaseWarning: '⚠️ 您已接近 Chase 5/24 爆卡上限。建议极度谨慎规划您的下一个 Chase 开卡空槽。',
+  churnChaseLocked: '🚨 5/24 爆卡锁死！Chase 会自动拒签新开申请。建议转攻运通(Amex)或第一资本卡。',
+  churnAmexTitle: '运通 Amex 1/90 开卡冷却',
+  churnAmexSafe: '🟢 安全 (距离上一张 Amex 激活已超 90 天)',
+  churnAmexWarning: '⚠️ 冷却中 (距离上一张 Amex 激活仅过去 {days} 天)',
+  churnExitDate: '出坑日期:',
+  churnDaysLeft: '天后出坑',
 };
 
 export const translations: Record<'en' | 'zh', typeof translationsEn> = {

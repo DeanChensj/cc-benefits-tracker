@@ -3,6 +3,7 @@ import { Plus, Sparkles, CreditCard, Trash2, Compass } from 'lucide-react';
 import { WalletCreditCard } from './WalletCreditCard';
 import { CardTemplatesCatalog } from './CardTemplatesCatalog';
 import { CheckoutWinnersRow } from './CheckoutWinnersRow';
+import { ChurningStatsDrawer } from './ChurningStatsDrawer';
 import { CARDS_DB, AWARD_TEMPLATES } from '../data/cards.db';
 import type { LoyaltyAward, CardTemplate } from '../data/cards.db';
 import type { OwnedCardInstance } from '../store/useCardStore';
@@ -177,6 +178,16 @@ export function WalletLibraryTab({
   const [isClaimedArchiveCollapsed, setIsClaimedArchiveCollapsed] = useState(true);
   const [awardSearchQuery, setAwardSearchQuery] = useState('');
   const [awardSortBy, setAwardSortBy] = useState<'expiry' | 'value-desc' | 'value-asc'>('expiry');
+  const [isChurningDrawerOpen, setIsChurningDrawerOpen] = useState(false);
+
+  // Calculate Chase 5/24 status dynamically
+  const now = new Date();
+  const twoYearsAgo = new Date(now.getFullYear() - 2, now.getMonth(), now.getDate());
+  const chase524Count = ownedCards.filter((card) => {
+    if (!card.cardOpenDate) return false;
+    const openDate = new Date(card.cardOpenDate);
+    return openDate >= twoYearsAgo;
+  }).length;
 
 
 
@@ -243,17 +254,36 @@ export function WalletLibraryTab({
             themeClass('bg-slate-900/30 border-slate-850', 'bg-white border-slate-200 shadow-sm')
           }`}>
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-4 pb-2 border-b border-dashed border-slate-200/60 dark:border-slate-800/60">
-              <h3 className={`text-xs font-bold uppercase tracking-wider flex items-center gap-2 ${themeClass('text-slate-400', 'text-slate-555')}`}>
+              <h3 className={`text-xs font-bold uppercase tracking-wider flex items-center gap-2 flex-wrap ${themeClass('text-slate-400', 'text-slate-555')}`}>
                 <CreditCard className="w-4 h-4 text-purple-500" />
-                {t('activeCardsTitle')} ({ownedCards.length} {ownedCards.length === 1 ? t('cardSuffix') : t('cardsSuffix')})
+                <span>{t('activeCardsTitle')} ({ownedCards.length} {ownedCards.length === 1 ? t('cardSuffix') : t('cardsSuffix')})</span>
+                {ownedCards.length > 0 && (
+                  <>
+                    <span className="opacity-25 dark:opacity-40 text-slate-400">•</span>
+                    <button
+                      type="button"
+                      onClick={() => setIsChurningDrawerOpen(true)}
+                      className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[9.5px] font-extrabold border transition active:scale-95 hover:scale-[1.02] cursor-pointer ${
+                        chase524Count >= 5
+                          ? 'bg-rose-500/10 text-rose-500 border-rose-500/20 dark:bg-rose-500/5 animate-pulse'
+                          : 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20 dark:bg-emerald-500/5'
+                      }`}
+                      title="Audit Churner Cooling application stats"
+                    >
+                      <span>Chase 5/24:</span>
+                      <span className="font-black">{chase524Count}/24</span>
+                      <span className="w-1.5 h-1.5 rounded-full bg-current shrink-0" />
+                    </button>
+                  </>
+                )}
               </h3>
-              <div className="flex items-center gap-2 flex-wrap">
+              <div className="flex items-center gap-2 flex-wrap md:flex-nowrap shrink-0">
                 <input
                   type="text"
                   placeholder={t('searchCardsPlaceholder')}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className={`border text-xs rounded-xl px-3 py-1.5 focus:outline-none w-44 font-medium ${
+                  className={`border text-xs rounded-xl px-3 py-1.5 focus:outline-none w-full md:w-36 font-medium ${
                     themeClass('bg-slate-955 border-slate-850 focus:border-purple-500 text-slate-200', 'bg-slate-50 border-slate-255 focus:border-purple-500 text-slate-800 shadow-inner')
                   }`}
                 />
@@ -610,6 +640,12 @@ export function WalletLibraryTab({
           </div>
         );
       })()}
+      <ChurningStatsDrawer
+        isOpen={isChurningDrawerOpen}
+        onClose={() => setIsChurningDrawerOpen(false)}
+        ownedCards={ownedCards}
+        theme={themeClass('dark', 'light') as 'dark' | 'light'}
+      />
     </div>
   );
 }
