@@ -198,7 +198,9 @@ export function WalletCreditCard({
       </div>
 
       {/* B. Lower Part: Glassmorphic Analytics & Action Tray (Attached) */}
-      <div className={`p-4 rounded-2xl border border-t-0 rounded-t-none flex flex-col justify-between transition duration-250 -mt-3 pt-6 shadow-md ${
+      <div className={`p-4 rounded-2xl border border-t-0 rounded-t-none flex flex-col justify-between transition-all duration-250 -mt-3 shadow-md ${
+        isCardExpanded ? 'pt-5.5 pb-4' : 'pt-4.5 pb-3'
+      } ${
         themeClass(
           'bg-slate-900/45 border-slate-850/80 shadow-black/10', 
           'bg-white/90 border-slate-200 shadow-slate-100/50'
@@ -207,7 +209,7 @@ export function WalletCreditCard({
 
 
     {/* Accordion Toggle & Actions Panel */}
-        <div className="mt-3 pt-3 border-t border-white/5 dark:border-slate-800 flex items-center gap-2">
+        <div className={`flex items-center gap-2 ${isCardExpanded ? 'mt-2' : 'mt-1'}`}>
           <button
             type="button"
             onClick={(e) => {
