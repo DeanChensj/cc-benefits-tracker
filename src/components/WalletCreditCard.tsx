@@ -55,12 +55,14 @@ export function WalletCreditCard({
     <div className="flex flex-col w-full transition duration-200 hover:scale-[1.01]">
       {/* A. Upper Part: Realistic Virtual Credit Card Face (1.58:1 Ratio) */}
       <div
-        className={`aspect-[1.58/1] w-full rounded-2xl relative p-4 flex flex-col justify-between text-white overflow-hidden shadow-xl select-none bg-gradient-to-tr ${cardColor} border transition-all duration-500 hover:scale-[1.02] hover:shadow-2xl hover:shadow-purple-500/10 dark:hover:shadow-purple-500/15 hover:border-purple-500/30 group/card ${
+        className={`aspect-[1.58/1] w-full rounded-2xl relative p-4 flex flex-col justify-between overflow-hidden shadow-xl select-none bg-gradient-to-tr ${cardColor} border transition-all duration-500 hover:scale-[1.02] hover:shadow-2xl hover:shadow-purple-500/10 dark:hover:shadow-purple-500/15 hover:border-purple-500/30 group/card ${
+          isSilverCard ? 'text-slate-900 font-extrabold' : 'text-white'
+        } ${
           isRecouped 
             ? 'ring-2 ring-amber-500/50 dark:ring-amber-400/35 border-amber-500/30 shadow-lg shadow-amber-500/5'
             : isSilverCard
-            ? 'border-slate-350/65 text-slate-900 font-bold shadow-md shadow-slate-200/10'
-            : 'border-purple-900/20 text-slate-100'
+            ? 'border-slate-300/60 shadow-md shadow-slate-200/10'
+            : 'border-purple-900/20'
         }`}
       >
         {/* Hover Metallic Gloss Sheen */}
@@ -71,12 +73,12 @@ export function WalletCreditCard({
           <div className="flex items-center gap-1.5">
             <span className={`text-[8px] font-black px-1.5 py-0.5 rounded-md uppercase tracking-widest ${
               isSilverCard
-                ? 'bg-slate-955/15 text-slate-800 border border-slate-955/10'
+                ? 'bg-slate-955/20 text-slate-900 border border-slate-900/15'
                 : 'bg-white/15 text-white border border-white/15'
             }`}>
               {instance.templateId === 'custom' ? (instance.bank || 'Custom') : (template?.bank || 'Standard')}
             </span>
-            <span className={`text-[7.5px] font-extrabold uppercase tracking-widest opacity-85 ${isSilverCard ? 'text-slate-800' : 'text-slate-350'}`}>
+            <span className="text-[7.5px] font-extrabold uppercase tracking-widest opacity-85">
               {language === 'zh' ? '已激活' : 'Opened'}: {instance.cardOpenDate}
             </span>
           </div>
@@ -170,14 +172,14 @@ export function WalletCreditCard({
               className="flex items-center gap-1.5 cursor-pointer group/edit max-w-fit"
               title="Click to edit card details"
             >
-              <h4 className={`text-sm font-black uppercase tracking-wider truncate ${isSilverCard ? 'text-slate-905' : 'text-white'}`}>
+              <h4 className="text-sm font-black uppercase tracking-wider truncate">
                 {instance.templateId === 'custom' ? instance.customName : (template?.name || 'Card')}
               </h4>
-              <Edit3 className={`w-3 h-3 shrink-0 opacity-50 group-hover/edit:opacity-100 ${isSilverCard ? 'text-slate-850' : 'text-slate-350'}`} />
+              <Edit3 className="w-3 h-3 shrink-0 opacity-50 group-hover/edit:opacity-100" />
             </div>
             {/* Custom Sub-label displaying the user-defined customName */}
             {instance.templateId !== 'custom' && (
-              <p className={`text-[8px] uppercase tracking-widest opacity-75 mt-0.5 truncate ${isSilverCard ? 'text-slate-755 font-bold' : 'text-slate-300'}`}>
+              <p className="text-[8px] uppercase tracking-widest opacity-75 mt-0.5 truncate font-bold">
                 {instance.customName}
               </p>
             )}
