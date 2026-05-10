@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { X, Calendar, Sparkles, Info, Plus } from 'lucide-react';
 import { AWARD_TEMPLATES } from '../data/cards.db';
+import { getAwardTheme } from '../utils/themeUtils';
 import { useCardStore } from '../store/useCardStore';
 import { translations } from '../utils/i18n';
 
@@ -13,14 +14,6 @@ interface CreateAwardModalProps {
 export function CreateAwardModal({ isOpen, onClose, themeClass }: CreateAwardModalProps) {
   const { addLoyaltyAward, language } = useCardStore();
   const t = (key: keyof typeof translations['en']) => translations[language][key] || translations['en'][key];
-
-  const getTranslatedProgramType = (p: string) => {
-    if (language !== 'zh') return p;
-    if (p === 'hotel') return '酒店常客 🏨';
-    if (p === 'airline') return '航空里程 ✈️';
-    if (p === 'bank') return '银行积分 🏦';
-    return '其他类别 📦';
-  };
 
   const getTranslatedAwardType = (a: string) => {
     if (language !== 'zh') return a;
@@ -83,19 +76,29 @@ export function CreateAwardModal({ isOpen, onClose, themeClass }: CreateAwardMod
   const isCustom = selectedTemplate === 'custom';
   const templateInfo = AWARD_TEMPLATES[selectedTemplate];
 
+  const liveBrand = isCustom ? (customBrand.trim() || 'Brand') : templateInfo.brand;
+  const liveName = isCustom ? (customName.trim() || 'Custom Voucher') : templateInfo.name;
+  const liveAwardType = isCustom ? customAwardType : templateInfo.awardType;
+  const liveValue = isCustom ? (Number(customValue) || 0) : templateInfo.value;
+
+  const liveTheme = getAwardTheme(liveBrand, liveAwardType || '', themeClass);
+
   return (
     <div 
       onClick={onClose}
-      className="fixed inset-0 z-55 flex items-center justify-center p-3 bg-black/60 backdrop-blur-[3px] overflow-y-auto"
+      className="fixed inset-0 z-55 flex items-center justify-center p-3 bg-slate-955/40 dark:bg-slate-950/75 backdrop-blur-md saturate-[170%] overflow-y-auto animate-fade-in"
     >
       <div 
         onClick={(e) => e.stopPropagation()}
-        className={`relative w-full max-w-[440px] border rounded-2xl shadow-2xl animate-scale-up overflow-hidden flex flex-col ${
-          themeClass('bg-slate-955 border-slate-855 text-white', 'bg-white border-slate-200 text-slate-900')
+        className={`relative w-full max-w-[440px] border border-t rounded-2xl shadow-2xl animate-scale-up overflow-hidden flex flex-col transition-colors duration-300 ${
+          themeClass(
+            'bg-slate-900/80 border-slate-800/70 border-t-white/15 text-white backdrop-blur-md saturate-[170%]', 
+            'bg-white/85 border-slate-200 border-t-white/45 text-slate-900 backdrop-blur-md saturate-[170%]'
+          )
         }`}
       >
         {/* Modal Header */}
-        <div className="flex items-center justify-between p-4 border-b border-dashed border-slate-800/30 dark:border-white/5 shrink-0">
+        <div className="flex items-center justify-between p-4 border-b border-dashed border-slate-200/60 dark:border-white/5 shrink-0">
           <div className="flex items-center gap-2">
             <Sparkles className="w-4 h-4 text-amber-400 animate-pulse" />
             <h4 className="text-xs font-black uppercase tracking-wider">{t('awardFormTitle')}</h4>
@@ -109,9 +112,9 @@ export function CreateAwardModal({ isOpen, onClose, themeClass }: CreateAwardMod
         </div>
 
         {/* Scrollable Form Content */}
-        <form onSubmit={handleSubmit} className="flex-grow overflow-y-auto p-4 flex flex-col gap-4 max-h-[75vh] max-h-[75dvh] scrollbar-thin">
+        <form onSubmit={handleSubmit} className="flex-grow overflow-y-auto p-4 flex flex-col gap-4 max-h-[75vh] max-h-[75dvh] scrollbar-thin text-left">
           {/* Description Tip */}
-          <div className={`p-3 rounded-xl flex gap-2.5 border text-[10px] font-medium leading-relaxed leading-relaxed ${
+          <div className={`p-3 rounded-xl flex gap-2.5 border text-[10px] font-medium leading-relaxed ${
             themeClass('bg-purple-500/5 border-purple-500/10 text-purple-300', 'bg-purple-500/5 border-purple-500/10 text-purple-700')
           }`}>
             <Info className="w-4 h-4 shrink-0 animate-pulse" />
@@ -132,8 +135,8 @@ export function CreateAwardModal({ isOpen, onClose, themeClass }: CreateAwardMod
                 setCustomBrand('');
                 setCustomValue('');
               }}
-              className={`w-full text-xs font-bold rounded-xl px-3 py-2.5 focus:outline-none focus:border-purple-500 border transition ${
-                themeClass('bg-slate-950 border-slate-850 text-white', 'bg-slate-50 border-slate-250 text-slate-800')
+              className={`w-full text-xs font-bold rounded-xl px-3 py-2.5 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/10 border transition ${
+                themeClass('bg-slate-950 border-slate-850 text-white', 'bg-slate-55 border-slate-255 text-slate-800')
               }`}
             >
               {Object.entries(AWARD_TEMPLATES).map(([key, t]) => (
@@ -144,25 +147,52 @@ export function CreateAwardModal({ isOpen, onClose, themeClass }: CreateAwardMod
             </select>
           </div>
 
-          {/* If Pre-configured template: render display-only properties */}
-          {!isCustom && (
-            <div className={`grid grid-cols-2 gap-3 p-3.5 rounded-xl border ${
-              themeClass('bg-slate-955/60 border-slate-850/80', 'bg-slate-50 border-slate-200')
-            }`}>
-              <div className="space-y-0.5">
-                <span className="text-[9px] font-bold uppercase text-slate-500">{language === 'zh' ? '卡券常客类别 / 权益类型' : 'Category / Type'}</span>
-                <p className="text-[11px] font-extrabold capitalize text-purple-500">
-                  {getTranslatedProgramType(templateInfo.programType)} • {getTranslatedAwardType(templateInfo.awardType)}
-                </p>
+          {/* 🎟️ LIVE TICKET STUB CARD PREVIEW */}
+          <div className="space-y-1.5">
+            <label className={`text-[9px] font-extrabold uppercase tracking-widest ${themeClass('text-slate-450', 'text-slate-500')}`}>
+              {t('awardFormPreviewTitle')}
+            </label>
+            <div className={`rounded-2xl border border-t flex justify-between relative overflow-hidden select-none transition-all duration-300 min-h-[95px] bg-gradient-to-tr p-4 shadow ${liveTheme.bgClass}`}>
+              {/* Watermark */}
+              <div className="absolute right-[32%] bottom-[-8px] select-none pointer-events-none opacity-[0.035] text-[32px] font-black tracking-widest uppercase font-sans -rotate-12 leading-none z-0">
+                {liveTheme.watermark}
               </div>
-              <div className="space-y-0.5">
-                <span className="text-[9px] font-bold uppercase text-slate-500">{language === 'zh' ? '估算现值价值' : 'Est. Value'}</span>
-                <p className="text-[11px] font-extrabold text-amber-500">
-                  ${templateInfo.value} USD
-                </p>
+              
+              {/* Left Ticket Section */}
+              <div className="flex-grow text-left min-w-0 flex flex-col justify-between z-10 pr-2">
+                <div>
+                  <div className="flex items-center gap-1.5">
+                    <span className={`text-[7.5px] font-black px-1.5 py-0.5 rounded uppercase tracking-wider border ${liveTheme.brandTagClass}`}>
+                      {liveBrand}
+                    </span>
+                    {expirationDate && (
+                      <span className="text-[7.5px] font-bold opacity-80 truncate">
+                        • Exp: {expirationDate}
+                      </span>
+                    )}
+                  </div>
+                  <h4 className="text-xs font-black mt-2 break-words line-clamp-2 leading-tight">
+                    {liveName}
+                  </h4>
+                </div>
+                
+                {notes && (
+                  <p className="text-[9px] opacity-90 font-semibold truncate mt-2">
+                    ✍️ {notes}
+                  </p>
+                )}
+              </div>
+              
+              {/* Right stub Section */}
+              <div className="w-24 shrink-0 flex flex-col justify-center items-center border-l border-dashed border-white/10 dark:border-black/20 relative text-center z-10 pl-3">
+                <span className="text-[8px] font-bold opacity-65 uppercase block leading-none">{t('voucherValue')}</span>
+                <span className="font-black text-base leading-none mt-1">${liveValue}</span>
+                <span className={`text-[7.5px] font-black uppercase tracking-wider mt-1 block text-center truncate max-w-full ${liveTheme.glowColor}`}>
+                  {getTranslatedAwardType(liveAwardType || '')}
+                </span>
               </div>
             </div>
-          )}
+          </div>
 
           {/* Custom Fields Group - Only rendered if selection === 'custom' */}
           {isCustom && (
@@ -182,8 +212,8 @@ export function CreateAwardModal({ isOpen, onClose, themeClass }: CreateAwardMod
                   placeholder={t('awardFormNamePlace')}
                   value={customName}
                   onChange={(e) => setCustomName(e.target.value)}
-                  className={`w-full text-xs font-semibold rounded-xl px-3 py-2 focus:outline-none focus:border-purple-500 border transition ${
-                    themeClass('bg-slate-950 border-slate-850 text-white', 'bg-white border-slate-250 text-slate-800')
+                  className={`w-full text-xs font-semibold rounded-xl px-3 py-2 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/10 border transition ${
+                    themeClass('bg-slate-950 border-slate-850 text-white', 'bg-slate-55 border-slate-255 text-slate-800')
                   }`}
                 />
               </div>
@@ -198,8 +228,8 @@ export function CreateAwardModal({ isOpen, onClose, themeClass }: CreateAwardMod
                     placeholder={t('awardFormBrandPlace')}
                     value={customBrand}
                     onChange={(e) => setCustomBrand(e.target.value)}
-                    className={`w-full text-xs font-semibold rounded-xl px-3 py-2 focus:outline-none focus:border-purple-500 border transition ${
-                      themeClass('bg-slate-950 border-slate-850 text-white', 'bg-white border-slate-250 text-slate-800')
+                    className={`w-full text-xs font-semibold rounded-xl px-3 py-2 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/10 border transition ${
+                      themeClass('bg-slate-950 border-slate-850 text-white', 'bg-slate-55 border-slate-255 text-slate-800')
                     }`}
                   />
                 </div>
@@ -212,8 +242,8 @@ export function CreateAwardModal({ isOpen, onClose, themeClass }: CreateAwardMod
                     placeholder="e.g. 100"
                     value={customValue}
                     onChange={(e) => setCustomValue(e.target.value)}
-                    className={`w-full text-xs font-semibold rounded-xl px-3 py-2 focus:outline-none focus:border-purple-500 border transition ${
-                      themeClass('bg-slate-950 border-slate-850 text-white', 'bg-white border-slate-250 text-slate-800')
+                    className={`w-full text-xs font-semibold rounded-xl px-3 py-2 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/10 border transition ${
+                      themeClass('bg-slate-950 border-slate-850 text-white', 'bg-slate-55 border-slate-255 text-slate-800')
                     }`}
                   />
                 </div>
@@ -226,14 +256,14 @@ export function CreateAwardModal({ isOpen, onClose, themeClass }: CreateAwardMod
                   <select
                     value={customProgramType}
                     onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setCustomProgramType(e.target.value as 'hotel' | 'airline' | 'bank' | 'other')}
-                    className={`w-full text-xs font-semibold rounded-xl px-2.5 py-2 focus:outline-none border transition ${
-                      themeClass('bg-slate-955 border-slate-850 text-white', 'bg-white border-slate-250 text-slate-800')
+                    className={`w-full text-xs font-semibold rounded-xl px-2.5 py-2 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/10 border transition ${
+                      themeClass('bg-slate-955 border-slate-850 text-white', 'bg-slate-55 border-slate-255 text-slate-800')
                     }`}
                   >
-                    <option value="hotel">{language === 'zh' ? '酒店常客 🏨' : 'Hotel 🏨'}</option>
-                    <option value="airline">{language === 'zh' ? '航空常客 ✈️' : 'Airline ✈️'}</option>
-                    <option value="bank">{language === 'zh' ? '银行积分 🏦' : 'Bank 🏦'}</option>
-                    <option value="other">{language === 'zh' ? '其他杂项 📦' : 'Other 📦'}</option>
+                    <option value="hotel">{t('optHotel')}</option>
+                    <option value="airline">{t('optAirline')}</option>
+                    <option value="bank">{t('optBank')}</option>
+                    <option value="other">{t('optOtherProg')}</option>
                   </select>
                 </div>
 
@@ -242,17 +272,17 @@ export function CreateAwardModal({ isOpen, onClose, themeClass }: CreateAwardMod
                   <select
                     value={customAwardType}
                     onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setCustomAwardType(e.target.value as 'fnr' | 'sua' | 'goh' | 'companion' | 'swu' | 'points' | 'other')}
-                    className={`w-full text-xs font-semibold rounded-xl px-2.5 py-2 focus:outline-none border transition ${
-                      themeClass('bg-slate-955 border-slate-850 text-white', 'bg-white border-slate-250 text-slate-800')
+                    className={`w-full text-xs font-semibold rounded-xl px-2.5 py-2 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/10 border transition ${
+                      themeClass('bg-slate-955 border-slate-850 text-white', 'bg-slate-55 border-slate-255 text-slate-800')
                     }`}
                   >
-                    <option value="fnr">{language === 'zh' ? '免费房券 (FN)' : 'Free Night (FN)'}</option>
-                    <option value="sua">{language === 'zh' ? '套房升级 (SUA)' : 'Suite Upgrade (SUA)'}</option>
-                    <option value="goh">{language === 'zh' ? '嘉宾体验 (GOH)' : 'Guest of Honor'}</option>
-                    <option value="companion">{language === 'zh' ? '同行免票券' : 'Companion Pass'}</option>
-                    <option value="swu">{language === 'zh' ? '环球升级 (SWU)' : 'Systemwide Up (SWU)'}</option>
-                    <option value="points">{language === 'zh' ? '积分里程追踪' : 'Points Tracker'}</option>
-                    <option value="other">{language === 'zh' ? '其他卡券类别' : 'Other'}</option>
+                    <option value="fnr">{t('optFn')}</option>
+                    <option value="sua">{t('optSua')}</option>
+                    <option value="goh">{t('optGoh')}</option>
+                    <option value="companion">{t('optCompanion')}</option>
+                    <option value="swu">{t('optSwu')}</option>
+                    <option value="points">{t('optPoints')}</option>
+                    <option value="other">{t('optOtherAward')}</option>
                   </select>
                 </div>
               </div>
@@ -270,13 +300,12 @@ export function CreateAwardModal({ isOpen, onClose, themeClass }: CreateAwardMod
                 type="date"
                 value={expirationDate}
                 onChange={(e) => setExpirationDate(e.target.value)}
-                className={`w-full text-xs font-bold rounded-xl pl-10 pr-3.5 py-2.5 focus:outline-none focus:border-purple-500 border transition ${
-                  themeClass('bg-slate-955 border-slate-850 text-white', 'bg-slate-50 border-slate-250 text-slate-800')
+                className={`w-full text-xs font-bold rounded-xl pl-10 pr-3.5 py-2.5 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/10 border transition ${
+                  themeClass('bg-slate-955 border-slate-850 text-white', 'bg-slate-55 border-slate-255 text-slate-800')
                 }`}
               />
             </div>
           </div>
-
 
           {/* Custom Notes */}
           <div className="space-y-1.5">
@@ -288,8 +317,8 @@ export function CreateAwardModal({ isOpen, onClose, themeClass }: CreateAwardMod
               placeholder={t('awardFormNotesPlace')}
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              className={`w-full text-xs font-bold rounded-xl px-3.5 py-2.5 focus:outline-none focus:border-purple-500 border transition ${
-                themeClass('bg-slate-955 border-slate-850 text-white', 'bg-slate-50 border-slate-250 text-slate-800')
+              className={`w-full text-xs font-bold rounded-xl px-3.5 py-2.5 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/10 border transition ${
+                themeClass('bg-slate-955 border-slate-850 text-white', 'bg-slate-55 border-slate-255 text-slate-800')
               }`}
             />
           </div>
