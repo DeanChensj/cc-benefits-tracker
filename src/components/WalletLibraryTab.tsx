@@ -6,6 +6,8 @@ import { CheckoutWinnersRow } from './CheckoutWinnersRow';
 import { CARDS_DB, AWARD_TEMPLATES } from '../data/cards.db';
 import type { LoyaltyAward, CardTemplate } from '../data/cards.db';
 import type { OwnedCardInstance } from '../store/useCardStore';
+import { useCardStore } from '../store/useCardStore';
+import { translations } from '../utils/i18n';
 
 interface WalletLibraryTabProps {
   ownedCards: OwnedCardInstance[];
@@ -40,15 +42,20 @@ interface BankHeaderProps {
 }
 
 export function BankHeader({ bankName, count, suffix, themeClass, collapsible, isCollapsed, onToggle }: BankHeaderProps) {
+  const language = useCardStore((state) => state.language);
   const dotColor = 
     bankName === 'Amex' ? 'bg-amber-500 shadow shadow-amber-500/20' :
     bankName === 'Chase' ? 'bg-blue-500 shadow shadow-blue-500/20' :
     bankName === 'Citi' ? 'bg-rose-500 shadow shadow-rose-500/20' : 'bg-purple-500 shadow shadow-purple-500/20';
 
   const title = 
-    bankName === 'Other' ? 'Other Banks' : 
-    bankName === 'Citi' ? 'Citibank' : 
-    bankName === 'Amex' ? 'American Express' : bankName;
+    bankName === 'Other' ? (language === 'zh' ? '其他银行' : 'Other Banks') : 
+    bankName === 'Citi' ? (language === 'zh' ? '花旗银行 (Citi)' : 'Citibank') : 
+    bankName === 'Amex' ? (language === 'zh' ? '美国运通 (Amex)' : 'American Express') : bankName;
+
+  const translatedSuffix = language === 'zh' 
+    ? (suffix.includes('Templates') ? '推荐卡模板' : '卡片组合')
+    : suffix;
 
   return (
     <div 
@@ -59,14 +66,16 @@ export function BankHeader({ bankName, count, suffix, themeClass, collapsible, i
     >
       <div className={`w-2 h-2 rounded-full ${dotColor}`} />
       <span className={`text-[10px] font-black uppercase tracking-wider ${themeClass('text-slate-300', 'text-slate-900')}`}>
-        {title} {suffix}
+        {title} {translatedSuffix}
       </span>
-      <span className="text-[10px] text-slate-650 dark:text-slate-505 font-semibold ml-auto">
-        {count} {count === 1 ? 'card' : 'cards'}
+      <span className="text-[10px] text-slate-650 dark:text-slate-550 font-semibold ml-auto">
+        {count} {language === 'zh' ? '张卡片' : (count === 1 ? 'card' : 'cards')}
       </span>
       {collapsible && (
         <span className="text-[9px] font-black ml-1.5 text-slate-600 select-none">
-          {isCollapsed ? '▶ Expand' : '▼ Collapse'}
+          {isCollapsed 
+            ? (language === 'zh' ? '▶ 展开' : '▶ Expand') 
+            : (language === 'zh' ? '▼ 折叠' : '▼ Collapse')}
         </span>
       )}
     </div>
@@ -159,6 +168,9 @@ export function WalletLibraryTab({
   onViewTemplateDetail,
   checkoutWinners
 }: WalletLibraryTabProps) {
+  const language = useCardStore((state) => state.language);
+  const t = (key: keyof typeof translations['en']) => translations[language][key] || translations['en'][key];
+
   const [searchQuery, setSearchQuery] = useState('');
   const [expandedCardIds, setExpandedCardIds] = useState<Record<string, boolean>>({});
   const [collapsedWalletBanks, setCollapsedWalletBanks] = useState<Record<string, boolean>>({});
@@ -187,11 +199,11 @@ export function WalletLibraryTab({
             className={`flex-1 py-1.5 rounded-lg text-[10px] font-extrabold transition flex items-center justify-center gap-1.5 cursor-pointer ${
               deckSubTab === 'cards'
                 ? 'bg-gradient-to-tr from-purple-600 to-indigo-600 text-white shadow-sm shadow-purple-500/10'
-                : themeClass('text-slate-400 hover:text-slate-200', 'text-slate-555 hover:text-slate-850')
+                : themeClass('text-slate-400 hover:text-slate-200', 'text-slate-555 hover:text-slate-855')
             }`}
           >
             <CreditCard className="w-3 h-3" />
-            <span>Cards ({ownedCards.length})</span>
+            <span>{t('tabCards')} ({ownedCards.length})</span>
           </button>
           <button
             onClick={() => {
@@ -201,11 +213,11 @@ export function WalletLibraryTab({
             className={`flex-1 py-1.5 rounded-lg text-[10px] font-extrabold transition flex items-center justify-center gap-1.5 cursor-pointer ${
               deckSubTab === 'awards'
                 ? 'bg-gradient-to-tr from-purple-600 to-indigo-600 text-white shadow-sm shadow-purple-500/10'
-                : themeClass('text-slate-400 hover:text-slate-200', 'text-slate-555 hover:text-slate-850')
+                : themeClass('text-slate-400 hover:text-slate-200', 'text-slate-555 hover:text-slate-855')
             }`}
           >
             <Sparkles className="w-3 h-3" />
-            <span>Awards ({loyaltyAwards.length})</span>
+            <span>{t('tabAwards')} ({loyaltyAwards.length})</span>
           </button>
           <button
             onClick={() => {
@@ -215,11 +227,11 @@ export function WalletLibraryTab({
             className={`flex-1 py-1.5 rounded-lg text-[10px] font-extrabold transition flex items-center justify-center gap-1.5 cursor-pointer ${
               deckSubTab === 'templates'
                 ? 'bg-gradient-to-tr from-purple-600 to-indigo-600 text-white shadow-sm shadow-purple-500/10'
-                : themeClass('text-slate-400 hover:text-slate-200', 'text-slate-555 hover:text-slate-850')
+                : themeClass('text-slate-400 hover:text-slate-200', 'text-slate-555 hover:text-slate-855')
             }`}
           >
             <Compass className="w-3 h-3" />
-            <span>Library</span>
+            <span>{t('tabLibrary')}</span>
           </button>
         </div>
       </div>
@@ -233,12 +245,12 @@ export function WalletLibraryTab({
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-4 pb-2 border-b border-dashed border-slate-200/60 dark:border-slate-800/60">
               <h3 className={`text-xs font-bold uppercase tracking-wider flex items-center gap-2 ${themeClass('text-slate-400', 'text-slate-555')}`}>
                 <CreditCard className="w-4 h-4 text-purple-500" />
-                My Wallet ({ownedCards.length} cards)
+                {t('activeCardsTitle')} ({ownedCards.length} {ownedCards.length === 1 ? t('cardSuffix') : t('cardsSuffix')})
               </h3>
               <div className="flex items-center gap-2 flex-wrap">
                 <input
                   type="text"
-                  placeholder="🔍 Search cards..."
+                  placeholder={t('searchCardsPlaceholder')}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className={`border text-xs rounded-xl px-3 py-1.5 focus:outline-none w-44 font-medium ${
@@ -254,14 +266,14 @@ export function WalletLibraryTab({
                   title="Switch to template library catalog to add cards"
                 >
                   <Plus className="w-3.5 h-3.5 stroke-[3]" />
-                  Add Template Card
+                  {t('addTemplateBtn')}
                 </button>
                 <button
                   onClick={() => setIsCreateModalOpen(true)}
                   className="flex items-center gap-1 border border-purple-500/20 hover:bg-purple-550/10 text-purple-400 font-bold px-3 py-1.5 rounded-lg text-xs transition active:scale-95 cursor-pointer"
                 >
                   <Plus className="w-3.5 h-3.5 stroke-[3]" />
-                  Create Custom Card
+                  {t('createCustomBtn')}
                 </button>
               </div>
             </div>
@@ -272,9 +284,9 @@ export function WalletLibraryTab({
             {ownedCards.length === 0 ? (
               <div className="text-center py-10">
                 <p className="text-2xl mb-2">💳</p>
-                <p className={`text-xs font-bold ${themeClass('text-slate-300', 'text-slate-800')}`}>No cards added yet!</p>
-                <p className={`text-[10px] mt-1 leading-normal ${themeClass('text-slate-450', 'text-slate-500')}`}>
-                  Select card templates from the library below to populate your credit card wallet.
+                <p className={`text-xs font-bold ${themeClass('text-slate-300', 'text-slate-800')}`}>{t('noCardsYet')}</p>
+                <p className={`text-[10px] mt-1 leading-normal ${themeClass('text-slate-455', 'text-slate-500')}`}>
+                  {t('noCardsDesc')}
                 </p>
               </div>
             ) : (
@@ -400,6 +412,14 @@ export function WalletLibraryTab({
         const inactiveAwards = sortedAwards.filter((a) => (a.usedQuantity || 0) >= 1);
 
         const renderAwardCard = (award: typeof loyaltyAwards[0]) => {
+          const getTranslatedProgramType = (p: string) => {
+            if (language !== 'zh') return p;
+            if (p.toLowerCase() === 'hotel') return '酒店常客 🏨';
+            if (p.toLowerCase() === 'airline') return '航空里程 ✈️';
+            if (p.toLowerCase() === 'bank') return '银行积分 🏦';
+            return '其他类别 📦';
+          };
+
           const isCustom = award.templateId === 'custom';
           const info = isCustom ? {
             name: award.customName || 'Custom Voucher',
@@ -434,7 +454,7 @@ export function WalletLibraryTab({
                     </span>
                     {info.programType && (
                       <span className={`text-[7.5px] font-bold uppercase tracking-wide opacity-75`}>
-                        • {info.programType}
+                        • {getTranslatedProgramType(info.programType)}
                       </span>
                     )}
                   </div>
@@ -449,9 +469,9 @@ export function WalletLibraryTab({
                 </div>
 
                 <div className="mt-3 text-[9px] font-bold opacity-80 flex items-center gap-1 flex-wrap">
-                  <span>Value:</span>
+                  <span>{t('voucherValue')}</span>
                   <span className="font-black text-sm leading-none">${info.value}</span>
-                  <span className="opacity-60">each</span>
+                  <span className="opacity-60">{t('each')}</span>
                 </div>
               </div>
 
@@ -484,14 +504,14 @@ export function WalletLibraryTab({
                         )
                   }`}
                 >
-                  {isCompleted ? '✓ Claimed' : 'Claim'}
+                  {isCompleted ? t('usedStatus') : t('claimBtn')}
                 </button>
 
                 <div className="w-full mt-2">
                   <span className={`text-[9px] font-black uppercase tracking-wider block ${
                     isCompleted ? 'text-emerald-400/60 line-through' : theme.glowColor
                   }`}>
-                    {isCompleted ? 'Bal: $0' : `Bal: $${info.value}`}
+                    {isCompleted ? `${t('balancePrefix')}0` : `${t('balancePrefix')}${info.value}`}
                   </span>
                 </div>
               </div>
@@ -508,16 +528,16 @@ export function WalletLibraryTab({
               <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-4 pb-2 border-b border-dashed border-slate-200/60 dark:border-slate-800/60">
                 <h3 className={`text-xs font-bold uppercase tracking-wider flex items-center gap-2 shrink-0 ${themeClass('text-slate-400', 'text-slate-555')}`}>
                   <Sparkles className="w-4 h-4 text-purple-500 animate-spin-slow" />
-                  My Vouchers ({activeAwards.length} active)
+                  {t('vouchersTitle')} ({activeAwards.length} {t('vouchersActive')})
                 </h3>
                 <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
                   <input
                     type="text"
-                    placeholder="🔍 Search vouchers..."
+                    placeholder={t('searchVouchers')}
                     value={awardSearchQuery}
                     onChange={(e) => setAwardSearchQuery(e.target.value)}
                     className={`border text-xs rounded-xl px-3 py-1.5 focus:outline-none w-full sm:w-36 font-medium ${
-                      themeClass('bg-slate-955 border-slate-850 focus:border-purple-500 text-slate-200', 'bg-slate-50 border-slate-255 focus:border-purple-500 text-slate-800 shadow-inner')
+                      themeClass('bg-slate-955 border-slate-850 focus:border-purple-500 text-slate-200', 'bg-slate-55 border-slate-255 focus:border-purple-500 text-slate-800 shadow-inner')
                     }`}
                   />
                   <select
@@ -527,16 +547,16 @@ export function WalletLibraryTab({
                       themeClass('bg-slate-955 border-slate-850 text-slate-300', 'bg-slate-50 border-slate-255 text-slate-700 shadow-sm')
                     }`}
                   >
-                    <option value="expiry">📅 Expiry (Soonest)</option>
-                    <option value="value-desc">💵 Value: High to Low</option>
-                    <option value="value-asc">💵 Value: Low to High</option>
+                    <option value="expiry">{t('sortExpiry')}</option>
+                    <option value="value-desc">{t('sortValueDesc')}</option>
+                    <option value="value-asc">{t('sortValueAsc')}</option>
                   </select>
                   <button
                     onClick={() => setIsCreateAwardModalOpen(true)}
                     className="flex items-center gap-1 bg-gradient-to-tr from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-550 text-white font-bold px-3 py-1.5 rounded-lg text-xs transition active:scale-95 shadow-md shadow-purple-500/10 cursor-pointer"
                   >
                     <Plus className="w-3.5 h-3.5 stroke-[3]" />
-                    Register Standalone Award
+                    {t('addVoucherBtn')}
                   </button>
                 </div>
               </div>
@@ -544,9 +564,9 @@ export function WalletLibraryTab({
               {loyaltyAwards.length === 0 ? (
                 <div className="text-center py-10">
                   <p className="text-2xl mb-2">🎁</p>
-                  <p className={`text-xs font-bold ${themeClass('text-slate-300', 'text-slate-800')}`}>No standalone vouchers registered!</p>
-                  <p className={`text-[10px] mt-1 leading-normal ${themeClass('text-slate-450', 'text-slate-500')}`}>
-                    Track card-independent travel vouchers, hotel free night certificates, points bundles, or airline companion awards.
+                  <p className={`text-xs font-bold ${themeClass('text-slate-300', 'text-slate-800')}`}>{t('noVouchers')}</p>
+                  <p className={`text-[10px] mt-1 leading-normal ${themeClass('text-slate-455', 'text-slate-500')}`}>
+                    {t('vouchersDesc')}
                   </p>
                 </div>
               ) : (
@@ -566,10 +586,10 @@ export function WalletLibraryTab({
                         className="flex items-center justify-between cursor-pointer select-none group"
                       >
                         <span className={`text-[10px] font-black uppercase tracking-widest flex items-center gap-1 ${themeClass('text-slate-400', 'text-slate-500')} group-hover:opacity-80 transition`}>
-                          📁 Claimed Vouchers Archive ({inactiveAwards.length} claimed)
+                          {t('claimedArchive')} ({inactiveAwards.length} {t('vouchersUsed')})
                         </span>
-                        <span className={`text-[9px] font-black select-none transition duration-200 ${themeClass('text-slate-450 hover:text-slate-300', 'text-slate-500 hover:text-slate-700')}`}>
-                          {isClaimedArchiveCollapsed ? '▶ Expand' : '▼ Collapse'}
+                        <span className={`text-[9px] font-black select-none transition duration-200 ${themeClass('text-slate-455 hover:text-slate-300', 'text-slate-500 hover:text-slate-700')}`}>
+                          {isClaimedArchiveCollapsed ? t('expand') : t('collapse')}
                         </span>
                       </div>
                       

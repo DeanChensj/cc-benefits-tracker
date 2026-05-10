@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Cloud, CloudOff, RefreshCw, ChevronDown } from 'lucide-react';
 import { requestGDriveToken, fetchUserEmail } from '../utils/gdrive';
 import { useCardStore } from '../store/useCardStore';
+import { translations } from '../utils/i18n';
 
 interface CloudSyncBannerProps {
   syncStatus: 'disconnected' | 'syncing' | 'synced' | 'error';
@@ -26,6 +27,9 @@ export function CloudSyncBanner({
   showToast,
   themeClass
 }: CloudSyncBannerProps) {
+  const language = useCardStore((state) => state.language);
+  const t = (key: keyof typeof translations['en']) => translations[language][key] || translations['en'][key];
+
   const [isSyncDropdownOpen, setIsSyncDropdownOpen] = useState(false);
   const [showAdvancedSync, setShowAdvancedSync] = useState(false);
   const [customClientId, setCustomClientId] = useState(() => {
@@ -37,10 +41,10 @@ export function CloudSyncBanner({
     setCustomClientId(trimmed);
     if (trimmed) {
       localStorage.setItem('cc_tracker_gdrive_clientid', trimmed);
-      showToast('💾 Custom Google Client ID saved successfully!', 'success');
+      showToast(language === 'zh' ? '💾 成功保存自定义 Google Client ID！' : '💾 Custom Google Client ID saved successfully!', 'success');
     } else {
       localStorage.removeItem('cc_tracker_gdrive_clientid');
-      showToast('🗑️ Reverted to system default GDrive Client ID.', 'warning');
+      showToast(language === 'zh' ? '🗑️ 已还原为系统默认 GDrive 客户端 ID。' : '🗑️ Reverted to system default GDrive Client ID.', 'warning');
     }
   };
 
@@ -57,7 +61,7 @@ export function CloudSyncBanner({
             ? themeClass('bg-red-500/10 border-red-500/30 text-red-400 hover:bg-red-500/15', 'bg-red-50 border-red-200 text-red-600 hover:bg-red-100 shadow-sm')
             : themeClass('bg-slate-900 border-slate-800 hover:bg-slate-800 text-slate-400', 'bg-white border-slate-250 hover:bg-slate-100 text-slate-505 shadow-sm')
         }`}
-        title="Google Drive Cloud Sync"
+        title={t('cloudTitle')}
       >
         {syncStatus === 'synced' ? (
           <Cloud className="w-4 h-4" />
@@ -88,12 +92,12 @@ export function CloudSyncBanner({
             </div>
             <div className="space-y-0.5 text-left min-w-0">
               <h5 className={`font-bold text-xs ${themeClass('text-white', 'text-slate-900')}`}>
-                Google Drive Sync
+                {t('cloudTitle')}
               </h5>
               <p className={`text-[10px] leading-normal ${themeClass('text-slate-400', 'text-slate-550')}`}>
                 {syncStatus === 'synced' 
-                  ? 'Automatic backup is active.'
-                  : 'Private sandboxed appData cloud backup.'}
+                  ? t('cloudActive')
+                  : t('cloudInactive')}
               </p>
             </div>
           </div>
@@ -102,8 +106,8 @@ export function CloudSyncBanner({
             <div className={`p-2.5 rounded-xl border text-[10px] text-left space-y-1 ${
               themeClass('bg-slate-950 border-slate-850 text-slate-300', 'bg-slate-50 border-slate-200 text-slate-750 shadow-inner')
             }`}>
-              <p className="truncate font-bold">Account: {gdriveEmail}</p>
-              <p className="opacity-80 font-medium">Last synced: {lastSyncedTime || 'Just now'}</p>
+              <p className="truncate font-bold">{t('cloudAccount')} {gdriveEmail}</p>
+              <p className="opacity-80 font-medium">{t('cloudLastSync')} {lastSyncedTime || t('cloudJustNow')}</p>
             </div>
           )}
 
@@ -122,16 +126,16 @@ export function CloudSyncBanner({
                         setGDriveCredentials(token, email);
                       }
                       await useCardStore.getState().syncWithGDrive();
-                      showToast('🎉 Synchronized with Google Drive successfully!');
+                      showToast(language === 'zh' ? '🎉 备份数据已完美同步至 Google Drive！' : '🎉 Synchronized with Google Drive successfully!');
                     } catch (err) {
                       console.error('Manual Force Sync failed:', err);
                       setSyncStatus('error');
-                      showToast('❌ Failed to synchronize. Please try again.', 'error');
+                      showToast(language === 'zh' ? '❌ 同步失败，请稍后再试。' : '❌ Failed to synchronize. Please try again.', 'error');
                     }
                   }}
                   className="w-full bg-gradient-to-tr from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-550 text-white font-bold py-2 rounded-lg text-[10px] transition active:scale-95 shadow shadow-purple-500/10 cursor-pointer"
                 >
-                  Sync Now
+                  {t('cloudSyncNow')}
                 </button>
                 <button
                   onClick={() => {
@@ -142,13 +146,13 @@ export function CloudSyncBanner({
                     themeClass('bg-slate-800 hover:bg-slate-750 border-slate-750 text-slate-300', 'bg-slate-50 hover:bg-slate-100 border-slate-200 text-slate-600')
                   }`}
                 >
-                  Disconnect Account
+                  {t('cloudDisconnect')}
                 </button>
               </>
             ) : syncStatus === 'syncing' ? (
               <div className="flex items-center justify-center gap-1.5 py-2 text-[10px] font-bold text-purple-500 animate-pulse">
                 <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                <span>Syncing...</span>
+                <span>{t('cloudSyncingStatus')}</span>
               </div>
             ) : (
               <button
@@ -158,7 +162,7 @@ export function CloudSyncBanner({
                 }}
                 className="w-full bg-gradient-to-tr from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-550 text-white font-bold py-2 rounded-lg text-[10px] transition active:scale-95 shadow shadow-purple-500/10 cursor-pointer"
               >
-                Connect Google Drive
+                {t('cloudConnectBtn')}
               </button>
             )}
           </div>
@@ -175,14 +179,14 @@ export function CloudSyncBanner({
                 themeClass('text-slate-450 hover:text-slate-300', 'text-slate-505 hover:text-slate-800')
               }`}
             >
-              <span>⚙️ Advanced Cloud Settings</span>
+              <span>{t('cloudAdvancedSettings')}</span>
               <ChevronDown className={`w-3 h-3 transition-transform duration-300 transform ${showAdvancedSync ? 'rotate-180' : 'rotate-0'}`} />
             </button>
 
             {showAdvancedSync && (
               <div className="mt-2 space-y-2 animate-fade-in">
                 <p className="text-[8.5px] opacity-85 leading-relaxed text-slate-450">
-                  Supply your private custom Google OAuth Client ID to establish private sandbox backup boundaries:
+                  {t('cloudAdvancedDesc')}
                 </p>
                 <div className="space-y-1">
                   <input
@@ -199,7 +203,7 @@ export function CloudSyncBanner({
                       onClick={() => saveCustomClientId(customClientId)}
                       className="flex-1 bg-purple-600/20 hover:bg-purple-600/30 text-purple-400 border border-purple-500/30 font-extrabold py-1 rounded text-[9px] transition active:scale-95 cursor-pointer"
                     >
-                      Save ID
+                      {t('cloudSaveClientId')}
                     </button>
                     {customClientId && (
                       <button
@@ -208,7 +212,7 @@ export function CloudSyncBanner({
                           themeClass('bg-slate-800 border-slate-750 hover:bg-slate-700 text-slate-300', 'bg-slate-100 border-slate-250 hover:bg-slate-200 text-slate-600')
                         }`}
                       >
-                        Reset
+                        {t('reset')}
                       </button>
                     )}
                   </div>

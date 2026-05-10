@@ -1,6 +1,8 @@
 import { Plus, Trash2, ExternalLink, Edit3, ChevronDown } from 'lucide-react';
 import { CARDS_DB } from '../data/cards.db';
 import type { OwnedCardInstance } from '../store/useCardStore';
+import { useCardStore } from '../store/useCardStore';
+import { translations } from '../utils/i18n';
 
 interface WalletCreditCardProps {
   instance: OwnedCardInstance;
@@ -29,6 +31,9 @@ export function WalletCreditCard({
   onEditCard,
   themeClass,
 }: WalletCreditCardProps) {
+  const language = useCardStore((state) => state.language);
+  const t = (key: keyof typeof translations['en']) => translations[language][key] || translations['en'][key];
+
   const template = CARDS_DB.find((t) => t.id === instance.templateId);
   const cardColor = instance.templateId === 'custom' 
     ? (instance.color || 'from-purple-950/50 to-slate-950')
@@ -72,7 +77,7 @@ export function WalletCreditCard({
               {instance.templateId === 'custom' ? (instance.bank || 'Custom') : (template?.bank || 'Standard')}
             </span>
             <span className={`text-[7.5px] font-extrabold uppercase tracking-widest opacity-85 ${isSilverCard ? 'text-slate-800' : 'text-slate-350'}`}>
-              Opened: {instance.cardOpenDate}
+              {language === 'zh' ? '已激活' : 'Opened'}: {instance.cardOpenDate}
             </span>
           </div>
 
@@ -232,18 +237,18 @@ export function WalletCreditCard({
               </div>
             </div>
             <div className="min-w-0 flex-grow">
-              <p className={`text-[9px] font-black uppercase tracking-wider ${themeClass('text-slate-400', 'text-slate-500')}`}>Annual Fee Recoup</p>
+              <p className={`text-[9px] font-black uppercase tracking-wider ${themeClass('text-slate-400', 'text-slate-500')}`}>{t('annualFeeRecoup')}</p>
               <p className={`text-xs font-extrabold mt-0.5 leading-none ${themeClass('text-slate-200', 'text-slate-800')}`}>
                 <span className={isRecouped ? 'text-emerald-600 dark:text-emerald-400 font-black' : ''}>
                   ${recouped}
                 </span>
-                <span className={`text-[9.5px] font-bold ml-1 ${themeClass('text-slate-455', 'text-slate-500')}`}>/ ${cardFee} fee</span>
+                <span className={`text-[9.5px] font-bold ml-1 ${themeClass('text-slate-455', 'text-slate-500')}`}>/ ${cardFee} {t('feeLabel')}</span>
               </p>
             </div>
           </div>
         ) : (
           <p className={`text-[9px] font-black flex items-center gap-1 px-1 ${themeClass('text-emerald-400', 'text-emerald-600')}`}>
-            <span>✓ No Annual Fee (Free Card!)</span>
+            <span>{t('freeCard')}</span>
           </p>
         )}
 
@@ -263,9 +268,9 @@ export function WalletCreditCard({
             }`}
           >
             <span className="flex items-center gap-1">
-              {isCardExpanded ? '▲ Hide Details' : '▼ Show Details'}
+              {isCardExpanded ? t('hideDetails') : t('showDetails')}
               <span className="text-[8px] opacity-75 lowercase font-semibold">
-                ({benefits.length} perks)
+                ({benefits.length} {t('perksSuffix')})
               </span>
             </span>
             <ChevronDown className={`w-3 h-3 transition-transform duration-300 transform ${
@@ -282,7 +287,7 @@ export function WalletCreditCard({
             }}
             className="px-3 py-1.5 bg-gradient-to-tr from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-550 text-white font-bold rounded-lg text-[9px] uppercase tracking-wider transition active:scale-95 flex items-center justify-center gap-1 shadow-md shadow-purple-500/10 cursor-pointer ml-auto shrink-0"
           >
-            <span>+ Add Offer</span>
+            <span>{t('addOffer')}</span>
           </button>
         </div>
 
@@ -312,7 +317,7 @@ export function WalletCreditCard({
             <div className="mt-3 pt-3 border-t border-white/10 dark:border-black/5 space-y-1.5 text-left">
               <p className={`text-[8px] font-black uppercase tracking-widest ${
                 themeClass('text-purple-400 dark:text-purple-500', 'text-purple-805')
-              }`}>Active Temporary Offers</p>
+              }`}>{t('tempOffers')}</p>
               <div className="space-y-1">
                 {instance.instanceOffers.map((offer) => (
                   <div 

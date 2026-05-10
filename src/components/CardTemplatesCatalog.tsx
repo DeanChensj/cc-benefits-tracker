@@ -4,6 +4,7 @@ import { CARDS_DB } from '../data/cards.db';
 import type { CardTemplate } from '../data/cards.db';
 import { getCardPotentialValue } from '../utils/valuationUtils';
 import { BankHeader } from './WalletLibraryTab'; // Re-use bank header styles
+import { useCardStore } from '../store/useCardStore';
 
 interface CardTemplatesCatalogProps {
   themeClass: (dark: string, light: string) => string;
@@ -18,6 +19,7 @@ export function CardTemplatesCatalog({
   setSelectedTemplates,
   onViewTemplateDetail,
 }: CardTemplatesCatalogProps) {
+  const language = useCardStore((state) => state.language);
   const [searchQuery, setSearchQuery] = useState('');
   const [templateFeeFilter, setTemplateFeeFilter] = useState<'all' | 'free' | 'mid' | 'premium'>('all');
   const [collapsedTemplatesBanks, setCollapsedTemplatesBanks] = useState<Record<string, boolean>>({});
@@ -60,10 +62,10 @@ export function CardTemplatesCatalog({
         <div>
           <h3 className={`text-xs font-bold uppercase tracking-wider flex items-center gap-2 ${themeClass('text-slate-400', 'text-slate-555')}`}>
             <Sparkles className="w-4 h-4 text-purple-500 animate-spin-slow" />
-            🗂️ Templates Library
+            {language === 'zh' ? '🗂️ 推荐卡片模板库' : '🗂️ Templates Library'}
           </h3>
           <p className={`text-[9.5px] mt-0.5 font-medium ${themeClass('text-slate-455', 'text-slate-500')}`}>
-            Click templates to select and batch-add multiple cards to your Wallet in one go.
+            {language === 'zh' ? '点击卡片模板进行选择，支持一键批量添加多张信用卡到钱包。' : 'Click templates to select and batch-add multiple cards to your Wallet in one go.'}
           </p>
         </div>
 
@@ -79,7 +81,13 @@ export function CardTemplatesCatalog({
                   : themeClass('text-slate-400 hover:text-slate-200', 'text-slate-500 hover:text-slate-855')
               }`}
             >
-              {filter === 'all' ? 'All' : filter === 'free' ? '$0 Fee' : filter === 'mid' ? 'Mid Fee' : 'Premium'}
+              {filter === 'all' 
+                ? (language === 'zh' ? '全部年费' : 'All') 
+                : filter === 'free' 
+                ? (language === 'zh' ? '免年费' : '$0 Fee') 
+                : filter === 'mid' 
+                ? (language === 'zh' ? '中等年费' : 'Mid Fee') 
+                : (language === 'zh' ? '高端卡' : 'Premium')}
             </button>
           ))}
         </div>
@@ -89,7 +97,7 @@ export function CardTemplatesCatalog({
       <div className="mb-5">
         <input
           type="text"
-          placeholder="🔍 Search templates by name or bank (e.g. Chase, Amex Gold)..."
+          placeholder={language === 'zh' ? '🔍 搜索卡片模板名称或银行（如：Chase, Amex Gold）...' : '🔍 Search templates by name or bank (e.g. Chase, Amex Gold)...'}
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           className={`w-full border text-xs rounded-xl px-3 py-2 focus:outline-none font-medium transition ${
@@ -160,16 +168,19 @@ export function CardTemplatesCatalog({
                                   ? themeClass('bg-slate-955 text-amber-400 border-slate-850/80', 'bg-slate-100 text-purple-600 border-slate-200')
                                   : 'bg-emerald-500/10 text-emerald-500 border border-emerald-505/10'
                               }`}>
-                                {card.annualFee > 0 ? `Fee: $${card.annualFee}` : 'No Fee'}
+                                {card.annualFee > 0 
+                                  ? (language === 'zh' ? `年费: $${card.annualFee}` : `Fee: $${card.annualFee}`) 
+                                  : (language === 'zh' ? '免年费' : 'No Fee')}
                               </span>
                             </div>
                             <h4 className={`text-sm font-extrabold mt-1.5 ${themeClass('text-white', 'text-slate-900')}`}>{card.name}</h4>
                             <p className={`text-[11px] mt-1.5 leading-relaxed font-medium ${themeClass('text-slate-405', 'text-slate-555')}`}>
-                              Contains <span className="font-bold text-purple-500 dark:text-amber-400">{card.benefits.length}</span> built-in perks <br />
-                              (Potential value: <span className={`font-bold ${themeClass('text-white', 'text-slate-955')}`}>${getCardPotentialValue(card.benefits)}/yr</span>)
+                              {language === 'zh' 
+                                ? <>包含 <span className="font-bold text-purple-500 dark:text-amber-400">{card.benefits.length}</span> 项卡片专属权益 <br /> (潜在年回本价值: <span className={`font-bold ${themeClass('text-white', 'text-slate-955')}`}>${getCardPotentialValue(card.benefits)}/年</span>)</>
+                                : <>Contains <span className="font-bold text-purple-500 dark:text-amber-400">{card.benefits.length}</span> built-in perks <br /> (Potential value: <span className={`font-bold ${themeClass('text-white', 'text-slate-955')}`}>${getCardPotentialValue(card.benefits)}/yr</span>)</>}
                             </p>
                             <span className="text-[9px] text-purple-500 dark:text-purple-455 font-bold mt-2.5 block animate-pulse">
-                              🔍 Click card to view details
+                              {language === 'zh' ? '🔍 点击卡片查看详细福利列表' : '🔍 Click card to view details'}
                             </span>
                           </div>
                         </div>
@@ -189,12 +200,12 @@ export function CardTemplatesCatalog({
                           {isSelected ? (
                             <>
                               <Check className="w-3.5 h-3.5 stroke-[3]" />
-                              Selected
+                              {language === 'zh' ? '已选中' : 'Selected'}
                             </>
                           ) : (
                             <>
                               <Plus className="w-3.5 h-3.5 stroke-[3]" />
-                              Select Template
+                              {language === 'zh' ? '选中此模板' : 'Select Template'}
                             </>
                           )}
                         </button>

@@ -1,6 +1,8 @@
 import { X, Plus, Info, Calendar, Heart, ExternalLink } from 'lucide-react';
 import type { CardTemplate } from '../data/cards.db';
 import { getAnnualValue } from '../utils/valuationUtils';
+import { useCardStore } from '../store/useCardStore';
+import { translations } from '../utils/i18n';
 
 interface CardDetailDrawerProps {
   isOpen: boolean;
@@ -11,6 +13,21 @@ interface CardDetailDrawerProps {
 }
 
 export function CardDetailDrawer({ isOpen, card, onClose, onAdd, theme }: CardDetailDrawerProps) {
+  const language = useCardStore((state) => state.language);
+  const t = (key: keyof typeof translations['en']) => translations[language][key] || translations['en'][key];
+
+  const getResetPeriodLabel = (period: string) => {
+    if (language !== 'zh') return period;
+    if (period === 'monthly') return '月度重置';
+    if (period === 'quarterly') return '季度重置';
+    if (period === 'semi-annual') return '半年度重置';
+    if (period === 'annual-calendar') return '年度重置';
+    if (period === 'annual-anniversary') return '周年重置';
+    return '固定周期';
+  };
+
+
+
   if (!isOpen || !card) return null;
 
   const themeClass = (dark: string, light: string) => theme === 'dark' ? dark : light;
@@ -40,13 +57,13 @@ export function CardDetailDrawer({ isOpen, card, onClose, onAdd, theme }: CardDe
             <span className={`text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded ${
               themeClass('bg-slate-900/60 text-purple-400', 'bg-slate-100 text-purple-600')
             }`}>
-              {card.bank} Card Template
+              {card.bank} {t('cardTemplateTitle')}
             </span>
           </div>
           <button
             onClick={onClose}
             className={`p-1 rounded-full transition cursor-pointer ${
-              themeClass('text-slate-450 hover:bg-slate-800 hover:text-slate-200', 'text-slate-500 hover:bg-slate-100 hover:text-slate-800')
+              themeClass('text-slate-455 hover:bg-slate-800 hover:text-slate-200', 'text-slate-500 hover:bg-slate-100 hover:text-slate-800')
             }`}
           >
             <X className="w-4 h-4" />
@@ -68,16 +85,16 @@ export function CardDetailDrawer({ isOpen, card, onClose, onAdd, theme }: CardDe
             <div className="flex justify-between items-end pt-4">
               <div className="flex gap-3 sm:gap-6">
                 <div>
-                  <p className="text-[8px] font-bold uppercase tracking-widest opacity-60">Potential Value</p>
-                  <p className="text-sm sm:text-base font-black">${card.benefits.reduce((sum, b) => sum + getAnnualValue(b), 0)}/yr</p>
+                  <p className="text-[8px] font-bold uppercase tracking-widest opacity-60">{t('potentialValue')}</p>
+                  <p className="text-sm sm:text-base font-black">${card.benefits.reduce((sum, b) => sum + getAnnualValue(b), 0)}/{language === 'zh' ? '年' : 'yr'}</p>
                 </div>
                 <div>
-                  <p className="text-[8px] font-bold uppercase tracking-widest opacity-60">Annual Fee</p>
-                  <p className="text-sm sm:text-base font-black">${card.annualFee}/yr</p>
+                  <p className="text-[8px] font-bold uppercase tracking-widest opacity-60">{t('annualFeeLabel')}</p>
+                  <p className="text-sm sm:text-base font-black">${card.annualFee}/{language === 'zh' ? '年' : 'yr'}</p>
                 </div>
               </div>
               <span className="text-[8px] sm:text-[9px] font-bold uppercase bg-white/10 px-2 py-0.5 rounded border border-white/5 shrink-0">
-                {card.benefits.length} perks
+                {card.benefits.length} {t('perksSuffix')}
               </span>
             </div>
           </div>
@@ -92,17 +109,17 @@ export function CardDetailDrawer({ isOpen, card, onClose, onAdd, theme }: CardDe
               }`}
             >
               <ExternalLink className="w-3.5 h-3.5" />
-              <span>View Official Details & Apply Page</span>
+              <span>{t('viewOfficialDetails')}</span>
             </a>
           )}
 
           {/* 📋 Built-in Perks List */}
           <div className="space-y-3">
             <h4 className={`text-[10px] font-bold uppercase tracking-wider flex items-center gap-1.5 ${
-              themeClass('text-slate-450', 'text-slate-505')
+              themeClass('text-slate-450', 'text-slate-555')
             }`}>
               <Info className="w-3.5 h-3.5 text-purple-500" />
-              Built-in Card Perks ({card.benefits.length})
+              {t('builtInPerksTitle')} ({card.benefits.length})
             </h4>
 
             <div className="space-y-2.5">
@@ -126,10 +143,10 @@ export function CardDetailDrawer({ isOpen, card, onClose, onAdd, theme }: CardDe
                   </p>
                   <div className="flex items-center gap-1.5 pt-1 text-[9px] font-bold tracking-wide uppercase text-slate-550 shrink-0">
                     <Calendar className="w-3 h-3" />
-                    <span>Reset Period: {b.resetPeriod}</span>
+                    <span>{t('resetPeriodLabel')} {getResetPeriodLabel(b.resetPeriod)}</span>
                     {b.spendingLimit && (
                       <span className="text-purple-500 dark:text-amber-500">
-                        • Limit: ${b.spendingLimit} Spent
+                        • {t('limitLabel')}{b.spendingLimit} {t('spentSuffix')}
                       </span>
                     )}
                   </div>
@@ -149,7 +166,7 @@ export function CardDetailDrawer({ isOpen, card, onClose, onAdd, theme }: CardDe
               themeClass('bg-slate-800 hover:bg-slate-750 text-slate-300', 'bg-slate-100 hover:bg-slate-200 text-slate-600')
             }`}
           >
-            Close
+            {t('close')}
           </button>
           <button
             onClick={() => {
@@ -159,7 +176,7 @@ export function CardDetailDrawer({ isOpen, card, onClose, onAdd, theme }: CardDe
             className="w-2/3 bg-gradient-to-tr from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-550 text-white font-bold py-3 rounded-xl text-xs transition active:scale-[0.98] flex items-center justify-center gap-1 shadow-lg shadow-purple-500/10 cursor-pointer"
           >
             <Plus className="w-4 h-4 stroke-[3]" />
-            Add Card to Wallet
+            {t('addCardToWallet')}
           </button>
         </div>
       </div>

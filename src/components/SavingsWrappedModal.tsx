@@ -4,6 +4,8 @@ import type { OwnedCardInstance } from '../store/useCardStore';
 import { CARDS_DB, AWARD_TEMPLATES } from '../data/cards.db';
 import type { LoyaltyAward } from '../data/cards.db';
 import { X, Download, Sparkles, RefreshCw } from 'lucide-react';
+import { useCardStore } from '../store/useCardStore';
+import { translations } from '../utils/i18n';
 
 interface SavingsWrappedModalProps {
   isOpen: boolean;
@@ -24,8 +26,11 @@ export function SavingsWrappedModal({
   expiredValue,
   themeClass,
 }: SavingsWrappedModalProps) {
+  const language = useCardStore((state) => state.language);
+  const t = (key: keyof typeof translations['en']) => translations[language][key] || translations['en'][key];
+
   const [isGenerating, setIsGenerating] = useState(false);
-  const [posterLang, setPosterLang] = useState<'en' | 'zh'>('zh'); // Default to punchy Chinese!
+  const [posterLang, setPosterLang] = useState<'en' | 'zh'>(language); 
   const [posterDataUrl, setPosterDataUrl] = useState<string | null>(null);
   const svgRef = useRef<SVGSVGElement>(null);
 
@@ -75,41 +80,8 @@ export function SavingsWrappedModal({
   const activeRank = posterLang === 'zh' ? rankTitleZh : rankTitleEn;
   const activePercent = posterLang === 'zh' ? rankPercentZh : rankPercentEn;
 
-  // 4. Localized Text Dictionary for Poster Render
-  const dict = {
-    en: {
-      header: 'ANNUAL SAVINGS WRAPPED',
-      title1: 'YOU ANNIHILATED',
-      title2: 'THE BANKS!',
-      subtitle: 'TOTAL CASH RECOUPED IN 2026',
-      haulTitle: '💵 HAUL DETAILS',
-      row1: 'Statement Perks Recouped:',
-      row2: 'Secured Signup Bonuses (SUBs):',
-      row3: 'Active Portfolio Wallet Size:',
-      row4: 'Expired / Wasted Value:',
-      perfectWasted: '🟢 Zero Waste - Perfect!',
-      battleships: '👑 TOP BATTLESHIPS IN WALLET',
-      rankLabel: 'CHURNER RANK:',
-      scannerLabel: '100% LOCAL-FIRST • ZERO-TRACK PRIVACY',
-      subBadge: 'SUB SECURED ✓',
-    },
-    zh: {
-      header: '年度反薅资本家账单',
-      title1: '您对银行执行了',
-      title2: '降维打击！',
-      subtitle: '2026 年反薅回本总金额',
-      haulTitle: '💵 战利品明细',
-      row1: '已点掉 statement 福利:',
-      row2: '已斩获开卡礼 (SUBs):',
-      row3: '钱包 active 战神卡片数:',
-      row4: '因粗心过期浪费损耗:',
-      perfectWasted: '🟢 零过期损耗 - 完美规避！',
-      battleships: '👑 钱包主力冲锋战神卡',
-      rankLabel: '薅羊毛段位评级:',
-      scannerLabel: '100% 本地数据运行 • 零追踪隐私保障',
-      subBadge: '开卡礼已斩获 ✓',
-    }
-  }[posterLang];
+  // 4. Localized Text dynamic translator for Poster Render
+  const tPoster = (key: keyof typeof translations['en']) => translations[posterLang][key] || translations['en'][key];
 
   // 5. Prepare and format battleships (regex clean custom card tail-numbers)
   // Helper to dynamically nickname bulky card names for clean horizontal layouts inside the poster
@@ -284,7 +256,7 @@ export function SavingsWrappedModal({
         <div className="flex items-center justify-between p-4 border-b border-dashed border-slate-800/30 dark:border-white/5 shrink-0">
           <div className="flex items-center gap-2">
             <Sparkles className="w-4 h-4 text-amber-400 animate-pulse" />
-            <h4 className="text-xs font-black uppercase tracking-wider">Your Churner Wrapped</h4>
+            <h4 className="text-xs font-black uppercase tracking-wider">{t('wrapped')}</h4>
           </div>
           <button 
             onClick={onClose}
@@ -394,7 +366,7 @@ export function SavingsWrappedModal({
                 textAnchor="middle"
                 fontFamily="Inter, system-ui, sans-serif"
               >
-                {dict.header}
+                {tPoster('wrappedHeader')}
               </text>
 
               <text 
@@ -407,7 +379,7 @@ export function SavingsWrappedModal({
                 textAnchor="middle"
                 fontFamily="Inter, system-ui, sans-serif"
               >
-                {dict.title1}
+                {tPoster('wrappedTitle1')}
               </text>
               <text 
                 x="190" 
@@ -419,14 +391,14 @@ export function SavingsWrappedModal({
                 textAnchor="middle"
                 fontFamily="Inter, system-ui, sans-serif"
               >
-                {dict.title2}
+                {tPoster('wrappedTitle2')}
               </text>
 
               {/* 3D Floating Glassmorphic Dashboard Overlay */}
               <rect x="30" y="120" width="320" height="120" rx="16" fill="url(#glassSheen)" stroke="rgba(255, 255, 255, 0.1)" strokeWidth="1.5" filter="url(#shadow3d)" />
               
               <text x="190" y="150" fill="#cbd5e1" fontSize="7.5" fontWeight="900" letterSpacing="1.5" textAnchor="middle" fontFamily="Inter, system-ui, sans-serif">
-                {dict.subtitle}
+                {tPoster('wrappedSubtitle')}
               </text>
               
               {/* Courier Premium Monospaced Cash savings number (With luxury gold glow) */}
@@ -436,7 +408,7 @@ export function SavingsWrappedModal({
 
               {/* Real-time calculated Churner Level Badge */}
               <text x="40" y="270" fill="#94a3b8" fontSize="8" fontWeight="850" letterSpacing="0.5" fontFamily="Inter, system-ui, sans-serif">
-                {dict.rankLabel}
+                {tPoster('wrappedRankLabel')}
               </text>
               
               {/* Premium VIP Rank Badge Pass Pill Container */}
@@ -457,25 +429,25 @@ export function SavingsWrappedModal({
 
               {/* Haul Details */}
               <text x="40" y="320" fill="url(#brushedGold)" fontSize="9.5" fontWeight="950" letterSpacing="1" fontFamily="Inter, system-ui, sans-serif">
-                {dict.haulTitle}
+                {tPoster('wrappedHaulTitle')}
               </text>
 
               {/* Row 1 */}
-              <text x="40" y="342" fill="#94a3b8" fontSize="8.5" fontWeight="700" fontFamily="Inter, system-ui, sans-serif">{dict.row1}</text>
+              <text x="40" y="342" fill="#94a3b8" fontSize="8.5" fontWeight="700" fontFamily="Inter, system-ui, sans-serif">{tPoster('wrappedRow1')}</text>
               <text x="340" y="342" fill="#ffffff" fontSize="10" fontWeight="900" textAnchor="end" fontFamily="Courier, monospace">${resolvedValue}</text>
 
               {/* Row 2 */}
-              <text x="40" y="367" fill="#94a3b8" fontSize="8.5" fontWeight="700" fontFamily="Inter, system-ui, sans-serif">{dict.row2}</text>
+              <text x="40" y="367" fill="#94a3b8" fontSize="8.5" fontWeight="700" fontFamily="Inter, system-ui, sans-serif">{tPoster('wrappedRow2')}</text>
               <text x="340" y="367" fill="url(#brushedGold)" fontSize="10" fontWeight="900" textAnchor="end" fontFamily="Courier, monospace">${securedSUBs}</text>
 
               {/* Row 3 */}
-              <text x="40" y="392" fill="#94a3b8" fontSize="8.5" fontWeight="700" fontFamily="Inter, system-ui, sans-serif">{dict.row3}</text>
+              <text x="40" y="392" fill="#94a3b8" fontSize="8.5" fontWeight="700" fontFamily="Inter, system-ui, sans-serif">{tPoster('wrappedRow3')}</text>
               <text x="340" y="392" fill="#ffffff" fontSize="10" fontWeight="900" textAnchor="end" fontFamily="Courier, monospace">{ownedCards.length}</text>
 
               {/* Row 4 */}
-              <text x="40" y="417" fill="#94a3b8" fontSize="8.5" fontWeight="700" fontFamily="Inter, system-ui, sans-serif">{dict.row4}</text>
+              <text x="40" y="417" fill="#94a3b8" fontSize="8.5" fontWeight="700" fontFamily="Inter, system-ui, sans-serif">{tPoster('wrappedRow4')}</text>
               <text x="340" y="417" fill={expiredValue > 0 ? '#fb7185' : '#34d399'} fontSize={expiredValue > 0 ? '10' : '8'} fontWeight="900" textAnchor="end" fontFamily={expiredValue > 0 ? 'Courier, monospace' : 'Inter, system-ui, sans-serif'}>
-                {expiredValue > 0 ? `-$${expiredValue}` : dict.perfectWasted}
+                {expiredValue > 0 ? `-$${expiredValue}` : tPoster('wrappedPerfectWasted')}
               </text>
 
               {/* dashed vector divider */}
@@ -483,7 +455,7 @@ export function SavingsWrappedModal({
 
               {/* Battleships */}
               <text x="40" y="452" fill="url(#brushedGold)" fontSize="9.5" fontWeight="950" letterSpacing="1" fontFamily="Inter, system-ui, sans-serif">
-                {dict.battleships}
+                {tPoster('wrappedBattleships')}
               </text>
 
               {cardRecoups.slice(0, 3).map((c, idx) => {
@@ -502,7 +474,7 @@ export function SavingsWrappedModal({
                       <g>
                         <rect x="248" y={yPos + 5} width="82" height="16" rx="4" fill="rgba(16,185,129,0.15)" stroke="rgba(16,185,129,0.3)" strokeWidth="0.75" />
                         <text x="289" y={yPos + 16} fill="#10b981" fontSize="7.5" fontWeight="950" textAnchor="middle" fontFamily="Inter, system-ui, sans-serif">
-                          {dict.subBadge}
+                          {tPoster('wrappedSubBadge')}
                         </text>
                       </g>
                     ) : (
@@ -528,7 +500,7 @@ export function SavingsWrappedModal({
                 <line x1="92" y1="597" x2="92" y2="622" strokeWidth="2" />
               </g>
               <text x="100" y="607" fill="#94a3b8" fontSize="6.2" fontWeight="900" letterSpacing="0.5" fontFamily="Inter, system-ui, sans-serif">{"SERIAL NO. " + personalSerial}</text>
-              <text x="100" y="617" fill="rgba(255, 255, 255, 0.5)" fontSize="6.5" fontWeight="700" fontFamily="Inter, system-ui, sans-serif">{dict.scannerLabel}</text>
+              <text x="100" y="617" fill="rgba(255, 255, 255, 0.5)" fontSize="6.5" fontWeight="700" fontFamily="Inter, system-ui, sans-serif">{tPoster('wrappedScannerLabel')}</text>
 
               {/* Luxury gold-brushed brand name text filling the bottom-left space perfectly! */}
               <text x="40" y="584" fill="url(#brushedGold)" fontSize="7.5" fontWeight="950" letterSpacing="1.5" fontFamily="Inter, system-ui, sans-serif">PERKFOLIO</text>
@@ -563,12 +535,12 @@ export function SavingsWrappedModal({
             {isGenerating ? (
               <>
                 <RefreshCw className="w-4 h-4 animate-spin" />
-                <span>Generating Image...</span>
+                <span>{language === 'zh' ? '正在合成超清海报...' : 'Generating Image...'}</span>
               </>
             ) : (
               <>
                 <Download className="w-4 h-4" />
-                <span>Save Poster to Camera Roll</span>
+                <span>{language === 'zh' ? '一键保存海报至相册 (.png)' : 'Save Poster to Camera Roll'}</span>
               </>
             )}
           </button>

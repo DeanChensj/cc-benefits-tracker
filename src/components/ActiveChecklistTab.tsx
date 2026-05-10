@@ -10,6 +10,8 @@ import type { OwnedCardInstance } from '../store/useCardStore';
 import { obfuscateKey } from '../utils/cryptoUtils';
 import { parseLogEntry } from '../utils/logUtils';
 import type { LogEntry } from '../utils/logUtils';
+import { useCardStore } from '../store/useCardStore';
+import { translations } from '../utils/i18n';
 
 interface ActiveChecklistTabProps {
   activeBenefits: ActiveBenefit[];
@@ -42,6 +44,9 @@ export function ActiveChecklistTab({
   collapsedGroups,
   setCollapsedGroups
 }: ActiveChecklistTabProps) {
+  const language = useCardStore((state) => state.language);
+  const t = (key: keyof typeof translations['en']) => translations[language][key] || translations['en'][key];
+
   const [searchQuery, setSearchQuery] = useState('');
   const [filterCategory, setFilterCategory] = useState('all');
   const [filterCardInstanceId, setFilterCardInstanceId] = useState('all');
@@ -163,7 +168,7 @@ export function ActiveChecklistTab({
           }`} />
           <input
             type="text"
-            placeholder="Search by card name, bank, or perk details..."
+            placeholder={t('searchPlaceholder')}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className={`w-full pl-10 pr-4 py-2.5 rounded-2xl border text-xs focus:outline-none focus:ring-1 focus:ring-purple-500 transition-all duration-300 ${
@@ -184,7 +189,7 @@ export function ActiveChecklistTab({
           }`}
         >
           <Filter className="w-4 h-4" />
-          <span>Filters</span>
+          <span>{t('filters')}</span>
         </button>
       </div>
 
@@ -217,9 +222,9 @@ export function ActiveChecklistTab({
             themeClass('border-slate-850 bg-slate-950/20', 'border-slate-250 bg-slate-50/50')
           }`}>
             <p className="text-xl">🎯</p>
-            <h4 className={`text-xs font-bold mt-2 ${themeClass('text-slate-300', 'text-slate-700')}`}>All active benefits claimed!</h4>
+            <h4 className={`text-xs font-bold mt-2 ${themeClass('text-slate-300', 'text-slate-700')}`}>{t('allClaimed')}</h4>
             <p className={`text-[10px] mt-1 leading-normal ${themeClass('text-slate-455', 'text-slate-500')}`}>
-              No pending cycles active in this filter combination.
+              {t('noPending')}
             </p>
           </div>
         ) : (
@@ -235,7 +240,7 @@ export function ActiveChecklistTab({
                     themeClass('text-slate-400', 'text-slate-500')
                   }`}>
                     <span className="animate-pulse text-purple-400">⚡</span>
-                    Quick-Log Monthly Credits
+                    {t('quickLog')}
                   </h4>
                   <div className="flex gap-2 overflow-x-auto pb-2 pt-1 scrollbar-none -mx-4 px-4">
                     {quickMonthlyBenefits.map((ab) => {
@@ -306,7 +311,7 @@ export function ActiveChecklistTab({
                       : null;
 
                     const cardName = isAwards 
-                      ? '🎁 Standalone Vouchers' 
+                      ? t('standaloneVouchers') 
                       : (card?.customName || template?.name || 'Credit Card');
 
                     const brandColor = isAwards 
@@ -332,11 +337,11 @@ export function ActiveChecklistTab({
                           <div className="flex items-center gap-2 min-w-0">
                             <span className="text-xs font-bold truncate">{cardName}</span>
                             <span className={`text-[8px] font-extrabold px-1.5 py-0.5 rounded-md tracking-wide shrink-0 bg-white/20 text-white`}>
-                              {`${items.length} Pending`}
+                              {`${items.length} ${t('pendingBadge')}`}
                             </span>
                           </div>
                           <span className="text-[9px] font-black opacity-85 px-1.5">
-                            {isCollapsed ? '▶ Expand' : '▼ Collapse'}
+                            {isCollapsed ? t('expand') : t('collapse')}
                           </span>
                         </div>
 
@@ -369,10 +374,12 @@ export function ActiveChecklistTab({
               }`}
             >
               <div className="flex items-center gap-2 min-w-0">
-                <span className="text-xs font-black uppercase tracking-wider truncate">⚠️ Expired Vouchers Archive ({expiredItems.length} items)</span>
+                <span className="text-xs font-black uppercase tracking-wider truncate">
+                  {t('expiredArchive')} ({expiredItems.length} {t('itemsSuffix')})
+                </span>
               </div>
               <span className="text-[9px] font-black opacity-80 px-1.5">
-                {isExpiredCollapsed ? '▶ Expand' : '▼ Collapse'}
+                {isExpiredCollapsed ? t('expand') : t('collapse')}
               </span>
             </div>
             <div className={`transition-all duration-300 ease-in-out overflow-hidden ${
@@ -397,10 +404,12 @@ export function ActiveChecklistTab({
               }`}
             >
               <div className="flex items-center gap-2 min-w-0">
-                <span className="text-xs font-black uppercase tracking-wider truncate">📁 Resolved Perks Archive ({claimedItems.length} claimed)</span>
+                <span className="text-xs font-black uppercase tracking-wider truncate">
+                  {t('claimedArchive')} ({claimedItems.length} {t('claimedSuffix')})
+                </span>
               </div>
               <span className="text-[9px] font-black opacity-80 px-1.5">
-                {isClaimedCollapsed ? '▶ Expand' : '▼ Collapse'}
+                {isClaimedCollapsed ? t('expand') : t('collapse')}
               </span>
             </div>
             <div className={`transition-all duration-300 ease-in-out overflow-hidden ${

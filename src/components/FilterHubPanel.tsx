@@ -1,6 +1,8 @@
 import { Filter, CreditCard, ArrowUpDown } from 'lucide-react';
 import type { OwnedCardInstance } from '../store/useCardStore';
 import type { LoyaltyAward } from '../data/cards.db';
+import { useCardStore } from '../store/useCardStore';
+import { translations } from '../utils/i18n';
 
 interface FilterHubPanelProps {
   ownedCards: OwnedCardInstance[];
@@ -11,7 +13,7 @@ interface FilterHubPanelProps {
   filterCardInstanceId: string;
   setFilterCardInstanceId: (id: string) => void;
   sortBy: string;
-  setSortBy: (sort: any) => void;
+  setSortBy: (sort: 'urgency' | 'expiry' | 'value-desc' | 'value-asc') => void;
   themeClass: (dark: string, light: string) => string;
   isGroupedView: boolean;
   setIsGroupedView: (isGrouped: boolean) => void;
@@ -31,6 +33,10 @@ export function FilterHubPanel({
   isGroupedView,
   setIsGroupedView,
 }: FilterHubPanelProps) {
+  const language = useCardStore((state) => state.language);
+  
+  const t = (key: keyof typeof translations['en']) => translations[language][key] || translations['en'][key];
+
   if (activeTab === 'cards') return null;
 
   const showCardFilter = ownedCards.length > 0 || loyaltyAwards.length > 0;
@@ -52,24 +58,24 @@ export function FilterHubPanel({
           onChange={(e) => setFilterCategory(e.target.value)}
           className="w-full bg-transparent outline-none border-none cursor-pointer font-semibold text-xs focus:ring-0"
         >
-          <option value="all">All Categories</option>
+          <option value="all">{t('allCategories')}</option>
           {filterCardInstanceId === 'awards' ? (
             <>
-              <option value="fnr">Free Night (FNA)</option>
-              <option value="sua">Suite Upgrade (SUA)</option>
-              <option value="goh">Guest of Honor (GOH)</option>
-              <option value="companion">Companion Pass</option>
-              <option value="swu">Systemwide Upgrade (SWU)</option>
-              <option value="points">Points & Miles</option>
-              <option value="other">Other Vouchers</option>
+              <option value="fnr">{t('awardFnr')}</option>
+              <option value="sua">{t('awardSua')}</option>
+              <option value="goh">{t('awardGoh')}</option>
+              <option value="companion">{t('awardCompanion')}</option>
+              <option value="swu">{t('awardSwu')}</option>
+              <option value="points">{t('awardPoints')}</option>
+              <option value="other">{t('awardOther')}</option>
             </>
           ) : (
             <>
-              <option value="dining">Dining</option>
-              <option value="travel">Travel</option>
-              <option value="shopping">Shopping</option>
-              <option value="entertainment">Entertainment</option>
-              <option value="other">Other</option>
+              <option value="dining">{t('catDining')}</option>
+              <option value="travel">{t('catTravel')}</option>
+              <option value="shopping">{t('catShopping')}</option>
+              <option value="entertainment">{t('catEntertainment')}</option>
+              <option value="other">{t('catOther')}</option>
             </>
           )}
         </select>
@@ -86,9 +92,9 @@ export function FilterHubPanel({
             onChange={(e) => setFilterCardInstanceId(e.target.value)}
             className="w-full bg-transparent outline-none border-none cursor-pointer font-semibold text-xs focus:ring-0"
           >
-            <option value="all">All Portfolios</option>
+            <option value="all">{t('allPortfolios')}</option>
             {loyaltyAwards.length > 0 && (
-              <option value="awards">🎁 Standalone Vouchers</option>
+              <option value="awards">{t('standaloneVouchers')}</option>
             )}
             {ownedCards.map((card) => (
               <option key={card.id} value={card.id}>
@@ -106,13 +112,13 @@ export function FilterHubPanel({
         <ArrowUpDown className="w-4 h-4 text-slate-400 shrink-0" />
         <select
           value={sortBy}
-          onChange={(e) => setSortBy(e.target.value as any)}
+          onChange={(e) => setSortBy(e.target.value as 'urgency' | 'expiry' | 'value-desc' | 'value-asc')}
           className="w-full bg-transparent outline-none border-none cursor-pointer font-semibold text-xs focus:ring-0"
         >
-          <option value="urgency">Sort: Urgency Score</option>
-          <option value="expiry">Sort: Expiration Date</option>
-          <option value="value-desc">Sort: Value (High ➔ Low)</option>
-          <option value="value-asc">Sort: Value (Low ➔ High)</option>
+          <option value="urgency">{t('sortUrgency')}</option>
+          <option value="expiry">{t('sortExpiry')}</option>
+          <option value="value-desc">{t('sortValueDesc')}</option>
+          <option value="value-asc">{t('sortValueAsc')}</option>
         </select>
       </div>
 
@@ -127,12 +133,12 @@ export function FilterHubPanel({
         }`}
       >
         <span className="truncate flex items-center gap-1.5">
-          {isGroupedView ? '🗂️ Wallet View' : '📋 List View'}
+          {isGroupedView ? t('walletView') : t('listView')}
         </span>
         <span className={`text-[9px] px-1.5 py-0.5 rounded font-extrabold tracking-wider uppercase ${
           themeClass('bg-slate-955 text-purple-400', 'bg-white text-purple-600 border border-slate-200')
         }`}>
-          {isGroupedView ? 'Grouped' : 'Flat'}
+          {isGroupedView ? t('groupedBadge') : t('flatBadge')}
         </span>
       </button>
     </div>

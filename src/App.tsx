@@ -4,6 +4,7 @@ import { CARDS_DB, CARD_MULTIPLIERS, AWARD_TEMPLATES } from './data/cards.db';
 import type { CardTemplate, Benefit, LoyaltyAward } from './data/cards.db';
 import { useCardStore, getLogKey } from './store/useCardStore';
 import type { OwnedCardInstance } from './store/useCardStore';
+import { translations } from './utils/i18n';
 import { WalletAiAssistant } from './components/WalletAiAssistant';
 import { CalendarSyncModal } from './components/CalendarSyncModal';
 import { CreateCardModal } from './components/CreateCardModal';
@@ -71,10 +72,13 @@ function App() {
     deleteLoyaltyAward,
     updateAwardUsedQuantity,
     pruneExpiredLogs,
-    resetAll 
+    resetAll,
+    language,
+    toggleLanguage
   } = useCardStore();
 
   const themeClass = (dark: string, light: string) => theme === 'dark' ? dark : light;
+  const t = (key: keyof typeof translations['en']) => translations[language][key] || translations['en'][key];
 
   const lastSyncTimeRef = useRef<number>(0);
 
@@ -149,27 +153,33 @@ function App() {
       toggleBenefit(key);
     }
 
-    showToast(ab.loyaltyAward ? 'Loyalty Voucher logged successfully' : 'Perk logged successfully', 'success', () => {
-      if (lastActionRef.current) {
-        const snap = lastActionRef.current;
-        if (ab.loyaltyAward) {
-          if (snap.prevSpentProgress !== undefined) {
-            updateAwardUsedQuantity(snap.logKey, snap.prevSpentProgress);
+    showToast(
+      ab.loyaltyAward 
+        ? (language === 'zh' ? '🎉 房券里程打卡核销成功！' : 'Loyalty Voucher logged successfully') 
+        : (language === 'zh' ? '🎉 福利打卡回本成功！' : 'Perk logged successfully'), 
+      'success', 
+      () => {
+        if (lastActionRef.current) {
+          const snap = lastActionRef.current;
+          if (ab.loyaltyAward) {
+            if (snap.prevSpentProgress !== undefined) {
+              updateAwardUsedQuantity(snap.logKey, snap.prevSpentProgress);
+            }
+          } else {
+            if (snap.prevSpentProgress !== undefined) {
+              updateProgressLog(snap.logKey, snap.prevSpentProgress);
+            }
+            const currentObfuscated = obfuscateKey(snap.logKey);
+            const currentEntry = parseLogEntry(useCardStore.getState().logs[currentObfuscated]);
+            if (!currentEntry || (!!currentEntry.resolved !== snap.prevResolved)) {
+              toggleBenefit(snap.logKey);
+            }
           }
-        } else {
-          if (snap.prevSpentProgress !== undefined) {
-            updateProgressLog(snap.logKey, snap.prevSpentProgress);
-          }
-          const currentObfuscated = obfuscateKey(snap.logKey);
-          const currentEntry = parseLogEntry(useCardStore.getState().logs[currentObfuscated]);
-          if (!currentEntry || (!!currentEntry.resolved !== snap.prevResolved)) {
-            toggleBenefit(snap.logKey);
-          }
+          lastActionRef.current = null;
+          showToast(language === 'zh' ? '↩️ 操作已成功撤销' : 'Action reverted', 'info');
         }
-        lastActionRef.current = null;
-        showToast('Action reverted', 'info');
       }
-    });
+    );
   };
 
   const handleUpdateProgressLog = (logKey: string, spent: number) => {
@@ -183,21 +193,25 @@ function App() {
 
     updateProgressLog(logKey, spent);
 
-    showToast(`Progress updated to $${spent}`, 'success', () => {
-      if (lastActionRef.current) {
-        const snap = lastActionRef.current;
-        if (snap.prevSpentProgress !== undefined) {
-          updateProgressLog(snap.logKey, snap.prevSpentProgress);
+    showToast(
+      language === 'zh' ? `📈 消费进度已更新为 $${spent}` : `Progress updated to $${spent}`, 
+      'success', 
+      () => {
+        if (lastActionRef.current) {
+          const snap = lastActionRef.current;
+          if (snap.prevSpentProgress !== undefined) {
+            updateProgressLog(snap.logKey, snap.prevSpentProgress);
+          }
+          const currentObfuscated = obfuscateKey(snap.logKey);
+          const currentEntry = parseLogEntry(useCardStore.getState().logs[currentObfuscated]);
+          if (!currentEntry || (!!currentEntry.resolved !== snap.prevResolved)) {
+            toggleBenefit(snap.logKey);
+          }
+          lastActionRef.current = null;
+          showToast(language === 'zh' ? '↩️ 操作已成功撤销' : 'Action reverted', 'info');
         }
-        const currentObfuscated = obfuscateKey(snap.logKey);
-        const currentEntry = parseLogEntry(useCardStore.getState().logs[currentObfuscated]);
-        if (!currentEntry || (!!currentEntry.resolved !== snap.prevResolved)) {
-          toggleBenefit(snap.logKey);
-        }
-        lastActionRef.current = null;
-        showToast('Action reverted', 'info');
       }
-    });
+    );
   };
 
   const handleAddCard = (templateId: string) => {
@@ -206,7 +220,7 @@ function App() {
     addCard(templateId);
     setDeckSubTab('cards');
     localStorage.setItem('cc-tracker-deck-sub-tab', 'cards');
-    showToast(`🎉 Added ${cardName} to your Wallet!`);
+    showToast(language === 'zh' ? `🎉 已成功添加 ${cardName} 至您的卡包！` : `🎉 Added ${cardName} to your Wallet!`);
   };
 
 
@@ -217,14 +231,14 @@ function App() {
       const template = CARDS_DB.find((t) => t.id === instance.templateId);
       const cardName = instance.templateId === 'custom' ? instance.customName : (template?.name || 'Card');
       removeCard(deleteCardInstanceId);
-      showToast(`🗑️ Removed "${cardName}" from Wallet`, 'warning');
+      showToast(language === 'zh' ? `🗑️ 已成功注销并移除 "${cardName}"` : `🗑️ Removed "${cardName}" from Wallet`, 'warning');
     }
     setDeleteCardInstanceId(null);
   };
 
   const handleAddCustomCard = (card: Omit<OwnedCardInstance, 'id'>) => {
     addCustomCard(card);
-    showToast(`🎉 Created and added "${card.customName}" to your Wallet!`);
+    showToast(language === 'zh' ? `🎉 已成功创建 "${card.customName}" 并放入您的卡包！` : `🎉 Created and added "${card.customName}" to your Wallet!`);
   };
 
   const currentMonthStr = currentDate.toLocaleString('default', { month: 'long' });
@@ -274,11 +288,11 @@ function App() {
       
       // Trigger first two-way sync
       await useCardStore.getState().syncWithGDrive();
-      showToast('🎉 Connected and synchronized with Google Drive successfully!');
+      showToast(language === 'zh' ? '🎉 成功连接并同步备份至 Google Drive！' : '🎉 Connected and synchronized with Google Drive successfully!');
     } catch (err) {
       console.error(err);
       setSyncStatus('error');
-      showToast('❌ Failed to connect to Google Drive. Please try again.', 'error');
+      showToast(language === 'zh' ? '❌ 连接 Google Drive 失败，请重试。' : '❌ Failed to connect to Google Drive. Please try again.', 'error');
     }
   };
 
@@ -288,7 +302,7 @@ function App() {
 
   const handleConfirmDisconnectGoogleDrive = () => {
     setGDriveCredentials(null, null);
-    showToast('🚪 Unlinked Google Drive account successfully.', 'info');
+    showToast(language === 'zh' ? '🚪 成功退出并断开 Google Drive 账户连接。' : '🚪 Unlinked Google Drive account successfully.', 'info');
     setActiveModal(null);
   };
 
@@ -506,7 +520,7 @@ function App() {
     
     const newMonthName = nextDate.toLocaleString('default', { month: 'long' });
     const newYear = nextDate.getFullYear();
-    showToast(`⏰ Sandbox set to ${newMonthName} ${newYear}`, 'info');
+    showToast(language === 'zh' ? `⏰ 时间沙盒已穿越到 ${newYear} 年 ${newMonthName}` : `⏰ Sandbox set to ${newMonthName} ${newYear}`, 'info');
   };
 
   return (
@@ -577,13 +591,13 @@ function App() {
             <div>
               <div className="flex items-baseline gap-2 flex-wrap">
                 <h1 className={`text-lg font-bold tracking-tight ${themeClass('text-white', 'text-slate-900')}`}>PerkFolio</h1>
-                <span className={`text-[9px] font-black uppercase tracking-widest ${themeClass('text-slate-450', 'text-slate-500')}`}>
-                  • Smart Perks & Awards Portfolio
+                <span className={`text-[9px] font-black uppercase tracking-widest ${themeClass('text-slate-455', 'text-slate-500')}`}>
+                  {t('brandSub')}
                 </span>
               </div>
-              <p className={`text-xs flex items-center gap-1.5 mt-0.5 ${themeClass('text-slate-400', 'text-slate-550')}`}>
+              <p className={`text-xs flex items-center gap-1.5 mt-0.5 ${themeClass('text-slate-400', 'text-slate-555')}`}>
                 <span className={`w-1.5 h-1.5 rounded-full animate-pulse ${themeClass('bg-green-500', 'bg-green-600')}`}></span>
-                <span>Today: {new Date().toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                <span>{t('today')}: {new Date().toLocaleDateString(language === 'zh' ? 'zh-CN' : 'en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}</span>
               </p>
             </div>
           </div>
@@ -594,10 +608,10 @@ function App() {
               <button
                 onClick={() => setActiveModal('wrapped')}
                 className="flex items-center gap-1 px-2 py-1.5 sm:px-3 sm:py-2 rounded-xl border bg-gradient-to-tr from-purple-600/15 via-indigo-600/10 to-purple-600/15 border-purple-500/30 hover:border-purple-400/50 text-purple-400 hover:text-purple-300 font-extrabold text-xs transition duration-300 active:scale-90 cursor-pointer shadow-md shadow-purple-500/5 animate-pulse"
-                title="View and Share your Personal Churner Savings Wrapped Poster!"
+                title={t('wrapped')}
               >
                 <Sparkles className="w-3.5 h-3.5 text-amber-400 shrink-0 animate-spin-slow hidden sm:block" />
-                <span>Wrapped 👑</span>
+                <span>{t('wrapped')}</span>
               </button>
             )}
 
@@ -620,10 +634,10 @@ function App() {
               className={`p-2 rounded-xl border transition duration-300 active:scale-90 cursor-pointer ${
                 themeClass(
                   'bg-slate-900 border-slate-800 hover:bg-slate-800 text-amber-400',
-                  'bg-white border-slate-250 hover:bg-slate-100 text-amber-500 shadow-sm'
+                  'bg-white border-slate-250 hover:bg-slate-100 text-amber-505 shadow-sm'
                 )
               }`}
-              title={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+              title={theme === 'dark' ? t('toggleLightMode') : t('toggleDarkMode')}
             >
               {theme === 'dark' ? (
                 <Sun className="w-4 h-4 animate-spin-slow" />
@@ -642,7 +656,7 @@ function App() {
                     'bg-white border-slate-250 hover:bg-slate-100 text-amber-600 shadow-sm'
                   )
                 }`}
-                title="Sync All Calendar Reminders"
+                title={t('syncReminders')}
               >
                 <Calendar className="w-4 h-4" />
               </button>
@@ -663,7 +677,7 @@ function App() {
               <span 
                 onDoubleClick={() => {
                   setCurrentDate(new Date());
-                  showToast("⏰ Sandbox reset to Today", "info");
+                  showToast(language === 'zh' ? "⏰ 时间沙盒已回归今日现实" : "⏰ Sandbox reset to Today", "info");
                 }}
                 className="px-2 py-1 min-w-[75px] text-center font-extrabold text-[9.5px] tracking-wider uppercase cursor-pointer hover:opacity-80 active:scale-95 transition select-none"
                 title="Double-click to reset back to Today"
@@ -690,19 +704,19 @@ function App() {
         <section className="block md:hidden border rounded-2xl p-2.5 transition duration-300 mb-4 shadow-sm bg-slate-900/20 border-slate-900/30 dark:bg-slate-55/40 dark:border-slate-250/80 backdrop-blur-md">
           <div className="grid grid-cols-4 gap-1 text-center divide-x divide-slate-200/20 dark:divide-black/10">
             <div className="px-0.5">
-              <p className={`text-[8px] font-extrabold uppercase tracking-widest ${themeClass('text-slate-500', 'text-slate-505')}`}>Potential</p>
+              <p className={`text-[8px] font-extrabold uppercase tracking-widest ${themeClass('text-slate-500', 'text-slate-505')}`}>{t('potentialValue')}</p>
               <p className={`text-xs font-black mt-0.5 ${themeClass('text-white', 'text-slate-855')}`}>${totalPotentialValue}</p>
             </div>
             <div className="px-0.5">
-              <p className={`text-[8px] font-extrabold uppercase tracking-widest ${themeClass('text-slate-500', 'text-slate-505')}`}>Saved</p>
+              <p className={`text-[8px] font-extrabold uppercase tracking-widest ${themeClass('text-slate-500', 'text-slate-505')}`}>{t('resolved')}</p>
               <p className="text-xs font-black text-emerald-500 mt-0.5">${resolvedValue}</p>
             </div>
             <div className="px-0.5">
-              <p className={`text-[8px] font-extrabold uppercase tracking-widest ${themeClass('text-slate-500', 'text-slate-505')}`}>Remaining</p>
+              <p className={`text-[8px] font-extrabold uppercase tracking-widest ${themeClass('text-slate-500', 'text-slate-505')}`}>{t('remaining')}</p>
               <p className="text-xs font-black text-amber-500 mt-0.5">${pendingValue}</p>
             </div>
             <div className="px-0.5">
-              <p className={`text-[8px] font-extrabold uppercase tracking-widest ${themeClass('text-slate-500', 'text-slate-505')}`}>Maximized</p>
+              <p className={`text-[8px] font-extrabold uppercase tracking-widest ${themeClass('text-slate-500', 'text-slate-505')}`}>{t('maximized')}</p>
               <p className="text-xs font-black text-purple-500 dark:text-purple-400 mt-0.5">{utilizationRate}%</p>
             </div>
           </div>
@@ -715,7 +729,7 @@ function App() {
           }`}>
             <p className={`text-[10px] sm:text-xs font-medium uppercase tracking-wider flex items-center gap-1.5 ${themeClass('text-slate-400', 'text-slate-555')}`}>
               <DollarSign className="w-3.5 h-3.5 text-slate-500" />
-              Potential Value
+              {t('potentialValue')}
             </p>
             <p className={`text-xl sm:text-2xl font-bold mt-1 ${themeClass('text-white', 'text-slate-900')}`}>${totalPotentialValue}</p>
           </div>
@@ -725,7 +739,7 @@ function App() {
           }`}>
             <p className={`text-[10px] sm:text-xs font-medium uppercase tracking-wider flex items-center gap-1.5 ${themeClass('text-slate-400', 'text-slate-555')}`}>
               <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
-              Resolved
+              {t('resolved')}
             </p>
             <p className="text-xl sm:text-2xl font-bold text-emerald-500 mt-1">${resolvedValue}</p>
           </div>
@@ -735,7 +749,7 @@ function App() {
           }`}>
             <p className={`text-[10px] sm:text-xs font-medium uppercase tracking-wider flex items-center gap-1.5 ${themeClass('text-slate-400', 'text-slate-555')}`}>
               <Clock className="w-3.5 h-3.5 text-amber-500" />
-              Remaining
+              {t('remaining')}
             </p>
             <p className="text-xl sm:text-2xl font-bold text-amber-500 mt-1">${pendingValue}</p>
           </div>
@@ -746,7 +760,7 @@ function App() {
             <div className="min-w-0">
               <p className={`text-[10px] sm:text-xs font-medium uppercase tracking-wider flex items-center gap-1.5 ${themeClass('text-slate-400', 'text-slate-555')}`}>
                 <Sparkles className="w-3.5 h-3.5 text-purple-500" />
-                Maximized
+                {t('maximized')}
               </p>
               <p className={`text-xl sm:text-2xl font-bold mt-1 ${themeClass('text-white', 'text-slate-900')}`}>{utilizationRate}%</p>
             </div>
@@ -789,7 +803,7 @@ function App() {
                   : themeClass('text-slate-400 hover:text-white hover:bg-slate-855', 'text-slate-505 hover:text-slate-900 hover:bg-slate-300/30')
               }`}
             >
-              Checklist ({activeBenefits.filter(b => !b.isUsed).length})
+              {t('checklist')} ({activeBenefits.filter(b => !b.isUsed).length})
             </button>
             <button
               onClick={() => setActiveTab('cards')}
@@ -799,7 +813,7 @@ function App() {
                   : themeClass('text-slate-400 hover:text-white hover:bg-slate-855', 'text-slate-505 hover:text-slate-900 hover:bg-slate-300/30')
               }`}
             >
-              My Wallet ({ownedCards.length + loyaltyAwards.length})
+              {t('myWallet')} ({ownedCards.length + loyaltyAwards.length})
             </button>
           </div>
 
@@ -871,14 +885,12 @@ function App() {
           <div className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[9.5px] font-extrabold border shadow-sm ${
             themeClass('bg-slate-900/50 border-slate-850/60 text-slate-400', 'bg-slate-100/80 border-slate-200 text-slate-600')
           }`}>
-            <span className="text-xs shrink-0">🛡️</span>
-            <span>100% Local Data</span>
+            <span>{t('footerLocalData')}</span>
           </div>
           <div className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[9.5px] font-extrabold border shadow-sm ${
             themeClass('bg-slate-900/50 border-slate-850/60 text-slate-400', 'bg-slate-100/80 border-slate-200 text-slate-600')
           }`}>
-            <span className="text-xs shrink-0">🚫</span>
-            <span>No Plaid / No Bank Logins</span>
+            <span>{t('footerNoPlaid')}</span>
           </div>
           <a
             href="https://github.com/DeanChensj/cc-benefits-tracker"
@@ -888,16 +900,32 @@ function App() {
               themeClass('bg-slate-900/50 border-slate-850/60 text-slate-400 hover:text-purple-400 hover:border-purple-900/30', 'bg-slate-100/80 border-slate-200 text-slate-600 hover:text-purple-600 hover:border-purple-300')
             }`}
           >
-            <span className="text-xs shrink-0">⭐</span>
-            <span>Open Source on GitHub</span>
+            <span>{t('footerGithub')}</span>
           </a>
         </div>
 
-        <p className={`text-[9px] font-bold tracking-wider uppercase ${themeClass('text-slate-500/80', 'text-slate-450')}`}>
-          💳 PerkFolio • Made with Passion for Savvy Churners
+        <p className={`text-[9px] font-bold tracking-wider uppercase ${themeClass('text-slate-500/80', 'text-slate-455')}`}>
+          {t('footerPassion')}
         </p>
+        {/* Footer language selector */}
+        <div className="text-[10px] text-slate-500 dark:text-slate-450 font-semibold tracking-wide select-none flex items-center justify-center gap-1.5 mt-1 mb-1">
+          <span>🌐 Language:</span>
+          {language === 'zh' ? (
+            <>
+              <span className="text-emerald-500 font-bold">简体中文</span>
+              <span className="opacity-30">•</span>
+              <button type="button" onClick={toggleLanguage} className="hover:text-purple-400 cursor-pointer underline">English</button>
+            </>
+          ) : (
+            <>
+              <button type="button" onClick={toggleLanguage} className="hover:text-purple-400 cursor-pointer underline">简体中文</button>
+              <span className="opacity-30">•</span>
+              <span className="text-emerald-500 font-bold">English</span>
+            </>
+          )}
+        </div>
         <p className="text-[8.5px] leading-relaxed max-w-md mx-auto opacity-70 text-slate-500 dark:text-slate-450 font-medium">
-          🔒 Historical logs older than 24 months are automatically pruned to optimize loading speeds and minimize cellular data usage.
+          {t('footerPruneDesc')}
         </p>
       </footer>
 
@@ -950,15 +978,15 @@ function App() {
       {/* Standalone Loyalty Voucher Delete Confirmation Modal */}
       <ConfirmationModal
         isOpen={!!deleteAwardId}
-        title="Delete Standalone Voucher?"
-        message="Are you sure you want to delete this loyalty award voucher? This action is permanent and cannot be undone."
-        confirmText="Delete"
-        cancelText="Cancel"
+        title={language === 'zh' ? '确定注销并删除此房券/卡券吗？' : 'Delete Standalone Voucher?'}
+        message={language === 'zh' ? '此操作为永久操作，将把卡券从钱包和日历提醒中彻底抹除，且无法撤销。' : 'Are you sure you want to delete this loyalty award voucher? This action is permanent and cannot be undone.'}
+        confirmText={t('delete')}
+        cancelText={t('cancel')}
         onConfirm={() => {
           if (deleteAwardId) {
             deleteLoyaltyAward(deleteAwardId);
             setDeleteAwardId(null);
-            showToast('🗑️ Standalone voucher deleted successfully.', 'warning');
+            showToast(language === 'zh' ? '🗑️ 独立卡券已成功从钱包中删除！' : '🗑️ Standalone voucher deleted successfully.', 'warning');
           }
         }}
         onCancel={() => setDeleteAwardId(null)}
@@ -972,10 +1000,10 @@ function App() {
       {/* Google Drive Disconnect Confirmation Modal */}
       <ConfirmationModal
         isOpen={activeModal === 'disconnect-gdrive'}
-        title="Disconnect Google Drive?"
-        message="Are you sure you want to disconnect and unlink Google Drive? Your local data will remain intact, but automated cloud synchronization will cease."
-        confirmText="Disconnect"
-        cancelText="Cancel"
+        title={language === 'zh' ? '断开与 Google Drive 的云同步连接？' : 'Disconnect Google Drive?'}
+        message={language === 'zh' ? '确定要断开与云端的连接吗？您的本地数据会完好保存，但自动云备份将停止。' : 'Are you sure you want to disconnect and unlink Google Drive? Your local data will remain intact, but automated cloud synchronization will cease.'}
+        confirmText={language === 'zh' ? '确认断开' : 'Disconnect'}
+        cancelText={t('cancel')}
         onConfirm={handleConfirmDisconnectGoogleDrive}
         onCancel={() => setActiveModal(null)}
         theme={theme}
@@ -985,14 +1013,14 @@ function App() {
       {/* Wipe App Data Confirmation Modal */}
       <ConfirmationModal
         isOpen={activeModal === 'wipe'}
-        title="Wipe All App Data?"
-        message="Are you absolutely sure you want to reset all card instances and checklist logs? This action is permanent and cannot be undone."
-        confirmText="Wipe Data"
-        cancelText="Keep Data"
+        title={language === 'zh' ? '🚨 确定要清空并全盘重置应用数据吗？' : 'Wipe All App Data?'}
+        message={language === 'zh' ? '警告：此操作将永久抹除您的全部卡包组合、自定义福利和历史打卡日志。本操作不可逆！' : 'Are you absolutely sure you want to reset all card instances and checklist logs? This action is permanent and cannot be undone.'}
+        confirmText={language === 'zh' ? '全盘抹除数据' : 'Wipe Data'}
+        cancelText={language === 'zh' ? '保留卡包数据' : 'Keep Data'}
         onConfirm={() => {
           resetAll();
           setActiveModal(null);
-          showToast('🗑️ All card data and logs have been wiped.', 'warning');
+          showToast(language === 'zh' ? '🗑️ 本地数据已被全盘清空抹除！' : '🗑️ All card data and logs have been wiped.', 'warning');
         }}
         onCancel={() => setActiveModal(null)}
         theme={theme}
@@ -1026,8 +1054,8 @@ function App() {
             themeClass('bg-slate-900/95 border-slate-800/85 text-white shadow-slate-950/50', 'bg-white/95 border-slate-200/80 text-slate-800 shadow-slate-500/20')
           }`}>
             <div className="min-w-0">
-              <p className="text-[10px] font-extrabold uppercase tracking-wider opacity-85">Batch Selection</p>
-              <p className="text-xs font-black truncate mt-0.5">{selectedTemplates.length} Card Templates</p>
+              <p className="text-[10px] font-extrabold uppercase tracking-wider opacity-85">{t('batchSelection')}</p>
+              <p className="text-xs font-black truncate mt-0.5">{selectedTemplates.length} {language === 'zh' ? t('bankTemplatesSuffix') : t('bankTemplatesSuffix')}</p>
             </div>
             <div className="flex gap-2 shrink-0">
               <button
@@ -1036,7 +1064,7 @@ function App() {
                   themeClass('bg-slate-850 hover:bg-slate-800 border-slate-750 text-slate-300', 'bg-slate-100 hover:bg-slate-200 border-slate-250 text-slate-600')
                 }`}
               >
-                Clear
+                {t('clearSelection')}
               </button>
               <button
                 onClick={() => {
@@ -1044,11 +1072,11 @@ function App() {
                   setSelectedTemplates([]);
                   setDeckSubTab('cards');
                   localStorage.setItem('cc-tracker-deck-sub-tab', 'cards');
-                  showToast(`🎉 Successfully added ${selectedTemplates.length} cards to your Wallet!`, 'success');
+                  showToast(language === 'zh' ? `🎉 成功批量导入 ${selectedTemplates.length} 张信用卡至您的卡包！` : `🎉 Successfully added ${selectedTemplates.length} cards to your Wallet!`, 'success');
                 }}
                 className="px-4.5 py-2 rounded-xl text-[10px] font-extrabold bg-gradient-to-tr from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-550 text-white transition cursor-pointer active:scale-95 shadow-md shadow-purple-500/20"
               >
-                Add to Wallet
+                {t('addToWallet')}
               </button>
             </div>
           </div>
