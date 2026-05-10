@@ -19,8 +19,13 @@ export function DeleteConfirmModal({ isOpen, cardName, onConfirm, onCancel, them
   const themeClass = (dark: string, light: string) => theme === 'dark' ? dark : light;
 
   return (
-    <div className="fixed inset-0 bg-slate-950/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in">
-      <div className={`w-full max-w-sm rounded-2xl border p-6 text-center space-y-4 shadow-2xl animate-scale-up ${
+    <div 
+      onClick={onCancel}
+      className="fixed inset-0 bg-slate-950/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in"
+    >
+      <div 
+        onClick={(e) => e.stopPropagation()}
+        className={`w-full max-w-sm rounded-2xl border p-6 text-center space-y-4 shadow-2xl animate-scale-up ${
         themeClass(
           'bg-slate-900 border-slate-850 text-slate-200 shadow-slate-950/50',
           'bg-white border-slate-200 text-slate-800 shadow-slate-200/30'

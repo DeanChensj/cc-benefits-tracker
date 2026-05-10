@@ -84,10 +84,16 @@ export function CreateAwardModal({ isOpen, onClose, themeClass }: CreateAwardMod
   const templateInfo = AWARD_TEMPLATES[selectedTemplate];
 
   return (
-    <div className="fixed inset-0 z-55 flex items-center justify-center p-3 bg-black/60 backdrop-blur-sm overflow-y-auto">
-      <div className={`relative w-full max-w-[440px] border rounded-2xl shadow-2xl animate-scale-up overflow-hidden flex flex-col ${
-        themeClass('bg-slate-955 border-slate-850 text-white', 'bg-white border-slate-200 text-slate-900')
-      }`}>
+    <div 
+      onClick={onClose}
+      className="fixed inset-0 z-55 flex items-center justify-center p-3 bg-black/60 backdrop-blur-[3px] overflow-y-auto"
+    >
+      <div 
+        onClick={(e) => e.stopPropagation()}
+        className={`relative w-full max-w-[440px] border rounded-2xl shadow-2xl animate-scale-up overflow-hidden flex flex-col ${
+          themeClass('bg-slate-955 border-slate-855 text-white', 'bg-white border-slate-200 text-slate-900')
+        }`}
+      >
         {/* Modal Header */}
         <div className="flex items-center justify-between p-4 border-b border-dashed border-slate-800/30 dark:border-white/5 shrink-0">
           <div className="flex items-center gap-2">

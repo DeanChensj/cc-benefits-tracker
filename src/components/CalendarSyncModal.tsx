@@ -25,7 +25,10 @@ export function CalendarSyncModal({ isOpen, onClose, ownedCards, logs, loyaltyAw
   const themeClass = (dark: string, light: string) => theme === 'dark' ? dark : light;
 
   return (
-    <div className="fixed inset-0 bg-slate-950/50 dark:bg-slate-950/80 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in">
+    <div 
+      onClick={onClose}
+      className="fixed inset-0 bg-slate-950/50 dark:bg-slate-950/80 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in"
+    >
       <div 
         className={`border rounded-2xl max-w-md w-full p-6 shadow-2xl relative animate-scale-up transition-colors duration-300 ${
           themeClass('bg-slate-900 border-slate-800 text-slate-100', 'bg-white border-slate-200 text-slate-800')
