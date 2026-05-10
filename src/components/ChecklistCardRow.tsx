@@ -4,7 +4,7 @@ import type { ActiveBenefit } from '../utils/dateUtils';
 import type { LogEntry } from '../utils/logUtils';
 import { parseLogEntry } from '../utils/logUtils';
 import { obfuscateKey } from '../utils/cryptoUtils';
-import { AWARD_TEMPLATES } from '../data/cards.db';
+import { AWARD_TEMPLATES, CARDS_DB } from '../data/cards.db';
 import { getStepAmount } from '../utils/valuationUtils';
 import { useCardStore } from '../store/useCardStore';
 import { translations, formatCardName } from '../utils/i18n';
@@ -57,9 +57,15 @@ export const ChecklistCardRow = React.memo(function ChecklistCardRow({
     (isProgressiveCap && isAnnual) 
       ? false 
       : (daysLeft !== null && daysLeft <= threshold);
+  const template = cardInstance && cardInstance.templateId !== 'custom'
+    ? CARDS_DB.find(t => t.id === cardInstance.templateId)
+    : null;
+
   const badgeText = isStandalone
     ? (loyaltyAward ? (AWARD_TEMPLATES[loyaltyAward.templateId]?.brand || loyaltyAward.customBrand || 'Award') : 'Award')
-    : cardInstance.customName;
+    : (cardInstance.templateId === 'custom'
+        ? (language === 'zh' ? '自定义卡' : 'Custom')
+        : formatCardName(template?.name || cardInstance.customName));
 
   const getCategoryHoverClasses = () => {
     const cat = benefit.category;
