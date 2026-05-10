@@ -214,9 +214,9 @@ const translationsEn = {
   feeLabel: 'fee',
 
   // 6. Footer Premium local-first badges i18n
-  footerLocalData: '100% Local Data',
-  footerNoPlaid: 'No Plaid / No Bank Logins',
-  footerGithub: 'Open Source on GitHub',
+  footerLocalData: '🛡️ 100% Local Offline Storage',
+  footerNoPlaid: '🚫 No Plaid / No Bank Logins Required',
+  footerGithub: '⭐ Open Source on GitHub',
   footerPruneDesc: '🔒 Historical logs older than 24 months are automatically pruned to optimize loading speeds and minimize cellular data usage.',
   footerPassion: '💳 PerkFolio • Made with Passion for Savvy Churners',
 
