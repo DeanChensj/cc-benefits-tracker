@@ -1155,8 +1155,9 @@ function App() {
         theme={theme}
       />
 
+
       {/* 🎨 Tailwind CSS Theme Safelist Force-compiler block */}
-      <div className="hidden from-blue-800 to-indigo-900 from-blue-600 to-sky-900" />
+      <div className="hidden from-blue-700 to-indigo-900 from-blue-800 from-sky-900 via-indigo-950 to-black from-blue-600 to-sky-900 from-slate-900 from-blue-500 to-indigo-700" />
 
       {/* Premium Floating Toast Notification */}
       {toast && (

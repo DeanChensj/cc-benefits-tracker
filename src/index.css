@@ -1,6 +1,6 @@
 @import "tailwindcss";
 
-@theme {
+:root {
   --color-purple-50: var(--color-teal-50);
   --color-purple-100: var(--color-teal-100);
   --color-purple-200: var(--color-teal-200);
@@ -16,23 +16,29 @@
   --color-purple-800: var(--color-teal-800);
   --color-purple-900: var(--color-teal-900);
   --color-purple-950: var(--color-teal-950);
-  --color-slate-955: #1c1e26;
+}
+
+.bg-slate-955 {
+  background-color: #1c1e26;
+}
+.border-slate-955 {
+  border-color: #1c1e26;
 }
 
 /* Premium micro-animations for modal overlay opening */
-@utility animate-fade-in {
+.animate-fade-in {
   animation: fadeIn 0.15s ease-out forwards;
 }
 
-@utility animate-scale-up {
+.animate-scale-up {
   animation: scaleUp 0.26s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-@utility transition-hydraulic {
+.transition-hydraulic {
   transition: all 0.32s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-@utility animate-spin-slow {
+.animate-spin-slow {
   animation: spin 8s linear infinite;
 }
 
@@ -79,7 +85,7 @@
 }
 
 /* Premium micro-animations for toast notifications */
-@utility animate-slide-up {
+.animate-slide-up {
   animation: slideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
@@ -95,7 +101,7 @@
 }
 
 /* Premium micro-animations for mobile responsive bottom sheets (NO horizontal offsets!) */
-@utility animate-slide-sheet {
+.animate-slide-sheet {
   animation: slideSheet 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
@@ -109,15 +115,15 @@
 }
 
 /* Zen Graphite Minimalist Design Tokens */
-@utility bg-zen-dark {
+.bg-zen-dark {
   background-color: #12131a;
 }
-@utility bg-zen-dark-card {
+.bg-zen-dark-card {
   background-color: #1b1c25;
 }
-@utility bg-zen-light {
+.bg-zen-light {
   background-color: #faf9f6;
 }
-@utility bg-zen-light-card {
+.bg-zen-light-card {
   background-color: #ffffff;
 }
