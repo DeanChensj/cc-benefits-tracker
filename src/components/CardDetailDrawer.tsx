@@ -90,10 +90,23 @@ export function CardDetailDrawer({ isOpen, card, onClose, onAdd, theme }: CardDe
         {/* Content Area (Scrollable) */}
         <div className="px-5 py-4 overflow-y-auto space-y-5 flex-grow scrollbar-thin">
           {/* 💳 Luxury Metallic Mini-Card Preview */}
-          <div className={`p-4 sm:p-5 rounded-xl bg-gradient-to-tr ${cardColor} shadow-lg text-white relative overflow-hidden min-h-[110px] flex flex-col justify-between shrink-0 select-none`}>
+          <div className={`w-full aspect-[1.586] p-5 sm:p-6 rounded-2xl bg-gradient-to-tr ${cardColor} shadow-2xl text-white relative overflow-hidden flex flex-col justify-between shrink-0 select-none`}>
             <div>
               <div className="flex items-center justify-between">
-                <span className="text-[9px] font-black uppercase tracking-wider opacity-75">{card.bank}</span>
+                <span className="text-[10px] font-black uppercase tracking-wider opacity-75">{card.bank}</span>
+              </div>
+              
+              {/* Golden EMV Chip Simulation */}
+              <div className="w-9 h-7 bg-gradient-to-br from-yellow-200 via-yellow-400 to-yellow-600 rounded-md opacity-85 border border-yellow-200/40 relative overflow-hidden mt-1.5 shadow-sm">
+                <div className="absolute inset-0 grid grid-cols-3 grid-rows-2 border border-yellow-700/20">
+                  <div className="border-r border-b border-yellow-700/20" />
+                  <div className="border-r border-b border-yellow-700/20" />
+                  <div className="border-b border-yellow-700/20" />
+                  <div className="border-r border-yellow-700/20" />
+                  <div className="border-r border-yellow-700/20" />
+                  <div />
+                </div>
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-2.5 h-2.5 bg-gradient-to-br from-yellow-300 to-yellow-500 rounded-sm border border-yellow-200/30" />
               </div>
             </div>
             
@@ -229,7 +242,9 @@ export function CardDetailDrawer({ isOpen, card, onClose, onAdd, theme }: CardDe
               onAdd();
               onClose();
             }}
-            className="w-2/3 bg-gradient-to-tr from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-550 text-white font-bold py-2.5 rounded-xl text-xs transition active:scale-[0.98] shadow-md shadow-purple-500/10 cursor-pointer"
+            className={`w-2/3 flex items-center justify-center gap-2 font-bold py-2.5 rounded-xl text-xs transition active:scale-[0.98] cursor-pointer shadow-sm ${
+              themeClass('bg-gradient-to-tr from-slate-800 to-slate-850 hover:from-slate-750 hover:to-slate-800 border border-slate-700/50 text-white', 'bg-gradient-to-tr from-slate-900 to-black hover:from-slate-800 hover:to-slate-900 text-white')
+            }`}
           >
             <Plus className="w-4 h-4 stroke-[3]" />
             {t('addCardToWallet')}
