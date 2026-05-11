@@ -49,11 +49,13 @@ export function VoucherTicketCard({
       className={`rounded-xl border flex justify-between transition duration-200 relative overflow-hidden select-none min-h-[140px] border-l-[3.5px] ${
         isCompleted ? 'opacity-50 grayscale-[30%]' : ''
       } ${getVoucherBorderColor()} ${
-        themeClass('bg-slate-900/40 border-slate-850/80 text-slate-300 backdrop-blur-sm', 'bg-white border-slate-200 text-slate-700 shadow-sm')
+        themeClass('bg-slate-900/40 border-slate-850/80 text-slate-300 backdrop-blur-sm', theme.bgClass)
       }`}
     >
       {/* Background Angled Watermark */}
-      <div className="absolute right-[32%] bottom-[-10px] select-none pointer-events-none opacity-[0.03] text-[50px] font-black tracking-widest uppercase font-sans -rotate-12 leading-none z-0 dark:text-white text-slate-900">
+      <div className={`absolute right-[32%] ${!theme.watermark.includes(' ') ? 'bottom-[2px]' : 'bottom-[-10px]'} select-none pointer-events-none text-[50px] font-black tracking-widest uppercase font-sans -rotate-12 leading-none z-0 ${
+        themeClass('opacity-[0.03] text-white', 'opacity-[0.08] text-slate-900')
+      }`}>
         {theme.watermark}
       </div>
 
@@ -68,7 +70,7 @@ export function VoucherTicketCard({
                 {award.brand}
               </span>
               {award.programType && (
-                <span className={`text-[7px] font-bold uppercase tracking-wide truncate ${themeClass('text-slate-400', 'text-slate-505')}`}>
+                <span className={`text-[7px] font-bold uppercase tracking-wide truncate ${themeClass('text-slate-400', 'text-slate-600')}`}>
                   • {getTranslatedProgramType(award.programType, language)}
                 </span>
               )}
@@ -77,7 +79,7 @@ export function VoucherTicketCard({
               <span className={`text-[7.5px] font-black tracking-widest uppercase shrink-0 ${
                 isCompleted 
                   ? 'line-through text-slate-600 dark:text-slate-600' 
-                  : themeClass('text-slate-400', 'text-slate-505')
+                  : themeClass('text-slate-400', 'text-slate-600')
               }`}>
                 {t('expiresLabel')}: {award.expirationDate}
               </span>
@@ -105,13 +107,13 @@ export function VoucherTicketCard({
           )}
           
           {award.notes && (
-            <p className={`text-[9.5px] mt-1 leading-relaxed font-medium truncate ${themeClass('text-slate-400', 'text-slate-505')}`}>
+            <p className={`text-[9.5px] mt-1 leading-relaxed font-medium truncate ${themeClass('text-slate-400', 'text-slate-600')}`}>
               {award.notes}
             </p>
           )}
         </div>
 
-        <div className={`mt-2 text-[8px] font-bold flex items-baseline gap-1 select-none ${themeClass('text-slate-450', 'text-slate-505')}`}>
+        <div className={`mt-2 text-[8px] font-bold flex items-baseline gap-1 select-none ${themeClass('text-slate-400', 'text-slate-600')}`}>
           <span>{t('voucherValue')}</span>
           <span className={`font-black text-[13px] font-mono leading-none ${
             isCompleted 
