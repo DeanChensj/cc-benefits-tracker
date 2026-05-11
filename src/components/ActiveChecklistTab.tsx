@@ -11,7 +11,7 @@ import { obfuscateKey } from '../utils/cryptoUtils';
 import { parseLogEntry } from '../utils/logUtils';
 import type { LogEntry } from '../utils/logUtils';
 import { useCardStore } from '../store/useCardStore';
-import { translations } from '../utils/i18n';
+import { translations, formatCardName } from '../utils/i18n';
 
 interface ActiveChecklistTabProps {
   activeBenefits: ActiveBenefit[];
@@ -311,10 +311,6 @@ export function ActiveChecklistTab({
                       ? CARDS_DB.find((t) => t.id === card.templateId)
                       : null;
 
-                    const cardName = isAwards 
-                      ? t('standaloneVouchers') 
-                      : (card?.customName || template?.name || 'Credit Card');
-
                     const isCollapsed = !!collapsedGroups[key];
 
                     return (
@@ -338,8 +334,46 @@ export function ActiveChecklistTab({
                             )
                           }`}
                         >
-                          <div className="flex items-center gap-2 min-w-0">
-                            <span className="text-[11px] font-black uppercase tracking-wider truncate">{cardName}</span>
+                           <div className="flex items-center gap-2.5 min-w-0">
+                            {(() => {
+                              if (isAwards) {
+                                return (
+                                  <span className="text-[11px] font-black uppercase tracking-wider truncate">
+                                    {t('standaloneVouchers')}
+                                  </span>
+                                );
+                              }
+
+                              if (!card) return null;
+
+                              const typeName = template ? formatCardName(template.name) : (card.bank || 'Card');
+                              const customName = card.customName ? card.customName.trim() : '';
+
+                              const isDuplicated = !customName || customName === typeName || (template && customName === template.name);
+
+                              if (isDuplicated) {
+                                return (
+                                  <span className="text-[11px] font-black uppercase tracking-wider truncate">
+                                    {typeName}
+                                  </span>
+                                );
+                              }
+
+                              // Typographic Split Duet for Collapsible Card Drawer Header in Zen Mode!
+                              return (
+                                <div className="flex items-baseline gap-1 truncate select-none">
+                                  <span className={`text-[11.5px] font-black tracking-wide ${themeClass('text-slate-200', 'text-slate-800')}`}>
+                                    {customName}
+                                  </span>
+                                  <span className={`text-[9px] mx-1.5 font-light select-none ${themeClass('text-slate-700', 'text-slate-300')}`}>
+                                    │
+                                  </span>
+                                  <span className={`text-[9.5px] font-bold tracking-wider uppercase ${themeClass('text-slate-500', 'text-slate-450')}`}>
+                                    {typeName}
+                                  </span>
+                                </div>
+                              );
+                            })()}
                             <span className={`text-[8px] font-black px-1.5 py-0.5 rounded-md tracking-wide shrink-0 ${
                               themeClass('bg-slate-800 text-slate-400 border border-slate-750', 'bg-slate-200/65 text-slate-600 border border-slate-250')
                             }`}>
