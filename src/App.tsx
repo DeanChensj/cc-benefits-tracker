@@ -358,8 +358,10 @@ function App() {
     loyaltyAward?: LoyaltyAward;
   }
 
-  const activeBenefits: ActiveBenefit[] = [];
-  ownedCards.forEach((cardInstance) => {
+  // eslint-disable-next-line react-hooks/preserve-manual-memoization
+  const activeBenefits = useMemo(() => {
+    const activeBenefits: ActiveBenefit[] = [];
+    ownedCards.forEach((cardInstance) => {
     const template = CARDS_DB.find((t) => t.id === cardInstance.templateId);
     let benefits: Benefit[] = [];
 
@@ -467,6 +469,8 @@ function App() {
       loyaltyAward: award
     });
   });
+  return activeBenefits;
+}, [ownedCards, loyaltyAwards, logs, currentDate]);
 
   const getExpiredValue = (ab: ActiveBenefit): number => {
     const usedQty = ab.loyaltyAward ? (ab.loyaltyAward.usedQuantity || 0) : 0;
@@ -514,7 +518,7 @@ function App() {
   // Calculate the Checkout Winners in active cards using Points Valuations & ROS% (Return-on-Spend)
   const pointValuations = useCardStore((state) => state.pointValuations || {});
 
-  const checkoutWinners = (() => {
+  const checkoutWinners = useMemo(() => {
     if (ownedCards.length === 0) return null;
 
     const categories = ['dining', 'travel', 'shopping', 'entertainment'] as const;
@@ -564,16 +568,19 @@ function App() {
     // Check if we actually have at least one winner
     const hasWinner = Object.values(winners).some(w => w !== null);
     return hasWinner ? winners : null;
-  })();
+  }, [ownedCards, pointValuations]);
 
   // Calculate actual remaining, non-expired active benefits for the AI SpentAssistant (cards only)
-  const remainingBenefits = activeBenefits.filter((ab) => {
-    if (ab.isUsed || !ab.cardInstance) return false;
-    const isExpired = ab.benefit.resetPeriod === 'fixed' && 
-      ab.benefit.expirationDate && 
-      new Date(ab.benefit.expirationDate + 'T00:05:00') < currentDate;
-    return !isExpired;
-  }) as unknown as { cardInstance: OwnedCardInstance; benefit: Benefit; logKey: string }[];
+  const remainingBenefits = useMemo(() => {
+    return activeBenefits.filter((ab) => {
+      if (ab.isUsed || !ab.cardInstance) return false;
+      const isExpired = ab.benefit.resetPeriod === 'fixed' && 
+        ab.benefit.expirationDate && 
+        new Date(ab.benefit.expirationDate + 'T00:05:00') < currentDate;
+      return !isExpired;
+    }) as unknown as { cardInstance: OwnedCardInstance; benefit: Benefit; logKey: string }[];
+  // eslint-disable-next-line react-hooks/preserve-manual-memoization
+  }, [activeBenefits, currentDate]);
 
 
 
