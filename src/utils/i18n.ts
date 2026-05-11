@@ -351,6 +351,10 @@ const translationsEn = {
   cardActionWebsite: 'Website 🔗',
   cardActionDelete: 'Delete Card 🗑️',
   expiresLabel: 'Expires',
+  prog_hotel: 'Hotel',
+  prog_airline: 'Airline',
+  prog_bank: 'Bank',
+  prog_other: 'Other',
 };
 
 const translationsZh: typeof translationsEn = {
@@ -706,6 +710,10 @@ const translationsZh: typeof translationsEn = {
   cardActionWebsite: '访问官网 🔗',
   cardActionDelete: '注销卡片 🗑️',
   expiresLabel: '有效期至',
+  prog_hotel: '酒店卡券',
+  prog_airline: '航空卡券',
+  prog_bank: '银行卡券',
+  prog_other: '其他卡券',
 };
 
 export const translations: Record<'en' | 'zh', typeof translationsEn> = {
@@ -727,4 +735,12 @@ export const formatCardNameForToast = (name: string): string => {
     return formatted.substring(0, 2) + '\u200b' + formatted.substring(2);
   }
   return formatted;
+};
+
+export const getTranslatedProgramType = (p: string, language: 'en' | 'zh'): string => {
+  if (!p) return '';
+  const key = `prog_${p.toLowerCase()}` as keyof typeof translationsEn;
+  const translationsDict = translations[language] || translations['en'];
+  const val = translationsDict[key];
+  return val ? val : p.toUpperCase();
 };

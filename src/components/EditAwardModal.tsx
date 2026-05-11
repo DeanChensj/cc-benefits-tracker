@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { X, Calendar, Info } from 'lucide-react';
 import { AWARD_TEMPLATES } from '../data/cards.db';
 import type { LoyaltyAward } from '../data/cards.db';
-import { getAwardTheme } from '../utils/themeUtils';
+import { VoucherTicketCard } from './VoucherTicketCard';
 import { useCardStore } from '../store/useCardStore';
 import { translations } from '../utils/i18n';
 
@@ -49,8 +49,6 @@ export function EditAwardModal({ isOpen, onClose, award, themeClass }: EditAward
     : AWARD_TEMPLATES[award.templateId];
 
   if (!info) return null;
-
-  const liveTheme = getAwardTheme(info.brand, info.awardType || '', themeClass);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -113,48 +111,19 @@ export function EditAwardModal({ isOpen, onClose, award, themeClass }: EditAward
             <label className={`text-[8.5px] font-black uppercase tracking-widest ${themeClass('text-slate-400', 'text-slate-500')}`}>
               {language === 'zh' ? '票券效果预览' : 'Live Ticket Preview'}
             </label>
-            <div className={`rounded-2xl border flex justify-between overflow-hidden select-none min-h-[110px] relative ${liveTheme.bgClass} ${
-              themeClass('border-white/10 text-white', 'border-slate-200 text-slate-900 shadow-sm')
-            }`}>
-              {/* Mini tear punches */}
-              <div className={`absolute -top-2 right-24 w-4 h-4 rounded-full z-20 ${themeClass('bg-slate-900', 'bg-white')}`} />
-              <div className={`absolute -bottom-2 right-24 w-4 h-4 rounded-full z-20 ${themeClass('bg-slate-900', 'bg-white')}`} />
-
-              {/* Left Ticket Part */}
-              <div className="flex-grow p-3.5 relative z-10 pr-1 min-w-0 flex flex-col justify-between">
-                <div>
-                  <div className="flex items-center justify-between gap-2 w-full select-none">
-                    <div className="flex items-center gap-1 min-w-0">
-                      <span className={`text-[7.2px] font-black px-1 py-0.2 rounded uppercase tracking-wider border shrink-0 ${liveTheme.brandTagClass}`}>
-                        {info.brand}
-                      </span>
-                    </div>
-                    {expirationDate && (
-                      <span className={`text-[7px] font-black uppercase tracking-wider shrink-0 opacity-85 ${themeClass('text-white/90', 'text-slate-500')}`}>
-                        ⏳ {expirationDate}
-                      </span>
-                    )}
-                  </div>
-                  <h4 className={`text-[11px] font-black mt-2 break-words line-clamp-2 leading-tight ${themeClass('text-white', 'text-slate-900')}`}>
-                    {info.name}
-                  </h4>
-                </div>
-                <div className={`text-[8px] font-bold opacity-85 flex items-baseline gap-0.5 ${themeClass('text-white/80', 'text-slate-500')}`}>
-                  <span>{t('voucherValue')}</span>
-                  <span className={`font-black text-xs leading-none ${themeClass('text-teal-400', 'text-teal-600')}`}>${info.value}</span>
-                </div>
-              </div>
-
-              {/* Right Ticket Stub Receipt Part */}
-              <div className="w-24 shrink-0 p-3.5 border-l border-dashed border-white/15 dark:border-black/20 flex flex-col justify-center items-center text-center relative z-10 select-none">
-                <span className={`text-[9.2px] font-black uppercase tracking-widest block ${liveTheme.glowColor}`}>
-                  ${info.value}
-                </span>
-                <span className={`text-[6px] font-bold uppercase tracking-widest opacity-60 mt-0.5 block ${themeClass('text-white', 'text-slate-500')}`}>
-                  {t('balancePrefix') || 'Bal'}
-                </span>
-              </div>
-            </div>
+            <VoucherTicketCard
+              award={{
+                brand: info.brand,
+                name: info.name,
+                programType: info.programType,
+                awardType: info.awardType,
+                value: info.value,
+                expirationDate: expirationDate || undefined,
+                notes: notes || undefined
+              }}
+              isStaticPreview={true}
+              themeClass={themeClass}
+            />
           </div>
 
           {/* 2. Custom Card parameters: Name and cash valuation (Only enabled for Custom Templates!) */}

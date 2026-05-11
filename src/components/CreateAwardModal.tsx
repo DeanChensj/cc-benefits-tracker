@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { X, Calendar, Sparkles, Info, Plus } from 'lucide-react';
 import { AWARD_TEMPLATES } from '../data/cards.db';
-import { getAwardTheme } from '../utils/themeUtils';
+import { VoucherTicketCard } from './VoucherTicketCard';
 import { useCardStore } from '../store/useCardStore';
 import { translations } from '../utils/i18n';
 
@@ -14,17 +14,6 @@ interface CreateAwardModalProps {
 export function CreateAwardModal({ isOpen, onClose, themeClass }: CreateAwardModalProps) {
   const { addLoyaltyAward, language } = useCardStore();
   const t = (key: keyof typeof translations['en']) => translations[language][key] || translations['en'][key];
-
-  const getTranslatedAwardType = (a: string) => {
-    if (language !== 'zh') return a;
-    if (a === 'fnr') return '免费房券 (FN)';
-    if (a === 'sua') return '套房升级券 (SUA)';
-    if (a === 'goh') return '嘉宾体验券 (GOH)';
-    if (a === 'companion') return '同行免票券';
-    if (a === 'swu') return '环球升级券 (SWU)';
-    if (a === 'points') return '积分与里程';
-    return '其他福利卡券';
-  };
 
   // Template selection
   const [selectedTemplate, setSelectedTemplate] = useState<string>('hyatt-sua');
@@ -41,8 +30,6 @@ export function CreateAwardModal({ isOpen, onClose, themeClass }: CreateAwardMod
   const [customValue, setCustomValue] = useState<string>('');
 
   if (!isOpen) return null;
-
-
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -80,8 +67,6 @@ export function CreateAwardModal({ isOpen, onClose, themeClass }: CreateAwardMod
   const liveName = isCustom ? (customName.trim() || 'Custom Voucher') : templateInfo.name;
   const liveAwardType = isCustom ? customAwardType : templateInfo.awardType;
   const liveValue = isCustom ? (Number(customValue) || 0) : templateInfo.value;
-
-  const liveTheme = getAwardTheme(liveBrand, liveAwardType || '', themeClass);
 
   return (
     <div 
@@ -152,46 +137,19 @@ export function CreateAwardModal({ isOpen, onClose, themeClass }: CreateAwardMod
             <label className={`text-[9px] font-extrabold uppercase tracking-widest ${themeClass('text-slate-450', 'text-slate-500')}`}>
               {t('awardFormPreviewTitle')}
             </label>
-            <div className={`rounded-2xl border border-t flex justify-between relative overflow-hidden select-none transition-all duration-300 min-h-[95px] bg-gradient-to-tr p-4 shadow ${liveTheme.bgClass}`}>
-              {/* Watermark */}
-              <div className="absolute right-[32%] bottom-[-8px] select-none pointer-events-none opacity-[0.035] text-[32px] font-black tracking-widest uppercase font-sans -rotate-12 leading-none z-0">
-                {liveTheme.watermark}
-              </div>
-              
-              {/* Left Ticket Section */}
-              <div className="flex-grow text-left min-w-0 flex flex-col justify-between z-10 pr-2">
-                <div>
-                  <div className="flex items-center gap-1.5">
-                    <span className={`text-[7.5px] font-black px-1.5 py-0.5 rounded uppercase tracking-wider border ${liveTheme.brandTagClass}`}>
-                      {liveBrand}
-                    </span>
-                    {expirationDate && (
-                      <span className="text-[7.5px] font-bold opacity-80 truncate">
-                        • Exp: {expirationDate}
-                      </span>
-                    )}
-                  </div>
-                  <h4 className="text-xs font-black mt-2 break-words line-clamp-2 leading-tight">
-                    {liveName}
-                  </h4>
-                </div>
-                
-                {notes && (
-                  <p className="text-[9px] opacity-90 font-semibold truncate mt-2">
-                    ✍️ {notes}
-                  </p>
-                )}
-              </div>
-              
-              {/* Right stub Section */}
-              <div className="w-24 shrink-0 flex flex-col justify-center items-center border-l border-dashed border-white/10 dark:border-black/20 relative text-center z-10 pl-3">
-                <span className="text-[8px] font-bold opacity-65 uppercase block leading-none">{t('voucherValue')}</span>
-                <span className="font-black text-base leading-none mt-1">${liveValue}</span>
-                <span className={`text-[7.5px] font-black uppercase tracking-wider mt-1 block text-center truncate max-w-full ${liveTheme.glowColor}`}>
-                  {getTranslatedAwardType(liveAwardType || '')}
-                </span>
-              </div>
-            </div>
+            <VoucherTicketCard
+              award={{
+                brand: liveBrand,
+                name: liveName,
+                programType: isCustom ? customProgramType : templateInfo.programType,
+                awardType: liveAwardType,
+                value: liveValue,
+                expirationDate: expirationDate || undefined,
+                notes: notes || undefined
+              }}
+              isStaticPreview={true}
+              themeClass={themeClass}
+            />
           </div>
 
           {/* Custom Fields Group - Only rendered if selection === 'custom' */}

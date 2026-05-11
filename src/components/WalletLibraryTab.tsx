@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
-import { Plus, Sparkles, CreditCard, Trash2, Compass, Edit3 } from 'lucide-react';
+import { Plus, Sparkles, CreditCard, Compass } from 'lucide-react';
 import { WalletCreditCard } from './WalletCreditCard';
 import { CardTemplatesCatalog } from './CardTemplatesCatalog';
 import { CheckoutWinnersRow } from './CheckoutWinnersRow';
 import { ChurningStatsDrawer } from './ChurningStatsDrawer';
 import { AdvancedSettingsSection } from './AdvancedSettingsSection';
-import { getAwardTheme } from '../utils/themeUtils';
+import { VoucherTicketCard } from './VoucherTicketCard';
 import { CARDS_DB, AWARD_TEMPLATES } from '../data/cards.db';
 import type { LoyaltyAward, CardTemplate } from '../data/cards.db';
 import type { OwnedCardInstance } from '../store/useCardStore';
@@ -401,14 +401,6 @@ export function WalletLibraryTab({
         const inactiveAwards = sortedAwards.filter((a) => (a.usedQuantity || 0) >= 1);
 
         const renderAwardCard = (award: typeof loyaltyAwards[0]) => {
-          const getTranslatedProgramType = (p: string) => {
-            if (language !== 'zh') return p;
-            if (p.toLowerCase() === 'hotel') return '酒店常客 🏨';
-            if (p.toLowerCase() === 'airline') return '航空里程 ✈️';
-            if (p.toLowerCase() === 'bank') return '银行积分 🏦';
-            return '其他类别 📦';
-          };
-
           const isCustom = award.templateId === 'custom';
           const info = isCustom ? {
             name: award.customName || 'Custom Voucher',
@@ -420,120 +412,24 @@ export function WalletLibraryTab({
 
           const usedQty = award.usedQuantity || 0;
           const isCompleted = usedQty >= 1;
-          const theme = getAwardTheme(info.brand, info.awardType || '', themeClass);
 
           return (
-            <div
-              key={award.id}
-              className={`rounded-2xl border flex justify-between transition duration-200 relative overflow-hidden select-none min-h-[150px] bg-gradient-to-tr ${
-                isCompleted ? 'opacity-50 grayscale-[30%]' : ''
-              } ${theme.bgClass} ${themeClass('border-white/10 text-white', 'border-slate-250/80 text-slate-900 shadow-sm')}`}
-            >
-              {/* Background Angled Watermark */}
-              <div className="absolute right-[32%] bottom-[-10px] select-none pointer-events-none opacity-[0.03] text-[50px] font-black tracking-widest uppercase font-sans -rotate-12 leading-none z-0">
-                {theme.watermark}
-              </div>
-
-              {/* 1. Left Column: Main Ticket Body (70%) */}
-              <div className="flex-grow p-4 relative text-left min-w-0 flex flex-col justify-between z-10 pr-2">
-                <div>
-                  <div className="flex items-center justify-between gap-2 flex-wrap w-full select-none">
-                    <div className="flex items-center gap-1.5 min-w-0">
-                      <span className={`text-[8px] font-black px-1.5 py-0.5 rounded uppercase tracking-wider border shrink-0 ${theme.brandTagClass}`}>
-                        {info.brand}
-                      </span>
-                      {info.programType && (
-                        <span className={`text-[7.5px] font-bold uppercase tracking-wide truncate ${themeClass('text-white/75', 'text-slate-500')}`}>
-                          • {getTranslatedProgramType(info.programType)}
-                        </span>
-                      )}
-                    </div>
-                    {award.expirationDate && (
-                      <span className={`text-[8px] font-black tracking-widest uppercase shrink-0 ${
-                        isCompleted 
-                          ? 'line-through text-white/30 dark:text-white/20' 
-                          : themeClass('text-white/90', 'text-slate-500')
-                      }`}>
-                        {t('expiresLabel')}: {award.expirationDate}
-                      </span>
-                    )}
-                  </div>
-                  
-                  <div 
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onEditAward(award);
-                    }}
-                    className="flex items-center gap-1.5 cursor-pointer group/edit max-w-fit mt-2.5"
-                    title="Click to edit voucher details"
-                  >
-                    <h4 className={`text-xs font-black break-words line-clamp-2 leading-snug ${themeClass('text-white', 'text-slate-900')}`}>
-                      {info.name}
-                    </h4>
-                    <Edit3 className="w-3 h-3 shrink-0 opacity-50 group-hover/edit:opacity-100" />
-                  </div>
-                  
-                  {award.notes && (
-                    <p className={`text-[10px] mt-1.5 leading-relaxed font-semibold truncate ${themeClass('text-white/85', 'text-slate-600')}`}>
-                      {award.notes}
-                    </p>
-                  )}
-                </div>
-
-                <div className={`mt-3 text-[8.5px] font-bold flex items-baseline gap-1 select-none ${themeClass('text-white/80', 'text-slate-500')}`}>
-                  <span>{t('voucherValue')}</span>
-                  <span className={`font-black text-base leading-none ${
-                    isCompleted 
-                      ? 'text-slate-400/60 line-through' 
-                      : themeClass('text-teal-400', 'text-teal-600 font-black')
-                  }`}>${info.value}</span>
-                  <span className="opacity-50">{t('each')}</span>
-                </div>
-              </div>
-
-              {/* 2. Right Column: Ticket Stub Receipt (30%) */}
-              <div className="w-24 shrink-0 p-3.5 pt-6 flex flex-col justify-between items-center border-l-2 border-dashed border-white/10 dark:border-black/25 relative text-center z-10">
-                {/* Circular Punch Tear Notches */}
-                <div className={`absolute -top-2 -left-[9px] w-4.5 h-4.5 rounded-full z-20 ${themeClass('bg-slate-955', 'bg-slate-55')}`} />
-                <div className={`absolute -bottom-2 -left-[9px] w-4.5 h-4.5 rounded-full z-20 ${themeClass('bg-slate-955', 'bg-slate-55')}`} />
-
-                <button
-                  onClick={() => setDeleteAwardId(award.id)}
-                  className={`absolute top-2 right-2 p-1 rounded transition cursor-pointer active:scale-90 z-30 ${
-                    themeClass('text-red-400 hover:text-red-300 hover:bg-red-500/10', 'text-red-600 hover:text-red-700 hover:bg-red-500/5')
-                  }`}
-                  title="Delete standalone award"
-                >
-                  <Trash2 className="w-3.5 h-3.5" />
-                </button>
-
-                {/* Interactive Use Toggle Button */}
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    updateAwardUsedQuantity(award.id, isCompleted ? 0 : 1);
-                  }}
-                  className={`w-full py-1.5 rounded-lg text-[8.5px] font-extrabold uppercase tracking-widest transition z-30 cursor-pointer active:scale-95 mt-3.5 ${
-                    isCompleted
-                      ? 'bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/20'
-                      : themeClass(
-                          'bg-white/10 hover:bg-white/20 border-white/20 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] shadow-black/10 backdrop-blur-sm',
-                          'bg-teal-600 hover:bg-teal-750 border border-teal-750 text-white shadow-sm shadow-teal-600/10'
-                        )
-                  }`}
-                >
-                  {isCompleted ? t('usedStatus') : t('claimBtn')}
-                </button>
-
-                <div className="w-full mt-2">
-                  <span className={`text-[9px] font-black uppercase tracking-wider block ${
-                    isCompleted ? 'text-emerald-400/60 line-through' : themeClass(theme.glowColor, 'text-slate-600 font-extrabold')
-                  }`}>
-                    {isCompleted ? `${t('balancePrefix')}0` : `${t('balancePrefix')}${info.value}`}
-                  </span>
-                </div>
-              </div>
-            </div>
+            <VoucherTicketCard
+              award={{
+                brand: info.brand,
+                name: info.name,
+                programType: info.programType,
+                awardType: info.awardType,
+                value: info.value,
+                expirationDate: award.expirationDate,
+                notes: award.notes
+              }}
+              isCompleted={isCompleted}
+              onDelete={() => setDeleteAwardId(award.id)}
+              onClaimToggle={() => updateAwardUsedQuantity(award.id, isCompleted ? 0 : 1)}
+              onEdit={() => onEditAward(award)}
+              themeClass={themeClass}
+            />
           );
         };
 
