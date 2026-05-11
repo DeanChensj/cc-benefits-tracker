@@ -36,36 +36,48 @@ export function VoucherTicketCard({
 
   const theme = getAwardTheme(award.brand, award.awardType || '', themeClass);
 
+  const getVoucherBorderColor = () => {
+    const p = award.programType || 'other';
+    if (p === 'hotel') return 'border-l-rose-500';
+    if (p === 'airline') return 'border-l-sky-500';
+    if (p === 'bank') return 'border-l-purple-500';
+    return 'border-l-emerald-500';
+  };
+
   return (
     <div
-      className={`rounded-2xl border flex justify-between transition duration-200 relative overflow-hidden select-none min-h-[150px] bg-gradient-to-tr ${
+      className={`rounded-xl border flex justify-between transition duration-200 relative overflow-hidden select-none min-h-[110px] border-l-[3.5px] ${
         isCompleted ? 'opacity-50 grayscale-[30%]' : ''
-      } ${theme.bgClass} ${themeClass('border-white/10 text-white', 'border-slate-250/80 text-slate-900 shadow-sm')}`}
+      } ${getVoucherBorderColor()} ${
+        themeClass('bg-slate-900/40 border-slate-850/80 text-slate-300 backdrop-blur-sm', 'bg-white border-slate-200 text-slate-700 shadow-sm')
+      }`}
     >
       {/* Background Angled Watermark */}
-      <div className="absolute right-[32%] bottom-[-10px] select-none pointer-events-none opacity-[0.03] text-[50px] font-black tracking-widest uppercase font-sans -rotate-12 leading-none z-0">
+      <div className="absolute right-[32%] bottom-[-10px] select-none pointer-events-none opacity-[0.03] text-[50px] font-black tracking-widest uppercase font-sans -rotate-12 leading-none z-0 dark:text-white text-slate-900">
         {theme.watermark}
       </div>
 
       {/* 1. Left Column: Main Ticket Body (70%) */}
-      <div className="flex-grow p-4 relative text-left min-w-0 flex flex-col justify-between z-10 pr-2">
+      <div className="flex-grow p-3.5 relative text-left min-w-0 flex flex-col justify-between z-10 pr-2">
         <div>
           <div className="flex items-center justify-between gap-2 flex-wrap w-full select-none">
             <div className="flex items-center gap-1.5 min-w-0">
-              <span className={`text-[8px] font-black px-1.5 py-0.5 rounded uppercase tracking-wider border shrink-0 ${theme.brandTagClass}`}>
+              <span className={`text-[7.5px] font-black px-1.5 py-0.2 rounded uppercase tracking-wider border shrink-0 ${
+                themeClass('bg-slate-950 border-slate-800 text-slate-300', 'bg-slate-100 border-slate-250 text-slate-700')
+              }`}>
                 {award.brand}
               </span>
               {award.programType && (
-                <span className={`text-[7.5px] font-bold uppercase tracking-wide truncate ${themeClass('text-white/75', 'text-slate-500')}`}>
+                <span className={`text-[7px] font-bold uppercase tracking-wide truncate ${themeClass('text-slate-400', 'text-slate-505')}`}>
                   • {getTranslatedProgramType(award.programType, language)}
                 </span>
               )}
             </div>
             {award.expirationDate && (
-              <span className={`text-[8px] font-black tracking-widest uppercase shrink-0 ${
+              <span className={`text-[7.5px] font-black tracking-widest uppercase shrink-0 ${
                 isCompleted 
-                  ? 'line-through text-white/30 dark:text-white/20' 
-                  : themeClass('text-white/90', 'text-slate-500')
+                  ? 'line-through text-slate-600 dark:text-slate-600' 
+                  : themeClass('text-slate-400', 'text-slate-505')
               }`}>
                 {t('expiresLabel')}: {award.expirationDate}
               </span>
@@ -73,7 +85,7 @@ export function VoucherTicketCard({
           </div>
           
           {isStaticPreview || !onEdit ? (
-            <h4 className={`text-xs font-black mt-2.5 break-words line-clamp-2 leading-snug ${themeClass('text-white', 'text-slate-900')}`}>
+            <h4 className={`text-xs font-black mt-2 break-words line-clamp-2 leading-snug ${themeClass('text-white', 'text-slate-900')}`}>
               {award.name}
             </h4>
           ) : (
@@ -82,7 +94,7 @@ export function VoucherTicketCard({
                 e.stopPropagation();
                 onEdit();
               }}
-              className="flex items-center gap-1.5 cursor-pointer group/edit max-w-fit mt-2.5"
+              className="flex items-center gap-1.5 cursor-pointer group/edit max-w-fit mt-2"
               title="Click to edit voucher details"
             >
               <h4 className={`text-xs font-black break-words line-clamp-2 leading-snug ${themeClass('text-white', 'text-slate-900')}`}>
@@ -93,29 +105,25 @@ export function VoucherTicketCard({
           )}
           
           {award.notes && (
-            <p className={`text-[10px] mt-1.5 leading-relaxed font-semibold truncate ${themeClass('text-white/85', 'text-slate-600')}`}>
+            <p className={`text-[9.5px] mt-1 leading-relaxed font-medium truncate ${themeClass('text-slate-400', 'text-slate-505')}`}>
               {award.notes}
             </p>
           )}
         </div>
 
-        <div className={`mt-3 text-[8.5px] font-bold flex items-baseline gap-1 select-none ${themeClass('text-white/80', 'text-slate-500')}`}>
+        <div className={`mt-2 text-[8px] font-bold flex items-baseline gap-1 select-none ${themeClass('text-slate-450', 'text-slate-505')}`}>
           <span>{t('voucherValue')}</span>
-          <span className={`font-black text-base leading-none ${
+          <span className={`font-black text-[13px] font-mono leading-none ${
             isCompleted 
-              ? 'text-slate-400/60 line-through' 
-              : themeClass('text-teal-400', 'text-teal-600 font-black')
+              ? 'text-slate-500 opacity-60 line-through' 
+              : themeClass('text-emerald-400', 'text-emerald-600')
           }`}>${award.value}</span>
-          <span className="opacity-50">{t('each')}</span>
+          <span className="opacity-50 text-[7.5px] uppercase tracking-wider">{t('each')}</span>
         </div>
       </div>
 
       {/* 2. Right Column: Ticket Stub Receipt (30%) */}
-      <div className="w-24 shrink-0 p-3.5 pt-6 flex flex-col justify-between items-center border-l-2 border-dashed border-white/10 dark:border-black/25 relative text-center z-10">
-        {/* Circular Punch Tear Notches */}
-        <div className={`absolute -top-2 -left-[9px] w-4.5 h-4.5 rounded-full z-20 ${themeClass('bg-slate-955', 'bg-slate-55')}`} />
-        <div className={`absolute -bottom-2 -left-[9px] w-4.5 h-4.5 rounded-full z-20 ${themeClass('bg-slate-955', 'bg-slate-55')}`} />
-
+      <div className="w-20 shrink-0 p-3 flex flex-col justify-between items-center border-l border-slate-200/40 dark:border-slate-800/50 relative text-center z-10">
         {/* Close Delete Button - Hidden in static preview mode */}
         {!isStaticPreview && onDelete && (
           <button
@@ -124,7 +132,7 @@ export function VoucherTicketCard({
               onDelete();
             }}
             className={`absolute top-2 right-2 p-1 rounded transition cursor-pointer active:scale-90 z-30 ${
-              themeClass('text-red-400 hover:text-red-300 hover:bg-red-500/10', 'text-red-600 hover:text-red-700 hover:bg-red-500/5')
+              themeClass('text-slate-500 hover:text-red-400 hover:bg-red-500/10', 'text-slate-400 hover:text-red-600 hover:bg-red-500/5')
             }`}
             title="Delete standalone award"
           >
@@ -135,8 +143,8 @@ export function VoucherTicketCard({
         {/* Interactive Use Toggle Button */}
         {isStaticPreview ? (
           /* Inert Preview Mode Capsule Button */
-          <div className={`w-full py-1.5 rounded-lg text-[8.5px] font-extrabold uppercase tracking-widest text-center select-none mt-3.5 border border-dashed ${
-            themeClass('bg-white/10 border-white/15 text-white/60', 'bg-black/5 border-black/10 text-slate-500 shadow-sm')
+          <div className={`w-full py-1 rounded-xl text-[7.5px] font-black uppercase tracking-widest text-center select-none mt-3 border ${
+            themeClass('bg-slate-950/50 border-slate-850 text-slate-600', 'bg-slate-50 border-slate-250 text-slate-400 shadow-sm')
           }`}>
             {t('claimBtn')}
           </div>
@@ -147,12 +155,12 @@ export function VoucherTicketCard({
               e.stopPropagation();
               if (onClaimToggle) onClaimToggle();
             }}
-            className={`w-full py-1.5 rounded-lg text-[8.5px] font-extrabold uppercase tracking-widest transition z-30 cursor-pointer active:scale-95 mt-3.5 ${
+            className={`w-full py-1 rounded-xl text-[7.5px] font-black uppercase tracking-widest transition z-30 cursor-pointer active:scale-95 mt-3 ${
               isCompleted
-                ? 'bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/20'
+                ? 'bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-500 border border-emerald-500/20'
                 : themeClass(
-                    'bg-white/10 hover:bg-white/20 border-white/20 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] shadow-black/10 backdrop-blur-sm',
-                    'bg-teal-600 hover:bg-teal-750 border border-teal-750 text-white shadow-sm shadow-teal-600/10'
+                    'bg-gradient-to-tr from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-550 text-white shadow-md shadow-purple-500/10',
+                    'bg-gradient-to-tr from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-550 text-white shadow-md shadow-purple-500/10'
                   )
             }`}
           >
@@ -162,8 +170,8 @@ export function VoucherTicketCard({
 
         {/* Stub Balance Indicator */}
         <div className="w-full mt-2">
-          <span className={`text-[9px] font-black uppercase tracking-wider block truncate max-w-full ${
-            isCompleted ? 'text-emerald-400/60 line-through' : themeClass(theme.glowColor, 'text-slate-600 font-extrabold')
+          <span className={`text-[8.5px] font-black font-mono tracking-tight block truncate max-w-full ${
+            isCompleted ? 'text-emerald-500/60 line-through' : themeClass('text-emerald-400', 'text-emerald-600')
           }`}>
             {isCompleted ? `${t('balancePrefix')}0` : `${t('balancePrefix')}${award.value}`}
           </span>
