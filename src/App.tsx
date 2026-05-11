@@ -763,10 +763,10 @@ function App() {
         </div>
       </header>
 
-      <main className="max-w-4xl mx-auto px-4 pt-4 sm:pt-5 pb-8">
+      <main className="max-w-4xl mx-auto px-4 pt-3 sm:pt-6 pb-8">
         
         {/* 100% Unified Responsive Stats Panel - Single Row on Mobile */}
-        <section className="grid grid-cols-4 gap-1.5 sm:gap-3 mb-4">
+        <section className="grid grid-cols-4 gap-1.5 sm:gap-3 mb-2 sm:mb-6">
           {/* Card 1: Potential Value */}
           <div className={`border rounded-xl p-1.5 sm:p-4 transition duration-300 text-center sm:text-left flex flex-col justify-between min-h-[55px] sm:min-h-0 sm:block ${
             themeClass('bg-slate-900/50 border-slate-800/60', 'bg-white border-slate-200 shadow-sm')
@@ -840,7 +840,7 @@ function App() {
         </section>
 
         {/* Tabs panel */}
-        <div className={`flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 mb-4 sm:mb-6 border-b pb-3 sm:pb-4 ${themeClass('border-slate-900', 'border-slate-200')}`}>
+        <div className={`flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 mb-2 sm:mb-6 border-b pb-2 sm:pb-4 ${themeClass('border-slate-900', 'border-slate-200')}`}>
           <div className={`flex gap-1 p-1 rounded-xl border transition-colors duration-300 self-start ${
             themeClass('bg-zen-dark-card border-slate-850', 'bg-slate-200/50 border-slate-300/60 shadow-inner')
           }`}>
