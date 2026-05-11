@@ -85,7 +85,7 @@ export function ChurningStatsDrawer({ isOpen, onClose, ownedCards, theme }: Chur
         <div className="sm:hidden w-10 h-1 bg-slate-300/40 dark:bg-slate-700/40 rounded-full mx-auto my-3 shrink-0" />
 
         {/* Header */}
-        <div className="px-5 py-4 flex items-center justify-between shrink-0 border-b border-dashed border-slate-200/60 dark:border-slate-800/60">
+        <div className={`px-5 py-4 flex items-center justify-between shrink-0 border-b ${themeClass('border-slate-800/60', 'border-slate-200/60')}`}>
           <div className="flex items-center gap-2">
             <Clock className="w-4 h-4 text-purple-500 animate-spin-slow" />
             <h4 className="text-xs font-black uppercase tracking-wider">{t('churnDrawerTitle')}</h4>
@@ -109,8 +109,10 @@ export function ChurningStatsDrawer({ isOpen, onClose, ownedCards, theme }: Chur
             </h5>
 
             {/* 3D Gauge visual card */}
-            <div className={`p-4 rounded-2xl border flex items-center justify-between gap-4 ${
-              themeClass('bg-slate-950/40 border-slate-850/60 shadow-inner', 'bg-slate-50 border-slate-200/80 shadow-sm')
+            <div className={`p-4 rounded-r-xl border border-l-[3.5px] flex items-center justify-between gap-4 transition-all duration-300 ${
+              chaseCount >= 5 ? 'border-l-rose-500' : 'border-l-purple-500'
+            } ${
+              themeClass('bg-slate-950/30 border-slate-850/60', 'bg-white border-slate-200 shadow-sm')
             }`}>
               <div className="space-y-1.5">
                 <span className={`text-[10px] px-2 py-0.5 rounded font-black uppercase tracking-widest border ${
@@ -124,14 +126,16 @@ export function ChurningStatsDrawer({ isOpen, onClose, ownedCards, theme }: Chur
                   {chaseCount >= 5 ? t('churnChaseLocked') : chaseCount >= 3 ? t('churnChaseWarning') : t('churnChaseSafe')}
                 </p>
               </div>
-              {/* Large dynamic score ring */}
-              <div className="flex flex-col items-center justify-center shrink-0">
-                <span className={`text-2xl font-black leading-none ${
+              {/* Large dynamic score ring badge */}
+              <div className={`flex flex-col items-center justify-center shrink-0 w-12 h-12 rounded-full border transition-all duration-300 ${
+                themeClass('bg-slate-900/80 border-slate-800/60 shadow-inner', 'bg-white border-slate-200 shadow-sm')
+              }`}>
+                <span className={`text-xl font-black leading-none ${
                   chaseCount >= 5 ? 'text-rose-500' : 'text-purple-600 dark:text-purple-400'
                 }`}>
                   {chaseCount}
                 </span>
-                <span className="text-[9px] font-bold tracking-widest uppercase text-slate-450 opacity-80 mt-0.5">/ 24</span>
+                <span className="text-[8px] font-bold tracking-widest uppercase text-slate-500 opacity-80 mt-0.5">/ 24</span>
               </div>
             </div>
           </div>
@@ -142,8 +146,10 @@ export function ChurningStatsDrawer({ isOpen, onClose, ownedCards, theme }: Chur
               {t('churnAmexTitle')}
             </h5>
 
-            <div className={`p-4 rounded-2xl border flex items-center gap-3 ${
-              themeClass('bg-slate-950/40 border-slate-850/60 shadow-inner', 'bg-slate-50 border-slate-200/80 shadow-sm')
+            <div className={`p-4 rounded-r-xl border border-l-[3.5px] flex items-center gap-3 transition-all duration-300 ${
+              isAmexCooling ? 'border-l-amber-500' : 'border-l-emerald-500'
+            } ${
+              themeClass('bg-slate-950/30 border-slate-850/60', 'bg-white border-slate-200 shadow-sm')
             }`}>
               {isAmexCooling ? (
                 <ShieldAlert className="w-7 h-7 text-amber-500 shrink-0 animate-pulse" />
@@ -175,14 +181,22 @@ export function ChurningStatsDrawer({ isOpen, onClose, ownedCards, theme }: Chur
                 <p className="text-xs font-medium">{t('churnTimelineClear')}</p>
               </div>
             ) : (
-              <div className="space-y-2.5">
+              <div className={`relative space-y-3.5 pl-5 ml-1.5 border-l ${themeClass('border-slate-800/60', 'border-slate-200/80')}`}>
                 {active524Cards.map((c) => (
                   <div 
                     key={c.id}
-                    className={`p-3.5 rounded-xl border flex items-center justify-between gap-4 transition-all duration-200 ${
-                      themeClass('bg-slate-955/50 border-slate-850/80 hover:border-slate-800', 'bg-slate-50/65 border-slate-200/85 hover:border-slate-250 shadow-inner')
+                    className={`p-3.5 rounded-r-xl border border-l-[3.5px] flex items-center justify-between gap-4 transition-all duration-250 relative ${
+                      c.daysRemaining <= 90 ? 'border-l-emerald-500' : 'border-l-slate-500'
+                    } ${
+                      themeClass('bg-slate-950/20 border-slate-850/60 hover:border-slate-800', 'bg-white border-slate-200 shadow-sm hover:border-slate-250')
                     }`}
                   >
+                    {/* Timeline Node Anchor Dot */}
+                    <div className={`absolute w-2.5 h-2.5 rounded-full -left-[22px] top-1/2 -translate-y-1/2 border-2 transition-all duration-300 ${
+                      c.daysRemaining <= 90 
+                        ? 'bg-emerald-500 border-white dark:border-slate-900 shadow-[0_0_6px_rgba(16,185,129,0.6)]' 
+                        : 'bg-slate-500 border-white dark:border-slate-900'
+                    }`} />
                     <div className="space-y-0.5 min-w-0 flex-grow">
                       <h6 className={`text-xs font-extrabold truncate uppercase tracking-wide ${themeClass('text-slate-200', 'text-slate-800')}`}>
                         {formatCardName(c.name)}
