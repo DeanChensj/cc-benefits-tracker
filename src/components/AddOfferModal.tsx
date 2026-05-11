@@ -1,8 +1,9 @@
 import { useState } from 'react';
-import { X, Gift, Calendar } from 'lucide-react';
+import { Gift, Calendar } from 'lucide-react';
 import type { Benefit } from '../data/cards.db';
 import { useCardStore } from '../store/useCardStore';
 import { translations } from '../utils/i18n';
+import { ZenModal } from './ZenModal';
 
 interface AddOfferModalProps {
   isOpen: boolean;
@@ -113,40 +114,20 @@ export function AddOfferModal({ isOpen, onClose, cardName, onAdd, theme, showToa
   };
 
   return (
-    <div 
-      onClick={onClose}
-      className="fixed inset-0 bg-slate-955/50 dark:bg-slate-950/80 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in"
+    <ZenModal
+      isOpen={isOpen}
+      onClose={onClose}
+      theme={theme}
+      title={t('formAddOfferTitle')}
+      description={language === 'zh' ? `所属卡片: ${cardName}` : `For: ${cardName}`}
+      icon={<Gift className="w-5 h-5 text-purple-400" />}
+      maxWidthClass="max-w-sm"
     >
-      <div 
-        className={`border rounded-2xl max-w-sm w-full p-5 shadow-2xl relative animate-scale-up transition-colors duration-300 ${
-          themeClass('bg-slate-900 border-slate-800 text-slate-100', 'bg-white border-slate-200 text-slate-800')
-        }`}
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* Header */}
-        <div className="flex items-center justify-between mb-4 pb-3 border-b border-dashed border-slate-200/60 dark:border-slate-800/60">
-          <div className="flex items-center gap-2">
-            <div className="p-1.5 bg-purple-500/10 text-purple-500 rounded-lg">
-              <Gift className="w-5 h-5" />
-            </div>
-            <div className="text-left">
-              <h3 className={`text-sm font-black ${themeClass('text-white', 'text-slate-900')}`}>{t('formAddOfferTitle')}</h3>
-              <p className="text-[9px] text-slate-500 truncate max-w-[180px]" title={cardName}>{language === 'zh' ? `所属卡片: ${cardName}` : `For: ${cardName}`}</p>
-            </div>
-          </div>
-          <button
-            onClick={onClose}
-            className={`p-1 rounded-full transition cursor-pointer ${
-              themeClass('text-slate-450 hover:bg-slate-800 hover:text-slate-200', 'text-slate-505 hover:bg-slate-100 hover:text-slate-800')
-            }`}
-          >
-            <X className="w-4 h-4" />
-          </button>
-        </div>
-
+      {/* Form */}
+      <form onSubmit={handleSubmit} className="space-y-3.5 text-[11px]">
         {/* Quick Templates Selector */}
         <div className="mb-3.5 text-left">
-          <label className={`block text-[9px] font-bold uppercase tracking-wider mb-1.5 ${themeClass('text-slate-400', 'text-slate-505')}`}>
+          <label className={`block text-[9px] font-bold uppercase tracking-wider mb-1.5 ${themeClass('text-slate-400', 'text-slate-550')}`}>
             {t('formQuickTemplates')}
           </label>
           <div className="flex gap-1.5 flex-wrap select-none">
@@ -168,148 +149,145 @@ export function AddOfferModal({ isOpen, onClose, cardName, onAdd, theme, showToa
           </div>
         </div>
 
-        {/* Form */}
-        <form onSubmit={handleSubmit} className="space-y-3.5 text-[11px]">
+        <div>
+          <label className={`block text-[9px] font-bold uppercase tracking-wider mb-1 ${themeClass('text-slate-400', 'text-slate-550')}`}>
+            {t('formOfferName')}
+          </label>
+          <input
+            type="text"
+            required
+            placeholder="e.g. Best Buy Offer, Marriott Dining"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            className={`w-full border text-xs rounded-xl px-3 py-2 focus:outline-none font-medium ${
+              themeClass('bg-slate-955 border-slate-800 focus:border-purple-500 text-slate-200', 'bg-slate-50 border-slate-250 focus:border-purple-500 text-slate-800')
+            }`}
+          />
+        </div>
+
+        <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className={`block text-[9px] font-bold uppercase tracking-wider mb-1 ${themeClass('text-slate-400', 'text-slate-505')}`}>
-              {t('formOfferName')}
+            <label className={`block text-[9px] font-bold uppercase tracking-wider mb-1 ${themeClass('text-slate-400', 'text-slate-550')}`}>
+              {t('formCashbackValue')}
             </label>
             <input
-              type="text"
+              type="number"
               required
-              placeholder="e.g. Best Buy Offer, Marriott Dining"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className={`w-full border text-xs rounded-xl px-3 py-2 focus:outline-none font-medium ${
+              placeholder="25"
+              value={value || ''}
+              onChange={(e) => setValue(Number(e.target.value))}
+              className={`w-full border text-xs rounded-xl px-3 py-2 focus:outline-none font-bold ${
                 themeClass('bg-slate-955 border-slate-800 focus:border-purple-500 text-slate-200', 'bg-slate-50 border-slate-250 focus:border-purple-500 text-slate-800')
               }`}
             />
           </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className={`block text-[9px] font-bold uppercase tracking-wider mb-1 ${themeClass('text-slate-400', 'text-slate-505')}`}>
-                {t('formCashbackValue')}
-              </label>
-              <input
-                type="number"
-                required
-                placeholder="25"
-                value={value || ''}
-                onChange={(e) => setValue(Number(e.target.value))}
-                className={`w-full border text-xs rounded-xl px-3 py-2 focus:outline-none font-bold ${
-                  themeClass('bg-slate-955 border-slate-800 focus:border-purple-500 text-slate-200', 'bg-slate-50 border-slate-250 focus:border-purple-500 text-slate-800')
-                }`}
-              />
-            </div>
-            <div>
-              <label className={`block text-[9px] font-bold uppercase tracking-wider mb-1 ${themeClass('text-slate-400', 'text-slate-505')}`} title="Leave blank if it doesn't require spending progress">
-                {t('formSpendLimit')}
-              </label>
-              <input
-                type="number"
-                placeholder="Optional"
-                value={spendingLimit || ''}
-                onChange={(e) => setSpendingLimit(e.target.value ? Number(e.target.value) : undefined)}
-                className={`w-full border text-xs rounded-xl px-3 py-2 focus:outline-none font-medium ${
-                  themeClass('bg-slate-955 border-slate-800 focus:border-purple-500 text-slate-300', 'bg-slate-50 border-slate-250 focus:border-purple-500 text-slate-750')
-                }`}
-              />
-            </div>
+          <div>
+            <label className={`block text-[9px] font-bold uppercase tracking-wider mb-1 ${themeClass('text-slate-400', 'text-slate-550')}`} title="Leave blank if it doesn't require spending progress">
+              {t('formSpendLimit')}
+            </label>
+            <input
+              type="number"
+              placeholder="Optional"
+              value={spendingLimit || ''}
+              onChange={(e) => setSpendingLimit(e.target.value ? Number(e.target.value) : undefined)}
+              className={`w-full border text-xs rounded-xl px-3 py-2 focus:outline-none font-medium ${
+                themeClass('bg-slate-955 border-slate-800 focus:border-purple-500 text-slate-300', 'bg-slate-50 border-slate-250 focus:border-purple-500 text-slate-750')
+              }`}
+            />
           </div>
+        </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className={`block text-[9px] font-bold uppercase tracking-wider mb-1 ${themeClass('text-slate-400', 'text-slate-505')}`}>
-                {t('formResetPeriod')}
-              </label>
-              <select
-                value={resetPeriod}
-                onChange={(e) => setResetPeriod(e.target.value as 'fixed' | 'monthly' | 'quarterly' | 'semi-annual' | 'annual-calendar')}
-                className={`w-full border rounded-xl px-2 py-1.5 focus:outline-none cursor-pointer font-medium ${
-                  themeClass('bg-slate-955 border-slate-800 text-slate-300', 'bg-slate-50 border-slate-250 text-slate-700')
-                }`}
-              >
-                <option value="fixed">{language === 'zh' ? '单次/固定到期' : 'One-Time / Fixed'}</option>
-                <option value="monthly">{language === 'zh' ? '按月刷新' : 'Monthly'}</option>
-                <option value="quarterly">{language === 'zh' ? '按季度刷新' : 'Quarterly'}</option>
-                <option value="semi-annual">{language === 'zh' ? '每半年刷新' : 'Semi-Annual'}</option>
-                <option value="annual-calendar">{language === 'zh' ? '自然年刷新 (Calendar Year)' : 'Calendar Year'}</option>
-              </select>
-            </div>
-
-            <div>
-              <label className={`block text-[9px] font-bold uppercase tracking-wider mb-1 ${themeClass('text-slate-400', 'text-slate-505')}`}>
-                {t('formCategory')}
-              </label>
-              <select
-                value={category}
-                onChange={(e) => setCategory(e.target.value as 'shopping' | 'dining' | 'travel' | 'entertainment' | 'other')}
-                className={`w-full border rounded-xl px-2 py-1.5 focus:outline-none cursor-pointer font-medium ${
-                  themeClass('bg-slate-955 border-slate-800 text-slate-300', 'bg-slate-50 border-slate-250 text-slate-700')
-                }`}
-              >
-                <option value="shopping">{t('catShopping')}</option>
-                <option value="dining">{t('catDining')}</option>
-                <option value="travel">{t('catTravel')}</option>
-                <option value="entertainment">{t('catEntertainment')}</option>
-                <option value="other">{t('catOther')}</option>
-              </select>
-            </div>
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className={`block text-[9px] font-bold uppercase tracking-wider mb-1 ${themeClass('text-slate-400', 'text-slate-555')}`}>
+              {t('formResetPeriod')}
+            </label>
+            <select
+              value={resetPeriod}
+              onChange={(e) => setResetPeriod(e.target.value as 'fixed' | 'monthly' | 'quarterly' | 'semi-annual' | 'annual-calendar')}
+              className={`w-full border rounded-xl px-2 py-1.5 focus:outline-none cursor-pointer font-medium transition ${
+                themeClass('bg-slate-955 border-slate-800/80 text-slate-300 focus:border-purple-500', 'bg-slate-100 border-slate-250 text-slate-700 focus:border-purple-500')
+              }`}
+            >
+              <option value="fixed">{t('periodFixed')}</option>
+              <option value="monthly">{t('periodMonthly')}</option>
+              <option value="quarterly">{t('periodQuarterly')}</option>
+              <option value="semi-annual">{t('periodSemiAnnual')}</option>
+              <option value="annual-calendar">{t('periodAnnualCalendar')}</option>
+            </select>
           </div>
-
-          {resetPeriod === 'fixed' && (
-            <div>
-              <label className={`block text-[9px] font-bold uppercase tracking-wider mb-1 flex items-center gap-1 ${themeClass('text-slate-400', 'text-slate-550')}`}>
-                <Calendar className="w-3.5 h-3.5 text-amber-500" />
-                {t('formExpirationDate')}
-              </label>
-              <input
-                type="date"
-                required
-                value={expirationDate}
-                onChange={(e) => setExpirationDate(e.target.value)}
-                className={`w-full border text-xs rounded-xl px-3 py-2 focus:outline-none font-medium cursor-pointer ${
-                  themeClass('bg-slate-955 border-slate-800 text-slate-300', 'bg-slate-50 border-slate-250 text-slate-750')
-                }`}
-              />
-            </div>
-          )}
 
           <div>
-            <label className={`block text-[9px] font-bold uppercase tracking-wider mb-1 ${themeClass('text-slate-400', 'text-slate-505')}`}>
-              {t('formDescription')}
+            <label className={`block text-[9px] font-bold uppercase tracking-wider mb-1 ${themeClass('text-slate-400', 'text-slate-555')}`}>
+              {t('formCategory')}
             </label>
-            <textarea
-              placeholder={language === 'zh' ? '留空将根据上方福利金额和限额自动生成描述' : 'Leave blank for auto-generated description'}
-              rows={2}
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              className={`w-full border text-xs rounded-xl px-3 py-2 focus:outline-none font-medium resize-none ${
-                themeClass('bg-slate-955 border-slate-800 focus:border-purple-500 text-slate-200', 'bg-slate-50 border-slate-250 focus:border-purple-500 text-slate-800')
+            <select
+              value={category}
+              onChange={(e) => setCategory(e.target.value as 'shopping' | 'dining' | 'travel' | 'entertainment' | 'other')}
+              className={`w-full border rounded-xl px-2 py-1.5 focus:outline-none cursor-pointer font-medium ${
+                themeClass('bg-slate-955 border-slate-800 text-slate-300', 'bg-slate-50 border-slate-250 text-slate-700')
+              }`}
+            >
+              <option value="shopping">{t('catShopping')}</option>
+              <option value="dining">{t('catDining')}</option>
+              <option value="travel">{t('catTravel')}</option>
+              <option value="entertainment">{t('catEntertainment')}</option>
+              <option value="other">{t('catOther')}</option>
+            </select>
+          </div>
+        </div>
+
+        {resetPeriod === 'fixed' && (
+          <div>
+            <label className={`block text-[9px] font-bold uppercase tracking-wider mb-1 flex items-center gap-1 ${themeClass('text-slate-400', 'text-slate-550')}`}>
+              <Calendar className="w-3.5 h-3.5 text-amber-500" />
+              {t('formExpirationDate')}
+            </label>
+            <input
+              type="date"
+              required
+              value={expirationDate}
+              onChange={(e) => setExpirationDate(e.target.value)}
+              className={`w-full border text-xs rounded-xl px-3 py-2 focus:outline-none font-medium cursor-pointer ${
+                themeClass('bg-slate-955 border-slate-800 text-slate-300', 'bg-slate-50 border-slate-250 text-slate-750')
               }`}
             />
           </div>
+        )}
 
-          <div className="flex gap-3 pt-3 border-t mt-4 border-slate-200/40 dark:border-slate-800/60">
-            <button
-              type="button"
-              onClick={onClose}
-              className={`w-1/3 font-semibold py-2 rounded-xl text-[10px] transition cursor-pointer ${
-                themeClass('bg-slate-800 hover:bg-slate-750 text-slate-300', 'bg-slate-100 hover:bg-slate-200 text-slate-600')
-              }`}
-            >
-              {t('cancel')}
-            </button>
-            <button
-              type="submit"
-              className="w-2/3 bg-gradient-to-tr from-slate-800 to-slate-900 hover:from-slate-750 hover:to-slate-850 text-white dark:from-slate-100 dark:to-slate-200 dark:hover:from-white dark:hover:to-slate-50 dark:text-slate-950 border border-slate-700/25 font-bold py-2 rounded-xl text-[10px] transition active:scale-[0.98] cursor-pointer shadow shadow-black/5"
-            >
-              {t('add')}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+        <div>
+          <label className={`block text-[9px] font-bold uppercase tracking-wider mb-1 ${themeClass('text-slate-400', 'text-slate-550')}`}>
+            {t('formDescription')}
+          </label>
+          <textarea
+            placeholder={language === 'zh' ? '留空将根据上方福利金额和限额自动生成描述' : 'Leave blank for auto-generated description'}
+            rows={2}
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            className={`w-full border text-xs rounded-xl px-3 py-2 focus:outline-none font-medium resize-none ${
+              themeClass('bg-slate-955 border-slate-800 focus:border-purple-500 text-slate-200', 'bg-slate-50 border-slate-250 focus:border-purple-500 text-slate-800')
+            }`}
+          />
+        </div>
+
+        <div className="flex gap-3 pt-4 border-t mt-4 border-slate-200/40 dark:border-slate-850/50">
+          <button
+            type="button"
+            onClick={onClose}
+            className={`w-1/3 py-2.5 rounded-xl text-xs font-bold transition active:scale-95 cursor-pointer ${
+              themeClass('bg-slate-800 hover:bg-slate-750 text-slate-300', 'bg-slate-100 hover:bg-slate-200 text-slate-600')
+            }`}
+          >
+            {t('cancel')}
+          </button>
+          <button
+            type="submit"
+            className="w-2/3 bg-gradient-to-tr from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-550 text-white font-bold py-2.5 rounded-xl text-xs transition active:scale-[0.98] shadow-md shadow-purple-500/10 cursor-pointer"
+          >
+            {t('add')}
+          </button>
+        </div>
+      </form>
+    </ZenModal>
   );
 }

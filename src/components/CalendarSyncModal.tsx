@@ -79,7 +79,7 @@ export function CalendarSyncModal({ isOpen, onClose, ownedCards, logs, loyaltyAw
 
         <button
           onClick={onClose}
-          className={`w-full mt-6 font-semibold py-2 rounded-lg text-xs transition cursor-pointer ${
+          className={`w-full mt-6 py-2.5 rounded-xl text-xs font-bold transition active:scale-95 cursor-pointer ${
             themeClass('bg-slate-800 hover:bg-slate-750 text-slate-300', 'bg-slate-100 hover:bg-slate-200 text-slate-600')
           }`}
         >

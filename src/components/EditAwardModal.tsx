@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { X, Calendar, Info } from 'lucide-react';
+import { Calendar, Info } from 'lucide-react';
+import { ZenModal } from './ZenModal';
 import { AWARD_TEMPLATES } from '../data/cards.db';
 import type { LoyaltyAward } from '../data/cards.db';
 import { VoucherTicketCard } from './VoucherTicketCard';
@@ -28,6 +29,7 @@ export function EditAwardModal({ isOpen, onClose, award, themeClass }: EditAward
   // Populates state values when award is selected/changed
   useEffect(() => {
     if (award) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setExpirationDate(award.expirationDate || '');
       setNotes(award.notes || '');
       setCustomName(award.customName || '');
@@ -66,46 +68,18 @@ export function EditAwardModal({ isOpen, onClose, award, themeClass }: EditAward
     updateLoyaltyAward(award.id, updates);
     onClose();
   };
-
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 select-none">
-      {/* Premium Blurred frosted glass Backdrop */}
-      <div 
-        onClick={onClose}
-        className="absolute inset-0 bg-slate-950/45 backdrop-blur-md transition-opacity animate-fade-in duration-250"
-      />
-
-      {/* Realistic Visual Emblems Deck Container */}
-      <div className={`w-full max-w-md rounded-3xl border overflow-hidden shadow-2xl relative z-10 flex flex-col animate-scale-up ${
-        themeClass(
-          'bg-slate-900/90 border-slate-800/80 shadow-black/40 backdrop-blur-xl saturate-[170%]',
-          'bg-white/95 border-slate-250/80 shadow-slate-900/10 backdrop-blur-xl'
-        )
-      }`}>
-        {/* Ambient top light line bevel highlight strictly under dark mode */}
-        <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-white/15 to-transparent pointer-events-none dark:block hidden" />
-
-        {/* Modal Header Section */}
-        <div className="p-5 border-b border-slate-200/40 dark:border-white/10 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <span className="text-base">✏️</span>
-            <h3 className={`text-xs font-black uppercase tracking-widest ${themeClass('text-slate-100', 'text-slate-900')}`}>
-              {t('awardFormExpLabel')?.includes('(') ? (language === 'zh' ? '编辑卡券详情' : 'Edit Voucher') : 'Edit Voucher'}
-            </h3>
-          </div>
-          <button 
-            type="button"
-            onClick={onClose}
-            className={`p-1.5 rounded-xl transition active:scale-90 cursor-pointer ${
-              themeClass('text-slate-400 hover:text-white hover:bg-white/5', 'text-slate-500 hover:text-slate-900 hover:bg-slate-100')
-            }`}
-          >
-            <X className="w-4.5 h-4.5" />
-          </button>
-        </div>
-
-        {/* Form Inputs Scrollable Core Body */}
-        <form onSubmit={handleSubmit} className="p-5 flex flex-col gap-4 overflow-y-auto max-h-[calc(100vh-200px)]">
+    <ZenModal
+      isOpen={isOpen}
+      onClose={onClose}
+      theme={themeClass('dark', 'light') as 'dark' | 'light'}
+      title={t('awardFormExpLabel')?.includes('(') ? (language === 'zh' ? '编辑卡券详情' : 'Edit Voucher') : 'Edit Voucher'}
+      description={t('awardFormDescText')}
+      icon={<Calendar className="w-5 h-5 text-purple-400 animate-pulse" />}
+      maxWidthClass="max-w-md"
+    >
+      {/* Form Inputs Scrollable Core Body */}
+      <form onSubmit={handleSubmit} className="flex-grow overflow-y-auto flex flex-col gap-4 max-h-[75vh] max-h-[75dvh] scrollbar-thin text-left">
           {/* 1. Realistic Mini Ticket Preview well card */}
           <div className="flex flex-col gap-1 text-left">
             <label className={`text-[8.5px] font-black uppercase tracking-widest ${themeClass('text-slate-400', 'text-slate-500')}`}>
@@ -141,8 +115,8 @@ export function EditAwardModal({ isOpen, onClose, award, themeClass }: EditAward
                   onChange={(e) => setCustomName(e.target.value)}
                   className={`w-full px-3.5 py-2 rounded-xl text-xs font-bold outline-none border transition duration-200 ${
                     themeClass(
-                      'bg-slate-950/40 border-slate-800/80 text-white focus:border-teal-500/60 focus:ring-1 focus:ring-teal-500/20',
-                      'bg-slate-50 border-slate-250 text-slate-900 focus:border-teal-600 focus:ring-1 focus:ring-teal-600/10'
+                      'bg-slate-950/40 border-slate-800/80 text-white focus:border-purple-500/60 focus:ring-1 focus:ring-purple-500/20',
+                      'bg-slate-50 border-slate-255 text-slate-900 focus:border-purple-600 focus:ring-1 focus:ring-purple-600/10'
                     )
                   }`}
                 />
@@ -161,8 +135,8 @@ export function EditAwardModal({ isOpen, onClose, award, themeClass }: EditAward
                   onChange={(e) => setCustomValue(Math.max(0, parseInt(e.target.value, 10) || 0))}
                   className={`w-full px-3.5 py-2 rounded-xl text-xs font-bold outline-none border transition duration-200 ${
                     themeClass(
-                      'bg-slate-955/40 border-slate-800/80 text-white focus:border-teal-500/60 focus:ring-1 focus:ring-teal-500/20',
-                      'bg-slate-50 border-slate-250 text-slate-900 focus:border-teal-600 focus:ring-1 focus:ring-teal-600/10'
+                      'bg-slate-955/40 border-slate-800/80 text-white focus:border-purple-500/60 focus:ring-1 focus:ring-purple-500/20',
+                      'bg-slate-50 border-slate-255 text-slate-900 focus:border-purple-600 focus:ring-1 focus:ring-purple-600/10'
                     )
                   }`}
                 />
@@ -187,8 +161,8 @@ export function EditAwardModal({ isOpen, onClose, award, themeClass }: EditAward
               onChange={(e) => setExpirationDate(e.target.value)}
               className={`w-full px-3.5 py-2 rounded-xl text-xs font-bold outline-none border transition duration-200 ${
                 themeClass(
-                  'bg-slate-955/40 border-slate-800/80 text-white focus:border-teal-500/60 focus:ring-1 focus:ring-teal-500/20 [color-scheme:dark]',
-                  'bg-slate-50 border-slate-250 text-slate-900 focus:border-teal-600 focus:ring-1 focus:ring-teal-600/10'
+                  'bg-slate-955/40 border-slate-800/80 text-white focus:border-purple-500/60 focus:ring-1 focus:ring-purple-500/20 [color-scheme:dark]',
+                  'bg-slate-50 border-slate-255 text-slate-900 focus:border-purple-600 focus:ring-1 focus:ring-purple-600/10'
                 )
               }`}
             />
@@ -207,22 +181,22 @@ export function EditAwardModal({ isOpen, onClose, award, themeClass }: EditAward
               placeholder={language === 'zh' ? '例如：入住东京君悦酒店时使用、附带早餐等...' : 'E.g. valid at Grand Hyatt Tokyo, breakfast included...'}
               className={`w-full px-3.5 py-2 rounded-xl text-xs font-medium outline-none border transition duration-200 resize-none ${
                 themeClass(
-                  'bg-slate-955/40 border-slate-800/80 text-white focus:border-teal-500/60 focus:ring-1 focus:ring-teal-500/20',
-                  'bg-slate-50 border-slate-250 text-slate-900 focus:border-teal-600 focus:ring-1 focus:ring-teal-600/10'
+                  'bg-slate-955/40 border-slate-800/80 text-white focus:border-purple-500/60 focus:ring-1 focus:ring-purple-500/20',
+                  'bg-slate-50 border-slate-255 text-slate-900 focus:border-purple-600 focus:ring-1 focus:ring-purple-600/10'
                 )
               }`}
             />
           </div>
 
           {/* 5. Dialog Actions control drawer buttons */}
-          <div className="grid grid-cols-12 gap-3 mt-3">
+          <div className="flex gap-3 mt-3 pt-4 border-t border-slate-200/40 dark:border-slate-850/50">
             <button
               type="button"
               onClick={onClose}
-              className={`col-span-4 py-2.5 rounded-xl text-[9.5px] font-black uppercase tracking-widest border transition active:scale-95 cursor-pointer ${
+              className={`w-1/3 py-2.5 rounded-xl text-xs font-bold transition active:scale-95 cursor-pointer ${
                 themeClass(
-                  'bg-slate-955 hover:bg-slate-850 border-slate-800 text-slate-300',
-                  'bg-slate-50 hover:bg-slate-100 border-slate-250 text-slate-700 shadow-sm'
+                  'bg-slate-800 hover:bg-slate-750 text-slate-300',
+                  'bg-slate-100 hover:bg-slate-200 text-slate-600'
                 )
               }`}
             >
@@ -230,18 +204,12 @@ export function EditAwardModal({ isOpen, onClose, award, themeClass }: EditAward
             </button>
             <button
               type="submit"
-              className={`col-span-8 py-2.5 rounded-xl text-[9.5px] font-black uppercase tracking-widest text-white transition active:scale-95 cursor-pointer bg-gradient-to-tr ${
-                themeClass(
-                  'from-teal-600 to-teal-700 hover:from-teal-500 hover:to-teal-650 shadow-sm shadow-teal-500/10',
-                  'from-teal-600 to-teal-700 hover:from-teal-500 hover:to-teal-650'
-                )
-              }`}
+              className="w-2/3 bg-gradient-to-tr from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-550 text-white font-bold py-2.5 rounded-xl text-xs transition active:scale-[0.98] shadow-md shadow-purple-500/10 cursor-pointer"
             >
               {t('save') || 'Save Changes'}
             </button>
           </div>
         </form>
-      </div>
-    </div>
-  );
-}
+      </ZenModal>
+    );
+  }

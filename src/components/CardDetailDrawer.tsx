@@ -50,63 +50,65 @@ export function CardDetailDrawer({ isOpen, card, onClose, onAdd, theme }: CardDe
     // Backdrop overlay
     <div 
       onClick={onClose}
-      className="fixed inset-0 bg-slate-955/40 dark:bg-slate-950/75 backdrop-blur-[3px] z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 animate-fade-in"
+      className="fixed inset-0 bg-slate-955/50 dark:bg-slate-955/80 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 animate-fade-in"
     >
       {/* Bottom Sheet (Mobile) & Centered Modal (Desktop) */}
       <div 
         onClick={(e) => e.stopPropagation()} // Prevent backdrop click close
-        className={`w-full sm:max-w-md border shadow-2xl flex flex-col overflow-hidden transition-all duration-300 transition-colors focus:outline-none
+        className={`w-full sm:max-w-md border shadow-2xl flex flex-col overflow-hidden transition-all duration-300 transition-colors focus:outline-none relative
           max-sm:rounded-t-2xl max-sm:max-h-[80vh] max-sm:max-h-[80dvh] max-sm:animate-slide-sheet max-sm:w-screen max-sm:pb-6
-          sm:rounded-2xl sm:max-h-[600px] sm:animate-scale-up max-sm:border-t sm:border-t ${
-            themeClass('bg-slate-900/80 border-slate-800/70 text-slate-100 backdrop-blur-md saturate-[170%] border-t-white/15 shadow-slate-950/50', 'bg-white/85 border-slate-200 text-slate-800 backdrop-blur-md saturate-[170%] border-t-white/45 shadow-slate-300/30')
+          sm:rounded-2xl sm:max-h-[600px] sm:animate-scale-up ${
+            themeClass(
+              'bg-slate-900 border-slate-800 shadow-[0_10px_50px_rgba(0,0,0,0.5),_inset_0_1px_0_rgba(255,255,255,0.04)] text-slate-105', 
+              'bg-white border-slate-200 shadow-[0_10px_40px_rgba(15,23,42,0.02),_inset_0_1px_0_rgba(255,255,255,0.8)] text-slate-800'
+            )
           }`}
       >
         {/* Mobile Drag/Capsule Pull Bar */}
         <div className="sm:hidden w-10 h-1 bg-slate-300/40 dark:bg-slate-700/40 rounded-full mx-auto my-3 shrink-0" />
 
-        {/* Header */}
-        <div className="px-5 py-3.5 flex items-center justify-between shrink-0 border-b border-dashed border-slate-200/60 dark:border-slate-800/60">
-          <div>
-            <span className={`text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded ${
-              themeClass('bg-slate-900/60 text-purple-400', 'bg-slate-100 text-purple-600')
-            }`}>
-              {card.bank} {t('cardTemplateTitle')}
-            </span>
+        <button
+          onClick={onClose}
+          className={`absolute top-4 right-4 p-1.5 rounded-xl transition active:scale-90 cursor-pointer z-20 ${
+            themeClass('text-slate-400 hover:text-white hover:bg-white/5', 'text-slate-505 hover:text-slate-900 hover:bg-black/5')
+          }`}
+        >
+          <X className="w-4.5 h-4.5" />
+        </button>
+
+        {/* Header Title */}
+        <div className="px-5 pt-5 pb-2 flex items-center gap-3 shrink-0 text-left">
+          <div className="p-2 bg-purple-500/10 rounded-lg text-purple-400 shrink-0">
+            <Heart className="w-5 h-5 text-purple-400 animate-pulse" />
           </div>
-          <button
-            onClick={onClose}
-            className={`p-1 rounded-full transition cursor-pointer ${
-              themeClass('text-slate-455 hover:bg-slate-800 hover:text-slate-200', 'text-slate-500 hover:bg-slate-100 hover:text-slate-800')
-            }`}
-          >
-            <X className="w-4 h-4" />
-          </button>
+          <div>
+            <h3 className={`text-sm font-black ${themeClass('text-white', 'text-slate-900')}`}>{card.name}</h3>
+            <p className={`text-[10px] font-medium ${themeClass('text-slate-405', 'text-slate-505')}`}>{card.bank} {t('cardTemplateTitle')}</p>
+          </div>
         </div>
 
         {/* Content Area (Scrollable) */}
         <div className="px-5 py-4 overflow-y-auto space-y-5 flex-grow scrollbar-thin">
           {/* 💳 Luxury Metallic Mini-Card Preview */}
-          <div className={`p-4 sm:p-5 rounded-2xl bg-gradient-to-tr ${cardColor} shadow-lg text-white relative overflow-hidden min-h-[130px] flex flex-col justify-between shrink-0 select-none after:absolute after:top-0 after:-left-[150%] after:w-[60%] after:h-full after:bg-gradient-to-r after:from-transparent after:via-white/10 after:to-transparent after:skew-x-12 after:transition-all after:duration-1000 hover:after:left-[150%]`}>
+          <div className={`p-4 sm:p-5 rounded-xl bg-gradient-to-tr ${cardColor} shadow-lg text-white relative overflow-hidden min-h-[110px] flex flex-col justify-between shrink-0 select-none`}>
             <div>
               <div className="flex items-center justify-between">
-                <span className="text-[10px] font-black uppercase tracking-wider opacity-75">{card.bank}</span>
-                <Heart className="w-4 h-4 opacity-40 fill-white/10" />
+                <span className="text-[9px] font-black uppercase tracking-wider opacity-75">{card.bank}</span>
               </div>
-              <h3 className="text-base sm:text-lg font-black tracking-tight mt-1.5">{card.name}</h3>
             </div>
             
             <div className="flex justify-between items-end pt-4">
-              <div className="flex gap-3 sm:gap-6">
+              <div className="flex gap-4 sm:gap-6">
                 <div>
-                  <p className="text-[8px] font-bold uppercase tracking-widest opacity-60">{t('potentialValue')}</p>
-                  <p className="text-sm sm:text-base font-black">${card.benefits.reduce((sum, b) => sum + getAnnualValue(b), 0)}/{language === 'zh' ? '年' : 'yr'}</p>
+                  <p className="text-[7px] font-black uppercase tracking-widest opacity-60 leading-none">{t('potentialValue')}</p>
+                  <p className="text-sm sm:text-base font-black mt-0.5 leading-none">${card.benefits.reduce((sum, b) => sum + getAnnualValue(b), 0)}/{language === 'zh' ? '年' : 'yr'}</p>
                 </div>
                 <div>
-                  <p className="text-[8px] font-bold uppercase tracking-widest opacity-60">{t('annualFeeLabel')}</p>
-                  <p className="text-sm sm:text-base font-black">${card.annualFee}/{language === 'zh' ? '年' : 'yr'}</p>
+                  <p className="text-[7px] font-black uppercase tracking-widest opacity-60 leading-none">{t('annualFeeLabel')}</p>
+                  <p className="text-sm sm:text-base font-black mt-0.5 leading-none">${card.annualFee}/{language === 'zh' ? '年' : 'yr'}</p>
                 </div>
               </div>
-              <span className="text-[8px] sm:text-[9px] font-bold uppercase bg-white/10 px-2 py-0.5 rounded border border-white/5 shrink-0">
+              <span className="text-[7.5px] font-black uppercase bg-white/15 px-2 py-0.5 rounded border border-white/5 shrink-0">
                 {card.benefits.length} {t('perksSuffix')}
               </span>
             </div>
@@ -212,11 +214,11 @@ export function CardDetailDrawer({ isOpen, card, onClose, onAdd, theme }: CardDe
 
         {/* Bottom CTA Action Bar (High-Contrast) */}
         <div className={`px-5 py-4 border-t flex gap-3 shrink-0 ${
-          themeClass('bg-slate-950/50 border-slate-850', 'bg-slate-50 border-slate-200')
+          themeClass('bg-slate-900/40 border-slate-850', 'bg-slate-50 border-slate-200')
         }`}>
           <button
             onClick={onClose}
-            className={`w-1/3 font-semibold py-3 rounded-xl text-xs transition cursor-pointer ${
+            className={`w-1/3 py-2.5 rounded-xl text-xs font-bold transition active:scale-95 cursor-pointer ${
               themeClass('bg-slate-800 hover:bg-slate-750 text-slate-300', 'bg-slate-100 hover:bg-slate-200 text-slate-600')
             }`}
           >
@@ -227,7 +229,7 @@ export function CardDetailDrawer({ isOpen, card, onClose, onAdd, theme }: CardDe
               onAdd();
               onClose();
             }}
-            className="w-2/3 bg-gradient-to-tr from-slate-800 to-slate-900 hover:from-slate-750 hover:to-slate-850 text-white dark:from-slate-100 dark:to-slate-200 dark:hover:from-white dark:hover:to-slate-50 dark:text-slate-950 border border-slate-700/25 font-bold py-3 rounded-xl text-xs transition active:scale-[0.98] flex items-center justify-center gap-1 shadow cursor-pointer"
+            className="w-2/3 bg-gradient-to-tr from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-550 text-white font-bold py-2.5 rounded-xl text-xs transition active:scale-[0.98] shadow-md shadow-purple-500/10 cursor-pointer"
           >
             <Plus className="w-4 h-4 stroke-[3]" />
             {t('addCardToWallet')}

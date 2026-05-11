@@ -1,4 +1,4 @@
-import { X } from 'lucide-react';
+import { X, CreditCard } from 'lucide-react';
 import type { OwnedCardInstance } from '../store/useCardStore';
 import { CARDS_DB, CARD_MULTIPLIERS } from '../data/cards.db';
 import type { PointCurrency } from '../data/cards.db';
@@ -63,13 +63,19 @@ export function EditCardModal({
           <X className="w-4 h-4" />
         </button>
 
-        <div className="mb-5 text-left">
-          <h3 className={`text-base font-black ${themeClass('text-white', 'text-slate-900')}`}>
-            {t('formEditCardTitle')}: {instance.customName}
-          </h3>
-          <p className={`text-xs mt-0.5 font-medium ${themeClass('text-slate-400', 'text-slate-505')}`}>
-            {t('formCreateCardDesc')}
-          </p>
+        {/* Header Title */}
+        <div className="flex items-center gap-3 mb-5 text-left">
+          <div className="p-2 bg-purple-500/10 rounded-lg text-purple-400">
+            <CreditCard className="w-5 h-5" />
+          </div>
+          <div>
+            <h3 className={`text-sm font-black ${themeClass('text-white', 'text-slate-900')}`}>
+              {t('formEditCardTitle')}: {instance.customName}
+            </h3>
+            <p className={`text-[10px] font-medium ${themeClass('text-slate-400', 'text-slate-505')}`}>
+              {t('formCreateCardDesc')}
+            </p>
+          </div>
         </div>
 
         <div className="space-y-5 text-left">

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { CreditCard, Plus, Trash2 } from 'lucide-react';
+import { CreditCard, Plus, Trash2, X } from 'lucide-react';
 import type { OwnedCardInstance } from '../store/useCardStore';
 import { useCardStore } from '../store/useCardStore';
 import { translations, resolveCardNetwork } from '../utils/i18n';
@@ -105,6 +105,16 @@ export function CreateCardModal({
         }`}
         onClick={(e) => e.stopPropagation()}
       >
+        <button
+          type="button"
+          onClick={onClose}
+          className={`absolute top-4 right-4 p-1.5 rounded-xl transition active:scale-90 cursor-pointer ${
+            themeClass('text-slate-400 hover:text-white hover:bg-white/5', 'text-slate-505 hover:text-slate-900 hover:bg-black/5')
+          }`}
+        >
+          <X className="w-4.5 h-4.5" />
+        </button>
+
         {/* Header Title */}
         <div className="flex items-center gap-3 mb-4">
           <div className="p-2 bg-purple-500/10 rounded-lg text-purple-400">

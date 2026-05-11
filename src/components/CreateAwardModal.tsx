@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { X, Calendar, Sparkles, Info, Plus } from 'lucide-react';
+import { Calendar, Sparkles, Plus } from 'lucide-react';
 import { AWARD_TEMPLATES } from '../data/cards.db';
 import { VoucherTicketCard } from './VoucherTicketCard';
 import { useCardStore } from '../store/useCardStore';
 import { translations } from '../utils/i18n';
+import { ZenModal } from './ZenModal';
 
 interface CreateAwardModalProps {
   isOpen: boolean;
@@ -67,44 +68,18 @@ export function CreateAwardModal({ isOpen, onClose, themeClass }: CreateAwardMod
   const liveName = isCustom ? (customName.trim() || 'Custom Voucher') : templateInfo.name;
   const liveAwardType = isCustom ? customAwardType : templateInfo.awardType;
   const liveValue = isCustom ? (Number(customValue) || 0) : templateInfo.value;
-
   return (
-    <div 
-      onClick={onClose}
-      className="fixed inset-0 z-55 flex items-center justify-center p-3 bg-slate-955/40 dark:bg-slate-950/75 backdrop-blur-md saturate-[170%] overflow-y-auto animate-fade-in"
+    <ZenModal
+      isOpen={isOpen}
+      onClose={onClose}
+      theme={themeClass('dark', 'light') as 'dark' | 'light'}
+      title={t('awardFormTitle')}
+      description={t('awardFormDescText')}
+      icon={<Sparkles className="w-5 h-5 text-purple-400 animate-pulse" />}
+      maxWidthClass="max-w-md"
     >
-      <div 
-        onClick={(e) => e.stopPropagation()}
-        className={`relative w-full max-w-[440px] border border-t rounded-2xl shadow-2xl animate-scale-up overflow-hidden flex flex-col transition-colors duration-300 ${
-          themeClass(
-            'bg-slate-900/80 border-slate-800/70 border-t-white/15 text-white backdrop-blur-md saturate-[170%]', 
-            'bg-white/85 border-slate-200 border-t-white/45 text-slate-900 backdrop-blur-md saturate-[170%]'
-          )
-        }`}
-      >
-        {/* Modal Header */}
-        <div className="flex items-center justify-between p-4 border-b border-dashed border-slate-200/60 dark:border-white/5 shrink-0">
-          <div className="flex items-center gap-2">
-            <Sparkles className="w-4 h-4 text-amber-400 animate-pulse" />
-            <h4 className="text-xs font-black uppercase tracking-wider">{t('awardFormTitle')}</h4>
-          </div>
-          <button 
-            onClick={onClose}
-            className="p-1.5 rounded-lg transition text-slate-400 hover:text-white hover:bg-white/5 cursor-pointer"
-          >
-            <X className="w-4 h-4" />
-          </button>
-        </div>
-
-        {/* Scrollable Form Content */}
-        <form onSubmit={handleSubmit} className="flex-grow overflow-y-auto p-4 flex flex-col gap-4 max-h-[75vh] max-h-[75dvh] scrollbar-thin text-left">
-          {/* Description Tip */}
-          <div className={`p-3 rounded-xl flex gap-2.5 border text-[10px] font-medium leading-relaxed ${
-            themeClass('bg-teal-500/5 border-teal-500/10 text-teal-300', 'bg-teal-500/5 border-teal-500/10 text-teal-750')
-          }`}>
-            <Info className="w-4 h-4 shrink-0 animate-pulse" />
-            <span>{t('awardFormDescText')}</span>
-          </div>
+      {/* Scrollable Form Content */}
+      <form onSubmit={handleSubmit} className="flex-grow overflow-y-auto flex flex-col gap-4 max-h-[75vh] max-h-[75dvh] scrollbar-thin text-left">
 
           {/* Select Template Dropdown */}
           <div className="space-y-1.5">
@@ -282,14 +257,14 @@ export function CreateAwardModal({ isOpen, onClose, themeClass }: CreateAwardMod
           </div>
 
           {/* Action Buttons */}
-          <div className="flex gap-3 mt-2 pt-4 border-t border-dashed border-slate-800/30 dark:border-white/5">
+          <div className="flex gap-3 mt-2 pt-4 border-t border-slate-200/40 dark:border-slate-850/50">
             <button
               type="button"
               onClick={onClose}
-              className={`flex-1 py-2.5 rounded-xl text-xs font-bold border transition active:scale-95 cursor-pointer ${
+              className={`w-1/3 py-2.5 rounded-xl text-xs font-bold transition active:scale-95 cursor-pointer ${
                 themeClass(
-                  'bg-slate-900 hover:bg-slate-850 border-slate-800 text-slate-400',
-                  'bg-slate-50 hover:bg-slate-100 border-slate-250 text-slate-600'
+                  'bg-slate-800 hover:bg-slate-750 text-slate-300',
+                  'bg-slate-100 hover:bg-slate-200 text-slate-600'
                 )
               }`}
             >
@@ -297,14 +272,13 @@ export function CreateAwardModal({ isOpen, onClose, themeClass }: CreateAwardMod
             </button>
             <button
               type="submit"
-              className="flex-1 bg-gradient-to-tr from-slate-800 to-slate-900 hover:from-slate-750 hover:to-slate-850 text-white dark:from-slate-100 dark:to-slate-200 dark:hover:from-white dark:hover:to-slate-50 dark:text-slate-950 border border-slate-700/25 font-bold py-2.5 rounded-xl text-xs transition active:scale-95 flex items-center justify-center gap-1 shadow-sm cursor-pointer"
+              className="w-2/3 bg-gradient-to-tr from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-550 text-white font-bold py-2.5 rounded-xl text-xs transition active:scale-[0.98] flex items-center justify-center gap-1 shadow-md shadow-purple-500/10 cursor-pointer"
             >
               <Plus className="w-4 h-4" />
               <span>{t('awardFormSubmitBtn')}</span>
             </button>
           </div>
         </form>
-      </div>
-    </div>
-  );
-}
+      </ZenModal>
+    );
+  }
