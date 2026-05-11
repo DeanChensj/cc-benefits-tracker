@@ -821,11 +821,98 @@ export const CARDS_DB: CardTemplate[] = [
         spendingLimit: 20000
       }
     ]
+  },
+  {
+    id: 'chase-ink-preferred',
+    name: 'Chase Ink Business Preferred',
+    bank: 'Chase',
+    color: 'from-[#0b2545] to-[#134074]',
+    annualFee: 95,
+    pointCurrency: 'chase-ur',
+    officialUrl: 'https://creditcards.chase.com/business-credit-cards/ink/business-preferred',
+    benefits: [
+      {
+        id: 'chase-ink-preferred-telecom',
+        name: '3x Points on Internet & Ads',
+        description: 'Earn 3x points on the first $150,000 spent on shipping, ads, internet, and telecom each anniversary year',
+        value: 0,
+        resetPeriod: 'annual-anniversary',
+        category: 'other',
+        spendingLimit: 150000
+      },
+      {
+        id: 'chase-ink-preferred-cell-protection',
+        name: 'Cell Phone Protection',
+        description: 'Up to $1,000 per claim against theft or damage for you and your employees when you pay your monthly bill with this card',
+        value: 0,
+        resetPeriod: 'fixed',
+        category: 'other'
+      },
+      {
+        id: 'chase-ink-preferred-rental',
+        name: 'Primary Auto Rental Collision Waiver',
+        description: 'Coverage is primary when renting for business purposes, providing reimbursement up to the actual cash value of the vehicle for theft and collision damage',
+        value: 0,
+        resetPeriod: 'fixed',
+        category: 'travel'
+      },
+      {
+        id: 'chase-ink-preferred-trip',
+        name: 'Trip Cancellation/Interruption Insurance',
+        description: 'If your trip is canceled or cut short by covered situations, you can be reimbursed up to $5,000 per person',
+        value: 0,
+        resetPeriod: 'fixed',
+        category: 'travel'
+      }
+    ]
+  },
+  {
+    id: 'amex-everyday',
+    name: 'Amex EveryDay',
+    bank: 'Amex',
+    color: 'from-[#8a9a5b] to-[#c1cdc1]',
+    annualFee: 0,
+    pointCurrency: 'amex-mr',
+    benefits: []
+  },
+  {
+    id: 'amex-hilton-surpass',
+    name: 'Amex Hilton Honors Surpass',
+    bank: 'Amex',
+    color: 'from-[#2c3e50] to-[#3498db]',
+    annualFee: 150,
+    pointCurrency: 'hilton',
+    officialUrl: 'https://www.americanexpress.com/us/credit-cards/card/hilton-honors-surpass/',
+    benefits: [
+      {
+        id: 'amex-hilton-surpass-credit',
+        name: 'Hilton Statement Credit',
+        description: '$50 per quarter statement credit for purchases made directly with a property in the Hilton portfolio',
+        value: 50,
+        resetPeriod: 'quarterly',
+        category: 'travel',
+        spendingLimit: 50
+      }
+    ]
+  },
+  {
+    id: 'amex-delta-blue',
+    name: 'Amex Delta SkyMiles Blue',
+    bank: 'Amex',
+    color: 'from-[#003366] to-[#336699]',
+    annualFee: 0,
+    pointCurrency: 'delta-miles',
+    officialUrl: 'https://www.americanexpress.com/us/credit-cards/card/delta-skymiles-blue-american-express-card/',
+    benefits: []
   }
 ];
 
 export const CARD_MULTIPLIERS: Record<string, { dining?: number; travel?: number; shopping?: number; entertainment?: number }> = {
   'amex-gold': { dining: 4, shopping: 4 }, // 4x Dining, 4x Groceries
+  'chase-ink-preferred': { travel: 3 },
+  'amex-everyday': { shopping: 2 },
+  'amex-hilton-surpass': { dining: 6, shopping: 6 },
+  'amex-delta-blue': { travel: 2, dining: 2 },
   'amex-platinum': { travel: 5 }, // 5x Flights
   'amex-bcp': { shopping: 6, entertainment: 6 }, // 6% Groceries, 6% Streaming
   'amex-delta-reserve': { travel: 3 }, // 3x Delta
