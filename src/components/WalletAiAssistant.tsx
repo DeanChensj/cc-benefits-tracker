@@ -200,10 +200,10 @@ When the user asks where to spend money or which card to use (e.g., "I am buying
 4. State clearly which card is the best and why, presenting the calculated return!
 
 === AGENTIC ACTION COMMANDS ===
-You are equipped with tools to directly add cards to the user's wallet. If the user explicitly instructs, asks, or requests you to ADD, REGISTER, or CREATE cards (either standard templates or custom cards), you MUST append a structured JSON command block at the absolute end of your response.
+You are equipped with tools to directly manipulate the user's wallet and checklist. If the user explicitly instructs, asks, or requests you to ADD, REGISTER, CREATE cards, or RESOLVE/RESTORE benefits, you MUST append a structured JSON command block at the absolute end of your response.
 
 CRITICAL RULES & LIMITATIONS:
-1. ONLY append command blocks if the user explicitly asks you to ADD, CREATE, or REGISTER cards to their wallet. If the user is just asking general questions, comparing cards, or asking for advice, you MUST NEVER output any command blocks!
+1. ONLY append command blocks if the user explicitly asks you to perform these actions. If the user is just asking general questions, comparing cards, or asking for advice, you MUST NEVER output any command blocks!
 2. You MUST write the command block as raw flat text inside |||COMMAND: and |||. Do NOT wrap the JSON inside markdown code blocks (never use \`\`\` or \`\`\`json inside the command block) otherwise the system parser will fail!
 
 Command Schemas:
@@ -224,9 +224,15 @@ Valid TEMPLATE_IDs:
 4. Update Card Opening Date (cardName and cardOpenDate are required):
 |||COMMAND: { "action": "set_card_date", "cardName": "CURRENT_CUSTOM_NAME", "cardOpenDate": "NEW_OPEN_DATE_YYYY_MM_DD" }|||
 
+5. Resolve Benefit (Mark as Used/Claimed):
+|||COMMAND: { "action": "resolve_benefit", "cardName": "CURRENT_CUSTOM_NAME", "benefitName": "BENEFIT_NAME" }|||
+
+6. Restore Benefit (Un-ignore/Un-archive):
+|||COMMAND: { "action": "restore_benefit", "cardName": "CURRENT_CUSTOM_NAME", "benefitName": "BENEFIT_NAME" }|||
+
 Additional Rules:
-- You can output multiple commands on separate lines if the user asks to add multiple cards or make multiple updates!
-- Be extremely cheerful in your response, confirming what card(s) you have added or updated for them!`;
+- You can output multiple commands on separate lines if the user asks to perform multiple actions!
+- Be extremely cheerful in your response, confirming what actions you have executed for them!`;
 
       const response = await fetch(
         `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${savedKey}`,

@@ -26,7 +26,7 @@ export interface OwnedCardInstance {
 }
 
 export interface AgentCommand {
-  action: 'add_card' | 'add_custom' | 'rename_card' | 'set_card_date' | 'add_voucher';
+  action: 'add_card' | 'add_custom' | 'rename_card' | 'set_card_date' | 'add_voucher' | 'resolve_benefit' | 'restore_benefit';
   templateId?: string;
   customName?: string;
   cardOpenDate?: string;
@@ -36,6 +36,7 @@ export interface AgentCommand {
   oldName?: string;
   newName?: string;
   cardName?: string;
+  benefitName?: string;
   
   // Voucher-specific parameters
   customBrand?: string;
@@ -910,6 +911,78 @@ export const useCardStore = create<CardStore>()(
                 addedNames.push(`"${cardName}" (${t('openDateLabel')}) ➔ ${cardOpenDate}`);
               } else {
                 throw new Error(`Card named "${cardName}" not found`);
+              }
+            } else if (cmd.action === 'resolve_benefit' && cmd.cardName && cmd.benefitName) {
+              const cardName = cmd.cardName;
+              const benefitName = cmd.benefitName;
+              
+              const card = state.ownedCards.find(
+                (c) => c.customName.toLowerCase().trim() === cardName.toLowerCase().trim()
+              );
+              if (!card) throw new Error(`Card named "${cardName}" not found`);
+              
+              const template = card.templateId !== 'custom' ? CARDS_DB.find((t) => t.id === card.templateId) : null;
+              let benefits: Benefit[] = [];
+              if (template) benefits = [...template.benefits];
+              if (card.instanceOffers) benefits = [...benefits, ...card.instanceOffers];
+              
+              const benefit = benefits.find(
+                (b) => b.name.toLowerCase().trim() === benefitName.toLowerCase().trim()
+              );
+              if (!benefit) throw new Error(`Benefit "${benefitName}" not found on card "${cardName}"`);
+              
+              const today = new Date();
+              const logKey = getLogKey(
+                benefit.resetPeriod,
+                card.id,
+                benefit.id,
+                today,
+                card.cardOpenDate,
+                benefit.expirationDate
+              );
+              
+              const obfuscatedKey = obfuscateKey(logKey);
+              const exists = state.logs[obfuscatedKey];
+              
+              if (!exists || !exists.resolved) {
+                state.toggleBenefit(logKey);
+                addedNames.push(`${t('resolveAction')} "${benefitName}"`);
+              }
+            } else if (cmd.action === 'restore_benefit' && cmd.cardName && cmd.benefitName) {
+              const cardName = cmd.cardName;
+              const benefitName = cmd.benefitName;
+              
+              const card = state.ownedCards.find(
+                (c) => c.customName.toLowerCase().trim() === cardName.toLowerCase().trim()
+              );
+              if (!card) throw new Error(`Card named "${cardName}" not found`);
+              
+              const template = card.templateId !== 'custom' ? CARDS_DB.find((t) => t.id === card.templateId) : null;
+              let benefits: Benefit[] = [];
+              if (template) benefits = [...template.benefits];
+              if (card.instanceOffers) benefits = [...benefits, ...card.instanceOffers];
+              
+              const benefit = benefits.find(
+                (b) => b.name.toLowerCase().trim() === benefitName.toLowerCase().trim()
+              );
+              if (!benefit) throw new Error(`Benefit "${benefitName}" not found on card "${cardName}"`);
+              
+              const today = new Date();
+              const logKey = getLogKey(
+                benefit.resetPeriod,
+                card.id,
+                benefit.id,
+                today,
+                card.cardOpenDate,
+                benefit.expirationDate
+              );
+              
+              const obfuscatedKey = obfuscateKey(logKey);
+              const exists = state.logs[obfuscatedKey];
+              
+              if (exists && exists.skipped) {
+                state.skipBenefit(logKey);
+                addedNames.push(`${t('restoreAction')} "${benefitName}"`);
               }
             }
           });

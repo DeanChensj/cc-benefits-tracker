@@ -8,6 +8,8 @@ const translationsEn = {
   // Stats
   potentialValue: 'Potential Value',
   resolved: 'Resolved',
+  resolveAction: 'Resolved',
+  restoreAction: 'Restored',
   remaining: 'Remaining',
   maximized: 'Maximized',
   
@@ -402,6 +404,8 @@ const translationsZh: typeof translationsEn = {
   // Stats
   potentialValue: '潜在福利总额',
   resolved: '已点福利回本',
+  resolveAction: '已核销',
+  restoreAction: '已恢复',
   remaining: '剩余福利额度',
   maximized: '福利回本率',
   
