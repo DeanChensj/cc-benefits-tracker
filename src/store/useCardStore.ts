@@ -77,6 +77,7 @@ export interface CardStore {
   renameCard: (instanceId: string, customName: string) => void;
   setCardOpenDate: (instanceId: string, dateStr: string) => void;
   toggleBenefit: (logKey: string) => void;
+  skipBenefit: (logKey: string) => void;
   updateProgressLog: (logKey: string, spent: number) => void; // Updates linear spent progress values
   toggleTheme: () => void;
   toggleLanguage: () => void;
@@ -371,6 +372,25 @@ export const useCardStore = create<CardStore>()(
           
           nextLogs[obfuscatedKey] = {
             resolved: exists ? !exists.resolved : true,
+            timestamp: Date.now(),
+            value: 0,
+          };
+          syncPushToCloud(state.gdriveToken, state.ownedCards, nextLogs);
+
+          return {
+            logs: nextLogs,
+          };
+        }),
+
+      skipBenefit: (logKey) =>
+        set((state) => {
+          const nextLogs = { ...state.logs };
+          const obfuscatedKey = obfuscateKey(logKey);
+          const exists = nextLogs[obfuscatedKey];
+          
+          nextLogs[obfuscatedKey] = {
+            resolved: false,
+            skipped: exists ? !exists.skipped : true,
             timestamp: Date.now(),
             value: 0,
           };

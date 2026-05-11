@@ -3,7 +3,8 @@ export interface LogEntry {
   timestamp: number; // UNIX epoch milliseconds
   value: number;
   spentProgress?: number;
-  [key: string]: any; // Extensible signature for future features
+  skipped?: boolean;
+  [key: string]: unknown; // Extensible signature for future features
 }
 
 export const parseLogEntry = (logValue: LogEntry | string | boolean | number | undefined | null): LogEntry | null => {

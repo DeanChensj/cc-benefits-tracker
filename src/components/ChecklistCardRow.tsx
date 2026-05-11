@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { CheckCircle2 } from 'lucide-react';
+import { CheckCircle2, Eye, EyeOff } from 'lucide-react';
 import type { ActiveBenefit } from '../utils/dateUtils';
 import type { LogEntry } from '../utils/logUtils';
 import { parseLogEntry } from '../utils/logUtils';
@@ -42,11 +42,13 @@ export const ChecklistCardRow = React.memo(function ChecklistCardRow({
 
   const language = useCardStore((state) => state.language);
   const t = (key: keyof typeof translations['en']) => translations[language][key] || translations['en'][key];
-
-
-
   const { cardInstance, benefit, logKey, isUsed, loyaltyAward } = ab;
   const isStandalone = !cardInstance;
+  
+  const skipBenefit = useCardStore((state) => state.skipBenefit);
+  const logVal = logs[obfuscateKey(logKey)];
+  const parsed = parseLogEntry(logVal);
+  const isSkipped = !!(parsed && parsed.skipped);
 
   const isProgressiveCap = benefit.spendingLimit !== undefined;
   const isAnnual = benefit.resetPeriod === 'annual-calendar' || benefit.resetPeriod === 'annual-anniversary';
@@ -226,11 +228,28 @@ export const ChecklistCardRow = React.memo(function ChecklistCardRow({
           ? 'max-h-[450px] opacity-100 mt-1' 
           : 'max-h-0 opacity-0 pointer-events-none'
       }`}>
-        {benefit.description && (
-          <p className={`text-xs leading-relaxed pl-[38px] pb-2.5 w-full text-left ${themeClass('text-slate-400', 'text-slate-500')}`}>
-            {benefit.description}
-          </p>
-        )}
+        <div className="relative min-h-[36px]">
+          {benefit.description && (
+            <p className={`text-xs leading-relaxed pl-[38px] pr-12 pb-2.5 w-full text-left ${themeClass('text-slate-400', 'text-slate-500')}`}>
+              {benefit.description}
+            </p>
+          )}
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              skipBenefit(logKey);
+            }}
+            className={`absolute bottom-[10px] right-0 p-1.5 rounded-lg transition active:scale-95 cursor-pointer z-10 ${
+              isSkipped
+                ? 'text-amber-500 hover:text-amber-400 bg-amber-500/10'
+                : themeClass('text-slate-500 hover:text-white hover:bg-white/5', 'text-slate-400 hover:text-slate-800 hover:bg-black/5')
+            }`}
+            title={isSkipped ? (language === 'zh' ? '恢复显示' : 'Restore') : (language === 'zh' ? '忽略此期' : 'Ignore')}
+          >
+            {isSkipped ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+          </button>
+        </div>
 
         {/* Row 2: Symmetrical Recessed Accumulator Widget Well (Progressive benefits only) */}
         {isProgressive && (() => {

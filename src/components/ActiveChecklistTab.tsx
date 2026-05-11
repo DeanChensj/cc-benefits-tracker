@@ -53,6 +53,7 @@ export function ActiveChecklistTab({
   const [sortBy, setSortBy] = useState<'urgency' | 'expiry' | 'value-desc' | 'value-asc'>('urgency');
   const [isClaimedCollapsed, setIsClaimedCollapsed] = useState(true);
   const [isExpiredCollapsed, setIsExpiredCollapsed] = useState(true);
+  const [isSkippedCollapsed, setIsSkippedCollapsed] = useState(true);
   const [isFiltersExpanded, setIsFiltersExpanded] = useState(false);
 
   // Core helper to evaluate benefit expiration dynamically in sandbox
@@ -122,10 +123,18 @@ export function ActiveChecklistTab({
     }
   });
 
-  // 3. Partition sorted benefits into 3 distinct groups
-  const activeItems = sortedBenefits.filter((ab) => !ab.isUsed && !isBenefitExpired(ab));
+  // Helper to check if a benefit is skipped
+  const isBenefitSkipped = (ab: ActiveBenefit): boolean => {
+    const logEntry = logs[obfuscateKey(ab.logKey)];
+    const parsed = parseLogEntry(logEntry);
+    return !!(parsed && parsed.skipped);
+  };
+
+  // 3. Partition sorted benefits into 4 distinct groups
+  const activeItems = sortedBenefits.filter((ab) => !ab.isUsed && !isBenefitExpired(ab) && !isBenefitSkipped(ab));
   const claimedItems = sortedBenefits.filter((ab) => ab.isUsed);
   const expiredItems = sortedBenefits.filter((ab) => !ab.isUsed && isBenefitExpired(ab));
+  const skippedItems = sortedBenefits.filter((ab) => !ab.isUsed && !isBenefitExpired(ab) && isBenefitSkipped(ab));
 
   const renderBenefitRow = (ab: ActiveBenefit) => {
     const isExpired = isBenefitExpired(ab);
@@ -372,6 +381,36 @@ export function ActiveChecklistTab({
                 : 'max-h-[1200px] opacity-100 p-3 space-y-2.5'
             } ${themeClass('bg-slate-955/10', 'bg-white/30')}`}>
               {expiredItems.map(renderBenefitRow)}
+            </div>
+          </div>
+        )}
+
+        {/* Skipped Items Archive */}
+        {skippedItems.length > 0 && (
+          <div className={`border rounded-2xl overflow-hidden transition duration-250 ${
+            themeClass('bg-slate-900/10 border-slate-850/60 shadow-black/5', 'bg-slate-50/30 border-slate-250 shadow-slate-500/5')
+          }`}>
+            <div
+              onClick={() => setIsSkippedCollapsed(!isSkippedCollapsed)}
+              className={`flex items-center justify-between p-3 cursor-pointer select-none border-b ${
+                themeClass('bg-slate-955/50 border-slate-900/40 text-slate-400', 'bg-slate-100/30 border-slate-200/40 text-slate-600')
+              }`}
+            >
+              <div className="flex items-center gap-2 min-w-0">
+                <span className="text-xs font-black uppercase tracking-wider truncate">
+                  {language === 'zh' ? '已忽略的本期福利' : 'Skipped Perks Archive'} ({skippedItems.length})
+                </span>
+              </div>
+              <span className="text-[9px] font-black opacity-80 px-1.5">
+                {isSkippedCollapsed ? (language === 'zh' ? '展开' : 'Expand') : (language === 'zh' ? '收起' : 'Collapse')}
+              </span>
+            </div>
+            <div className={`transition-all duration-300 ease-in-out overflow-hidden ${
+              isSkippedCollapsed 
+                ? 'max-h-0 opacity-0 pointer-events-none' 
+                : 'max-h-[1200px] opacity-100 p-3 space-y-2.5'
+            } ${themeClass('bg-slate-955/10', 'bg-white/30')}`}>
+              {skippedItems.map(renderBenefitRow)}
             </div>
           </div>
         )}
