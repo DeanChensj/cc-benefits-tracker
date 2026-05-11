@@ -390,11 +390,26 @@ function App() {
         ? (parsed?.spentProgress || 0) >= benefit.spendingLimit
         : !!(parsed && parsed.resolved);
 
-      // Dynamically compute precision date-level expiration for anniversary benefits
+      // Dynamically compute precision date-level expiration for all reset periods timezone-safely!
       let resolvedExpirationDate = benefit.expirationDate;
-      if (benefit.resetPeriod === 'annual-anniversary' && cardInstance.cardOpenDate) {
+      const year = currentDate.getFullYear();
+      const month = currentDate.getMonth(); // 0-11
+
+      if (benefit.resetPeriod === 'monthly') {
+        const lastDay = new Date(year, month + 1, 0);
+        resolvedExpirationDate = `${lastDay.getFullYear()}-${(lastDay.getMonth() + 1).toString().padStart(2, '0')}-${lastDay.getDate().toString().padStart(2, '0')}`;
+      } else if (benefit.resetPeriod === 'quarterly') {
+        const qEndMonth = Math.floor(month / 3) * 3 + 2;
+        const lastDay = new Date(year, qEndMonth + 1, 0);
+        resolvedExpirationDate = `${lastDay.getFullYear()}-${(lastDay.getMonth() + 1).toString().padStart(2, '0')}-${lastDay.getDate().toString().padStart(2, '0')}`;
+      } else if (benefit.resetPeriod === 'semi-annual') {
+        const saEndMonth = month <= 5 ? 6 : 12;
+        const lastDay = new Date(year, saEndMonth, 0);
+        resolvedExpirationDate = `${lastDay.getFullYear()}-${(lastDay.getMonth() + 1).toString().padStart(2, '0')}-${lastDay.getDate().toString().padStart(2, '0')}`;
+      } else if (benefit.resetPeriod === 'annual-calendar') {
+        resolvedExpirationDate = `${year}-12-31`;
+      } else if (benefit.resetPeriod === 'annual-anniversary' && cardInstance.cardOpenDate) {
         const openDate = new Date(cardInstance.cardOpenDate + 'T00:00:00');
-        const year = currentDate.getFullYear();
         const currentAnniv = new Date(year, openDate.getMonth(), openDate.getDate());
         
         const expirationDate = currentDate < currentAnniv 
