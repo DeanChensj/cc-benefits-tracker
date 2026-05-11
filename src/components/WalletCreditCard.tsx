@@ -155,7 +155,9 @@ export function WalletCreditCard({
 
           {/* Visual Network Emblem watermark */}
           <span className={`text-[11px] font-black italic tracking-widest opacity-75 ${isSilverCard ? 'text-slate-900' : 'text-white/90'}`}>
-            {template?.bank === 'Amex' ? 'AMEX' : template?.bank === 'Chase' ? 'VISA' : 'MC'}
+            {template?.bank === 'Amex' ? 'AMEX' : 
+             template?.bank === 'Chase' ? 'VISA' : 
+             instance.templateId.startsWith('discover') ? 'DISCOVER' : 'MC'}
           </span>
         </div>
       </div>
