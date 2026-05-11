@@ -765,93 +765,74 @@ function App() {
 
       <main className="max-w-4xl mx-auto px-4 pt-4 sm:pt-5 pb-8">
         
-        {/* Stats Panel */}
-        {/* Mobile Compact Stats Bar (Saves massive vertical height!) */}
-        <section className="block md:hidden border rounded-2xl p-2.5 transition duration-300 mb-4 shadow-sm bg-slate-900/20 border-slate-900/30 dark:bg-slate-55/40 dark:border-slate-250/80 backdrop-blur-md">
-          <div className="grid grid-cols-4 gap-1 text-center divide-x divide-slate-200/20 dark:divide-black/10">
-            <div className="px-0.5">
-              <p className={`text-[8px] font-extrabold uppercase tracking-widest ${themeClass('text-slate-500', 'text-slate-505')}`}>{t('potentialValue')}</p>
-              <p className={`text-xs font-black mt-0.5 ${themeClass('text-white', 'text-slate-855')}`}>${totalPotentialValue}</p>
-            </div>
-            <div className="px-0.5">
-              <p className={`text-[8px] font-extrabold uppercase tracking-widest ${themeClass('text-slate-500', 'text-slate-505')}`}>{t('resolved')}</p>
-              <p className="text-xs font-black text-emerald-500 mt-0.5">${resolvedValue}</p>
-            </div>
-            <div className="px-0.5">
-              <p className={`text-[8px] font-extrabold uppercase tracking-widest ${themeClass('text-slate-500', 'text-slate-505')}`}>{t('remaining')}</p>
-              <p className="text-xs font-black text-amber-500 mt-0.5">${pendingValue}</p>
-            </div>
-            <div className="px-0.5">
-              <p className={`text-[8px] font-extrabold uppercase tracking-widest ${themeClass('text-slate-500', 'text-slate-505')}`}>{t('maximized')}</p>
-              <p className="text-xs font-black text-purple-500 dark:text-purple-400 mt-0.5">{utilizationRate}%</p>
-            </div>
-          </div>
-        </section>
-
-        {/* Desktop Full Cards Grid */}
-        <section className="hidden md:grid grid-cols-4 gap-3 mb-4">
-          <div className={`border rounded-xl p-3 sm:p-4 transition duration-300 ${
+        {/* 100% Unified Responsive Stats Panel - Single Row on Mobile */}
+        <section className="grid grid-cols-4 gap-1.5 sm:gap-3 mb-4">
+          {/* Card 1: Potential Value */}
+          <div className={`border rounded-xl p-1.5 sm:p-4 transition duration-300 text-center sm:text-left flex flex-col justify-between min-h-[55px] sm:min-h-0 sm:block ${
             themeClass('bg-slate-900/50 border-slate-800/60', 'bg-white border-slate-200 shadow-sm')
           }`}>
-            <p className={`text-[10px] sm:text-xs font-medium uppercase tracking-wider flex items-center gap-1.5 ${themeClass('text-slate-400', 'text-slate-555')}`}>
-              <DollarSign className="w-3.5 h-3.5 text-slate-500" />
+            <p className={`text-[7.5px] sm:text-xs font-medium uppercase tracking-wider flex items-center justify-center sm:justify-start gap-1 ${themeClass('text-slate-400', 'text-slate-555')}`}>
+              <DollarSign className="w-3.5 h-3.5 text-slate-500 hidden sm:inline" />
               {t('potentialValue')}
             </p>
-            <p className={`text-xl sm:text-2xl font-bold mt-1 ${themeClass('text-white', 'text-slate-900')}`}>${totalPotentialValue}</p>
+            <p className={`text-xs sm:text-xl font-black ${themeClass('text-white', 'text-slate-900')}`}>${totalPotentialValue}</p>
           </div>
 
-          <div className={`border rounded-xl p-3 sm:p-4 transition duration-300 ${
+          {/* Card 2: Resolved */}
+          <div className={`border rounded-xl p-1.5 sm:p-4 transition duration-300 text-center sm:text-left flex flex-col justify-between min-h-[55px] sm:min-h-0 sm:block ${
             themeClass('bg-slate-900/50 border-slate-800/60', 'bg-white border-slate-200 shadow-sm')
           }`}>
-            <p className={`text-[10px] sm:text-xs font-medium uppercase tracking-wider flex items-center gap-1.5 ${themeClass('text-slate-400', 'text-slate-555')}`}>
-              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
+            <p className={`text-[7.5px] sm:text-xs font-medium uppercase tracking-wider flex items-center justify-center sm:justify-start gap-1 ${themeClass('text-slate-400', 'text-slate-555')}`}>
+              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 hidden sm:inline" />
               {t('resolved')}
             </p>
-            <p className="text-xl sm:text-2xl font-bold text-emerald-500 mt-1">${resolvedValue}</p>
+            <p className={`text-xs sm:text-xl font-black text-emerald-500`}>${resolvedValue}</p>
           </div>
 
-          <div className={`border rounded-xl p-3 sm:p-4 transition duration-300 ${
+          {/* Card 3: Remaining */}
+          <div className={`border rounded-xl p-1.5 sm:p-4 transition duration-300 text-center sm:text-left flex flex-col justify-between min-h-[55px] sm:min-h-0 sm:block ${
             themeClass('bg-slate-900/50 border-slate-800/60', 'bg-white border-slate-200 shadow-sm')
           }`}>
-            <p className={`text-[10px] sm:text-xs font-medium uppercase tracking-wider flex items-center gap-1.5 ${themeClass('text-slate-400', 'text-slate-555')}`}>
-              <Clock className="w-3.5 h-3.5 text-amber-500" />
+            <p className={`text-[7.5px] sm:text-xs font-medium uppercase tracking-wider flex items-center justify-center sm:justify-start gap-1 ${themeClass('text-slate-400', 'text-slate-555')}`}>
+              <Clock className="w-3.5 h-3.5 text-amber-500 hidden sm:inline" />
               {t('remaining')}
             </p>
-            <p className="text-xl sm:text-2xl font-bold text-amber-500 mt-1">${pendingValue}</p>
+            <p className={`text-xs sm:text-xl font-black text-amber-500`}>${pendingValue}</p>
           </div>
 
-          <div className={`border rounded-xl p-3 sm:p-4 transition duration-300 flex items-center justify-between gap-3 ${
+          {/* Card 4: Maximized */}
+          <div className={`border rounded-xl p-1.5 sm:p-4 transition duration-300 flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 sm:gap-3 min-h-[55px] sm:min-h-0 ${
             themeClass('bg-slate-900/50 border-slate-800/60', 'bg-white border-slate-200 shadow-sm')
           }`}>
-            <div className="min-w-0">
-              <p className={`text-[10px] sm:text-xs font-medium uppercase tracking-wider flex items-center gap-1.5 ${themeClass('text-slate-400', 'text-slate-555')}`}>
-                <Sparkles className="w-3.5 h-3.5 text-purple-500" />
+            <div className="text-center sm:text-left flex-grow flex flex-col justify-between sm:justify-start">
+              <p className={`text-[7.5px] sm:text-xs font-medium uppercase tracking-wider flex items-center justify-center sm:justify-start gap-1 ${themeClass('text-slate-400', 'text-slate-555')}`}>
+                <Sparkles className="w-3.5 h-3.5 text-purple-500 hidden sm:inline" />
                 {t('maximized')}
               </p>
-              <p className={`text-xl sm:text-2xl font-bold mt-1 ${themeClass('text-white', 'text-slate-900')}`}>{utilizationRate}%</p>
+              <p className={`text-xs sm:text-xl font-black ${themeClass('text-white', 'text-slate-900')}`}>{utilizationRate}%</p>
             </div>
             
-            <div className="relative w-10 h-10 shrink-0 flex items-center justify-center">
-              <svg className="w-10 h-10 transform -rotate-90">
+            <div className="relative w-8 h-8 shrink-0 items-center justify-center hidden sm:flex">
+              <svg className="w-8 h-8 transform -rotate-90">
                 <circle
-                  cx="20"
-                  cy="20"
-                  r="15"
+                  cx="16"
+                  cy="16"
+                  r="12"
                   className={`fill-none stroke-current ${themeClass('text-white/10', 'text-slate-100')}`}
-                  strokeWidth="3.5"
+                  strokeWidth="3"
                 />
                 <circle
-                  cx="20"
-                  cy="20"
-                  r="15"
+                  cx="16"
+                  cy="16"
+                  r="12"
                   className="fill-none stroke-current text-purple-500 dark:text-purple-400 transition-all duration-500 ease-out"
-                  strokeWidth="3.5"
-                  strokeDasharray="94.25"
-                  strokeDashoffset={94.25 - (94.25 * Math.min(utilizationRate / 100, 1))}
+                  strokeWidth="3"
+                  strokeDasharray="75.39"
+                  strokeDashoffset={75.39 - (75.39 * Math.min(utilizationRate / 100, 1))}
                   strokeLinecap="round"
                 />
               </svg>
-              <div className="absolute inset-0 flex items-center justify-center text-[9px] font-black text-purple-500 dark:text-purple-400">
+              <div className="absolute inset-0 flex items-center justify-center text-[8px] font-black text-purple-500 dark:text-purple-400">
                 🎯
               </div>
             </div>
