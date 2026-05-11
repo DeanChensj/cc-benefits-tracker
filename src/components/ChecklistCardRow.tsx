@@ -68,11 +68,11 @@ export const ChecklistCardRow = React.memo(function ChecklistCardRow({
   // Category organic glow dot color mapping
   const getCategoryDotColor = () => {
     const cat = benefit.category;
-    if (cat === 'dining') return 'bg-rose-500/85 shadow-[0_0_4px_rgba(244,63,94,0.4)]';
-    if (cat === 'travel') return 'bg-sky-450/85 shadow-[0_0_4px_rgba(14,165,233,0.4)]';
-    if (cat === 'shopping') return 'bg-emerald-400/85 shadow-[0_0_4px_rgba(16,185,129,0.4)]';
-    if (cat === 'entertainment') return 'bg-purple-400/85 shadow-[0_0_4px_rgba(168,85,247,0.4)]';
-    return 'bg-slate-400/60';
+    if (cat === 'dining') return 'bg-rose-500 shadow-[0_0_5px_rgba(244,63,94,0.6)]';
+    if (cat === 'travel') return 'bg-sky-500 shadow-[0_0_5px_rgba(14,165,233,0.6)]';
+    if (cat === 'shopping') return 'bg-emerald-500 shadow-[0_0_5px_rgba(16,185,129,0.6)]';
+    if (cat === 'entertainment') return 'bg-purple-500 shadow-[0_0_5px_rgba(168,85,247,0.6)]';
+    return 'bg-slate-500';
   };
 
   // Typographic borderless Zen Metadata Row with organic category dot anchor
@@ -129,7 +129,7 @@ export const ChecklistCardRow = React.memo(function ChecklistCardRow({
     return (
       <div className="flex flex-wrap items-center gap-1.5 text-slate-450 dark:text-slate-505 font-bold select-none leading-none text-left w-full text-[7.5px] tracking-widest uppercase">
         {/* Subtle organic color dot anchor */}
-        <span className={`w-1.2 h-1.2 rounded-full shrink-0 mr-0.5 ${getCategoryDotColor()}`} />
+        <span className={`w-2 h-2 rounded-full shrink-0 mr-0.5 ${getCategoryDotColor()}`} />
         {items.map((item, idx) => (
           <span key={idx} className="inline-flex items-center gap-1.5 shrink-0">
             {idx > 0 && <span className="opacity-35 shrink-0 text-[7px]">•</span>}
