@@ -230,62 +230,6 @@ export function ActiveChecklistTab({
           </div>
         ) : (
           <div className="space-y-4">
-            {/* Quick-Action Monthly Repeating Shelf */}
-            {(() => {
-              const quickMonthlyBenefits = activeItems.filter((ab) => ab.benefit.resetPeriod === 'monthly');
-              if (quickMonthlyBenefits.length === 0) return null;
-
-              return (
-                <div className="-mt-1 md:-mt-2.5 animate-fade-in">
-                  <h4 className={`text-[9px] font-black uppercase tracking-wider mb-2 flex items-center gap-1.5 ${
-                    themeClass('text-slate-400', 'text-slate-500')
-                  }`}>
-                    <span className="animate-pulse text-purple-400">⚡</span>
-                    {t('quickLog')}
-                  </h4>
-                  <div className="flex gap-2 overflow-x-auto pb-2 pt-1 scrollbar-none -mx-4 px-4">
-                    {quickMonthlyBenefits.map((ab) => {
-                      const cardLabel = ab.cardInstance 
-                        ? ab.cardInstance.customName 
-                        : (ab.loyaltyAward ? (AWARD_TEMPLATES[ab.loyaltyAward.templateId]?.brand || ab.loyaltyAward.customBrand || 'Award').toLowerCase() : 'award');
-                      
-                      const emoji = ab.benefit.category === 'dining' ? '🍽️' :
-                        ab.benefit.category === 'travel' ? '✈️' :
-                        ab.benefit.category === 'shopping' ? '🛍️' :
-                        ab.benefit.category === 'entertainment' ? '🎭' : '💳';
-
-                      return (
-                        <button
-                          key={ab.logKey}
-                          type="button"
-                          onClick={() => {
-                            if (ab.benefit.spendingLimit) {
-                              updateProgressLog(ab.logKey, ab.benefit.spendingLimit);
-                            } else {
-                              toggleBenefit(ab.logKey);
-                            }
-                          }}
-                          className={`flex items-center gap-2 px-3 py-2 rounded-xl border text-left transition active:scale-95 hover:scale-[1.01] duration-200 cursor-pointer shrink-0 shadow-sm ${
-                            themeClass('bg-slate-900/50 hover:bg-slate-900 border-slate-850 text-slate-200 hover:border-purple-900/30', 'bg-white hover:bg-slate-50 border-slate-200 text-slate-750 hover:border-purple-200')
-                          }`}
-                        >
-                          <div className="text-xs shrink-0">{emoji}</div>
-                          <div className="min-w-0 max-w-[120px]">
-                            <p className={`text-[7px] font-bold uppercase tracking-wide truncate opacity-70`}>{cardLabel}</p>
-                            <p className="text-[9px] font-extrabold truncate mt-0.5">{ab.benefit.name}</p>
-                          </div>
-                          <div className={`text-[8px] font-extrabold px-1.5 py-0.5 rounded-lg shrink-0 ml-1 ${
-                            themeClass('bg-purple-500/10 text-purple-400 border border-purple-500/20', 'bg-purple-50 text-purple-600 border border-purple-200')
-                          }`}>
-                            ${ab.benefit.value}
-                          </div>
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              );
-            })()}
 
             {/* Active Items List render flat/grouped */}
             {!isGroupedView ? (
