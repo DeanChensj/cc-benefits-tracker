@@ -281,13 +281,6 @@ const translationsEn = {
   optAirline: 'Airline ✈️',
   optBank: 'Bank 🏦',
   optOtherProg: 'Other 📦',
-  optFn: 'Free Night (FN)',
-  optSua: 'Suite Upgrade (SUA)',
-  optGoh: 'Guest of Honor',
-  optCompanion: 'Companion Pass',
-  optSwu: 'Systemwide Up (SUU)',
-  optPoints: 'Points Tracker',
-  optOtherAward: 'Other',
 
   // 11. Savings Wrapped Vector Poster labels
   wrappedHeader: 'ANNUAL SAVINGS WRAPPED',
@@ -665,13 +658,6 @@ const translationsZh: typeof translationsEn = {
   optAirline: '航空常客 ✈️',
   optBank: '银行积分 🏦',
   optOtherProg: '其他杂项 📦',
-  optFn: '免费房券 (FN)',
-  optSua: '套房升级 (SUA)',
-  optGoh: '嘉宾体验 (GOH)',
-  optCompanion: '同行免票券',
-  optSwu: '环球升级 (SWU)',
-  optPoints: '积分里程追踪',
-  optOtherAward: '其他卡券类别',
 
   // 11. Savings Wrapped Vector Poster labels
   wrappedHeader: '年度反薅资本家账单',

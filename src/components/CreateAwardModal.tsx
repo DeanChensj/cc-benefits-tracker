@@ -209,13 +209,13 @@ export function CreateAwardModal({ isOpen, onClose, themeClass }: CreateAwardMod
                       themeClass('bg-slate-955 border-slate-850 text-white', 'bg-slate-55 border-slate-255 text-slate-800')
                     }`}
                   >
-                    <option value="fnr">{t('optFn')}</option>
-                    <option value="sua">{t('optSua')}</option>
-                    <option value="goh">{t('optGoh')}</option>
-                    <option value="companion">{t('optCompanion')}</option>
-                    <option value="swu">{t('optSwu')}</option>
-                    <option value="points">{t('optPoints')}</option>
-                    <option value="other">{t('optOtherAward')}</option>
+                    <option value="fnr">{t('awardFnr')}</option>
+                    <option value="sua">{t('awardSua')}</option>
+                    <option value="goh">{t('awardGoh')}</option>
+                    <option value="companion">{t('awardCompanion')}</option>
+                    <option value="swu">{t('awardSwu')}</option>
+                    <option value="points">{t('awardPoints')}</option>
+                    <option value="other">{t('awardOther')}</option>
                   </select>
                 </div>
               </div>
