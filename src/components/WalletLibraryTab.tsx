@@ -3,7 +3,6 @@ import { Plus, Sparkles, CreditCard, Compass } from 'lucide-react';
 import { WalletCreditCard } from './WalletCreditCard';
 import { CardTemplatesCatalog } from './CardTemplatesCatalog';
 import { CheckoutWinnersRow } from './CheckoutWinnersRow';
-import { ChurningStatsDrawer } from './ChurningStatsDrawer';
 import { AdvancedSettingsSection } from './AdvancedSettingsSection';
 import { VoucherTicketCard } from './VoucherTicketCard';
 import { CARDS_DB, AWARD_TEMPLATES } from '../data/cards.db';
@@ -20,6 +19,7 @@ interface WalletLibraryTabProps {
   setAddOfferInstanceId: (instanceId: string) => void;
   setIsCreateModalOpen: (open: boolean) => void;
   setIsCreateAwardModalOpen: (open: boolean) => void;
+  setIsChurningDrawerOpen: (open: boolean) => void;
   setDeleteCardInstanceId: (instanceId: string | null) => void;
   setDeleteAwardId: (awardId: string | null) => void;
   onWipe: () => void;
@@ -95,6 +95,7 @@ export function WalletLibraryTab({
   setAddOfferInstanceId,
   setIsCreateModalOpen,
   setIsCreateAwardModalOpen,
+  setIsChurningDrawerOpen,
   setDeleteCardInstanceId,
   setDeleteAwardId,
   onWipe,
@@ -118,7 +119,6 @@ export function WalletLibraryTab({
   const [isClaimedArchiveCollapsed, setIsClaimedArchiveCollapsed] = useState(true);
   const [awardSearchQuery, setAwardSearchQuery] = useState('');
   const [awardSortBy, setAwardSortBy] = useState<'expiry' | 'value-desc' | 'value-asc'>('expiry');
-  const [isChurningDrawerOpen, setIsChurningDrawerOpen] = useState(false);
 
   // Calculate Chase 5/24 status dynamically
   const now = new Date();
@@ -525,12 +525,6 @@ export function WalletLibraryTab({
           </div>
         );
       })()}
-      <ChurningStatsDrawer
-        isOpen={isChurningDrawerOpen}
-        onClose={() => setIsChurningDrawerOpen(false)}
-        ownedCards={ownedCards}
-        theme={themeClass('dark', 'light') as 'dark' | 'light'}
-      />
     </div>
   );
 }

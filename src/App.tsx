@@ -6,6 +6,7 @@ import { useCardStore, getLogKey } from './store/useCardStore';
 import type { OwnedCardInstance } from './store/useCardStore';
 import { translations, formatCardNameForToast } from './utils/i18n';
 import { WalletAiAssistant } from './components/WalletAiAssistant';
+import { ChurningStatsDrawer } from './components/ChurningStatsDrawer';
 import { CalendarSyncModal } from './components/CalendarSyncModal';
 import { CreateCardModal } from './components/CreateCardModal';
 import { CreateAwardModal } from './components/CreateAwardModal';
@@ -111,6 +112,7 @@ function App() {
   const lastActionRef = useRef<{ logKey: string; prevResolved: boolean; prevSpentProgress?: number } | null>(null);
 
   const [dismissedWarningCardIds, setDismissedWarningCardIds] = useState<Record<string, boolean>>({});
+  const [isChurningDrawerOpen, setIsChurningDrawerOpen] = useState(false);
   
   const dismissWarning = (cardId: string) => {
     setDismissedWarningCardIds((prev) => ({
@@ -923,6 +925,7 @@ function App() {
             updateAwardUsedQuantity={updateAwardUsedQuantity}
             onViewTemplateDetail={setActiveTemplateDetail}
             checkoutWinners={checkoutWinners}
+            setIsChurningDrawerOpen={setIsChurningDrawerOpen}
           />
         )}
       </main>
@@ -1162,7 +1165,12 @@ function App() {
         }}
         theme={theme}
       />
-
+      <ChurningStatsDrawer
+        isOpen={isChurningDrawerOpen}
+        onClose={() => setIsChurningDrawerOpen(false)}
+        ownedCards={ownedCards}
+        theme={theme}
+      />
 
       {/* 🎨 Tailwind CSS Theme Safelist Force-compiler block */}
       <div className="hidden from-blue-700 to-indigo-900 from-blue-800 from-sky-900 via-indigo-950 to-black from-blue-600 to-sky-900 from-slate-900 from-blue-500 to-indigo-700" />
