@@ -3,9 +3,10 @@ import { useRef, useState, useEffect } from 'react';
 import type { OwnedCardInstance } from '../store/useCardStore';
 import { CARDS_DB, AWARD_TEMPLATES } from '../data/cards.db';
 import type { LoyaltyAward } from '../data/cards.db';
-import { X, Sparkles } from 'lucide-react';
+import { Sparkles } from 'lucide-react';
 import { useCardStore } from '../store/useCardStore';
 import { translations } from '../utils/i18n';
+import { ZenModal } from './ZenModal';
 
 interface SavingsWrappedModalProps {
   isOpen: boolean;
@@ -15,6 +16,7 @@ interface SavingsWrappedModalProps {
   resolvedValue: number;
   expiredValue: number;
   themeClass: (dark: string, light: string) => string;
+  theme: 'dark' | 'light';
 }
 
 export function SavingsWrappedModal({
@@ -25,6 +27,7 @@ export function SavingsWrappedModal({
   resolvedValue,
   expiredValue,
   themeClass,
+  theme
 }: SavingsWrappedModalProps) {
   const language = useCardStore((state) => state.language);
   const t = (key: keyof typeof translations['en']) => translations[language][key] || translations['en'][key];
@@ -185,28 +188,15 @@ export function SavingsWrappedModal({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, posterLang, totalSavings]);
 
-  if (!isOpen) return null;
-
-
-
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 bg-black/65 backdrop-blur-sm overflow-y-auto scrollbar-thin">
-      <div className={`relative w-[340px] sm:w-[420px] max-w-full border rounded-2xl shadow-2xl animate-scale-up overflow-hidden max-h-[90vh] max-h-[90dvh] flex flex-col ${
-        themeClass('bg-slate-955 border-slate-850 text-white', 'bg-slate-50 border-slate-250 text-slate-900')
-      }`}>
-        {/* Modal Header */}
-        <div className="flex items-center justify-between p-4 border-b border-dashed border-slate-800/30 dark:border-white/5 shrink-0">
-          <div className="flex items-center gap-2">
-            <Sparkles className="w-4 h-4 text-amber-400 animate-pulse" />
-            <h4 className="text-xs font-black uppercase tracking-wider">{t('wrapped')}</h4>
-          </div>
-          <button 
-            onClick={onClose}
-            className="p-1.5 rounded-lg transition text-slate-400 hover:text-white hover:bg-white/5 cursor-pointer"
-          >
-            <X className="w-4 h-4" />
-          </button>
-        </div>
+    <ZenModal
+      isOpen={isOpen}
+      onClose={onClose}
+      theme={theme}
+      title={t('wrapped')}
+      icon={<Sparkles className="w-4 h-4 text-amber-400 animate-pulse" />}
+      maxWidthClass="max-w-md"
+    >
 
         {/* Scrollable Content */}
         <div className="flex-grow overflow-y-auto p-4 flex flex-col items-center gap-4 scrollbar-thin">
@@ -463,15 +453,14 @@ export function SavingsWrappedModal({
         </div>
 
         {/* Modal Actions */}
-        <div className="p-4 border-t border-dashed border-slate-800/30 dark:border-white/5 shrink-0 flex flex-col gap-2 bg-slate-955 dark:bg-slate-950/40">
+        <div className="p-4 shrink-0 flex flex-col gap-2">
           {/* Premium, faded, glowing bilingual long-press saving advice note */}
-          <p className="text-[9.5px] text-center font-semibold tracking-wide text-slate-450 dark:text-slate-500 animate-pulse py-1">
+          <p className={`text-[9.5px] text-center font-semibold tracking-wide animate-pulse py-1 ${themeClass('text-slate-400', 'text-slate-600')}`}>
             {posterLang === 'zh'
               ? '💡 贴心提示：长按上方海报图片即可直接保存至系统相册！'
               : '💡 Tip: Long-press the poster image above to save directly to your Photos!'}
           </p>
         </div>
-      </div>
-    </div>
+    </ZenModal>
   );
 }

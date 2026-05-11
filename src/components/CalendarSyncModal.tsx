@@ -4,6 +4,7 @@ import type { OwnedCardInstance } from '../store/useCardStore';
 import type { LoyaltyAward } from '../data/cards.db';
 import { useCardStore } from '../store/useCardStore';
 import { translations } from '../utils/i18n';
+import { ZenModal } from './ZenModal';
 
 import type { LogEntry } from '../utils/logUtils';
 
@@ -20,35 +21,19 @@ export function CalendarSyncModal({ isOpen, onClose, ownedCards, logs, loyaltyAw
   const language = useCardStore((state) => state.language);
   const t = (key: keyof typeof translations['en']) => translations[language][key] || translations['en'][key];
 
-  if (!isOpen) return null;
-
   const themeClass = (dark: string, light: string) => theme === 'dark' ? dark : light;
 
   return (
-    <div 
-      onClick={onClose}
-      className="fixed inset-0 bg-slate-950/50 dark:bg-slate-950/80 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in"
+    <ZenModal
+      isOpen={isOpen}
+      onClose={onClose}
+      theme={theme}
+      title={t('calSyncTitle')}
+      description={t('calSyncDesc')}
+      icon={<Calendar className="w-5 h-5" />}
+      maxWidthClass="max-w-md"
     >
-      <div 
-        className={`border rounded-2xl max-w-md w-full p-6 shadow-2xl relative animate-scale-up transition-colors duration-300 ${
-          themeClass('bg-slate-900 border-slate-800 text-slate-100', 'bg-white border-slate-200 text-slate-800')
-        }`}
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="flex items-center gap-3 mb-4">
-          <div className="p-2 bg-amber-500/10 rounded-lg text-amber-500">
-            <Calendar className="w-6 h-6" />
-          </div>
-          <div>
-            <h3 className={`text-base font-bold ${themeClass('text-white', 'text-slate-900')}`}>{t('calSyncTitle')}</h3>
-          </div>
-        </div>
-
-        <p className={`text-xs leading-relaxed mb-5 ${themeClass('text-slate-300', 'text-slate-650')}`}>
-          {t('calSyncDesc')}
-        </p>
-
-        <button
+    <button
           onClick={() => {
             downloadICSFile(ownedCards, logs, loyaltyAwards);
           }}
@@ -85,7 +70,6 @@ export function CalendarSyncModal({ isOpen, onClose, ownedCards, logs, loyaltyAw
         >
           {t('cancel')}
         </button>
-      </div>
-    </div>
+    </ZenModal>
   );
 }

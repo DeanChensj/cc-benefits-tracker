@@ -1,9 +1,10 @@
-import { X, CreditCard } from 'lucide-react';
+import { CreditCard } from 'lucide-react';
 import type { OwnedCardInstance } from '../store/useCardStore';
 import { CARDS_DB, CARD_MULTIPLIERS } from '../data/cards.db';
 import type { PointCurrency } from '../data/cards.db';
 import { useCardStore } from '../store/useCardStore';
 import { translations } from '../utils/i18n';
+import { ZenModal } from './ZenModal';
 
 interface EditCardModalProps {
   isOpen: boolean;
@@ -16,6 +17,7 @@ interface EditCardModalProps {
   setCardOpenDate: (id: string, dateStr: string) => void;
   renameCard: (id: string, name: string) => void;
   themeClass: (dark: string, light: string) => string;
+  theme: 'dark' | 'light';
 }
 
 export function EditCardModal({
@@ -28,7 +30,8 @@ export function EditCardModal({
   updateSignupBonusValue,
   setCardOpenDate,
   renameCard,
-  themeClass
+  themeClass,
+  theme
 }: EditCardModalProps) {
   const language = useCardStore((state) => state.language);
   const t = (key: keyof typeof translations['en']) => translations[language][key] || translations['en'][key];
@@ -44,39 +47,15 @@ export function EditCardModal({
   const defaultEntertainment = CARD_MULTIPLIERS[instance.templateId]?.entertainment || 1;
 
   return (
-    <div 
-      onClick={onClose}
-      className="fixed inset-0 bg-slate-955/40 dark:bg-slate-950/75 backdrop-blur-[3px] flex items-center justify-center z-50 p-4 animate-fade-in"
+    <ZenModal
+      isOpen={isOpen}
+      onClose={onClose}
+      theme={theme}
+      title={`${t('formEditCardTitle')}: ${instance.customName}`}
+      description={t('formCreateCardDesc')}
+      icon={<CreditCard className="w-5 h-5" />}
+      maxWidthClass="max-w-md"
     >
-      <div 
-        onClick={(e) => e.stopPropagation()}
-        className={`border rounded-2xl max-w-md w-full p-6 shadow-2xl relative animate-scale-up transition-colors duration-300 ${
-          themeClass('bg-slate-900 border-slate-805/80 text-slate-105', 'bg-white border-slate-200 text-slate-800')
-        }`}
-      >
-        <button
-          onClick={onClose}
-          className={`absolute top-4 right-4 p-1 rounded transition cursor-pointer active:scale-90 ${
-            themeClass('text-slate-400 hover:text-white hover:bg-white/10', 'text-slate-505 hover:text-slate-850 hover:bg-black/5')
-          }`}
-        >
-          <X className="w-4 h-4" />
-        </button>
-
-        {/* Header Title */}
-        <div className="flex items-center gap-3 mb-5 text-left">
-          <div className="p-2 bg-purple-500/10 rounded-lg text-purple-400">
-            <CreditCard className="w-5 h-5" />
-          </div>
-          <div>
-            <h3 className={`text-sm font-black ${themeClass('text-white', 'text-slate-900')}`}>
-              {t('formEditCardTitle')}: {instance.customName}
-            </h3>
-            <p className={`text-[10px] font-medium ${themeClass('text-slate-400', 'text-slate-505')}`}>
-              {t('formCreateCardDesc')}
-            </p>
-          </div>
-        </div>
 
         <div className="space-y-5 text-left">
           {/* 00. Card Label / Custom Name */}
@@ -301,7 +280,6 @@ export function EditCardModal({
         >
           {t('saveAndClose')}
         </button>
-      </div>
-    </div>
+    </ZenModal>
   );
 }

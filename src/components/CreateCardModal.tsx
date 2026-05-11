@@ -1,9 +1,10 @@
 import { useState } from 'react';
-import { CreditCard, Plus, Trash2, X } from 'lucide-react';
+import { CreditCard, Plus, Trash2 } from 'lucide-react';
 import type { OwnedCardInstance } from '../store/useCardStore';
 import { useCardStore } from '../store/useCardStore';
 import { translations, resolveCardNetwork } from '../utils/i18n';
 import type { PointCurrency } from '../data/cards.db';
+import { ZenModal } from './ZenModal';
 
 interface CreateCardModalProps {
   isOpen: boolean;
@@ -95,36 +96,15 @@ export function CreateCardModal({
     setNewBenefits([{ name: '', value: 0, resetPeriod: 'monthly', category: 'dining', description: '' }]);
     onClose();
   };  return (
-    <div 
-      onClick={onClose}
-      className="fixed inset-0 bg-slate-950/50 dark:bg-slate-955/80 backdrop-blur-sm flex items-center justify-center z-50 p-4 overflow-y-auto animate-fade-in"
+    <ZenModal
+      isOpen={isOpen}
+      onClose={onClose}
+      theme={theme}
+      title={t('formCreateCardTitle')}
+      description={t('formCreateCardDesc')}
+      icon={<CreditCard className="w-5 h-5" />}
+      maxWidthClass="max-w-lg"
     >
-      <div 
-        className={`border rounded-2xl max-w-lg w-full p-6 shadow-2xl relative my-8 animate-scale-up transition-colors duration-300 ${
-          themeClass('bg-slate-900 border-slate-800 text-slate-100', 'bg-white border-slate-200 text-slate-800')
-        }`}
-        onClick={(e) => e.stopPropagation()}
-      >
-        <button
-          type="button"
-          onClick={onClose}
-          className={`absolute top-4 right-4 p-1.5 rounded-xl transition active:scale-90 cursor-pointer ${
-            themeClass('text-slate-400 hover:text-white hover:bg-white/5', 'text-slate-505 hover:text-slate-900 hover:bg-black/5')
-          }`}
-        >
-          <X className="w-4.5 h-4.5" />
-        </button>
-
-        {/* Header Title */}
-        <div className="flex items-center gap-3 mb-4">
-          <div className="p-2 bg-purple-500/10 rounded-lg text-purple-400">
-            <CreditCard className="w-5 h-5" />
-          </div>
-          <div>
-            <h3 className={`text-sm font-black ${themeClass('text-white', 'text-slate-900')}`}>{t('formCreateCardTitle')}</h3>
-            <p className={`text-[10px] font-medium ${themeClass('text-slate-400', 'text-slate-505')}`}>{t('formCreateCardDesc')}</p>
-          </div>
-        </div>
 
         {/* Real-Time Muted Zen Index Card Preview (Zen Architectural Stamp) */}
         <div className="mb-5 flex justify-center select-none">
@@ -593,7 +573,6 @@ export function CreateCardModal({
             </button>
           </div>
         </form>
-      </div>
-    </div>
+    </ZenModal>
   );
 }

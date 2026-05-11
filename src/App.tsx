@@ -1092,6 +1092,7 @@ function App() {
         resolvedValue={resolvedValue}
         expiredValue={expiredValue}
         themeClass={themeClass}
+        theme={theme}
       />
 
 
@@ -1143,6 +1144,7 @@ function App() {
         setCardOpenDate={setCardOpenDate}
         renameCard={renameCard}
         themeClass={themeClass}
+        theme={theme}
       />
 
       <EditAwardModal
