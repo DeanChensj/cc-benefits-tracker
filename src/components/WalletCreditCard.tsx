@@ -1,4 +1,4 @@
-import { Plus, Trash2, ExternalLink, Edit3, ChevronDown } from 'lucide-react';
+import { Trash2, ExternalLink, Edit3, ChevronDown } from 'lucide-react';
 import { CARDS_DB, CARD_MULTIPLIERS } from '../data/cards.db';
 import type { OwnedCardInstance } from '../store/useCardStore';
 import { useCardStore } from '../store/useCardStore';
@@ -9,8 +9,6 @@ interface WalletCreditCardProps {
   isCardExpanded: boolean;
   toggleCardExpanded: (id: string) => void;
   getCardRecoupedValue: (id: string) => number;
-  handleAddCard: (templateId: string) => void;
-  handleAddCustomCard: (card: Omit<OwnedCardInstance, 'id'>) => void;
   handleRemoveCard: (instanceId: string) => void;
   removeInstanceOffer: (instanceId: string, offerId: string) => void;
   setAddOfferInstanceId: (instanceId: string) => void;
@@ -23,8 +21,6 @@ export function WalletCreditCard({
   isCardExpanded,
   toggleCardExpanded,
   getCardRecoupedValue,
-  handleAddCard,
-  handleAddCustomCard,
   handleRemoveCard,
   removeInstanceOffer,
   setAddOfferInstanceId,
@@ -101,40 +97,7 @@ export function WalletCreditCard({
                 <ExternalLink className="w-3 h-3 stroke-[2.5]" />
               </a>
             )}
-            {instance.templateId === 'custom' ? (
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleAddCustomCard({
-                    templateId: 'custom',
-                    customName: `${instance.customName} (Copy)`,
-                    bank: instance.bank,
-                    color: instance.color,
-                    cardOpenDate: instance.cardOpenDate,
-                    annualFee: instance.annualFee,
-                    customBenefits: (instance.customBenefits || []).map((b) => ({
-                      ...b,
-                      id: `benefit_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
-                    })),
-                  });
-                }}
-                className={`p-1 rounded transition cursor-pointer ${isSilverCard ? 'text-slate-700 hover:text-slate-955 hover:bg-black/5' : 'text-slate-400 hover:text-white hover:bg-white/10'}`}
-                title="Duplicate"
-              >
-                <Plus className="w-3 h-3 stroke-[2.5]" />
-              </button>
-            ) : (
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleAddCard(instance.templateId);
-                }}
-                className={`p-1 rounded transition cursor-pointer ${isSilverCard ? 'text-slate-700 hover:text-slate-955 hover:bg-black/5' : 'text-slate-400 hover:text-white hover:bg-white/10'}`}
-                title="Add instance"
-              >
-                <Plus className="w-3 h-3 stroke-[2.5]" />
-              </button>
-            )}
+
             <button
               onClick={(e) => {
                 e.stopPropagation();

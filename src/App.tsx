@@ -906,8 +906,6 @@ function App() {
             ownedCards={ownedCards}
             loyaltyAwards={loyaltyAwards}
             getCardRecoupedValue={(id) => getCardRecoupedValue(id, ownedCards, logs, currentDate)}
-            handleAddCard={handleAddCard}
-            handleAddCustomCard={handleAddCustomCard}
             removeInstanceOffer={removeInstanceOffer}
             setAddOfferInstanceId={setAddOfferInstanceId}
             setIsCreateModalOpen={(open) => setActiveModal(open ? 'create-card' : null)}

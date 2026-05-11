@@ -16,8 +16,6 @@ interface WalletLibraryTabProps {
   ownedCards: OwnedCardInstance[];
   loyaltyAwards: LoyaltyAward[];
   getCardRecoupedValue: (id: string) => number;
-  handleAddCard: (templateId: string) => void;
-  handleAddCustomCard: (card: Omit<OwnedCardInstance, 'id'>) => void;
   removeInstanceOffer: (instanceId: string, offerId: string) => void;
   setAddOfferInstanceId: (instanceId: string) => void;
   setIsCreateModalOpen: (open: boolean) => void;
@@ -92,8 +90,6 @@ export function WalletLibraryTab({
   ownedCards,
   loyaltyAwards,
   getCardRecoupedValue,
-  handleAddCard,
-  handleAddCustomCard,
   removeInstanceOffer,
   setAddOfferInstanceId,
   setIsCreateModalOpen,
@@ -314,8 +310,6 @@ export function WalletLibraryTab({
                               isCardExpanded={!!expandedCardIds[instance.id]}
                               toggleCardExpanded={toggleCardExpanded}
                               getCardRecoupedValue={getCardRecoupedValue}
-                              handleAddCard={handleAddCard}
-                              handleAddCustomCard={handleAddCustomCard}
                               handleRemoveCard={setDeleteCardInstanceId}
                               removeInstanceOffer={removeInstanceOffer}
                               setAddOfferInstanceId={setAddOfferInstanceId}
