@@ -194,23 +194,23 @@ export function WalletLibraryTab({
             themeClass('bg-slate-900/30 border-slate-850', 'bg-white border-slate-200 shadow-sm')
           }`}>
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-2.5 pb-1.5 border-b border-dashed border-slate-200/60 dark:border-slate-800/60 sm:mb-4 sm:pb-2">
-              <h3 className={`text-xs font-bold uppercase tracking-wider flex items-center gap-2 flex-wrap ${themeClass('text-slate-400', 'text-slate-555')}`}>
+              <h3 className={`text-xs font-bold uppercase tracking-wider flex items-center gap-x-2 gap-y-1 flex-wrap md:flex-nowrap ${themeClass('text-slate-400', 'text-slate-555')}`}>
                 <CreditCard className="w-4 h-4 text-purple-500" />
-                <span>{t('activeCardsTitle')} ({ownedCards.length} {ownedCards.length === 1 ? t('cardSuffix') : t('cardsSuffix')})</span>
+                <span className="whitespace-nowrap">{t('activeCardsTitle')} ({ownedCards.length} {ownedCards.length === 1 ? t('cardSuffix') : t('cardsSuffix')})</span>
                 {ownedCards.length > 0 && (
                   <>
-                    <span className="opacity-25 dark:opacity-40 text-slate-400">•</span>
+                    <span className="opacity-25 dark:opacity-40 text-slate-400 hidden md:inline">•</span>
                     <button
                       type="button"
                       onClick={() => setIsChurningDrawerOpen(true)}
-                      className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[9.5px] font-extrabold border transition active:scale-95 hover:scale-[1.02] cursor-pointer ${
+                      className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[9.5px] font-extrabold border transition active:scale-95 hover:scale-[1.02] cursor-pointer mt-0.5 md:mt-0 ${
                         chase524Count >= 5
                           ? 'bg-rose-500/10 text-rose-500 border-rose-500/20 dark:bg-rose-500/5 animate-pulse'
                           : 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20 dark:bg-emerald-500/5'
                       }`}
                       title="Audit Churner Cooling application stats"
                     >
-                      <span>Chase 5/24:</span>
+                      <span>Chase:</span>
                       <span className="font-black">{chase524Count}/24</span>
                       <span className="w-1.5 h-1.5 rounded-full bg-current shrink-0" />
                     </button>
