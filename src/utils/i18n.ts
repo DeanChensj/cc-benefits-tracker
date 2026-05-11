@@ -350,6 +350,7 @@ const translationsEn = {
   aiToastUpdateCard: '⚡ AI Assistant successfully updated: {card}!',
   cardActionWebsite: 'Website 🔗',
   cardActionDelete: 'Delete Card 🗑️',
+  expiresLabel: 'Expires',
 };
 
 const translationsZh: typeof translationsEn = {
@@ -704,6 +705,7 @@ const translationsZh: typeof translationsEn = {
   aiToastUpdateCard: '⚡ AI 助手已成功更新：{card}！',
   cardActionWebsite: '访问官网 🔗',
   cardActionDelete: '注销卡片 🗑️',
+  expiresLabel: '有效期至',
 };
 
 export const translations: Record<'en' | 'zh', typeof translationsEn> = {
