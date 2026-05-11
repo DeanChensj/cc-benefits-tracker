@@ -46,7 +46,7 @@ export function VoucherTicketCard({
 
   return (
     <div
-      className={`rounded-xl border flex justify-between transition duration-200 relative overflow-hidden select-none min-h-[110px] border-l-[3.5px] ${
+      className={`rounded-xl border flex justify-between transition duration-200 relative overflow-hidden select-none min-h-[140px] border-l-[3.5px] ${
         isCompleted ? 'opacity-50 grayscale-[30%]' : ''
       } ${getVoucherBorderColor()} ${
         themeClass('bg-slate-900/40 border-slate-850/80 text-slate-300 backdrop-blur-sm', 'bg-white border-slate-200 text-slate-700 shadow-sm')
@@ -123,15 +123,15 @@ export function VoucherTicketCard({
       </div>
 
       {/* 2. Right Column: Ticket Stub Receipt (30%) */}
-      <div className="w-20 shrink-0 p-3 flex flex-col justify-between items-center border-l border-slate-200/40 dark:border-slate-800/50 relative text-center z-10">
-        {/* Close Delete Button - Hidden in static preview mode */}
+      <div className="w-24 shrink-0 p-3.5 flex flex-col justify-between items-center border-l border-slate-200/40 dark:border-slate-800/50 relative text-center z-10">
+        {/* Close Delete Button - Restored to absolute top-right */}
         {!isStaticPreview && onDelete && (
           <button
             onClick={(e) => {
               e.stopPropagation();
               onDelete();
             }}
-            className={`absolute top-2 right-2 p-1 rounded transition cursor-pointer active:scale-90 z-30 ${
+            className={`absolute top-2.5 right-2.5 p-1 rounded transition cursor-pointer active:scale-90 z-30 ${
               themeClass('text-slate-500 hover:text-red-400 hover:bg-red-500/10', 'text-slate-400 hover:text-red-600 hover:bg-red-500/5')
             }`}
             title="Delete standalone award"
@@ -140,10 +140,36 @@ export function VoucherTicketCard({
           </button>
         )}
 
-        {/* Interactive Use Toggle Button */}
+        {/* Stub Micro Barcode Centerpiece (Centered vertically for optimal balance) */}
+        <div className="w-full flex-grow flex flex-col items-center justify-center gap-1 select-none pt-4">
+          <span className={`text-[6px] font-black uppercase tracking-[0.25em] opacity-60 ${themeClass('text-slate-400', 'text-slate-500')}`}>
+            TICKET STUB
+          </span>
+          
+          {/* Faux Barcode via flex lines */}
+          <div className={`flex items-center gap-[1.5px] h-5 w-14 overflow-hidden opacity-40 dark:opacity-30 ${themeClass('text-white', 'text-slate-900')}`}>
+            <span className="w-[1.5px] h-full bg-current shrink-0"></span>
+            <span className="w-[3px] h-full bg-current shrink-0"></span>
+            <span className="w-[0.5px] h-full bg-current shrink-0 opacity-20"></span>
+            <span className="w-[2px] h-full bg-current shrink-0"></span>
+            <span className="w-[0.5px] h-full bg-current shrink-0"></span>
+            <span className="w-[3.5px] h-full bg-current shrink-0"></span>
+            <span className="w-[1px] h-full bg-current shrink-0"></span>
+            <span className="w-[2px] h-full bg-current shrink-0"></span>
+            <span className="w-[0.5px] h-full bg-current shrink-0 opacity-20"></span>
+            <span className="w-[1.5px] h-full bg-current shrink-0"></span>
+            <span className="w-[3px] h-full bg-current shrink-0"></span>
+          </div>
+          
+          <span className={`text-[5.5px] font-black font-mono tracking-widest opacity-50 ${themeClass('text-slate-400', 'text-slate-600')}`}>
+            #{award.id?.substring(0, 5).toUpperCase() || '00000'}
+          </span>
+        </div>
+
+        {/* Interactive Use Toggle Button (Restored to full width) */}
         {isStaticPreview ? (
           /* Inert Preview Mode Capsule Button */
-          <div className={`w-full py-1 rounded-xl text-[7.5px] font-black uppercase tracking-widest text-center select-none mt-3 border ${
+          <div className={`w-full py-1.5 rounded-xl text-[7.5px] font-black uppercase tracking-widest text-center select-none border mt-auto ${
             themeClass('bg-slate-950/50 border-slate-850 text-slate-600', 'bg-slate-50 border-slate-250 text-slate-400 shadow-sm')
           }`}>
             {t('claimBtn')}
@@ -155,7 +181,7 @@ export function VoucherTicketCard({
               e.stopPropagation();
               if (onClaimToggle) onClaimToggle();
             }}
-            className={`w-full py-1 rounded-xl text-[7.5px] font-black uppercase tracking-widest transition z-30 cursor-pointer active:scale-95 mt-3 ${
+            className={`w-full py-1.5 rounded-xl text-[7.5px] font-black uppercase tracking-widest transition z-30 cursor-pointer active:scale-95 mt-auto ${
               isCompleted
                 ? 'bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-500 border border-emerald-500/20'
                 : themeClass(
@@ -167,15 +193,6 @@ export function VoucherTicketCard({
             {isCompleted ? t('usedStatus') : t('claimBtn')}
           </button>
         )}
-
-        {/* Stub Balance Indicator */}
-        <div className="w-full mt-2">
-          <span className={`text-[8.5px] font-black font-mono tracking-tight block truncate max-w-full ${
-            isCompleted ? 'text-emerald-500/60 line-through' : themeClass('text-emerald-400', 'text-emerald-600')
-          }`}>
-            {isCompleted ? `${t('balancePrefix')}0` : `${t('balancePrefix')}${award.value}`}
-          </span>
-        </div>
       </div>
     </div>
   );
