@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { CheckCircle2 } from 'lucide-react';
 import type { ActiveBenefit } from '../utils/dateUtils';
 import type { LogEntry } from '../utils/logUtils';
@@ -38,6 +38,8 @@ export const ChecklistCardRow = React.memo(function ChecklistCardRow({
   themeClass,
   isGrouped = false,
 }: ChecklistCardRowProps) {
+  const [isExpanded, setIsExpanded] = useState(false);
+
   const language = useCardStore((state) => state.language);
   const t = (key: keyof typeof translations['en']) => translations[language][key] || translations['en'][key];
 
@@ -159,21 +161,16 @@ export const ChecklistCardRow = React.memo(function ChecklistCardRow({
   return (
     <div
       onClick={() => {
-        if (isExpired) return;
-        if (isProgressive) {
-          const limit = benefit.spendingLimit || 0;
-          const isFullySpent = spent >= limit;
-          updateProgressLog(logKey, isFullySpent ? 0 : limit);
-        } else {
-          toggleBenefit(logKey);
+        if (!isExpired) {
+          setIsExpanded(!isExpanded);
         }
       }}
-      className={`group flex flex-col p-3.5 rounded-xl border transition duration-200 gap-3.5 ${
+      className={`group flex flex-col p-3.5 rounded-xl border transition-all duration-250 gap-3 cursor-pointer ${
         isExpired
           ? themeClass('bg-slate-955 border-red-955/10 opacity-40 cursor-not-allowed', 'bg-red-50/30 border-red-200/50 opacity-60 cursor-not-allowed')
           : isUsed
-          ? themeClass('bg-slate-955 border-slate-900 opacity-50 cursor-pointer', 'bg-slate-100/70 border-slate-200/70 opacity-60 cursor-pointer')
-          : `${themeClass('bg-slate-900/40 border-slate-850/80 cursor-pointer', 'bg-white border-slate-200/90 cursor-pointer shadow-[0_2px_6px_rgba(15,23,42,0.02)]')} ${getCategoryHoverClasses()}`
+          ? themeClass('bg-slate-955 border-slate-900 opacity-50 hover:bg-slate-900/10', 'bg-slate-100/65 border-slate-200/70 opacity-60 hover:bg-slate-50')
+          : `${themeClass('bg-slate-900/40 border-slate-850/80 hover:border-slate-750', 'bg-white border-slate-200/90 shadow-[0_2px_6px_rgba(15,23,42,0.015)]')} ${getCategoryHoverClasses()}`
       }`}
     >
       {/* Row 1: Title, Checkbox, and Valuation Amount */}
@@ -181,13 +178,26 @@ export const ChecklistCardRow = React.memo(function ChecklistCardRow({
         {/* Left Details block */}
         <div className="flex items-start gap-3 min-w-0 flex-grow">
           {/* Checkbox */}
-          <div className={`w-6 h-6 flex items-center justify-center rounded-lg border transition-colors duration-200 shrink-0 mt-0.5 ${
-            isExpired
-              ? 'border-red-900 bg-red-950/10 text-red-500'
-              : isUsed 
-              ? 'bg-emerald-500 border-emerald-500 text-slate-955' 
-              : themeClass('border-slate-700 group-hover:border-slate-500 bg-slate-955/50 text-transparent', 'border-slate-250 group-hover:border-slate-350 bg-white text-transparent')
-          }`}>
+          <div 
+            onClick={(e) => {
+              e.stopPropagation(); // Prevent row expansion toggle
+              if (isExpired) return;
+              if (isProgressive) {
+                const limit = benefit.spendingLimit || 0;
+                const isFullySpent = spent >= limit;
+                updateProgressLog(logKey, isFullySpent ? 0 : limit);
+              } else {
+                toggleBenefit(logKey);
+              }
+            }}
+            className={`w-6 h-6 flex items-center justify-center rounded-lg border transition-colors duration-200 shrink-0 mt-0.5 cursor-pointer ${
+              isExpired
+                ? 'border-red-900 bg-red-950/10 text-red-500'
+                : isUsed 
+                ? 'bg-emerald-500 border-emerald-500 text-slate-955' 
+                : themeClass('border-slate-500 hover:border-purple-500 bg-slate-900/60 text-transparent hover:bg-purple-500/5', 'border-slate-400 hover:border-purple-500 bg-white text-transparent hover:bg-purple-50/30')
+            }`}
+          >
             {isExpired ? (
               <span className="text-[10px] font-bold">✕</span>
             ) : (
@@ -252,143 +262,149 @@ export const ChecklistCardRow = React.memo(function ChecklistCardRow({
         )}
       </div>
 
-      {/* Row 1.5: Dedicated Full-Width Description (Perfect Mobile Left Alignment!) */}
-      {benefit.description && (
-        <p className={`text-xs mt-0.5 leading-relaxed pl-[38px] w-full text-left ${themeClass('text-slate-400', 'text-slate-500')}`}>
-          {benefit.description}
-        </p>
-      )}
+      {/* Collapsible Accordion Drawer (Description & Progressive controllers) */}
+      <div className={`transition-all duration-280 ease-in-out overflow-hidden ${
+        isExpanded 
+          ? 'max-h-[450px] opacity-100 mt-1' 
+          : 'max-h-0 opacity-0 pointer-events-none'
+      }`}>
+        {benefit.description && (
+          <p className={`text-xs leading-relaxed pl-[38px] pb-2.5 w-full text-left ${themeClass('text-slate-400', 'text-slate-500')}`}>
+            {benefit.description}
+          </p>
+        )}
 
-      {/* Row 2: Symmetrical Recessed Accumulator Widget Well (Progressive benefits only) */}
-      {isProgressive && (() => {
-        const limit = benefit.spendingLimit || 0;
-        const step = getStepAmount(limit);
-        const currentProgress = (() => { 
-          const p = parseLogEntry(logs[obfuscateKey(logKey)]); 
-          return p && p.spentProgress !== undefined ? p.spentProgress : 0; 
-        })();
-        const isFullyResolved = currentProgress >= limit;
-        const isZeroProgress = currentProgress <= 0;
+        {/* Row 2: Symmetrical Recessed Accumulator Widget Well (Progressive benefits only) */}
+        {isProgressive && (() => {
+          const limit = benefit.spendingLimit || 0;
+          const step = getStepAmount(limit);
+          const currentProgress = (() => { 
+            const p = parseLogEntry(logs[obfuscateKey(logKey)]); 
+            return p && p.spentProgress !== undefined ? p.spentProgress : 0; 
+          })();
+          const isFullyResolved = currentProgress >= limit;
+          const isZeroProgress = currentProgress <= 0;
 
-        return (
-          <div 
-            onClick={(e) => e.stopPropagation()} // Prevent row click checklist toggle
-            className={`p-3.5 sm:p-4 mt-3 rounded-xl border flex flex-col sm:flex-row sm:items-center justify-between gap-5 w-full transition-all duration-300 ${
-              themeClass(
-                'bg-slate-950/20 border-slate-850/45', 
-                'bg-slate-50/40 border-slate-200/80 shadow-[inset_0_1px_3px_rgba(15,23,42,0.01)]'
-              )
-            }`}
-          >
-            {/* Tactile Symmetrical Control Capsule */}
-            <div className="flex items-center shrink-0 sm:my-1">
-              <div className={`flex items-center rounded-lg border overflow-hidden text-xs ${
-                themeClass('border-slate-800 bg-slate-900/25', 'border-slate-250 bg-white shadow-sm')
-              }`}>
-                {/* Left segment: Decrement (-) */}
-                <button
-                  type="button"
-                  disabled={isExpired || isZeroProgress}
-                  onClick={() => {
-                    const newSpent = Math.max(currentProgress - step, 0);
-                    updateProgressLog(logKey, newSpent);
-                  }}
-                  className={`px-3 py-1.5 text-[9px] font-black tracking-wider uppercase transition duration-150 select-none cursor-pointer active:scale-[0.92] shrink-0 ${
-                    isZeroProgress || isExpired
-                      ? 'opacity-35 cursor-not-allowed text-slate-500'
-                      : themeClass(
-                          'text-slate-400 hover:bg-slate-850 hover:text-slate-200', 
-                          'text-slate-500 hover:bg-slate-100 hover:text-slate-800'
-                        )
-                  }`}
-                  title={language === 'zh' ? `减少 $${step}` : `Reduce $${step}`}
-                >
-                  -{step}
-                </button>
-
-                {/* Center segment: Value input with dollar prefix */}
-                <div className={`flex items-center px-2 py-1.5 border-l border-r ${
-                  themeClass('border-slate-800 bg-slate-955/40', 'border-slate-200 bg-slate-50/30')
+          return (
+            <div 
+              onClick={(e) => e.stopPropagation()} // Prevent row click checklist toggle
+              className={`p-3.5 sm:p-4 mt-3 rounded-xl border flex flex-col sm:flex-row sm:items-center justify-between gap-5 w-full transition-all duration-300 ${
+                themeClass(
+                  'bg-slate-950/20 border-slate-850/45', 
+                  'bg-slate-50/40 border-slate-200/80 shadow-[inset_0_1px_3px_rgba(15,23,42,0.01)]'
+                )
+              }`}
+            >
+              {/* Tactile Symmetrical Control Capsule */}
+              <div className="flex items-center shrink-0 sm:my-1">
+                <div className={`flex items-center rounded-lg border overflow-hidden text-xs ${
+                  themeClass('border-slate-800 bg-slate-900/25', 'border-slate-250 bg-white shadow-sm')
                 }`}>
-                  <span className="text-[9.5px] font-bold text-slate-450 dark:text-slate-500 select-none mr-0.5">$</span>
-                  <input
-                    type="number"
-                    disabled={isExpired}
-                    placeholder="0"
-                    value={currentProgress || ''}
-                    onChange={(e) => {
-                      const val = Number(e.target.value);
-                      updateProgressLog(logKey, val);
+                  {/* Left segment: Decrement (-) */}
+                  <button
+                    type="button"
+                    disabled={isExpired || isZeroProgress}
+                    onClick={() => {
+                      const newSpent = Math.max(currentProgress - step, 0);
+                      updateProgressLog(logKey, newSpent);
                     }}
-                    className={`w-10 border-0 p-0 text-center text-xs bg-transparent focus:outline-none font-mono font-black ${
-                      themeClass('text-slate-200 focus:text-white', 'text-slate-800 focus:text-slate-900')
+                    className={`px-3 py-1.5 text-[9px] font-black tracking-wider uppercase transition duration-150 select-none cursor-pointer active:scale-[0.92] shrink-0 ${
+                      isZeroProgress || isExpired
+                        ? 'opacity-35 cursor-not-allowed text-slate-500'
+                        : themeClass(
+                            'text-slate-400 hover:bg-slate-850 hover:text-slate-200', 
+                            'text-slate-505 hover:bg-slate-100 hover:text-slate-800'
+                          )
                     }`}
+                    title={language === 'zh' ? `减少 $${step}` : `Reduce $${step}`}
+                  >
+                    -{step}
+                  </button>
+
+                  {/* Center segment: Value input with dollar prefix */}
+                  <div className={`flex items-center px-2 py-1.5 border-l border-r ${
+                    themeClass('border-slate-800 bg-slate-955/40', 'border-slate-200 bg-slate-50/30')
+                  }`}>
+                    <span className="text-[9.5px] font-bold text-slate-450 dark:text-slate-500 select-none mr-0.5">$</span>
+                    <input
+                      type="number"
+                      disabled={isExpired}
+                      placeholder="0"
+                      value={currentProgress || ''}
+                      onChange={(e) => {
+                        const val = Number(e.target.value);
+                        updateProgressLog(logKey, val);
+                      }}
+                      className={`w-10 border-0 p-0 text-center text-xs bg-transparent focus:outline-none font-mono font-black ${
+                        themeClass('text-slate-200 focus:text-white', 'text-slate-800 focus:text-slate-900')
+                      }`}
+                    />
+                  </div>
+
+                  {/* Right segment: Increment (+) */}
+                  <button
+                    type="button"
+                    disabled={isExpired || isFullyResolved}
+                    onClick={() => {
+                      const newSpent = Math.min(currentProgress + step, limit);
+                      updateProgressLog(logKey, newSpent);
+                    }}
+                    className={`px-3 py-1.5 text-[9px] font-black tracking-wider uppercase transition duration-150 select-none cursor-pointer active:scale-[0.92] shrink-0 ${
+                      isFullyResolved || isExpired
+                        ? 'opacity-35 cursor-not-allowed text-slate-500'
+                        : themeClass(
+                            'bg-purple-500/10 text-purple-400 hover:text-purple-300 hover:bg-purple-500/25', 
+                            'bg-purple-50 text-purple-600 hover:bg-purple-100'
+                          )
+                    }`}
+                    title={language === 'zh' ? `增加 $${step}` : `Add $${step}`}
+                  >
+                    +{step}
+                  </button>
+                </div>
+              </div>
+
+              {/* Symmetrical Dashboard Stats Widget with Value-Label Stack */}
+              <div className="flex-grow w-full sm:max-w-[240px] flex flex-col gap-2 sm:px-1 select-none">
+                {/* Dual Column Stacked Value & Label */}
+                <div className="flex justify-between items-end w-full">
+                  {/* Left: Spent progress */}
+                  <div className="flex flex-col items-start gap-0.5">
+                    <span className={`text-[8px] font-black uppercase tracking-widest leading-none ${themeClass('text-slate-455', 'text-slate-500')}`}>
+                      {language === 'zh' ? '已消费' : 'Spent'}
+                    </span>
+                    <span className={`text-xs font-black font-mono mt-0.5 leading-none ${themeClass('text-slate-200', 'text-slate-750')}`}>
+                      ${currentProgress} <span className="text-[9.5px] font-medium text-slate-450 dark:text-slate-500">/ ${limit}</span>
+                    </span>
+                  </div>
+
+                  {/* Right: Cashback earned */}
+                  <div className="flex flex-col items-end gap-0.5">
+                    <span className={`text-[8px] font-black uppercase tracking-widest leading-none ${themeClass('text-slate-455', 'text-slate-500')}`}>
+                      {language === 'zh' ? '已回本' : 'Earned'}
+                    </span>
+                    <span className="text-xs font-black font-mono mt-0.5 leading-none text-emerald-500 dark:text-emerald-450">
+                      +${cashbackEarned}
+                    </span>
+                  </div>
+                </div>
+
+                {/* 2px Gold Threadline Progress Bar */}
+                <div className="h-[2px] w-full bg-slate-200 dark:bg-slate-850 rounded-full overflow-hidden mt-0.5">
+                  <div 
+                    className={`h-full rounded-full bg-gradient-to-r ${
+                      isUsed 
+                        ? 'from-emerald-500 to-teal-400' 
+                        : 'from-purple-500 to-indigo-400'
+                    }`}
+                    style={{ width: `${spentPercent}%` }}
                   />
                 </div>
-
-                {/* Right segment: Increment (+) */}
-                <button
-                  type="button"
-                  disabled={isExpired || isFullyResolved}
-                  onClick={() => {
-                    const newSpent = Math.min(currentProgress + step, limit);
-                    updateProgressLog(logKey, newSpent);
-                  }}
-                  className={`px-3 py-1.5 text-[9px] font-black tracking-wider uppercase transition duration-150 select-none cursor-pointer active:scale-[0.92] shrink-0 ${
-                    isFullyResolved || isExpired
-                      ? 'opacity-35 cursor-not-allowed text-slate-500'
-                      : themeClass(
-                          'bg-purple-500/10 text-purple-400 hover:text-purple-300 hover:bg-purple-500/25', 
-                          'bg-purple-50 text-purple-600 hover:bg-purple-100'
-                        )
-                  }`}
-                  title={language === 'zh' ? `增加 $${step}` : `Add $${step}`}
-                >
-                  +{step}
-                </button>
               </div>
             </div>
-
-            {/* Symmetrical Dashboard Stats Widget with Value-Label Stack */}
-            <div className="flex-grow w-full sm:max-w-[240px] flex flex-col gap-2 sm:px-1 select-none">
-              {/* Dual Column Stacked Value & Label */}
-              <div className="flex justify-between items-end w-full">
-                {/* Left: Spent progress */}
-                <div className="flex flex-col items-start gap-0.5">
-                  <span className={`text-[8px] font-black uppercase tracking-widest leading-none ${themeClass('text-slate-455', 'text-slate-500')}`}>
-                    {language === 'zh' ? '已消费' : 'Spent'}
-                  </span>
-                  <span className={`text-xs font-black font-mono mt-0.5 leading-none ${themeClass('text-slate-200', 'text-slate-750')}`}>
-                    ${currentProgress} <span className="text-[9.5px] font-medium text-slate-450 dark:text-slate-500">/ ${limit}</span>
-                  </span>
-                </div>
-
-                {/* Right: Cashback earned */}
-                <div className="flex flex-col items-end gap-0.5">
-                  <span className={`text-[8px] font-black uppercase tracking-widest leading-none ${themeClass('text-slate-455', 'text-slate-500')}`}>
-                    {language === 'zh' ? '已回本' : 'Earned'}
-                  </span>
-                  <span className="text-xs font-black font-mono mt-0.5 leading-none text-emerald-500 dark:text-emerald-450">
-                    +${cashbackEarned}
-                  </span>
-                </div>
-              </div>
-
-              {/* 2px Gold Threadline Progress Bar */}
-              <div className="h-[2px] w-full bg-slate-200 dark:bg-slate-850 rounded-full overflow-hidden mt-0.5">
-                <div 
-                  className={`h-full rounded-full bg-gradient-to-r ${
-                    isUsed 
-                      ? 'from-emerald-500 to-teal-400' 
-                      : 'from-purple-500 to-indigo-400'
-                  }`}
-                  style={{ width: `${spentPercent}%` }}
-                />
-              </div>
-            </div>
-          </div>
-        );
-      })()}
+          );
+        })()}
+      </div>
     </div>
   );
 });
