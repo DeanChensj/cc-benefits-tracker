@@ -190,10 +190,10 @@ export function WalletLibraryTab({
       {deckSubTab === 'cards' && (
         <div className="space-y-6 animate-fade-in">
           {/* 1. MY WALLET (Active Cards) */}
-          <div className={`border rounded-xl p-4 sm:p-6 transition duration-300 ${
+          <div className={`border rounded-xl p-3 sm:p-6 transition duration-300 ${
             themeClass('bg-slate-900/30 border-slate-850', 'bg-white border-slate-200 shadow-sm')
           }`}>
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-4 pb-2 border-b border-dashed border-slate-200/60 dark:border-slate-800/60">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-2.5 pb-1.5 border-b border-dashed border-slate-200/60 dark:border-slate-800/60 sm:mb-4 sm:pb-2">
               <h3 className={`text-xs font-bold uppercase tracking-wider flex items-center gap-2 flex-wrap ${themeClass('text-slate-400', 'text-slate-555')}`}>
                 <CreditCard className="w-4 h-4 text-purple-500" />
                 <span>{t('activeCardsTitle')} ({ownedCards.length} {ownedCards.length === 1 ? t('cardSuffix') : t('cardsSuffix')})</span>
@@ -303,7 +303,7 @@ export function WalletLibraryTab({
                           ? 'max-h-0 opacity-0 pointer-events-none' 
                           : 'max-h-[4000px] opacity-100 mt-3.5'
                       }`}>
-                        <div className="grid sm:grid-cols-2 gap-4">
+                        <div className="grid sm:grid-cols-2 gap-2.5 sm:gap-4">
                           {bankCards.map((instance) => (
                             <WalletCreditCard
                               key={instance.id}
