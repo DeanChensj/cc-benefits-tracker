@@ -348,6 +348,8 @@ const translationsEn = {
   aiToastAddCard: '⚡ AI Assistant added {card} to your wallet!',
   aiToastAddCustom: '⚡ AI Assistant created custom card "{card}"!',
   aiToastUpdateCard: '⚡ AI Assistant successfully updated: {card}!',
+  cardActionWebsite: 'Website 🔗',
+  cardActionDelete: 'Delete Card 🗑️',
 };
 
 const translationsZh: typeof translationsEn = {
@@ -700,6 +702,8 @@ const translationsZh: typeof translationsEn = {
   aiToastAddCard: '⚡ AI 助手已自动在卡包中添加了 {card}！',
   aiToastAddCustom: '⚡ AI 助手已自动创建自定义卡 "{card}"！',
   aiToastUpdateCard: '⚡ AI 助手已成功更新：{card}！',
+  cardActionWebsite: '访问官网 🔗',
+  cardActionDelete: '注销卡片 🗑️',
 };
 
 export const translations: Record<'en' | 'zh', typeof translationsEn> = {

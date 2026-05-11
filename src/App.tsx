@@ -1157,6 +1157,9 @@ function App() {
         theme={theme}
       />
 
+      {/* 🎨 Tailwind CSS Theme Safelist Force-compiler block */}
+      <div className="hidden from-blue-800 to-indigo-900 from-blue-600 to-sky-900" />
+
       {/* Premium Floating Toast Notification */}
       {toast && (
         <Toast message={toast.message} type={toast.type} theme={theme} onUndo={toast.onUndo} />
