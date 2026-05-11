@@ -904,6 +904,25 @@ export const CARDS_DB: CardTemplate[] = [
     pointCurrency: 'delta-miles',
     officialUrl: 'https://www.americanexpress.com/us/credit-cards/card/delta-skymiles-blue-american-express-card/',
     benefits: []
+  },
+  {
+    id: 'usbank-altitude-go',
+    name: 'U.S. Bank Altitude Go Visa Signature Card',
+    bank: 'Other',
+    color: 'from-[#1a0933] via-[#4a1c73] to-[#8e44ad]',
+    annualFee: 0,
+    pointCurrency: 'cash',
+    officialUrl: 'https://www.usbank.com/credit-cards/altitude-go-visa-signature-credit-card.html',
+    benefits: [
+      {
+        id: 'usbank-altitude-go-streaming',
+        name: '$15 Streaming Credit',
+        description: '$15 statement credit after 11 consecutive months of eligible streaming service purchases',
+        value: 15,
+        resetPeriod: 'annual-anniversary',
+        category: 'entertainment'
+      }
+    ]
   }
 ];
 
@@ -913,6 +932,7 @@ export const CARD_MULTIPLIERS: Record<string, { dining?: number; travel?: number
   'amex-everyday': { shopping: 2 },
   'amex-hilton-surpass': { dining: 6, shopping: 6 },
   'amex-delta-blue': { travel: 2, dining: 2 },
+  'usbank-altitude-go': { dining: 4, shopping: 2, entertainment: 2 },
   'amex-platinum': { travel: 5 }, // 5x Flights
   'amex-bcp': { shopping: 6, entertainment: 6 }, // 6% Groceries, 6% Streaming
   'amex-delta-reserve': { travel: 3 }, // 3x Delta
