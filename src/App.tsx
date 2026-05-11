@@ -11,6 +11,7 @@ import { CreateCardModal } from './components/CreateCardModal';
 import { CreateAwardModal } from './components/CreateAwardModal';
 import { AddOfferModal } from './components/AddOfferModal';
 import { EditCardModal } from './components/EditCardModal';
+import { EditAwardModal } from './components/EditAwardModal';
 import { CardDetailDrawer } from './components/CardDetailDrawer';
 import { Toast } from './components/Toast';
 import { DeleteConfirmModal } from './components/DeleteConfirmModal';
@@ -103,6 +104,8 @@ function App() {
   const [activeTemplateDetail, setActiveTemplateDetail] = useState<CardTemplate | null>(null);
   const [activeEditInstanceId, setActiveEditInstanceId] = useState<string | null>(null);
   const activeEditInstance = ownedCards.find((c) => c.id === activeEditInstanceId) || null;
+  const [activeEditAwardId, setActiveEditAwardId] = useState<string | null>(null);
+  const activeEditAward = loyaltyAwards.find((a) => a.id === activeEditAwardId) || null;
 
   const lastActionRef = useRef<{ logKey: string; prevResolved: boolean; prevSpentProgress?: number } | null>(null);
 
@@ -917,6 +920,7 @@ function App() {
             selectedTemplates={selectedTemplates}
             setSelectedTemplates={setSelectedTemplates}
             onEditCard={(instance) => setActiveEditInstanceId(instance.id)}
+            onEditAward={(award) => setActiveEditAwardId(award.id)}
             deckSubTab={deckSubTab}
             setDeckSubTab={setDeckSubTab}
             updateAwardUsedQuantity={updateAwardUsedQuantity}
@@ -1140,6 +1144,13 @@ function App() {
         updateSignupBonusValue={updateSignupBonusValue}
         setCardOpenDate={setCardOpenDate}
         renameCard={renameCard}
+        themeClass={themeClass}
+      />
+
+      <EditAwardModal
+        isOpen={!!activeEditAwardId}
+        award={activeEditAward}
+        onClose={() => setActiveEditAwardId(null)}
         themeClass={themeClass}
       />
 

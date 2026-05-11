@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Plus, Sparkles, CreditCard, Trash2, Compass } from 'lucide-react';
+import { Plus, Sparkles, CreditCard, Trash2, Compass, Edit3 } from 'lucide-react';
 import { WalletCreditCard } from './WalletCreditCard';
 import { CardTemplatesCatalog } from './CardTemplatesCatalog';
 import { CheckoutWinnersRow } from './CheckoutWinnersRow';
@@ -27,6 +27,7 @@ interface WalletLibraryTabProps {
   selectedTemplates: string[];
   setSelectedTemplates: React.Dispatch<React.SetStateAction<string[]>>;
   onEditCard: (instance: OwnedCardInstance) => void;
+  onEditAward: (award: LoyaltyAward) => void;
   deckSubTab: 'cards' | 'awards' | 'templates';
   setDeckSubTab: (tab: 'cards' | 'awards' | 'templates') => void;
   updateAwardUsedQuantity: (awardId: string, qty: number) => void;
@@ -101,6 +102,7 @@ export function WalletLibraryTab({
   selectedTemplates,
   setSelectedTemplates,
   onEditCard,
+  onEditAward,
   deckSubTab,
   setDeckSubTab,
   updateAwardUsedQuantity,
@@ -457,9 +459,19 @@ export function WalletLibraryTab({
                     )}
                   </div>
                   
-                  <h4 className={`text-xs font-black mt-2.5 break-words line-clamp-2 leading-snug ${themeClass('text-white', 'text-slate-900')}`}>
-                    {info.name}
-                  </h4>
+                  <div 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onEditAward(award);
+                    }}
+                    className="flex items-center gap-1.5 cursor-pointer group/edit max-w-fit mt-2.5"
+                    title="Click to edit voucher details"
+                  >
+                    <h4 className={`text-xs font-black break-words line-clamp-2 leading-snug ${themeClass('text-white', 'text-slate-900')}`}>
+                      {info.name}
+                    </h4>
+                    <Edit3 className="w-3 h-3 shrink-0 opacity-50 group-hover/edit:opacity-100" />
+                  </div>
                   
                   {award.notes && (
                     <p className={`text-[10px] mt-1.5 leading-relaxed font-semibold truncate ${themeClass('text-white/85', 'text-slate-600')}`}>
