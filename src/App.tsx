@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useRef } from 'react';
+import { useState, useEffect, useMemo, useRef, lazy, Suspense } from 'react';
 // Meticulously audited and verified PWA release build with dynamic re-auth and contrast fixes
 import { CARDS_DB, CARD_MULTIPLIERS, AWARD_TEMPLATES } from './data/cards.db';
 import type { CardTemplate, Benefit, LoyaltyAward } from './data/cards.db';
@@ -7,19 +7,10 @@ import type { OwnedCardInstance } from './store/useCardStore';
 import { translations, formatCardNameForToast } from './utils/i18n';
 import { WalletAiAssistant } from './components/WalletAiAssistant';
 import { ChurningStatsDrawer } from './components/ChurningStatsDrawer';
-import { CalendarSyncModal } from './components/CalendarSyncModal';
-import { CreateCardModal } from './components/CreateCardModal';
-import { CreateAwardModal } from './components/CreateAwardModal';
-import { AddOfferModal } from './components/AddOfferModal';
-import { EditCardModal } from './components/EditCardModal';
-import { EditAwardModal } from './components/EditAwardModal';
 import { CardDetailDrawer } from './components/CardDetailDrawer';
 import { Toast } from './components/Toast';
-import { DeleteConfirmModal } from './components/DeleteConfirmModal';
-import { ConfirmationModal } from './components/ConfirmationModal';
 import { EmptyWalletState } from './components/EmptyWalletState';
 import { AnnualFeeWarningsWidget } from './components/AnnualFeeWarningsWidget';
-import { SavingsWrappedModal } from './components/SavingsWrappedModal';
 import { CloudSyncBanner } from './components/CloudSyncBanner';
 import { ActiveChecklistTab } from './components/ActiveChecklistTab';
 import { WalletLibraryTab } from './components/WalletLibraryTab';
@@ -28,6 +19,17 @@ import { getResolvedValue, getCardRecoupedValue } from './utils/valuationUtils';
 import { parseLogEntry } from './utils/logUtils';
 import { obfuscateKey } from './utils/cryptoUtils';
 import { loadGoogleGsiScript, requestGDriveToken, fetchUserEmail } from './utils/gdrive';
+
+// Lazy load modals to reduce initial bundle size
+const CalendarSyncModal = lazy(() => import('./components/CalendarSyncModal').then(m => ({ default: m.CalendarSyncModal })));
+const CreateCardModal = lazy(() => import('./components/CreateCardModal').then(m => ({ default: m.CreateCardModal })));
+const CreateAwardModal = lazy(() => import('./components/CreateAwardModal').then(m => ({ default: m.CreateAwardModal })));
+const AddOfferModal = lazy(() => import('./components/AddOfferModal').then(m => ({ default: m.AddOfferModal })));
+const EditCardModal = lazy(() => import('./components/EditCardModal').then(m => ({ default: m.EditCardModal })));
+const EditAwardModal = lazy(() => import('./components/EditAwardModal').then(m => ({ default: m.EditAwardModal })));
+const DeleteConfirmModal = lazy(() => import('./components/DeleteConfirmModal').then(m => ({ default: m.DeleteConfirmModal })));
+const ConfirmationModal = lazy(() => import('./components/ConfirmationModal').then(m => ({ default: m.ConfirmationModal })));
+const SavingsWrappedModal = lazy(() => import('./components/SavingsWrappedModal').then(m => ({ default: m.SavingsWrappedModal })));
 import { 
   CheckCircle2, 
   Sun,
@@ -986,121 +988,125 @@ function App() {
         </p>
       </footer>
 
-      {/* Calendar Sync Modal */}
-      <CalendarSyncModal 
-        isOpen={activeModal === 'sync'} 
-        onClose={() => setActiveModal(null)} 
-        ownedCards={ownedCards}
-        logs={logs}
-        loyaltyAwards={loyaltyAwards}
-        theme={theme}
-      />
+      <Suspense fallback={null}>
+        {/* Calendar Sync Modal */}
+        <CalendarSyncModal 
+          isOpen={activeModal === 'sync'} 
+          onClose={() => setActiveModal(null)} 
+          ownedCards={ownedCards}
+          logs={logs}
+          loyaltyAwards={loyaltyAwards}
+          theme={theme}
+        />
 
-      {/* Create Custom Card Modal */}
-      <CreateCardModal 
-        isOpen={activeModal === 'create-card'} 
-        onClose={() => setActiveModal(null)} 
-        theme={theme}
-        addCustomCard={handleAddCustomCard}
-        getLocalDateString={getLocalDateString}
-      />
+        {/* Create Custom Card Modal */}
+        <CreateCardModal 
+          isOpen={activeModal === 'create-card'} 
+          onClose={() => setActiveModal(null)} 
+          theme={theme}
+          addCustomCard={handleAddCustomCard}
+          getLocalDateString={getLocalDateString}
+        />
 
 
-      {/* Add Custom Offer Modal */}
-      <AddOfferModal
-        isOpen={!!addOfferInstanceId}
-        cardName={addOfferCard ? (addOfferCard.templateId === 'custom' ? addOfferCard.customName : (CARDS_DB.find((t) => t.id === addOfferCard.templateId)?.name || 'Card')) : 'Card'}
-        onClose={() => setAddOfferInstanceId(null)}
-        onAdd={(offer) => {
-          if (addOfferInstanceId) {
-            addInstanceOffer(addOfferInstanceId, offer);
-          }
-        }}
-        theme={theme}
-        showToast={showToast}
-      />
+        {/* Add Custom Offer Modal */}
+        <AddOfferModal
+          isOpen={!!addOfferInstanceId}
+          cardName={addOfferCard ? (addOfferCard.templateId === 'custom' ? addOfferCard.customName : (CARDS_DB.find((t) => t.id === addOfferCard.templateId)?.name || 'Card')) : 'Card'}
+          onClose={() => setAddOfferInstanceId(null)}
+          onAdd={(offer) => {
+            if (addOfferInstanceId) {
+              addInstanceOffer(addOfferInstanceId, offer);
+            }
+          }}
+          theme={theme}
+          showToast={showToast}
+        />
 
-      {/* Custom Delete Confirmation Modal */}
-      <DeleteConfirmModal
-        isOpen={!!deleteCardInstanceId}
-        cardName={ownedCards.find((c) => c.id === deleteCardInstanceId)?.templateId === 'custom' 
-          ? (ownedCards.find((c) => c.id === deleteCardInstanceId)?.customName || 'Card') 
-          : (CARDS_DB.find((t) => t.id === (ownedCards.find((c) => c.id === deleteCardInstanceId)?.templateId || ''))?.name || 'Card')}
-        onConfirm={handleConfirmRemoveCard}
-        onCancel={() => setDeleteCardInstanceId(null)}
-        theme={theme}
-      />
+        {/* Custom Delete Confirmation Modal */}
+        <DeleteConfirmModal
+          isOpen={!!deleteCardInstanceId}
+          cardName={ownedCards.find((c) => c.id === deleteCardInstanceId)?.templateId === 'custom' 
+            ? (ownedCards.find((c) => c.id === deleteCardInstanceId)?.customName || 'Card') 
+            : (CARDS_DB.find((t) => t.id === (ownedCards.find((c) => c.id === deleteCardInstanceId)?.templateId || ''))?.name || 'Card')}
+          onConfirm={handleConfirmRemoveCard}
+          onCancel={() => setDeleteCardInstanceId(null)}
+          theme={theme}
+        />
 
-      {/* Standalone Loyalty Voucher Delete Confirmation Modal */}
-      <ConfirmationModal
-        isOpen={!!deleteAwardId}
-        title={language === 'zh' ? '确定注销并删除此房券/卡券吗？' : 'Delete Standalone Voucher?'}
-        message={language === 'zh' ? '此操作为永久操作，将把卡券从钱包和日历提醒中彻底抹除，且无法撤销。' : 'Are you sure you want to delete this loyalty award voucher? This action is permanent and cannot be undone.'}
-        confirmText={t('delete')}
-        cancelText={t('cancel')}
-        onConfirm={() => {
-          if (deleteAwardId) {
-            deleteLoyaltyAward(deleteAwardId);
-            setDeleteAwardId(null);
-            showToast(t('toastVoucherDeleted'), 'error');
-          }
-        }}
-        onCancel={() => setDeleteAwardId(null)}
-        theme={theme}
-        type="danger"
-      />
+        {/* Standalone Loyalty Voucher Delete Confirmation Modal */}
+        <ConfirmationModal
+          isOpen={!!deleteAwardId}
+          title={language === 'zh' ? '确定注销并删除此房券/卡券吗？' : 'Delete Standalone Voucher?'}
+          message={language === 'zh' ? '此操作为永久操作，将把卡券从钱包和日历提醒中彻底抹除，且无法撤销。' : 'Are you sure you want to delete this loyalty award voucher? This action is permanent and cannot be undone.'}
+          confirmText={t('delete')}
+          cancelText={t('cancel')}
+          onConfirm={() => {
+            if (deleteAwardId) {
+              deleteLoyaltyAward(deleteAwardId);
+              setDeleteAwardId(null);
+              showToast(t('toastVoucherDeleted'), 'error');
+            }
+          }}
+          onCancel={() => setDeleteAwardId(null)}
+          theme={theme}
+          type="danger"
+        />
+
+        {/* Google Drive Disconnect Confirmation Modal */}
+        <ConfirmationModal
+          isOpen={activeModal === 'disconnect-gdrive'}
+          title={language === 'zh' ? '断开与 Google Drive 的云同步连接？' : 'Disconnect Google Drive?'}
+          message={language === 'zh' ? '确定要断开与云端的连接吗？您的本地数据会完好保存，但自动云备份将停止。' : 'Are you sure you want to disconnect and unlink Google Drive? Your local data will remain intact, but automated cloud synchronization will cease.'}
+          confirmText={language === 'zh' ? '确认断开' : 'Disconnect'}
+          cancelText={t('cancel')}
+          onConfirm={handleConfirmDisconnectGoogleDrive}
+          onCancel={() => setActiveModal(null)}
+          theme={theme}
+          type="warning"
+        />
+
+        {/* Wipe App Data Confirmation Modal */}
+        <ConfirmationModal
+          isOpen={activeModal === 'wipe'}
+          title={language === 'zh' ? '🚨 确定要清空并全盘重置应用数据吗？' : 'Wipe All App Data?'}
+          message={language === 'zh' ? '警告：此操作将永久抹除您的全部卡包组合、自定义福利和历史打卡日志。本操作不可逆！' : 'Are you absolutely sure you want to reset all card instances and checklist logs? This action is permanent and cannot be undone.'}
+          confirmText={language === 'zh' ? '全盘抹除数据' : 'Wipe Data'}
+          cancelText={language === 'zh' ? '保留卡包数据' : 'Keep Data'}
+          onConfirm={() => {
+            resetAll();
+            setActiveModal(null);
+            showToast(t('toastDataWiped'), 'warning');
+          }}
+          onCancel={() => setActiveModal(null)}
+          theme={theme}
+          type="danger"
+        />
+      </Suspense>
 
       {/* Wallet AI Assistant Drawer */}
       <WalletAiAssistant remainingBenefits={remainingBenefits} logs={logs} theme={theme} showToast={showToast} ownedCards={ownedCards} loyaltyAwards={loyaltyAwards} />
 
-      {/* Google Drive Disconnect Confirmation Modal */}
-      <ConfirmationModal
-        isOpen={activeModal === 'disconnect-gdrive'}
-        title={language === 'zh' ? '断开与 Google Drive 的云同步连接？' : 'Disconnect Google Drive?'}
-        message={language === 'zh' ? '确定要断开与云端的连接吗？您的本地数据会完好保存，但自动云备份将停止。' : 'Are you sure you want to disconnect and unlink Google Drive? Your local data will remain intact, but automated cloud synchronization will cease.'}
-        confirmText={language === 'zh' ? '确认断开' : 'Disconnect'}
-        cancelText={t('cancel')}
-        onConfirm={handleConfirmDisconnectGoogleDrive}
-        onCancel={() => setActiveModal(null)}
-        theme={theme}
-        type="warning"
-      />
+      <Suspense fallback={null}>
+        {/* Standalone Loyalty Award Vouchers Constructor Modal */}
+        <CreateAwardModal
+          isOpen={activeModal === 'create-award'}
+          onClose={() => setActiveModal(null)}
+          themeClass={themeClass}
+        />
 
-      {/* Wipe App Data Confirmation Modal */}
-      <ConfirmationModal
-        isOpen={activeModal === 'wipe'}
-        title={language === 'zh' ? '🚨 确定要清空并全盘重置应用数据吗？' : 'Wipe All App Data?'}
-        message={language === 'zh' ? '警告：此操作将永久抹除您的全部卡包组合、自定义福利和历史打卡日志。本操作不可逆！' : 'Are you absolutely sure you want to reset all card instances and checklist logs? This action is permanent and cannot be undone.'}
-        confirmText={language === 'zh' ? '全盘抹除数据' : 'Wipe Data'}
-        cancelText={language === 'zh' ? '保留卡包数据' : 'Keep Data'}
-        onConfirm={() => {
-          resetAll();
-          setActiveModal(null);
-          showToast(t('toastDataWiped'), 'warning');
-        }}
-        onCancel={() => setActiveModal(null)}
-        theme={theme}
-        type="danger"
-      />
-
-      {/* Standalone Loyalty Award Vouchers Constructor Modal */}
-      <CreateAwardModal
-        isOpen={activeModal === 'create-award'}
-        onClose={() => setActiveModal(null)}
-        themeClass={themeClass}
-      />
-
-      {/* Premium Savings Wrapped Poster Modal */}
-      <SavingsWrappedModal
-        isOpen={activeModal === 'wrapped'}
-        onClose={() => setActiveModal(null)}
-        ownedCards={ownedCards}
-        loyaltyAwards={loyaltyAwards}
-        resolvedValue={resolvedValue}
-        expiredValue={expiredValue}
-        themeClass={themeClass}
-        theme={theme}
-      />
+        {/* Premium Savings Wrapped Poster Modal */}
+        <SavingsWrappedModal
+          isOpen={activeModal === 'wrapped'}
+          onClose={() => setActiveModal(null)}
+          ownedCards={ownedCards}
+          loyaltyAwards={loyaltyAwards}
+          resolvedValue={resolvedValue}
+          expiredValue={expiredValue}
+          themeClass={themeClass}
+          theme={theme}
+        />
+      </Suspense>
 
 
 
@@ -1140,26 +1146,28 @@ function App() {
         </div>
       )}
 
-      <EditCardModal
-        isOpen={!!activeEditInstanceId}
-        instance={activeEditInstance}
-        onClose={() => setActiveEditInstanceId(null)}
-        updateCardMultipliers={updateCardMultipliers}
-        updateCardPointCurrency={updateCardPointCurrency}
-        toggleSignupBonus={toggleSignupBonus}
-        updateSignupBonusValue={updateSignupBonusValue}
-        setCardOpenDate={setCardOpenDate}
-        renameCard={renameCard}
-        themeClass={themeClass}
-        theme={theme}
-      />
+      <Suspense fallback={null}>
+        <EditCardModal
+          isOpen={!!activeEditInstanceId}
+          instance={activeEditInstance}
+          onClose={() => setActiveEditInstanceId(null)}
+          updateCardMultipliers={updateCardMultipliers}
+          updateCardPointCurrency={updateCardPointCurrency}
+          toggleSignupBonus={toggleSignupBonus}
+          updateSignupBonusValue={updateSignupBonusValue}
+          setCardOpenDate={setCardOpenDate}
+          renameCard={renameCard}
+          themeClass={themeClass}
+          theme={theme}
+        />
 
-      <EditAwardModal
-        isOpen={!!activeEditAwardId}
-        award={activeEditAward}
-        onClose={() => setActiveEditAwardId(null)}
-        themeClass={themeClass}
-      />
+        <EditAwardModal
+          isOpen={!!activeEditAwardId}
+          award={activeEditAward}
+          onClose={() => setActiveEditAwardId(null)}
+          themeClass={themeClass}
+        />
+      </Suspense>
 
       {/* Card Detail Popover Drawer */}
       <CardDetailDrawer 
