@@ -16,12 +16,16 @@
     <link rel="apple-touch-icon" href="./icon.png" />
     <meta name="theme-color" content="#0b0f19" />
 
-    <!-- Service Worker Registration -->
+    <!-- Service Worker Registration (Dynamically self-heals paths for dev, subfolders, and production) -->
     <script>
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
-          navigator.serviceWorker.register('./sw.js')
-            .then(reg => console.log('Service Worker registered successfully!'))
+          const base = window.location.pathname.endsWith('/') 
+            ? window.location.pathname 
+            : window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/') + 1);
+          
+          navigator.serviceWorker.register(base + 'sw.js')
+            .then(reg => console.log('Service Worker registered successfully with scope:', reg.scope))
             .catch(err => console.error('Service Worker registration failed:', err));
         });
       }
