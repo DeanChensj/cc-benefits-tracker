@@ -63,11 +63,66 @@ export const ChecklistCardRow = React.memo(function ChecklistCardRow({
     ? CARDS_DB.find(t => t.id === cardInstance.templateId)
     : null;
 
-  const badgeText = isStandalone
-    ? (loyaltyAward ? (AWARD_TEMPLATES[loyaltyAward.templateId]?.brand || loyaltyAward.customBrand || 'Award') : 'Award')
-    : (cardInstance.templateId === 'custom'
-        ? (language === 'zh' ? '自定义卡' : 'Custom')
-        : formatCardName(template?.name || cardInstance.customName));
+  // Split-Pill Badge Render helper for Zen graphite & alabaster aesthetics
+  const renderCardBadge = () => {
+    if (isStandalone) {
+      const brandText = loyaltyAward 
+        ? (AWARD_TEMPLATES[loyaltyAward.templateId]?.brand || loyaltyAward.customBrand || 'Award') 
+        : 'Award';
+      return (
+        <span className={`text-[9px] px-2 py-0.5 rounded font-extrabold tracking-wider border shrink-0 ${
+          themeClass(
+            'bg-purple-500/10 text-purple-400 border-purple-900/30', 
+            'bg-purple-50 text-purple-600 border-purple-200 shadow-sm'
+          )
+        }`}>
+          {brandText}
+        </span>
+      );
+    }
+
+    if (!cardInstance) return null;
+
+    const typeName = template ? formatCardName(template.name) : (cardInstance.bank || 'Card');
+    const customName = cardInstance.customName ? cardInstance.customName.trim() : '';
+
+    // Smart de-duplication for Zen mode
+    const isDuplicated = !customName || customName === typeName || (template && customName === template.name);
+
+    if (isDuplicated) {
+      return (
+        <span className={`text-[9px] px-2 py-0.5 rounded font-extrabold tracking-wider border shrink-0 ${
+          themeClass(
+            'bg-slate-800/50 text-slate-300 border-slate-800/80', 
+            'bg-slate-100 text-slate-650 border-slate-250 shadow-sm'
+          )
+        }`}>
+          {typeName}
+        </span>
+      );
+    }
+
+    // Split-Pill Badge
+    return (
+      <span className={`inline-flex items-center text-[9px] rounded-md border shrink-0 overflow-hidden ${
+        themeClass('border-slate-800/80', 'border-slate-250')
+      }`}>
+        <span className={`px-2 py-0.5 font-black border-r ${
+          themeClass(
+            'bg-slate-800/80 text-slate-100 border-slate-800/80', 
+            'bg-slate-200/60 text-slate-800 border-slate-200'
+          )
+        }`}>
+          {customName}
+        </span>
+        <span className={`px-1.5 py-0.5 font-medium ${
+          themeClass('bg-slate-900/30 text-slate-450', 'bg-slate-50 text-slate-505')
+        }`}>
+          {typeName}
+        </span>
+      </span>
+    );
+  };
 
   const getCategoryHoverClasses = () => {
     const cat = benefit.category;
@@ -140,13 +195,15 @@ export const ChecklistCardRow = React.memo(function ChecklistCardRow({
             )}
           </div>
 
-          {/* Title Name */}
-          <span className={`text-sm font-extrabold truncate mt-0.5 ${
-            isExpired ? 'text-slate-400 line-through' :
-            isUsed ? 'line-through text-slate-450' : themeClass('text-slate-100', 'text-slate-800')
-          }`}>
-            {benefit.name}
-          </span>
+          {/* Title & Details */}
+          <div className="flex-grow min-w-0">
+            <span className={`text-sm font-extrabold truncate mt-0.5 ${
+              isExpired ? 'text-slate-400 line-through' :
+              isUsed ? 'line-through text-slate-450' : themeClass('text-slate-100', 'text-slate-800')
+            }`}>
+              {benefit.name}
+            </span>
+          </div>
         </div>
 
         {/* Right amount value & period ($50 / 月) */}
@@ -165,18 +222,10 @@ export const ChecklistCardRow = React.memo(function ChecklistCardRow({
         </div>
       </div>
 
-      {/* Row 2: Left-Aligned Metadata Row (Brand badge, Expiration date, warning countdowns) */}
+      {/* Row 2: Left-Aligned Metadata Row (Expiration date, warning countdowns) */}
       <div className="flex flex-wrap items-center gap-2.5 pl-[38px] -mt-2 w-full select-none">
-        {/* A. Brand Badge (Only if not grouped!) */}
-        {!isGrouped && badgeText && (
-          <span className={`text-[9px] px-2 py-0.5 rounded font-extrabold tracking-wider border shrink-0 ${
-            isStandalone
-              ? 'bg-purple-500/10 text-purple-500 border-purple-500/20 dark:bg-purple-500/5 shadow-sm'
-              : themeClass('bg-slate-800 text-slate-300 border-slate-700', 'bg-slate-100 text-slate-600 border-slate-200')
-          }`}>
-            {badgeText}
-          </span>
-        )}
+        {/* A. Standalone Voucher Badge OR Card Brand Badge (only if Flat List view!) */}
+        {(isStandalone || !isGrouped) && renderCardBadge()}
 
         {/* B. Expiration Date raw text (pure sumi style) */}
         {benefit.expirationDate && (
