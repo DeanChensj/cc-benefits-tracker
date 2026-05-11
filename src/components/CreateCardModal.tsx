@@ -3,6 +3,7 @@ import { CreditCard, Plus, Trash2 } from 'lucide-react';
 import type { OwnedCardInstance } from '../store/useCardStore';
 import { useCardStore } from '../store/useCardStore';
 import { translations } from '../utils/i18n';
+import type { PointCurrency } from '../data/cards.db';
 
 interface CreateCardModalProps {
   isOpen: boolean;
@@ -32,6 +33,10 @@ export function CreateCardModal({
   const [customAnnualFee, setCustomAnnualFee] = useState(0);
   const [customColor, setCustomColor] = useState('from-purple-600 to-indigo-900');
   const [customCardOpenDate, setCustomCardOpenDate] = useState(getLocalDateString());
+  const [customPointCurrency, setCustomPointCurrency] = useState<PointCurrency>('cash');
+  const [customSignupBonusActive, setCustomSignupBonusActive] = useState(false);
+  const [customSignupBonusValue, setCustomSignupBonusValue] = useState(0);
+  const [customMultipliers, setCustomMultipliers] = useState<Record<string, number>>({ dining: 1, travel: 1, shopping: 1, entertainment: 1 });
   const [newBenefits, setNewBenefits] = useState<{
     name: string;
     value: number;
@@ -67,6 +72,10 @@ export function CreateCardModal({
       color: customColor,
       cardOpenDate: customCardOpenDate,
       annualFee: customAnnualFee || 0,
+      pointCurrency: customPointCurrency,
+      signupBonusActive: customSignupBonusActive,
+      signupBonusValue: customSignupBonusValue,
+      multipliers: customMultipliers,
       customBenefits: preparedBenefits,
     });
 
@@ -76,6 +85,10 @@ export function CreateCardModal({
     setCustomAnnualFee(0);
     setCustomColor('from-purple-600 to-indigo-900');
     setCustomCardOpenDate(getLocalDateString());
+    setCustomPointCurrency('cash');
+    setCustomSignupBonusActive(false);
+    setCustomSignupBonusValue(0);
+    setCustomMultipliers({ dining: 1, travel: 1, shopping: 1, entertainment: 1 });
     setNewBenefits([{ name: '', value: 0, resetPeriod: 'monthly', category: 'dining', description: '' }]);
     onClose();
   };
@@ -109,6 +122,7 @@ export function CreateCardModal({
               <input
                 type="text"
                 required
+                list="major-banks"
                 placeholder="e.g. Bilt, Citi"
                 value={customBank}
                 onChange={(e) => setCustomBank(e.target.value)}
@@ -116,6 +130,18 @@ export function CreateCardModal({
                   themeClass('bg-slate-955 border-slate-800 focus:border-purple-500 text-slate-200', 'bg-slate-50 border-slate-250 focus:border-purple-500 text-slate-800 shadow-inner')
                 }`}
               />
+              <datalist id="major-banks">
+                <option value="Amex" />
+                <option value="Chase" />
+                <option value="Citi" />
+                <option value="Capital One" />
+                <option value="Discover" />
+                <option value="Bilt" />
+                <option value="Barclays" />
+                <option value="HSBC" />
+                <option value="US Bank" />
+                <option value="Fidelity" />
+              </datalist>
             </div>
             <div>
               <label className={`block text-[10px] font-bold uppercase tracking-wider mb-1 ${themeClass('text-slate-400', 'text-slate-555')}`}>{t('formCardName')}</label>
@@ -179,6 +205,137 @@ export function CreateCardModal({
                     title={c.label}
                   />
                 ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Symmetrical pointCurrency & secured welcome SUB inputs */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label className={`block text-[10px] font-bold uppercase tracking-wider mb-1 ${themeClass('text-slate-400', 'text-slate-555')}`}>{t('earningCurrencyLabel')}</label>
+              <select
+                value={customPointCurrency}
+                onChange={(e) => setCustomPointCurrency(e.target.value as PointCurrency)}
+                className={`w-full border text-xs rounded-xl px-3 py-2.5 focus:outline-none font-bold cursor-pointer ${
+                  themeClass('bg-slate-955 border-slate-800 text-slate-305 focus:border-purple-500', 'bg-slate-50 border-slate-250 text-slate-750 shadow-sm focus:border-purple-500')
+                }`}
+              >
+                <option value="cash">{t('curr_cash')}</option>
+                <option value="chase-ur">{t('curr_chase_ur')}</option>
+                <option value="amex-mr">{t('curr_amex_mr')}</option>
+                <option value="citi-typ">{t('curr_citi_typ')}</option>
+                <option value="capitalone-miles">{t('curr_capitalone_miles')}</option>
+                <option value="hyatt">{t('curr_hyatt')}</option>
+                <option value="marriott">{t('curr_marriott')}</option>
+                <option value="hilton">{t('curr_hilton')}</option>
+                <option value="ihg">{t('curr_ihg')}</option>
+                <option value="aa-miles">{t('curr_aa_miles')}</option>
+                <option value="ua-miles">{t('curr_ua_miles')}</option>
+                <option value="delta-miles">{t('curr_delta_miles')}</option>
+              </select>
+            </div>
+
+            <div className="flex flex-col justify-end">
+              <div className={`flex items-center justify-between gap-2 p-2 rounded-xl border h-[38px] ${
+                themeClass('bg-slate-955 border-slate-800', 'bg-slate-50 border-slate-250 shadow-inner')
+              }`}>
+                <label className="flex items-center gap-1.5 text-[10px] font-bold cursor-pointer select-none shrink-0">
+                  <input
+                    type="checkbox"
+                    checked={customSignupBonusActive}
+                    onChange={() => setCustomSignupBonusActive(!customSignupBonusActive)}
+                    className="w-3.5 h-3.5 text-purple-600 rounded border-slate-800 focus:ring-purple-500 cursor-pointer"
+                  />
+                  <span>{language === 'zh' ? '已得开卡礼' : 'SUB Secured'}</span>
+                </label>
+                {customSignupBonusActive && (
+                  <div className="flex items-center gap-0.5 text-[10.5px] font-mono shrink-0 ml-1.5">
+                    <span className="text-slate-455 font-bold">$</span>
+                    <input
+                      type="number"
+                      min="0"
+                      placeholder="0"
+                      value={customSignupBonusValue || ''}
+                      onChange={(e) => setCustomSignupBonusValue(Number(e.target.value) || 0)}
+                      className={`w-14 text-center text-xs font-black rounded focus:outline-none py-0.5 border ${
+                        themeClass('bg-slate-900 border-slate-800 text-slate-100', 'bg-white border-slate-200 text-slate-800')
+                      }`}
+                    />
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Category Point Multipliers Customizer */}
+          <div className="space-y-2">
+            <label className={`block text-[10px] font-bold uppercase tracking-wider ${themeClass('text-slate-400', 'text-slate-555')}`}>
+              {t('multipliersTitle')}
+            </label>
+            <div className="grid grid-cols-4 gap-2">
+              {/* Dining */}
+              <div className={`flex items-center justify-between gap-1.5 border px-2.5 py-1.5 rounded-xl ${
+                themeClass('bg-slate-955/50 border-slate-805/60', 'bg-slate-50 border-slate-250 shadow-inner')
+              }`}>
+                <span className="text-[10px]" title={t('catDining')}>🍽️</span>
+                <input
+                  type="number"
+                  min="1"
+                  max="99"
+                  value={customMultipliers.dining}
+                  onChange={(e) => setCustomMultipliers({ ...customMultipliers, dining: Math.max(1, Number(e.target.value)) })}
+                  className={`w-8 text-center text-xs font-black rounded focus:outline-none py-0.5 border ${
+                    themeClass('bg-slate-900 border-slate-800 text-slate-100', 'bg-white border-slate-200 text-slate-800')
+                  }`}
+                />
+              </div>
+              {/* Travel */}
+              <div className={`flex items-center justify-between gap-1.5 border px-2.5 py-1.5 rounded-xl ${
+                themeClass('bg-slate-955/50 border-slate-805/60', 'bg-slate-50 border-slate-250 shadow-inner')
+              }`}>
+                <span className="text-[10px]" title={t('catTravel')}>✈️</span>
+                <input
+                  type="number"
+                  min="1"
+                  max="99"
+                  value={customMultipliers.travel}
+                  onChange={(e) => setCustomMultipliers({ ...customMultipliers, travel: Math.max(1, Number(e.target.value)) })}
+                  className={`w-8 text-center text-xs font-black rounded focus:outline-none py-0.5 border ${
+                    themeClass('bg-slate-900 border-slate-800 text-slate-100', 'bg-white border-slate-200 text-slate-800')
+                  }`}
+                />
+              </div>
+              {/* Shopping */}
+              <div className={`flex items-center justify-between gap-1.5 border px-2.5 py-1.5 rounded-xl ${
+                themeClass('bg-slate-955/50 border-slate-805/60', 'bg-slate-50 border-slate-250 shadow-inner')
+              }`}>
+                <span className="text-[10px]" title={t('catShopping')}>🛍️</span>
+                <input
+                  type="number"
+                  min="1"
+                  max="99"
+                  value={customMultipliers.shopping}
+                  onChange={(e) => setCustomMultipliers({ ...customMultipliers, shopping: Math.max(1, Number(e.target.value)) })}
+                  className={`w-8 text-center text-xs font-black rounded focus:outline-none py-0.5 border ${
+                    themeClass('bg-slate-900 border-slate-800 text-slate-100', 'bg-white border-slate-200 text-slate-800')
+                  }`}
+                />
+              </div>
+              {/* Entertainment */}
+              <div className={`flex items-center justify-between gap-1.5 border px-2.5 py-1.5 rounded-xl ${
+                themeClass('bg-slate-955/50 border-slate-805/60', 'bg-slate-50 border-slate-250 shadow-inner')
+              }`}>
+                <span className="text-[10px]" title={t('catEntertainment')}>🎬</span>
+                <input
+                  type="number"
+                  min="1"
+                  max="99"
+                  value={customMultipliers.entertainment}
+                  onChange={(e) => setCustomMultipliers({ ...customMultipliers, entertainment: Math.max(1, Number(e.target.value)) })}
+                  className={`w-8 text-center text-xs font-black rounded focus:outline-none py-0.5 border ${
+                    themeClass('bg-slate-900 border-slate-800 text-slate-100', 'bg-white border-slate-200 text-slate-800')
+                  }`}
+                />
               </div>
             </div>
           </div>

@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { CARDS_DB, DEFAULT_VALUATIONS } from '../data/cards.db';
-import type { Benefit, LoyaltyAward } from '../data/cards.db';
+import type { Benefit, LoyaltyAward, PointCurrency } from '../data/cards.db';
 import { translations } from '../utils/i18n';
 import { findSyncFile, uploadSyncFile, downloadSyncFile } from '../utils/gdrive';
 import type { LogEntry } from '../utils/logUtils';
@@ -21,6 +21,7 @@ export interface OwnedCardInstance {
   multipliers?: Record<string, number | undefined>;
   signupBonusActive?: boolean; // True if user secured the SUB!
   signupBonusValue?: number; // Valuation of the secured SUB
+  pointCurrency?: PointCurrency; // Reward currency of the card instance (especially for custom cards)
   lastModified?: number; // Instance-level LWW timestamp
 }
 
@@ -82,6 +83,7 @@ export interface CardStore {
   removeInstanceOffer: (instanceId: string, offerId: string) => void;
   // Multiplier Customizer Actions
   updateCardMultipliers: (instanceId: string, multipliers: OwnedCardInstance['multipliers']) => void;
+  updateCardPointCurrency: (instanceId: string, currency: PointCurrency) => void;
 
   // Sign-Up Bonus Actions
   toggleSignupBonus: (instanceId: string) => void;
@@ -617,6 +619,21 @@ export const useCardStore = create<CardStore>()(
           });
           syncPushToCloud(state.gdriveToken, nextCards, state.logs);
           
+          return {
+            ownedCards: nextCards,
+            walletLastModified: Date.now(),
+          };
+        }),
+
+      updateCardPointCurrency: (instanceId, currency) =>
+        set((state) => {
+          const nextCards = state.ownedCards.map((c) => {
+            if (c.id === instanceId) {
+              return { ...c, pointCurrency: currency, lastModified: Date.now() };
+            }
+            return c;
+          });
+          syncPushToCloud(state.gdriveToken, nextCards, state.logs);
           return {
             ownedCards: nextCards,
             walletLastModified: Date.now(),

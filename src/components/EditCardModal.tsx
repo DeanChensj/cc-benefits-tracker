@@ -1,6 +1,7 @@
 import { X } from 'lucide-react';
 import type { OwnedCardInstance } from '../store/useCardStore';
 import { CARDS_DB, CARD_MULTIPLIERS } from '../data/cards.db';
+import type { PointCurrency } from '../data/cards.db';
 import { useCardStore } from '../store/useCardStore';
 import { translations } from '../utils/i18n';
 
@@ -9,6 +10,7 @@ interface EditCardModalProps {
   onClose: () => void;
   instance: OwnedCardInstance | null;
   updateCardMultipliers: (id: string, multipliers: Record<string, number | undefined>) => void;
+  updateCardPointCurrency: (id: string, currency: PointCurrency) => void;
   toggleSignupBonus: (id: string) => void;
   updateSignupBonusValue: (id: string, value: number) => void;
   setCardOpenDate: (id: string, dateStr: string) => void;
@@ -21,6 +23,7 @@ export function EditCardModal({
   onClose,
   instance,
   updateCardMultipliers,
+  updateCardPointCurrency,
   toggleSignupBonus,
   updateSignupBonusValue,
   setCardOpenDate,
@@ -109,6 +112,42 @@ export function EditCardModal({
               />
             </div>
           </div>
+
+          {/* Earning Currency Selector (only for custom cards) */}
+          {instance.templateId === 'custom' && (
+            <div className="space-y-2">
+              <label className={`text-[10px] font-black uppercase tracking-widest ${themeClass('text-slate-500', 'text-slate-400')}`}>
+                {t('earningCurrencyLabel')}
+              </label>
+              <div className={`flex items-center justify-between gap-3 p-2.5 rounded-xl border ${
+                themeClass('bg-slate-955/40 border-slate-850/60', 'bg-slate-55 border-slate-200 shadow-inner')
+              }`}>
+                <span className={`text-xs font-bold ${themeClass('text-slate-300', 'text-slate-700')}`}>
+                  {language === 'zh' ? '积累点数币种' : 'Reward Currency'}
+                </span>
+                <select
+                  value={instance.pointCurrency || 'cash'}
+                  onChange={(e) => updateCardPointCurrency(instance.id, e.target.value as PointCurrency)}
+                  className={`text-xs rounded px-2 py-1 focus:outline-none cursor-pointer font-bold border transition ${
+                    themeClass('bg-slate-950 border-slate-800 text-slate-100 focus:border-purple-500', 'bg-white border-slate-200 text-slate-805 focus:border-purple-500 shadow-sm')
+                  }`}
+                >
+                  <option value="cash">{t('curr_cash')}</option>
+                  <option value="chase-ur">{t('curr_chase_ur')}</option>
+                  <option value="amex-mr">{t('curr_amex_mr')}</option>
+                  <option value="citi-typ">{t('curr_citi_typ')}</option>
+                  <option value="capitalone-miles">{t('curr_capitalone_miles')}</option>
+                  <option value="hyatt">{t('curr_hyatt')}</option>
+                  <option value="marriott">{t('curr_marriott')}</option>
+                  <option value="hilton">{t('curr_hilton')}</option>
+                  <option value="ihg">{t('curr_ihg')}</option>
+                  <option value="aa-miles">{t('curr_aa_miles')}</option>
+                  <option value="ua-miles">{t('curr_ua_miles')}</option>
+                  <option value="delta-miles">{t('curr_delta_miles')}</option>
+                </select>
+              </div>
+            </div>
+          )}
 
           {/* 1. Signup Bonus override */}
           <div className="space-y-2">

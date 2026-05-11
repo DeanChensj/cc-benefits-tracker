@@ -67,6 +67,7 @@ function App() {
     addInstanceOffer,
     removeInstanceOffer,
     updateCardMultipliers,
+    updateCardPointCurrency,
     toggleSignupBonus,
     updateSignupBonusValue,
     toggleLoyaltyAward,
@@ -540,7 +541,7 @@ function App() {
 
         // 3. Resolve point type statically & calculate return (cpp)
         const template = CARDS_DB.find((t) => t.id === instance.templateId);
-        const currency = instance.templateId === 'custom' ? 'cash' : (template?.pointCurrency || 'cash');
+        const currency = instance.pointCurrency || (template?.pointCurrency || 'cash');
         const cpp = pointValuations[currency] !== undefined ? pointValuations[currency] : 1.0;
         const ros = mult * cpp;
 
@@ -1155,6 +1156,7 @@ function App() {
         instance={activeEditInstance}
         onClose={() => setActiveEditInstanceId(null)}
         updateCardMultipliers={updateCardMultipliers}
+        updateCardPointCurrency={updateCardPointCurrency}
         toggleSignupBonus={toggleSignupBonus}
         updateSignupBonusValue={updateSignupBonusValue}
         setCardOpenDate={setCardOpenDate}
