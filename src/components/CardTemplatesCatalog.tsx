@@ -144,7 +144,7 @@ export function CardTemplatesCatalog({
                         onClick={() => onViewTemplateDetail(card)}
                         className={`p-4 rounded-xl border flex flex-col justify-between transition cursor-pointer hover:scale-[1.01] duration-200 relative overflow-hidden group/card after:absolute after:top-0 after:-left-[150%] after:w-[60%] after:h-full after:bg-gradient-to-r after:from-transparent after:via-white/15 dark:after:via-white/10 after:to-transparent after:skew-x-12 after:transition-all after:duration-700 hover:after:left-[150%] ${
                           isSelected
-                            ? 'ring-2 ring-teal-600 border-teal-600 bg-teal-500/5'
+                            ? 'ring-2 ring-inset ring-teal-600 border-teal-600 bg-teal-500/5'
                             : themeClass('bg-slate-900/50 border-slate-850 hover:border-slate-800', 'bg-slate-50/50 border-slate-200 hover:border-slate-300 hover:bg-slate-50 shadow-sm')
                         }`}
                       >
