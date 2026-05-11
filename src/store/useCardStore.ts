@@ -26,7 +26,7 @@ export interface OwnedCardInstance {
 }
 
 export interface AgentCommand {
-  action: 'add_card' | 'add_custom' | 'rename_card' | 'set_card_date';
+  action: 'add_card' | 'add_custom' | 'rename_card' | 'set_card_date' | 'add_voucher';
   templateId?: string;
   customName?: string;
   cardOpenDate?: string;
@@ -36,6 +36,15 @@ export interface AgentCommand {
   oldName?: string;
   newName?: string;
   cardName?: string;
+  
+  // Voucher-specific parameters
+  customBrand?: string;
+  customProgramType?: 'hotel' | 'airline' | 'bank' | 'other';
+  customAwardType?: 'fnr' | 'sua' | 'goh' | 'companion' | 'swu' | 'points' | 'other';
+  customValue?: number;
+  quantity?: number;
+  notes?: string;
+  expirationDate?: string;
 }
 
 export interface CardStore {
@@ -843,6 +852,21 @@ export const useCardStore = create<CardStore>()(
                 lastModified: Date.now()
               });
               addedNames.push(cmd.name);
+            } else if (cmd.action === 'add_voucher') {
+              state.addLoyaltyAward({
+                templateId: cmd.templateId || 'custom',
+                customName: cmd.customName,
+                customBrand: cmd.customBrand,
+                customProgramType: cmd.customProgramType,
+                customAwardType: cmd.customAwardType,
+                customValue: cmd.customValue,
+                expirationDate: cmd.expirationDate,
+                quantity: cmd.quantity || 1,
+                notes: cmd.notes,
+              });
+              const isCustom = !cmd.templateId || cmd.templateId === 'custom';
+              const resolvedName = cmd.customName || (isCustom ? 'Voucher' : cmd.templateId);
+              addedNames.push(resolvedName || 'Voucher');
             } else if (cmd.action === 'rename_card' && cmd.oldName && cmd.newName) {
               const oldName = cmd.oldName;
               const newName = cmd.newName;
