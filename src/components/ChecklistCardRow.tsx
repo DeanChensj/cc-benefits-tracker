@@ -182,6 +182,14 @@ export const ChecklistCardRow = React.memo(function ChecklistCardRow({
                 </span>
               </span>
               
+              {benefit.expirationDate && (
+                <span className={`text-[8.5px] font-black tracking-widest uppercase shrink-0 flex items-center gap-1.5 py-0.5 ${
+                  isUsed ? 'line-through opacity-35 text-slate-500' : themeClass('text-slate-400', 'text-slate-500')
+                }`}>
+                  {t('expiresLabel')}: {benefit.expirationDate}
+                </span>
+              )}
+
               {isExpired ? (
                 <span className="text-[9px] font-bold bg-red-500/10 text-red-500 border border-red-500/20 px-1.5 py-0.2 rounded shrink-0">{language === 'zh' ? '已过期' : 'Expired'}</span>
               ) : !isUsed && isNearingExpiration && daysLeft !== null && (
