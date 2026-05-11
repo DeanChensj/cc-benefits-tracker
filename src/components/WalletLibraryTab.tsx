@@ -415,6 +415,7 @@ export function WalletLibraryTab({
 
           return (
             <VoucherTicketCard
+              key={award.id}
               award={{
                 brand: info.brand,
                 name: info.name,
