@@ -184,7 +184,7 @@ export function CreateCardModal({
           {/* CHAPTER 1: CARD IDENTITY (发卡身份) */}
           <div className="space-y-3 text-left">
             <h4 className={`text-[9px] font-black uppercase tracking-[0.15em] ${themeClass('text-slate-500', 'text-slate-450')}`}>
-              Card Identity | 卡片身份
+              {t('cardIdentity')}
             </h4>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -194,7 +194,7 @@ export function CreateCardModal({
                   type="text"
                   required
                   list="major-banks"
-                  placeholder="e.g. Bilt, Citi"
+                  placeholder={t('placeholderBankName')}
                   value={customBank}
                   onChange={(e) => setCustomBank(e.target.value)}
                   className={`w-full border text-xs rounded-xl px-3 py-2 focus:outline-none font-semibold transition ${
@@ -218,7 +218,7 @@ export function CreateCardModal({
                 <label className={`block text-[8.5px] font-bold uppercase tracking-wider mb-1 ${themeClass('text-slate-455', 'text-slate-500')}`}>{t('formCardName')}</label>
                 <input
                   type="text"
-                  placeholder="e.g. Mastercard, Custom Cash"
+                  placeholder={t('placeholderCardName')}
                   value={customCardName}
                   onChange={(e) => setCustomCardName(e.target.value)}
                   className={`w-full border text-xs rounded-xl px-3 py-2 focus:outline-none font-semibold transition ${
@@ -283,7 +283,7 @@ export function CreateCardModal({
           {/* CHAPTER 2: REWARD ENGINE (收益引擎) */}
           <div className="space-y-3 text-left pt-3.5 border-t border-slate-200/40 dark:border-slate-800/40">
             <h4 className={`text-[9px] font-black uppercase tracking-[0.15em] ${themeClass('text-slate-500', 'text-slate-455')}`}>
-              Reward Engine | 收益引擎
+              {t('rewardEngine')}
             </h4>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -421,7 +421,7 @@ export function CreateCardModal({
           <div className={`border-t pt-3.5 mt-4 space-y-3 text-left border-slate-200/40 dark:border-slate-800/40`}>
             <div className="flex items-center justify-between mb-1">
               <h4 className={`text-[9px] font-black uppercase tracking-[0.15em] ${themeClass('text-slate-500', 'text-slate-455')}`}>
-                Custom Perks | 专属权益
+                {t('customPerks')}
               </h4>
               <button
                 type="button"
@@ -454,7 +454,7 @@ export function CreateCardModal({
                       <label className="block text-[8.5px] font-bold uppercase text-slate-455 mb-0.8">{t('formOfferName')}</label>
                       <input
                         type="text"
-                        placeholder="e.g. Supermarket 6%"
+                        placeholder={t('placeholderPerkName')}
                         value={benefit.name}
                         onChange={(e) => {
                           const updated = [...newBenefits];
@@ -486,7 +486,7 @@ export function CreateCardModal({
                       <label className="block text-[8.5px] font-bold uppercase text-slate-455 mb-0.8" title="Leave blank for standard statement credits">{t('formPerkLimit')}</label>
                       <input
                         type="number"
-                        placeholder="Optional"
+                        placeholder={t('optional')}
                         value={benefit.spendingLimit || ''}
                         onChange={(e) => {
                           const updated = [...newBenefits];
