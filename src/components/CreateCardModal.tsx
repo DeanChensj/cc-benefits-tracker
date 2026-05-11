@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { CreditCard, Plus, Trash2 } from 'lucide-react';
 import type { OwnedCardInstance } from '../store/useCardStore';
 import { useCardStore } from '../store/useCardStore';
-import { translations } from '../utils/i18n';
+import { translations, resolveCardNetwork } from '../utils/i18n';
 import type { PointCurrency } from '../data/cards.db';
 
 interface CreateCardModalProps {
@@ -163,9 +163,7 @@ export function CreateCardModal({
                 )}
               </div>
               <span className={`text-[8px] font-black italic tracking-widest opacity-70 shrink-0 uppercase ${themeClass('text-slate-400', 'text-slate-505')}`}>
-                {customPointCurrency === 'cash' ? 'CASH' :
-                 customPointCurrency === 'chase-ur' ? 'VISA' :
-                 customPointCurrency === 'amex-mr' ? 'AMEX' : 'MC'}
+                {resolveCardNetwork(customBank, 'custom', customPointCurrency)}
               </span>
             </div>
           </div>

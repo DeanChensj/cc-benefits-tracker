@@ -780,3 +780,24 @@ export const getTranslatedProgramType = (p: string, language: 'en' | 'zh'): stri
   const val = translationsDict[key];
   return val ? val : p.toUpperCase();
 };
+
+export const resolveCardNetwork = (
+  bank?: string,
+  templateId?: string,
+  pointCurrency?: string
+): 'AMEX' | 'VISA' | 'DISCOVER' | 'MC' => {
+  const bankLower = (bank || '').toLowerCase().trim();
+  const tempLower = (templateId || '').toLowerCase().trim();
+  const currLower = (pointCurrency || '').toLowerCase().trim();
+
+  if (bankLower.includes('amex') || bankLower.includes('american express') || currLower === 'amex-mr') {
+    return 'AMEX';
+  }
+  if (bankLower.includes('discover') || tempLower.startsWith('discover')) {
+    return 'DISCOVER';
+  }
+  if (bankLower.includes('chase') || currLower === 'chase-ur') {
+    return 'VISA';
+  }
+  return 'MC';
+};

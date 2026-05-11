@@ -2,7 +2,7 @@ import { Trash2, ExternalLink, Edit3, ChevronDown } from 'lucide-react';
 import { CARDS_DB, CARD_MULTIPLIERS } from '../data/cards.db';
 import type { OwnedCardInstance } from '../store/useCardStore';
 import { useCardStore } from '../store/useCardStore';
-import { translations, formatCardName } from '../utils/i18n';
+import { translations, formatCardName, resolveCardNetwork } from '../utils/i18n';
 
 interface WalletCreditCardProps {
   instance: OwnedCardInstance;
@@ -155,9 +155,7 @@ export function WalletCreditCard({
 
           {/* Visual Network Emblem watermark */}
           <span className={`text-[11px] font-black italic tracking-widest opacity-75 ${isSilverCard ? 'text-slate-900' : 'text-white/90'}`}>
-            {template?.bank === 'Amex' ? 'AMEX' : 
-             template?.bank === 'Chase' ? 'VISA' : 
-             instance.templateId.startsWith('discover') ? 'DISCOVER' : 'MC'}
+            {resolveCardNetwork(instance.bank || template?.bank, instance.templateId, currency)}
           </span>
         </div>
       </div>
