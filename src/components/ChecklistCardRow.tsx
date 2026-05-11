@@ -21,6 +21,7 @@ interface ChecklistCardRowProps {
   toggleBenefit: (logKey: string) => void;
   updateProgressLog: (logKey: string, spent: number) => void;
   themeClass: (dark: string, light: string) => string;
+  isGrouped?: boolean;
 }
 
 export const ChecklistCardRow = React.memo(function ChecklistCardRow({
@@ -35,6 +36,7 @@ export const ChecklistCardRow = React.memo(function ChecklistCardRow({
   toggleBenefit,
   updateProgressLog,
   themeClass,
+  isGrouped = false,
 }: ChecklistCardRowProps) {
   const language = useCardStore((state) => state.language);
   const t = (key: keyof typeof translations['en']) => translations[language][key] || translations['en'][key];
@@ -119,8 +121,8 @@ export const ChecklistCardRow = React.memo(function ChecklistCardRow({
           : `${themeClass('bg-slate-900/40 border-slate-850/80 cursor-pointer', 'bg-white border-slate-200/90 cursor-pointer shadow-[0_2px_6px_rgba(15,23,42,0.02)]')} ${getCategoryHoverClasses()}`
       }`}
     >
-      {/* Row 1: Title, Checkbox, Categories, Badges, and Value/Period (Strictly horizontal!) */}
-      <div className="flex items-start justify-between gap-3 w-full min-w-0">
+      {/* Row 1: Title, Checkbox, and Valuation Amount */}
+      <div className="flex items-start justify-between gap-3.5 w-full min-w-0">
         {/* Left Details block */}
         <div className="flex items-start gap-3 min-w-0 flex-grow">
           {/* Checkbox */}
@@ -138,75 +140,17 @@ export const ChecklistCardRow = React.memo(function ChecklistCardRow({
             )}
           </div>
 
-          {/* Title & Details */}
-          <div className="flex-grow min-w-0">
-            {!isStandalone && cardInstance && (
-              <div className={`text-[9px] font-extrabold uppercase tracking-widest mb-1 flex items-center gap-1.5 ${
-                themeClass('text-purple-400/90', 'text-purple-650/90')
-              }`}>
-                <span className="opacity-70">💳</span>
-                <span>{formatCardName(cardInstance.customName)}</span>
-              </div>
-            )}
-
-            <div className="flex flex-wrap items-center gap-2">
-              <span className={`text-sm font-semibold truncate ${
-                isExpired ? 'text-slate-400 line-through' :
-                isUsed ? 'line-through text-slate-450' : themeClass('text-slate-100', 'text-slate-800')
-              }`}>
-                {benefit.name}
-              </span>
-              {badgeText && (
-                <span className={`text-[10px] px-2 py-0.5 rounded font-bold tracking-wide border shrink-0 ${
-                  isStandalone
-                    ? 'bg-purple-500/10 text-purple-500 border-purple-500/20 dark:bg-purple-500/5 shadow-sm'
-                    : themeClass('bg-slate-800 text-slate-300 border-slate-700', 'bg-slate-100 text-slate-600 border-slate-200')
-                }`}>
-                  {badgeText}
-                </span>
-              )}
-              <span className={`text-[9px] pl-1.5 pr-2 py-0.5 rounded-md font-bold tracking-wide border shrink-0 flex items-center gap-1 ${
-                themeClass('bg-slate-955/30 text-slate-400 border-slate-850', 'bg-slate-50 text-slate-550 border-slate-200')
-              }`}>
-                <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${
-                  benefit.category === 'dining' ? 'bg-rose-500 animate-pulse' :
-                  benefit.category === 'travel' ? 'bg-sky-500' :
-                  benefit.category === 'shopping' ? 'bg-emerald-500' :
-                  benefit.category === 'entertainment' ? 'bg-purple-500' : 'bg-slate-400'
-                }`} />
-                <span className="uppercase tracking-wider text-[8px]">
-                  {benefit.category === 'dining' ? t('catDining') :
-                   benefit.category === 'travel' ? t('catTravel') :
-                   benefit.category === 'shopping' ? t('catShopping') :
-                   benefit.category === 'entertainment' ? t('catEntertainment') : t('catOther')}
-                </span>
-              </span>
-              
-              {benefit.expirationDate && (
-                <span className={`text-[8.5px] font-black tracking-widest uppercase shrink-0 flex items-center gap-1.5 py-0.5 ${
-                  isUsed ? 'line-through opacity-35 text-slate-500' : themeClass('text-slate-400', 'text-slate-500')
-                }`}>
-                  {t('expiresLabel')}: {benefit.expirationDate}
-                </span>
-              )}
-
-              {isExpired ? (
-                <span className="text-[9px] font-bold bg-red-500/10 text-red-500 border border-red-500/20 px-1.5 py-0.2 rounded shrink-0">{language === 'zh' ? '已过期' : 'Expired'}</span>
-              ) : !isUsed && isNearingExpiration && daysLeft !== null && (
-                <span className={`text-[9px] font-bold border px-1.5 py-0.2 rounded shrink-0 ${
-                  daysLeft <= 5 
-                    ? 'bg-red-500/10 text-red-500 border-red-500/30 animate-pulse' 
-                    : 'bg-amber-500/10 text-amber-600 border-amber-500/20'
-                }`}>
-                  {daysLeft <= 0 ? (language === 'zh' ? '今日到期！' : 'Expires today') : (language === 'zh' ? `剩 ${daysLeft} 天过期` : `Expires in ${daysLeft}d`)}
-                </span>
-              )}
-            </div>
-          </div>
+          {/* Title Name */}
+          <span className={`text-sm font-extrabold truncate mt-0.5 ${
+            isExpired ? 'text-slate-400 line-through' :
+            isUsed ? 'line-through text-slate-450' : themeClass('text-slate-100', 'text-slate-800')
+          }`}>
+            {benefit.name}
+          </span>
         </div>
 
         {/* Right amount value & period ($50 / 月) */}
-        <div className="text-right flex items-baseline justify-end shrink-0 min-w-[80px] gap-0.5 mt-1">
+        <div className="text-right flex items-baseline justify-end shrink-0 min-w-[80px] gap-0.5 mt-1 select-none">
           <span className={`text-sm font-black tracking-tight leading-none ${isExpired || isUsed ? 'text-slate-400 dark:text-slate-550' : themeClass('text-white', 'text-slate-900')}`}>
             ${benefit.value}
           </span>
@@ -219,6 +163,44 @@ export const ChecklistCardRow = React.memo(function ChecklistCardRow({
                (language === 'zh' ? '单次' : 'once')}
           </span>
         </div>
+      </div>
+
+      {/* Row 2: Left-Aligned Metadata Row (Brand badge, Expiration date, warning countdowns) */}
+      <div className="flex flex-wrap items-center gap-2.5 pl-[38px] -mt-2 w-full select-none">
+        {/* A. Brand Badge (Only if not grouped!) */}
+        {!isGrouped && badgeText && (
+          <span className={`text-[9px] px-2 py-0.5 rounded font-extrabold tracking-wider border shrink-0 ${
+            isStandalone
+              ? 'bg-purple-500/10 text-purple-500 border-purple-500/20 dark:bg-purple-500/5 shadow-sm'
+              : themeClass('bg-slate-800 text-slate-300 border-slate-700', 'bg-slate-100 text-slate-600 border-slate-200')
+          }`}>
+            {badgeText}
+          </span>
+        )}
+
+        {/* B. Expiration Date raw text (pure sumi style) */}
+        {benefit.expirationDate && (
+          <span className={`text-[8px] font-black tracking-widest uppercase shrink-0 py-0.5 ${
+            isUsed ? 'line-through opacity-35 text-slate-500' : themeClass('text-slate-400', 'text-slate-500')
+          }`}>
+            {t('expiresLabel')}: {benefit.expirationDate}
+          </span>
+        )}
+
+        {/* C. Expiration Countdowns / warning status */}
+        {isExpired ? (
+          <span className="text-[8.5px] font-extrabold bg-red-500/10 text-red-500 border border-red-500/20 px-2 py-0.5 rounded shrink-0">
+            {language === 'zh' ? '已过期' : 'Expired'}
+          </span>
+        ) : !isUsed && isNearingExpiration && daysLeft !== null && (
+          <span className={`text-[8.5px] font-extrabold border px-2 py-0.5 rounded shrink-0 ${
+            daysLeft <= 5 
+              ? 'bg-red-500/10 text-red-500 border-red-500/30 animate-pulse' 
+              : 'bg-amber-500/10 text-amber-600 border-amber-500/20'
+          }`}>
+            {daysLeft <= 0 ? (language === 'zh' ? '今日到期！' : 'Expires today') : (language === 'zh' ? `剩 ${daysLeft} 天` : `Expires in ${daysLeft}d`)}
+          </span>
+        )}
       </div>
 
       {/* Row 1.5: Dedicated Full-Width Description (Perfect Mobile Left Alignment!) */}

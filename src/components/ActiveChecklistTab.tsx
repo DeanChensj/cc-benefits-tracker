@@ -154,6 +154,7 @@ export function ActiveChecklistTab({
         toggleBenefit={toggleBenefit}
         updateProgressLog={updateProgressLog}
         themeClass={themeClass}
+        isGrouped={isGroupedView}
       />
     );
   };
@@ -314,33 +315,38 @@ export function ActiveChecklistTab({
                       ? t('standaloneVouchers') 
                       : (card?.customName || template?.name || 'Credit Card');
 
-                    const brandColor = isAwards 
-                      ? 'from-purple-600 to-indigo-800 text-white'
-                      : (card?.color || template?.color || 'from-slate-600 to-slate-800 text-white');
-
                     const isCollapsed = !!collapsedGroups[key];
 
                     return (
                       <div 
                         key={key}
-                        className={`border rounded-2xl overflow-hidden transition duration-200 ${
-                          themeClass('bg-slate-900/10 border-slate-850/60', 'bg-slate-50/30 border-slate-200')
+                        className={`border rounded-2xl overflow-hidden transition duration-200 shadow-sm ${
+                          themeClass('bg-slate-900/20 border-slate-850/60', 'bg-white border-slate-200')
+                        } border-l-[4px] ${
+                          isAwards 
+                            ? 'border-l-purple-500' 
+                            : (card?.color ? `border-l-${card.color.split(' ')[0].replace('from-', '')}` : 'border-l-slate-500')
                         }`}
                       >
                         {/* Collapsible Section Card Header */}
                         <div
                           onClick={() => setCollapsedGroups(prev => ({ ...prev, [key]: !prev[key] }))}
-                          className={`flex items-center justify-between p-3 cursor-pointer select-none bg-gradient-to-r ${brandColor} text-white border-b ${
-                            themeClass('border-slate-900/40', 'border-slate-200/40')
+                          className={`flex items-center justify-between p-3 cursor-pointer select-none border-b transition-colors duration-200 ${
+                            themeClass(
+                              'bg-slate-900/40 border-slate-950 hover:bg-slate-900/60 text-slate-200',
+                              'bg-slate-50/80 border-slate-200/80 hover:bg-slate-100 text-slate-800'
+                            )
                           }`}
                         >
                           <div className="flex items-center gap-2 min-w-0">
-                            <span className="text-xs font-bold truncate">{cardName}</span>
-                            <span className={`text-[8px] font-extrabold px-1.5 py-0.5 rounded-md tracking-wide shrink-0 bg-white/20 text-white`}>
+                            <span className="text-[11px] font-black uppercase tracking-wider truncate">{cardName}</span>
+                            <span className={`text-[8px] font-black px-1.5 py-0.5 rounded-md tracking-wide shrink-0 ${
+                              themeClass('bg-slate-800 text-slate-400 border border-slate-750', 'bg-slate-200/65 text-slate-600 border border-slate-250')
+                            }`}>
                               {`${items.length} ${t('pendingBadge')}`}
                             </span>
                           </div>
-                          <span className="text-[9px] font-black opacity-85 px-1.5">
+                          <span className={`text-[9px] font-extrabold opacity-75 px-1.5 uppercase tracking-widest ${themeClass('text-slate-400', 'text-slate-500')}`}>
                             {isCollapsed ? t('expand') : t('collapse')}
                           </span>
                         </div>
