@@ -166,9 +166,7 @@ function App() {
     }
 
     showToast(
-      ab.loyaltyAward 
-        ? (language === 'zh' ? '🎉 房券里程打卡核销成功！' : 'Loyalty Voucher logged successfully') 
-        : (language === 'zh' ? '🎉 福利打卡回本成功！' : 'Perk logged successfully'), 
+      ab.loyaltyAward ? t('toastVoucherLogged') : t('toastPerkLogged'),
       'success', 
       () => {
         if (lastActionRef.current) {
@@ -188,7 +186,7 @@ function App() {
             }
           }
           lastActionRef.current = null;
-          showToast(language === 'zh' ? '↩️ 操作已成功撤销' : 'Action reverted', 'info');
+          showToast(t('toastActionReverted'), 'info');
         }
       }
     );
@@ -232,7 +230,7 @@ function App() {
     addCard(templateId);
     setDeckSubTab('cards');
     localStorage.setItem('cc-tracker-deck-sub-tab', 'cards');
-    showToast(language === 'zh' ? `🎉 已成功添加 ${formatCardNameForToast(cardName)} 至您的卡包！` : `🎉 Added ${formatCardNameForToast(cardName)} to your Wallet!`);
+    showToast(t('toastCardAdded').replace('{name}', formatCardNameForToast(cardName)));
   };
 
 
@@ -243,7 +241,7 @@ function App() {
       const template = CARDS_DB.find((t) => t.id === instance.templateId);
       const cardName = instance.templateId === 'custom' ? instance.customName : (template?.name || 'Card');
       removeCard(deleteCardInstanceId);
-      showToast(language === 'zh' ? `🗑️ 已成功注销并移除 "${formatCardNameForToast(cardName)}"` : `🗑️ Removed "${formatCardNameForToast(cardName)}" from Wallet`, 'error');
+      showToast(t('toastCardRemoved').replace('{name}', formatCardNameForToast(cardName)), 'error');
     }
     setDeleteCardInstanceId(null);
   };
@@ -252,7 +250,7 @@ function App() {
     addCustomCard(card);
     setDeckSubTab('cards');
     localStorage.setItem('cc-tracker-deck-sub-tab', 'cards');
-    showToast(language === 'zh' ? `🎉 已成功创建 "${card.customName}" 并放入您的卡包！` : `🎉 Created and added "${card.customName}" to your Wallet!`);
+    showToast(t('toastCardCreated').replace('{name}', card.customName));
   };
 
   const currentMonthStr = currentDate.toLocaleString('default', { month: 'long' });
@@ -331,11 +329,11 @@ function App() {
       
       // Trigger first two-way sync
       await useCardStore.getState().syncWithGDrive();
-      showToast(language === 'zh' ? '🎉 成功连接并同步备份至 Google Drive！' : '🎉 Connected and synchronized with Google Drive successfully!');
+      showToast(t('toastGDriveConnected'));
     } catch (err) {
       console.error(err);
       setSyncStatus('error');
-      showToast(language === 'zh' ? '❌ 连接 Google Drive 失败，请重试。' : '❌ Failed to connect to Google Drive. Please try again.', 'error');
+      showToast(t('toastGDriveFailed'), 'error');
     }
   };
 
@@ -345,7 +343,7 @@ function App() {
 
   const handleConfirmDisconnectGoogleDrive = () => {
     setGDriveCredentials(null, null);
-    showToast(language === 'zh' ? '🚪 成功退出并断开 Google Drive 账户连接。' : '🚪 Unlinked Google Drive account successfully.', 'info');
+    showToast(t('toastGDriveUnlinked'), 'info');
     setActiveModal(null);
   };
 
@@ -588,7 +586,7 @@ function App() {
     
     const newMonthName = nextDate.toLocaleString('default', { month: 'long' });
     const newYear = nextDate.getFullYear();
-    showToast(language === 'zh' ? `⏰ 时间沙盒已穿越到 ${newYear} 年 ${newMonthName}` : `⏰ Sandbox set to ${newMonthName} ${newYear}`, 'info');
+    showToast(t('toastSandboxSet').replace('{year}', String(newYear)).replace('{month}', newMonthName), 'info');
   };
 
   return (
@@ -745,7 +743,7 @@ function App() {
               <span 
                 onDoubleClick={() => {
                   setCurrentDate(new Date());
-                  showToast(language === 'zh' ? "⏰ 时间沙盒已回归今日现实" : "⏰ Sandbox reset to Today", "info");
+                  showToast(t('toastSandboxReset'), 'info');
                 }}
                 className="px-2 py-1 min-w-[75px] text-center font-extrabold text-[9.5px] tracking-wider uppercase cursor-pointer hover:opacity-80 active:scale-95 transition select-none"
                 title="Double-click to reset back to Today"
@@ -1037,7 +1035,7 @@ function App() {
           if (deleteAwardId) {
             deleteLoyaltyAward(deleteAwardId);
             setDeleteAwardId(null);
-            showToast(language === 'zh' ? '🗑️ 独立卡券已成功从钱包中删除！' : '🗑️ Standalone voucher deleted successfully.', 'error');
+            showToast(t('toastVoucherDeleted'), 'error');
           }
         }}
         onCancel={() => setDeleteAwardId(null)}
@@ -1071,7 +1069,7 @@ function App() {
         onConfirm={() => {
           resetAll();
           setActiveModal(null);
-          showToast(language === 'zh' ? '🗑️ 本地数据已被全盘清空抹除！' : '🗑️ All card data and logs have been wiped.', 'warning');
+          showToast(t('toastDataWiped'), 'warning');
         }}
         onCancel={() => setActiveModal(null)}
         theme={theme}
@@ -1123,7 +1121,7 @@ function App() {
                   setSelectedTemplates([]);
                   setDeckSubTab('cards');
                   localStorage.setItem('cc-tracker-deck-sub-tab', 'cards');
-                  showToast(language === 'zh' ? `🎉 成功批量导入 ${selectedTemplates.length} 张信用卡至您的卡包！` : `🎉 Successfully added ${selectedTemplates.length} cards to your Wallet!`, 'success');
+                  showToast(t('toastBatchAdded').replace('{count}', String(selectedTemplates.length)), 'success');
                 }}
                 className="px-4.5 py-2 rounded-xl text-[10px] font-extrabold bg-gradient-to-tr from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-550 text-white transition cursor-pointer active:scale-95 shadow-md shadow-purple-500/20"
               >

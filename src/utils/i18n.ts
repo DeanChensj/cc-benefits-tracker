@@ -23,6 +23,23 @@ const translationsEn = {
   noPending: 'No pending cycles active in this filter combination.',
   claimedArchive: 'Claimed Perks Archive',
   expiredArchive: 'Expired Perks Archive',
+
+  // Toasts
+  toastActionReverted: 'Action reverted',
+  toastCardAdded: 'Added {name} to your Wallet!',
+  toastCardRemoved: 'Removed "{name}" from Wallet',
+  toastCardCreated: 'Created and added "{name}" to your Wallet!',
+  toastGDriveConnected: 'Connected and synchronized with Google Drive successfully!',
+  toastGDriveFailed: 'Failed to connect to Google Drive. Please try again.',
+  toastGDriveUnlinked: 'Unlinked Google Drive account successfully.',
+  toastSandboxSet: 'Sandbox set to {month} {year}',
+  toastSandboxReset: 'Sandbox reset to Today',
+  toastVoucherDeleted: 'Standalone voucher deleted successfully.',
+  toastDataWiped: 'All card data and logs have been wiped.',
+  toastBatchAdded: 'Successfully added {count} cards to your Wallet!',
+  toastVoucherLogged: 'Loyalty Voucher logged successfully',
+  toastPerkLogged: 'Perk logged successfully',
+
   
   // Vouchers / Awards
   vouchersTitle: 'My Vouchers',
@@ -400,6 +417,22 @@ const translationsZh: typeof translationsEn = {
   noPending: '当前筛选条件下没有待打卡的福利周期。',
   claimedArchive: '已领取的历史福利归档',
   expiredArchive: '已过期的损耗福利归档',
+
+  // Toasts
+  toastActionReverted: '操作已成功撤销',
+  toastCardAdded: '已成功添加 {name} 至您的卡包！',
+  toastCardRemoved: '已成功注销并移除 "{name}"',
+  toastCardCreated: '已成功创建 "{name}" 并放入您的卡包！',
+  toastGDriveConnected: '成功连接并同步备份至 Google Drive！',
+  toastGDriveFailed: '连接 Google Drive 失败，请重试。',
+  toastGDriveUnlinked: '成功退出并断开 Google Drive 账户连接。',
+  toastSandboxSet: '时间沙盒已穿越到 {year} 年 {month}',
+  toastSandboxReset: '时间沙盒已回归今日现实',
+  toastVoucherDeleted: '独立卡券已成功从钱包中删除！',
+  toastDataWiped: '本地数据已被全盘清空抹除！',
+  toastBatchAdded: '成功批量导入 {count} 张信用卡至您的卡包！',
+  toastVoucherLogged: '房券里程打卡核销成功！',
+  toastPerkLogged: '福利打卡回本成功！',
   
   // Vouchers / Awards
   vouchersTitle: '独立房券与里程券',
