@@ -65,10 +65,10 @@ export function EditCardModal({
 
         <div className="mb-5 text-left">
           <h3 className={`text-base font-black ${themeClass('text-white', 'text-slate-900')}`}>
-            {language === 'zh' ? `配置卡片属性: ${instance.customName}` : `Configure: ${instance.customName}`}
+            {t('formEditCardTitle')}: {instance.customName}
           </h3>
           <p className={`text-xs mt-0.5 font-medium ${themeClass('text-slate-400', 'text-slate-505')}`}>
-            {language === 'zh' ? '自定义此卡片的激活时间、消费返现点数与开卡礼包状态' : 'Customize opening date, multipliers, and bonuses'}
+            {t('formCreateCardDesc')}
           </p>
         </div>
 
@@ -123,7 +123,7 @@ export function EditCardModal({
                 themeClass('bg-slate-955/40 border-slate-850/60', 'bg-slate-55 border-slate-200 shadow-inner')
               }`}>
                 <span className={`text-xs font-bold ${themeClass('text-slate-300', 'text-slate-700')}`}>
-                  {language === 'zh' ? '积累点数币种' : 'Reward Currency'}
+                  {t('rewardCurrency')}
                 </span>
                 <select
                   value={instance.pointCurrency || 'cash'}
@@ -152,7 +152,7 @@ export function EditCardModal({
           {/* 1. Signup Bonus override */}
           <div className="space-y-2">
             <label className={`text-[10px] font-black uppercase tracking-widest ${themeClass('text-slate-500', 'text-slate-400')}`}>
-              {language === 'zh' ? '🎁 新客户开卡礼包 (SUB)' : 'Sign-Up Bonus (SUB)'}
+              {t('formSUBLabel')}
             </label>
             <div className={`flex items-center justify-between gap-3 p-3 rounded-xl border ${
               themeClass('bg-slate-955/40 border-slate-850/60', 'bg-slate-55 border-slate-200 shadow-inner')
@@ -164,7 +164,7 @@ export function EditCardModal({
                   onChange={() => toggleSignupBonus(instance.id)}
                   className="w-4 h-4 text-purple-600 rounded border-slate-800 focus:ring-purple-500 cursor-pointer"
                 />
-                <span>{language === 'zh' ? '已成功拿到开卡消费礼包' : 'Secured Sign-Up Bonus'}</span>
+                <span>{t('formSUBActiveMessage')}</span>
               </label>
               {instance.signupBonusActive && (
                 <div className="flex items-center gap-1 text-xs font-mono shrink-0">
@@ -293,7 +293,7 @@ export function EditCardModal({
           onClick={onClose}
           className="w-full mt-6 bg-gradient-to-tr from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-550 text-white font-bold py-3 px-4 rounded-xl text-sm transition active:scale-[0.98] shadow-lg shadow-purple-500/10 cursor-pointer"
         >
-          {language === 'zh' ? '保存并返回' : 'Save & Close'}
+          {t('saveAndClose')}
         </button>
       </div>
     </div>

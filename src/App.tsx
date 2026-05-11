@@ -1014,7 +1014,6 @@ function App() {
         theme={theme}
         addCustomCard={handleAddCustomCard}
         getLocalDateString={getLocalDateString}
-        showToast={showToast}
       />
 
 
