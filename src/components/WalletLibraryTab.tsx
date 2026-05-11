@@ -240,7 +240,7 @@ export function WalletLibraryTab({
                 </button>
                 <button
                   onClick={() => setIsCreateModalOpen(true)}
-                  className="flex items-center gap-1 border border-slate-500/20 hover:bg-slate-500/5 text-slate-500 dark:text-slate-300 font-bold px-3 py-1.5 rounded-lg text-xs transition active:scale-95 cursor-pointer"
+                  className="flex items-center gap-1 bg-gradient-to-tr from-slate-800 to-slate-900 hover:from-slate-750 hover:to-slate-850 text-white dark:from-slate-100 dark:to-slate-200 dark:hover:from-white dark:hover:to-slate-50 dark:text-slate-950 border border-slate-700/25 font-bold px-3 py-1.5 rounded-lg text-xs transition active:scale-95 shadow shadow-black/5 cursor-pointer"
                 >
                   <Plus className="w-3.5 h-3.5 stroke-[3]" />
                   {t('createCustomBtn')}
@@ -468,7 +468,7 @@ export function WalletLibraryTab({
                   </select>
                   <button
                     onClick={() => setIsCreateAwardModalOpen(true)}
-                    className="flex items-center gap-1 bg-gradient-to-tr from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-550 text-white font-bold px-3 py-1.5 rounded-lg text-xs transition active:scale-95 shadow-md shadow-purple-500/10 cursor-pointer"
+                    className="flex items-center gap-1 bg-gradient-to-tr from-slate-800 to-slate-900 hover:from-slate-750 hover:to-slate-850 text-white dark:from-slate-100 dark:to-slate-200 dark:hover:from-white dark:hover:to-slate-50 dark:text-slate-950 border border-slate-700/25 font-bold px-3 py-1.5 rounded-lg text-xs transition active:scale-95 shadow shadow-black/5 cursor-pointer"
                   >
                     <Plus className="w-3.5 h-3.5 stroke-[3]" />
                     {t('addVoucherBtn')}
