@@ -65,30 +65,35 @@ export const getDaysLeft = (ab: ActiveBenefit, currentDate: Date): number | null
 
 // Scientific urgency sorting score
 export const getUrgencyScore = (ab: ActiveBenefit, currentDate: Date): number => {
-  if (ab.isUsed) return 10000; // Checked is lowest priority
+  if (ab.isUsed) return -10000; // Checked is lowest priority
   
   const isExpired = ab.benefit.resetPeriod === 'fixed' && 
     ab.benefit.expirationDate && 
     new Date(ab.benefit.expirationDate + 'T00:00:00') < currentDate;
     
-  if (isExpired) return 9000; // Expired is second lowest priority
+  if (isExpired) return -9000; // Expired is second lowest priority
   
   const daysLeft = getDaysLeft(ab, currentDate);
   if (daysLeft !== null) {
+    // Base score: fewer days = higher score!
+    let baseScore = 1000 - daysLeft;
+    
+    // Apply period offsets to prioritize shorter cycles!
     if (ab.benefit.resetPeriod === 'fixed') {
-      return daysLeft;
+      baseScore += 180;
     } else if (ab.benefit.resetPeriod === 'monthly') {
-      return daysLeft + 15;
+      baseScore += 150;
     } else if (ab.benefit.resetPeriod === 'quarterly') {
-      return daysLeft + 45;
+      baseScore += 90;
     } else if (ab.benefit.resetPeriod === 'semi-annual') {
-      return daysLeft + 90;
-    } else {
-      return daysLeft + 180;
+      baseScore += 45;
     }
+    
+    // Factor in value! Higher value = higher score!
+    return baseScore + (ab.benefit.value || 0);
   }
   
-  return 200; // Other cyclical benefits have standard priority
+  return 200 + (ab.benefit.value || 0);
 };
 
 export interface AnnualFeeWarning {

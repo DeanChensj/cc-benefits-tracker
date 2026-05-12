@@ -120,7 +120,7 @@ export function ActiveChecklistTab({
       }
       case 'urgency':
       default:
-        return getUrgencyScore(a, currentDate) - getUrgencyScore(b, currentDate);
+        return getUrgencyScore(b, currentDate) - getUrgencyScore(a, currentDate);
     }
   });
 
