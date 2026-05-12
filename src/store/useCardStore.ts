@@ -26,7 +26,7 @@ export interface OwnedCardInstance {
 }
 
 export interface AgentCommand {
-  action: 'add_card' | 'add_custom' | 'rename_card' | 'set_card_date' | 'add_voucher' | 'resolve_benefit' | 'restore_benefit';
+  action: 'add_card' | 'add_custom' | 'rename_card' | 'set_card_date' | 'add_voucher' | 'resolve_benefit' | 'restore_benefit' | 'add_offer';
   templateId?: string;
   customName?: string;
   cardOpenDate?: string;
@@ -37,6 +37,7 @@ export interface AgentCommand {
   newName?: string;
   cardName?: string;
   benefitName?: string;
+  offer?: Omit<Benefit, 'id'>;
   
   // Voucher-specific parameters
   customBrand?: string;
@@ -987,6 +988,17 @@ export const useCardStore = create<CardStore>()(
                 state.skipBenefit(logKey);
                 addedNames.push(`${t('restoreAction')} "${benefitName}"`);
               }
+            } else if (cmd.action === 'add_offer' && cmd.cardName && cmd.offer) {
+              const cardName = cmd.cardName;
+              const offer = cmd.offer;
+              
+              const card = state.ownedCards.find(
+                (c) => c.customName.toLowerCase().trim() === cardName.toLowerCase().trim()
+              );
+              if (!card) throw new Error(`Card named "${cardName}" not found`);
+              
+              state.addInstanceOffer(card.id, offer);
+              addedNames.push(`${language === 'zh' ? '添加福利' : 'Add Offer'} "${offer.name}"`);
             }
           });
 
