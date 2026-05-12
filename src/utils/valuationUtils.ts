@@ -99,7 +99,7 @@ export const getResolvedValue = (ab: ActiveBenefit, logs: Record<string, LogEntr
     const isCustom = ab.loyaltyAward.templateId === 'custom';
     const info = isCustom ? {
       value: ab.loyaltyAward.customValue || 0
-    } : AWARD_TEMPLATES[ab.loyaltyAward.templateId];
+    } : (AWARD_TEMPLATES[ab.loyaltyAward.templateId] || { value: 0 });
     const usedQty = ab.loyaltyAward.usedQuantity || 0;
     return info.value * usedQty;
   }
