@@ -194,7 +194,7 @@ export const ChecklistCardRow = React.memo(function ChecklistCardRow({
             <div className="relative min-w-full flex items-baseline gap-1.5">
               <span className={`text-sm font-extrabold mt-0.5 leading-tight ${
                 isExpired ? 'text-slate-450 line-through opacity-60' :
-                isUsed ? 'text-slate-500 opacity-65' : themeClass('text-slate-105', 'text-slate-800')
+                isUsed ? 'text-slate-500 line-through opacity-65' : themeClass('text-slate-105', 'text-slate-800')
               }`}>
                 {benefit.name}
               </span>
