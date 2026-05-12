@@ -944,7 +944,10 @@ export const useCardStore = create<CardStore>()(
               const obfuscatedKey = obfuscateKey(logKey);
               const exists = state.logs[obfuscatedKey];
               
-              if (!exists || !exists.resolved) {
+              if (benefit.spendingLimit !== undefined) {
+                state.updateProgressLog(logKey, benefit.spendingLimit);
+                addedNames.push(`${t('resolveAction')} "${benefitName}"`);
+              } else if (!exists || !exists.resolved) {
                 state.toggleBenefit(logKey);
                 addedNames.push(`${t('resolveAction')} "${benefitName}"`);
               }
