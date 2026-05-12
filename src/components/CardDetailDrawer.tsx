@@ -1,4 +1,4 @@
-import { X, Plus, Info, Calendar, Heart, ExternalLink } from 'lucide-react';
+import { X, Info, Calendar, Heart, ExternalLink, Zap, Settings } from 'lucide-react';
 import type { CardTemplate } from '../data/cards.db';
 import { CARD_MULTIPLIERS } from '../data/cards.db';
 import { getAnnualValue } from '../utils/valuationUtils';
@@ -10,10 +10,11 @@ interface CardDetailDrawerProps {
   card: CardTemplate | null;
   onClose: () => void;
   onAdd: () => void;
+  onConfigureAdd: () => void;
   theme: 'dark' | 'light';
 }
 
-export function CardDetailDrawer({ isOpen, card, onClose, onAdd, theme }: CardDetailDrawerProps) {
+export function CardDetailDrawer({ isOpen, card, onClose, onAdd, onConfigureAdd, theme }: CardDetailDrawerProps) {
   const language = useCardStore((state) => state.language);
   const t = (key: keyof typeof translations['en']) => translations[language][key] || translations['en'][key];
 
@@ -231,7 +232,7 @@ export function CardDetailDrawer({ isOpen, card, onClose, onAdd, theme }: CardDe
         }`}>
           <button
             onClick={onClose}
-            className={`w-1/3 py-2.5 rounded-xl text-xs font-bold transition active:scale-95 cursor-pointer ${
+            className={`w-1/4 py-2.5 rounded-xl text-xs font-bold transition active:scale-95 cursor-pointer ${
               themeClass('bg-slate-800 hover:bg-slate-750 text-slate-300', 'bg-slate-100 hover:bg-slate-200 text-slate-600')
             }`}
           >
@@ -242,12 +243,24 @@ export function CardDetailDrawer({ isOpen, card, onClose, onAdd, theme }: CardDe
               onAdd();
               onClose();
             }}
-            className={`w-2/3 flex items-center justify-center gap-2 font-bold py-2.5 rounded-xl text-xs transition active:scale-[0.98] cursor-pointer shadow-sm ${
+            className={`w-[35%] flex items-center justify-center gap-1.5 font-bold py-2.5 rounded-xl text-xs transition active:scale-[0.98] cursor-pointer shadow-sm ${
+              themeClass('bg-slate-800 hover:bg-slate-750 text-slate-300', 'bg-slate-100 hover:bg-slate-200 text-slate-600')
+            }`}
+          >
+            <Zap className="w-3.5 h-3.5 fill-amber-500 stroke-amber-500" />
+            {language === 'zh' ? '闪电添加' : 'Quick Add'}
+          </button>
+          <button
+            onClick={() => {
+              onConfigureAdd();
+              onClose();
+            }}
+            className={`w-[40%] flex items-center justify-center gap-1.5 font-bold py-2.5 rounded-xl text-xs transition active:scale-[0.98] cursor-pointer shadow-sm ${
               themeClass('bg-gradient-to-tr from-slate-800 to-slate-850 hover:from-slate-750 hover:to-slate-800 border border-slate-700/50 text-white', 'bg-gradient-to-tr from-slate-900 to-black hover:from-slate-800 hover:to-slate-900 text-white')
             }`}
           >
-            <Plus className="w-4 h-4 stroke-[3]" />
-            {t('addCardToWallet')}
+            <Settings className="w-3.5 h-3.5" />
+            {language === 'zh' ? '配置并添加' : 'Configure & Add'}
           </button>
         </div>
       </div>

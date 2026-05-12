@@ -9,6 +9,7 @@ import { WalletAiAssistant } from './components/WalletAiAssistant';
 import { ChurningStatsDrawer } from './components/ChurningStatsDrawer';
 import { CardDetailDrawer } from './components/CardDetailDrawer';
 import { Toast } from './components/Toast';
+import { ZenModal } from './components/ZenModal';
 import { EmptyWalletState } from './components/EmptyWalletState';
 import { AnnualFeeWarningsWidget } from './components/AnnualFeeWarningsWidget';
 import { CloudSyncBanner } from './components/CloudSyncBanner';
@@ -110,6 +111,9 @@ function App() {
   const activeEditInstance = ownedCards.find((c) => c.id === activeEditInstanceId) || null;
   const [activeEditAwardId, setActiveEditAwardId] = useState<string | null>(null);
   const activeEditAward = loyaltyAwards.find((a) => a.id === activeEditAwardId) || null;
+  
+  const [isConfigureAddOpen, setIsConfigureAddOpen] = useState(false);
+  const [configuredTemplate, setConfiguredTemplate] = useState<CardTemplate | null>(null);
 
   const lastActionRef = useRef<{ logKey: string; prevResolved: boolean; prevSpentProgress?: number } | null>(null);
 
@@ -993,6 +997,84 @@ function App() {
           theme={theme}
         />
 
+        {/* Configure and Add Modal */}
+        <ZenModal
+          isOpen={isConfigureAddOpen}
+          onClose={() => {
+            setIsConfigureAddOpen(false);
+            setConfiguredTemplate(null);
+          }}
+          title={language === 'zh' ? '配置并添加卡片' : 'Configure & Add Card'}
+          theme={theme}
+        >
+          <div className="space-y-4">
+            <div>
+              <label className="block text-xs font-bold mb-1 text-slate-500 dark:text-slate-400">
+                {language === 'zh' ? '卡片昵称' : 'Card Nickname'}
+              </label>
+              <input
+                type="text"
+                id="configure-card-name"
+                defaultValue={configuredTemplate?.name || ''}
+                className={`w-full px-3 py-2 rounded-lg border text-sm font-medium focus:outline-none focus:ring-2 transition-all duration-200 ${
+                  themeClass('bg-slate-800/50 border-slate-750 text-white focus:ring-purple-500/30 focus:border-purple-500', 'bg-slate-50 border-slate-200 text-slate-900 focus:ring-purple-500/20 focus:border-purple-500')
+                }`}
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-bold mb-1 text-slate-500 dark:text-slate-400">
+                {language === 'zh' ? '开卡日期' : 'Card Open Date'}
+              </label>
+              <input
+                type="date"
+                id="configure-card-date"
+                defaultValue={new Date().toISOString().slice(0, 10)}
+                className={`w-full px-3 py-2 rounded-lg border text-sm font-medium focus:outline-none focus:ring-2 transition-all duration-200 ${
+                  themeClass('bg-slate-800/50 border-slate-750 text-white focus:ring-purple-500/30 focus:border-purple-500', 'bg-slate-50 border-slate-200 text-slate-900 focus:ring-purple-500/20 focus:border-purple-500')
+                }`}
+              />
+            </div>
+            <div className="flex justify-end gap-2 mt-6">
+              <button
+                onClick={() => {
+                  setIsConfigureAddOpen(false);
+                  setConfiguredTemplate(null);
+                }}
+                className={`px-4 py-2 rounded-lg text-xs font-bold transition active:scale-95 cursor-pointer ${
+                  themeClass('bg-slate-800 hover:bg-slate-750 text-slate-300', 'bg-slate-100 hover:bg-slate-200 text-slate-600')
+                }`}
+              >
+                {t('cancel')}
+              </button>
+              <button
+                onClick={() => {
+                  const nameInput = document.getElementById('configure-card-name') as HTMLInputElement;
+                  const dateInput = document.getElementById('configure-card-date') as HTMLInputElement;
+                  if (configuredTemplate) {
+                    const addCustomCard = useCardStore.getState().addCustomCard;
+                    addCustomCard({
+                      templateId: configuredTemplate.id,
+                      customName: nameInput.value || configuredTemplate.name,
+                      cardOpenDate: dateInput.value,
+                      annualFee: configuredTemplate.annualFee,
+                      instanceOffers: [],
+                      lastModified: Date.now()
+                    });
+                    showToast(t('toastCardAdded').replace('{name}', formatCardNameForToast(nameInput.value || configuredTemplate.name)));
+                  }
+                  setIsConfigureAddOpen(false);
+                  setConfiguredTemplate(null);
+                }}
+                className={`px-4 py-2 rounded-lg text-xs font-bold transition active:scale-95 cursor-pointer text-white ${
+                  themeClass('bg-gradient-to-tr from-slate-800 to-slate-850 hover:from-slate-750 hover:to-slate-800 border border-slate-700/50', 'bg-gradient-to-tr from-slate-900 to-black hover:from-slate-800 hover:to-slate-900')
+                }`}
+              >
+                {t('confirm')}
+              </button>
+            </div>
+          </div>
+        </ZenModal>
+
         {/* Standalone Loyalty Voucher Delete Confirmation Modal */}
         <ConfirmationModal
           isOpen={!!deleteAwardId}
@@ -1135,6 +1217,11 @@ function App() {
         onClose={() => setActiveTemplateDetail(null)}
         onAdd={() => {
           handleAddCard(activeTemplateDetail ? activeTemplateDetail.id : '');
+          setActiveTemplateDetail(null);
+        }}
+        onConfigureAdd={() => {
+          setConfiguredTemplate(activeTemplateDetail);
+          setIsConfigureAddOpen(true);
           setActiveTemplateDetail(null);
         }}
         theme={theme}
