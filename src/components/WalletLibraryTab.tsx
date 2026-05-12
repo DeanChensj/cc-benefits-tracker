@@ -64,7 +64,7 @@ export function BankHeader({ bankName, count, suffix, themeClass, collapsible, i
     <div 
       onClick={collapsible ? onToggle : undefined}
       className={`flex items-center gap-2 border-b pb-2 select-none ${themeClass('border-slate-900', 'border-slate-200')} ${
-        collapsible ? 'cursor-pointer hover:opacity-80 transition' : ''
+        collapsible ? 'cursor-pointer hover:opacity-80 transition-all duration-200 active:scale-[0.98]' : ''
       }`}
     >
       <div className={`w-2 h-2 rounded-full ${dotColor}`} />

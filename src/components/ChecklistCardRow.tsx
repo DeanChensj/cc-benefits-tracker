@@ -150,9 +150,9 @@ export const ChecklistCardRow = React.memo(function ChecklistCardRow({
       
       {/* Row 1: Title, Checkbox, and Valuation Amount */}
       <div className="flex items-stretch gap-3.5 w-full min-w-0 relative z-10">
-        {/* Full Width Strikethrough Line */}
+        {/* Full Width Strikethrough Line (Starting after checkbox!) */}
         {!isUsed && (
-          <div className={`absolute left-0 top-1/2 -translate-y-1/2 h-[1px] bg-emerald-500 transition-all duration-300 ${localUsed ? 'w-full' : 'w-0'} z-20 pointer-events-none`} style={{ transitionTimingFunction: 'cubic-bezier(0.34, 1.56, 0.64, 1)' }} />
+          <div className={`absolute left-[32px] w-[calc(100%-32px)] top-1/2 -translate-y-1/2 h-[1px] bg-emerald-500 transition-all duration-300 ${localUsed ? 'scale-x-100' : 'scale-x-0'} origin-left z-20 pointer-events-none`} style={{ transitionTimingFunction: 'cubic-bezier(0.34, 1.56, 0.64, 1)' }} />
         )}
         
         {/* Left Details block */}
@@ -173,7 +173,7 @@ export const ChecklistCardRow = React.memo(function ChecklistCardRow({
                 }, 300);
               }
             }}
-            className={`w-5 h-5 flex items-center justify-center rounded-full border transition-colors duration-200 shrink-0 mt-0.5 cursor-pointer shadow-inner ${
+            className={`w-5 h-5 flex items-center justify-center rounded-full border transition-all duration-200 shrink-0 mt-0.5 cursor-pointer shadow-inner active:scale-[0.95] ${localUsed ? 'animate-bounce-subtle' : ''} ${
               isExpired
                 ? 'border-red-900 bg-red-950/10 text-red-500'
                 : isUsed 
@@ -192,6 +192,7 @@ export const ChecklistCardRow = React.memo(function ChecklistCardRow({
           {/* Title & Duet Metadata Stack */}
           <div className="w-full min-w-0 flex flex-col text-left gap-2 py-0.5">
             <div className="relative min-w-full flex items-baseline gap-1.5">
+
               <span className={`text-sm font-extrabold mt-0.5 leading-tight ${
                 isExpired ? 'text-slate-450 line-through opacity-60' :
                 isUsed ? 'text-slate-500 line-through opacity-65' : themeClass('text-slate-105', 'text-slate-800')
