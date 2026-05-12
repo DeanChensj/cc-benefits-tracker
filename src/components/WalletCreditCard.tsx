@@ -34,7 +34,16 @@ export function WalletCreditCard({
   const cardColor = instance.templateId === 'custom' 
     ? (instance.color || 'from-purple-950/50 to-slate-950')
     : (template?.color || 'from-slate-800 to-slate-900');
-  const benefits = instance.templateId === 'custom' ? (instance.customBenefits || []) : (template?.benefits || []);
+  const rawBenefits = instance.templateId === 'custom' ? (instance.customBenefits || []) : (template?.benefits || []);
+  
+  const getPeriodScore = (period: string) => {
+    if (period === 'monthly') return 1;
+    if (period === 'quarterly') return 2;
+    if (period === 'annual-calendar' || period === 'annual-anniversary') return 3;
+    return 4;
+  };
+
+  const benefits = [...rawBenefits].sort((a, b) => getPeriodScore(a.resetPeriod) - getPeriodScore(b.resetPeriod));
   
   const cardFee = instance.annualFee !== undefined 
     ? instance.annualFee 
@@ -316,7 +325,7 @@ export function WalletCreditCard({
                       )}
                     </div>
                     <p className={`text-[9px] font-bold italic mt-1 ${themeClass('text-slate-455', 'text-slate-500')}`}>
-                      {language === 'zh' ? '常驻无多倍返点' : 'Flat Rate Card'}
+                      {t('flatRateCard')}
                     </p>
                   </div>
                 )}
@@ -333,7 +342,23 @@ export function WalletCreditCard({
                   'bg-slate-50 border-slate-250/60 text-slate-800 font-semibold shadow-sm'
                 )
               }`}>
-                <span className="truncate pr-2">{b.name}</span>
+                <span className="truncate pr-2 flex items-center gap-1.5">
+                  <span className={`px-1 py-0.2 rounded text-[7.5px] font-black uppercase tracking-wider shrink-0 ${
+                    b.resetPeriod === 'monthly'
+                      ? themeClass('bg-blue-500/20 text-blue-300 border border-blue-500/20', 'bg-blue-50 text-blue-600 border border-blue-200')
+                      : b.resetPeriod === 'quarterly'
+                      ? themeClass('bg-purple-500/20 text-purple-300 border border-purple-500/20', 'bg-purple-50 text-purple-600 border border-purple-200')
+                      : (b.resetPeriod === 'annual-calendar' || b.resetPeriod === 'annual-anniversary')
+                      ? themeClass('bg-amber-500/20 text-amber-300 border border-amber-500/20', 'bg-amber-50 text-amber-600 border border-amber-200')
+                      : themeClass('bg-slate-500/20 text-slate-300 border border-slate-500/20', 'bg-slate-100 text-slate-600 border border-slate-250')
+                  }`}>
+                    {b.resetPeriod === 'monthly' ? t('perkPeriodMonthly') :
+                     b.resetPeriod === 'quarterly' ? t('perkPeriodQuarterly') :
+                     (b.resetPeriod === 'annual-calendar' || b.resetPeriod === 'annual-anniversary') ? t('perkPeriodAnnual') :
+                     t('perkPeriodOnce')}
+                  </span>
+                  <span className="truncate">{b.name}</span>
+                </span>
                 <span className={`font-extrabold ${themeClass('text-white', 'text-slate-900')}`}>{b.value}</span>
               </div>
             ))}

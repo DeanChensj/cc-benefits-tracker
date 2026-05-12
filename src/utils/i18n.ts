@@ -42,6 +42,12 @@ const translationsEn = {
   toastVoucherLogged: 'Loyalty Voucher logged successfully',
   toastPerkLogged: 'Perk logged successfully',
 
+  perkPeriodMonthly: 'M',
+  perkPeriodQuarterly: 'Q',
+  perkPeriodAnnual: 'Y',
+  perkPeriodOnce: 'O',
+  flatRateCard: 'Flat Rate Card',
+
   
   // Vouchers / Awards
   vouchersTitle: 'My Vouchers',
@@ -451,6 +457,12 @@ const translationsZh: typeof translationsEn = {
   toastBatchAdded: '成功批量导入 {count} 张信用卡至您的卡包！',
   toastVoucherLogged: '房券里程打卡核销成功！',
   toastPerkLogged: '福利打卡回本成功！',
+
+  perkPeriodMonthly: '月',
+  perkPeriodQuarterly: '季',
+  perkPeriodAnnual: '年',
+  perkPeriodOnce: '次',
+  flatRateCard: '常驻无多倍返点',
   
   // Vouchers / Awards
   vouchersTitle: '独立房券与里程券',
