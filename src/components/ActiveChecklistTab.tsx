@@ -169,6 +169,121 @@ export function ActiveChecklistTab({
     );
   };
 
+  const renderItems = (items: ActiveBenefit[], badgeLabel: string) => {
+    if (!isGroupedView) {
+      return (
+        <div className="space-y-3">
+          {items.map(renderBenefitRow)}
+        </div>
+      );
+    }
+
+    const grouped = items.reduce((acc, ab) => {
+      const key = ab.cardInstance ? ab.cardInstance.id : 'awards';
+      if (!acc[key]) acc[key] = [];
+      acc[key].push(ab);
+      return acc;
+    }, {} as Record<string, typeof items>);
+
+    return (
+      <div className="space-y-4">
+        {Object.entries(grouped).map(([key, groupItems]) => {
+          const isAwards = key === 'awards';
+          const card = !isAwards ? ownedCards.find((c) => c.id === key) : null;
+          if (!isAwards && !card) return null;
+
+          const template = card && card.templateId !== 'custom'
+            ? CARDS_DB.find((t) => t.id === card.templateId)
+            : null;
+
+          const isCollapsed = !!collapsedGroups[key];
+
+          return (
+            <div 
+              key={key}
+              className={`border rounded-2xl overflow-hidden transition duration-200 shadow-sm ${
+                themeClass('bg-slate-900/20 border-slate-850/60', 'bg-white border-slate-200')
+              } border-l-[4px] ${
+                isAwards 
+                  ? 'border-l-purple-500' 
+                  : (card?.color ? `border-l-${card.color.split(' ')[0].replace('from-', '')}` : 'border-l-slate-500')
+              }`}
+            >
+              {/* Collapsible Section Card Header */}
+              <div
+                onClick={() => setCollapsedGroups(prev => ({ ...prev, [key]: !prev[key] }))}
+                className={`flex items-center justify-between p-3 cursor-pointer select-none border-b transition-colors duration-200 ${
+                  themeClass(
+                    'bg-slate-900/40 border-slate-950 hover:bg-slate-900/60 text-slate-200',
+                    'bg-slate-50/80 border-slate-200/80 hover:bg-slate-100 text-slate-800'
+                  )
+                }`}
+              >
+                 <div className="flex items-center gap-2.5 min-w-0">
+                  {(() => {
+                    if (isAwards) {
+                      return (
+                        <span className="text-[11px] font-black uppercase tracking-wider truncate">
+                          {t('standaloneVouchers')}
+                        </span>
+                      );
+                    }
+
+                    if (!card) return null;
+
+                    const typeName = template ? formatCardName(template.name) : (card.bank || 'Card');
+                    const customName = card.customName ? card.customName.trim() : '';
+
+                    const isDuplicated = !customName || customName === typeName || (template && customName === template.name);
+
+                    if (isDuplicated) {
+                      return (
+                        <span className="text-[11px] font-black uppercase tracking-wider truncate">
+                          {typeName}
+                        </span>
+                      );
+                    }
+
+                    return (
+                      <div className="flex items-baseline gap-1 truncate select-none">
+                        <span className={`text-[11.5px] font-black tracking-wide ${themeClass('text-slate-200', 'text-slate-800')}`}>
+                          {customName}
+                        </span>
+                        <span className={`text-[9px] mx-1.5 font-light select-none ${themeClass('text-slate-700', 'text-slate-300')}`}>
+                          │
+                        </span>
+                        <span className={`text-[9.5px] font-bold tracking-wider uppercase ${themeClass('text-slate-500', 'text-slate-450')}`}>
+                          {typeName}
+                        </span>
+                      </div>
+                    );
+                  })()}
+                  <span className={`text-[8px] font-black px-1.5 py-0.5 rounded-md tracking-wide shrink-0 ${
+                    themeClass('bg-slate-800 text-slate-400 border border-slate-750', 'bg-slate-200/65 text-slate-600 border border-slate-250')
+                  }`}>
+                    {`${groupItems.length} ${badgeLabel}`}
+                  </span>
+                </div>
+                <span className={`text-[9px] font-extrabold opacity-75 px-1.5 uppercase tracking-widest ${themeClass('text-slate-400', 'text-slate-500')}`}>
+                  {isCollapsed ? t('expand') : t('collapse')}
+                </span>
+              </div>
+
+              {/* Group checklist rows */}
+              <div className={`transition-all duration-300 ease-in-out overflow-hidden ${
+                isCollapsed 
+                  ? 'max-h-0 opacity-0 pointer-events-none' 
+                  : 'max-h-[1200px] opacity-100 p-3 space-y-2.5'
+              } ${themeClass('bg-slate-955/20', 'bg-white/50')}`}>
+                {groupItems.map(renderBenefitRow)}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    );
+  };
+
   return (
     <div className="space-y-4 animate-fade-in">
       {/* Search & Filter Action Bar */}
@@ -281,119 +396,7 @@ export function ActiveChecklistTab({
           );
         })() : (
           <div className="space-y-4">
-
-            {/* Active Items List render flat/grouped */}
-            {!isGroupedView ? (
-              <div className="space-y-3">
-                {activeItems.map(renderBenefitRow)}
-              </div>
-            ) : (() => {
-              const grouped = activeItems.reduce((acc, ab) => {
-                const key = ab.cardInstance ? ab.cardInstance.id : 'awards';
-                if (!acc[key]) acc[key] = [];
-                acc[key].push(ab);
-                return acc;
-              }, {} as Record<string, typeof activeItems>);
-
-              return (
-                <div className="space-y-4">
-                  {Object.entries(grouped).map(([key, items]) => {
-                    const isAwards = key === 'awards';
-                    const card = !isAwards ? ownedCards.find((c) => c.id === key) : null;
-                    if (!isAwards && !card) return null;
-
-                    const template = card && card.templateId !== 'custom'
-                      ? CARDS_DB.find((t) => t.id === card.templateId)
-                      : null;
-
-                    const isCollapsed = !!collapsedGroups[key];
-
-                    return (
-                      <div 
-                        key={key}
-                        className={`border rounded-2xl overflow-hidden transition duration-200 shadow-sm ${
-                          themeClass('bg-slate-900/20 border-slate-850/60', 'bg-white border-slate-200')
-                        } border-l-[4px] ${
-                          isAwards 
-                            ? 'border-l-purple-500' 
-                            : (card?.color ? `border-l-${card.color.split(' ')[0].replace('from-', '')}` : 'border-l-slate-500')
-                        }`}
-                      >
-                        {/* Collapsible Section Card Header */}
-                        <div
-                          onClick={() => setCollapsedGroups(prev => ({ ...prev, [key]: !prev[key] }))}
-                          className={`flex items-center justify-between p-3 cursor-pointer select-none border-b transition-colors duration-200 ${
-                            themeClass(
-                              'bg-slate-900/40 border-slate-950 hover:bg-slate-900/60 text-slate-200',
-                              'bg-slate-50/80 border-slate-200/80 hover:bg-slate-100 text-slate-800'
-                            )
-                          }`}
-                        >
-                           <div className="flex items-center gap-2.5 min-w-0">
-                            {(() => {
-                              if (isAwards) {
-                                return (
-                                  <span className="text-[11px] font-black uppercase tracking-wider truncate">
-                                    {t('standaloneVouchers')}
-                                  </span>
-                                );
-                              }
-
-                              if (!card) return null;
-
-                              const typeName = template ? formatCardName(template.name) : (card.bank || 'Card');
-                              const customName = card.customName ? card.customName.trim() : '';
-
-                              const isDuplicated = !customName || customName === typeName || (template && customName === template.name);
-
-                              if (isDuplicated) {
-                                return (
-                                  <span className="text-[11px] font-black uppercase tracking-wider truncate">
-                                    {typeName}
-                                  </span>
-                                );
-                              }
-
-                              // Typographic Split Duet for Collapsible Card Drawer Header in Zen Mode!
-                              return (
-                                <div className="flex items-baseline gap-1 truncate select-none">
-                                  <span className={`text-[11.5px] font-black tracking-wide ${themeClass('text-slate-200', 'text-slate-800')}`}>
-                                    {customName}
-                                  </span>
-                                  <span className={`text-[9px] mx-1.5 font-light select-none ${themeClass('text-slate-700', 'text-slate-300')}`}>
-                                    │
-                                  </span>
-                                  <span className={`text-[9.5px] font-bold tracking-wider uppercase ${themeClass('text-slate-500', 'text-slate-450')}`}>
-                                    {typeName}
-                                  </span>
-                                </div>
-                              );
-                            })()}
-                            <span className={`text-[8px] font-black px-1.5 py-0.5 rounded-md tracking-wide shrink-0 ${
-                              themeClass('bg-slate-800 text-slate-400 border border-slate-750', 'bg-slate-200/65 text-slate-600 border border-slate-250')
-                            }`}>
-                              {`${items.length} ${t('pendingBadge')}`}
-                            </span>
-                          </div>
-                          <span className={`text-[9px] font-extrabold opacity-75 px-1.5 uppercase tracking-widest ${themeClass('text-slate-400', 'text-slate-500')}`}>
-                            {isCollapsed ? t('expand') : t('collapse')}
-                          </span>
-                        </div>
-
-                        {/* Group checklist rows */}
-                        <div className={`transition-all duration-300 ease-in-out overflow-hidden ${
-                          isCollapsed 
-                            ? 'max-h-0 opacity-0 pointer-events-none' 
-                            : 'max-h-[1200px] opacity-100 p-3 space-y-2.5'
-                        } ${themeClass('bg-slate-955/20', 'bg-white/50')}`}>
-                          {items.map(renderBenefitRow)}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              );
-            })()}
+            {renderItems(activeItems, t('pendingBadge'))}
           </div>
         )}
 
@@ -482,7 +485,7 @@ export function ActiveChecklistTab({
                 ? 'max-h-0 opacity-0 pointer-events-none' 
                 : 'max-h-[1200px] opacity-100 p-3 space-y-2.5'
             } ${themeClass('bg-slate-955/10', 'bg-white/30')}`}>
-              {claimedItems.map(renderBenefitRow)}
+              {renderItems(claimedItems, t('claimedSuffix'))}
             </div>
           </div>
         )}
