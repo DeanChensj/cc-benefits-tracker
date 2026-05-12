@@ -1203,11 +1203,12 @@ function App() {
                   
                   const instanceOffers: Benefit[] = [];
                   
+                  const subActiveInput = document.getElementById('configure-sub-active') as HTMLInputElement;
                   const requirement = Number(subRequirementInput?.value) || 0;
                   const months = Number(subMonthsInput?.value) || 3;
                   const value = Number(subValueInput?.value) || 0;
                   
-                  if (requirement > 0 || value > 0) {
+                  if (subActiveInput?.checked && (requirement > 0 || value > 0)) {
                     instanceOffers.push(
                       createWelcomeOffer(dateInput.value, requirement, months, value)
                     );
@@ -1219,10 +1220,11 @@ function App() {
                     cardOpenDate: dateInput.value,
                     annualFee: configuredTemplate.annualFee,
                     instanceOffers,
-                    signupBonusActive: requirement > 0 || value > 0,
-                    signupBonusValue: Number(subValueInput?.value) || 0,
+                    signupBonusActive: subActiveInput?.checked,
+                    signupBonusValue: value,
                     lastModified: Date.now()
                   });
+
                   showToast(t('toastCardAdded').replace('{name}', formatCardNameForToast(nameInput.value || configuredTemplate.name)));
                 }
                 setIsConfigureAddOpen(false);

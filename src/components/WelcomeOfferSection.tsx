@@ -23,7 +23,21 @@ export function WelcomeOfferSection({
   return (
     <div className="space-y-3 pt-3 border-t border-slate-800/30 dark:border-slate-750/30">
       <div className="flex items-center justify-between gap-3">
-        <span className="text-xs font-semibold text-slate-600 dark:text-slate-400">{t('formSUBLabel')}</span>
+        <label className="flex items-center gap-2 text-xs font-semibold cursor-pointer select-none">
+          <input
+            type="checkbox"
+            id={`${idPrefix}-sub-active`}
+            defaultChecked={true}
+            className="w-4 h-4 text-purple-600 rounded border-slate-800 focus:ring-purple-500 cursor-pointer"
+            onChange={(e) => {
+              const container = document.getElementById(`${idPrefix}-sub-details`);
+              if (container) {
+                container.style.display = e.target.checked ? 'grid' : 'none';
+              }
+            }}
+          />
+          <span className="text-slate-600 dark:text-slate-400">{t('trackSUB')}</span>
+        </label>
         <div className="flex items-center gap-1 text-xs font-mono shrink-0">
           <span className="text-slate-500 font-bold">$</span>
           <input
@@ -39,7 +53,7 @@ export function WelcomeOfferSection({
         </div>
       </div>
       
-      <div className="grid grid-cols-2 gap-3">
+      <div id={`${idPrefix}-sub-details`} className="grid grid-cols-2 gap-3 pt-2 border-t border-slate-800/30 dark:border-slate-750/30">
         <div>
           <label className="block text-[10px] font-medium mb-1 text-slate-500 dark:text-slate-450 uppercase">
             {t('spendingRequirement')}
