@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Plus, Sparkles, CreditCard, Compass } from 'lucide-react';
+import { Plus, Sparkles, CreditCard, Compass, LayoutGrid, List } from 'lucide-react';
 import { WalletCreditCard } from './WalletCreditCard';
 import { CardTemplatesCatalog } from './CardTemplatesCatalog';
 import { CheckoutWinnersRow } from './CheckoutWinnersRow';
@@ -119,6 +119,7 @@ export function WalletLibraryTab({
   const [isClaimedArchiveCollapsed, setIsClaimedArchiveCollapsed] = useState(true);
   const [awardSearchQuery, setAwardSearchQuery] = useState('');
   const [awardSortBy, setAwardSortBy] = useState<'expiry' | 'value-desc' | 'value-asc'>('expiry');
+  const [isCompactView, setIsCompactView] = useState(false);
 
   const searchedCards = useMemo(() => {
     return ownedCards.filter((instance) => {
@@ -229,8 +230,22 @@ export function WalletLibraryTab({
                     </button>
                   </>
                 )}
+                {/* Compact View Toggle Button */}
+                <button
+                  type="button"
+                  onClick={() => setIsCompactView(!isCompactView)}
+                  className={`w-7 h-7 flex items-center justify-center rounded-full border transition-all duration-250 cursor-pointer shrink-0 ml-1.5 ${
+                    isCompactView
+                      ? themeClass('bg-slate-100 text-slate-955 shadow-md', 'bg-slate-900 text-white shadow-sm')
+                      : themeClass('text-slate-300 hover:text-slate-50 hover:bg-slate-800/40', 'text-slate-500 hover:text-slate-900 hover:bg-slate-300/30')
+                  }`}
+                  title={isCompactView ? "Switch to Grid View" : "Switch to Compact View"}
+                >
+                  {isCompactView ? <LayoutGrid className="w-3.5 h-3.5" /> : <List className="w-3.5 h-3.5" />}
+                </button>
               </h3>
               <div className="flex items-center gap-2 flex-wrap md:flex-nowrap shrink-0">
+
                 <input
                   type="text"
                   placeholder={t('searchCardsPlaceholder')}
@@ -306,11 +321,12 @@ export function WalletLibraryTab({
                           ? 'max-h-0 opacity-0 pointer-events-none' 
                           : 'max-h-[4000px] opacity-100 mt-3.5'
                       }`}>
-                        <div className="grid sm:grid-cols-2 gap-2.5 sm:gap-4">
+                        <div className={isCompactView ? "space-y-2 mt-3.5" : "grid sm:grid-cols-2 gap-2.5 sm:gap-4"}>
                           {bankCards.map((instance) => (
                             <WalletCreditCard
                               key={instance.id}
                               instance={instance}
+                              isCompactView={isCompactView}
                               
                               isCardExpanded={!!expandedCardIds[instance.id]}
                               toggleCardExpanded={toggleCardExpanded}

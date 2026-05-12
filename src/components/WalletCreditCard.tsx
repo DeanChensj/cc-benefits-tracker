@@ -14,6 +14,7 @@ interface WalletCreditCardProps {
   setAddOfferInstanceId: (instanceId: string) => void;
   onEditCard: (instance: OwnedCardInstance) => void;
   themeClass: (dark: string, light: string) => string;
+  isCompactView?: boolean;
 }
 
 export function WalletCreditCard({
@@ -26,6 +27,7 @@ export function WalletCreditCard({
   setAddOfferInstanceId,
   onEditCard,
   themeClass,
+  isCompactView = false,
 }: WalletCreditCardProps) {
   const language = useCardStore((state) => state.language);
   const t = (key: keyof typeof translations['en']): string => (translations[language][key] || translations['en'][key]) as string;
@@ -61,6 +63,36 @@ export function WalletCreditCard({
   const pointValuations = useCardStore((state) => state.pointValuations);
   const cpp = pointValuations?.[currency] || 1.0;
 
+
+  if (isCompactView) {
+    return (
+      <div className={`flex items-center justify-between p-2.5 rounded-xl border ${themeClass('bg-slate-900/40 border-slate-850', 'bg-white border-slate-200 shadow-sm')} transition-all duration-200 hover:scale-[1.01]`}>
+        <div className="flex items-center gap-2.5">
+          {/* Mini Card Color Block */}
+          <div className={`w-8 h-5 rounded bg-gradient-to-tr ${cardColor} border border-white/10`} />
+          <span className={`text-xs font-extrabold ${themeClass('text-white', 'text-slate-900')}`}>
+            {instance.customName || formatCardName(template?.name || 'Card')}
+          </span>
+        </div>
+        
+        {/* Mini Progress Bar / Savings Display */}
+        <div className="flex items-center gap-2">
+          {cardFee > 0 ? (
+            <>
+              <div className="w-20 h-1.5 bg-slate-700/50 rounded-full overflow-hidden">
+                <div className="h-full bg-emerald-500" style={{ width: `${Math.min((recouped / cardFee) * 100, 100)}%` }} />
+              </div>
+              <span className="text-[10px] font-mono font-bold">${recouped} / ${cardFee}</span>
+            </>
+          ) : (
+            <span className="text-[10px] font-mono font-bold text-emerald-500 dark:text-emerald-400">
+              {language === 'zh' ? `已省 $${recouped}` : `$${recouped} saved`}
+            </span>
+          )}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col w-full transition duration-200 hover:scale-[1.01]">
