@@ -72,8 +72,9 @@ export function CreateCardModal({
     const subRequirement = Number((document.getElementById('create-sub-requirement') as HTMLInputElement)?.value) || 0;
     const subMonths = Number((document.getElementById('create-sub-months') as HTMLInputElement)?.value) || 3;
 
+    const subActiveInput = document.getElementById('create-sub-active') as HTMLInputElement;
     const instanceOffers: Benefit[] = [];
-    if (subValue > 0) {
+    if (subActiveInput?.checked && subValue > 0) {
       instanceOffers.push(
         createWelcomeOffer(customCardOpenDate, subRequirement, subMonths, subValue)
       );

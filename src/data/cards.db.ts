@@ -770,7 +770,7 @@ export const CARDS_DB: CardTemplate[] = [
         id: 'bce-disney',
         name: '$84 Disney Bundle Credit',
         description: 'Get a $7 monthly statement credit after spending $9.99 or more on Disney Bundle subscriptions.',
-        value: 84,
+        value: 7,
         resetPeriod: 'monthly',
         category: 'shopping'
       },
@@ -778,7 +778,7 @@ export const CARDS_DB: CardTemplate[] = [
         id: 'bce-homechef',
         name: '$180 Home Chef Credit',
         description: 'Get up to $15 back per month in statement credits for Home Chef meal kit purchases.',
-        value: 180,
+        value: 15,
         resetPeriod: 'monthly',
         category: 'dining'
       }

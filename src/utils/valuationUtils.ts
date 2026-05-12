@@ -10,6 +10,7 @@ import { CARDS_DB } from '../data/cards.db';
 // Helper to parse benefit ID from a raw log key
 export const getBenefitIdFromKey = (rawKey: string): string | null => {
   const parts = rawKey.split(':');
+  if (parts.length === 1) return parts[0]; // Standalone Loyalty Award
   if (parts.length < 3) return null;
   if (parts[0] === 'anniv' && parts.length >= 5) return parts[4];
   return parts[2];
@@ -21,8 +22,15 @@ export const getBenefitValueMap = (
   loyaltyAwards: LoyaltyAward[]
 ): Map<string, number> => {
   const map = new Map<string, number>();
-  CARDS_DB.forEach(t => t.benefits.forEach(b => map.set(b.id, b.value)));
-  ownedCards.forEach(c => c.instanceOffers?.forEach((b: Benefit) => map.set(b.id, b.value)));
+  
+  ownedCards.forEach(c => {
+    const template = CARDS_DB.find(t => t.id === c.templateId);
+    if (template) {
+      template.benefits.forEach(b => map.set(`${c.id}:${b.id}`, b.value));
+    }
+    c.instanceOffers?.forEach((b: Benefit) => map.set(`${c.id}:${b.id}`, b.value));
+  });
+  
   loyaltyAwards.forEach(a => {
     const isCustom = a.templateId === 'custom';
     const val = isCustom ? (a.customValue || 0) : (AWARD_TEMPLATES[a.templateId]?.value || 0);
@@ -228,7 +236,9 @@ export const getSavingsForPeriod = (
       if (!logDate.startsWith(monthStr)) return;
     }
 
-    const val = benefitValueMap.get(benefitId) || 0;
+    const parts = rawKey.split(':');
+    const valKey = parts.length === 1 ? benefitId : `${parts[1]}:${benefitId}`;
+    const val = benefitValueMap.get(valKey) || 0;
     sum += val;
   });
 
