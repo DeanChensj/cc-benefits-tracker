@@ -114,15 +114,15 @@ export function CardDetailDrawer({ isOpen, card, onClose, onAdd, onConfigureAdd,
             <div className="flex justify-between items-end pt-4">
               <div className="flex gap-4 sm:gap-6">
                 <div>
-                  <p className="text-[7px] font-black uppercase tracking-widest opacity-60 leading-none">{t('potentialValue')}</p>
+                  <p className="text-[9px] font-black uppercase tracking-widest opacity-60 leading-none">{t('potentialValue')}</p>
                   <p className="text-sm sm:text-base font-black mt-0.5 leading-none">${card.benefits.reduce((sum, b) => sum + getAnnualValue(b), 0)}/{language === 'zh' ? '年' : 'yr'}</p>
                 </div>
                 <div>
-                  <p className="text-[7px] font-black uppercase tracking-widest opacity-60 leading-none">{t('annualFeeLabel')}</p>
+                  <p className="text-[9px] font-black uppercase tracking-widest opacity-60 leading-none">{t('annualFeeLabel')}</p>
                   <p className="text-sm sm:text-base font-black mt-0.5 leading-none">${card.annualFee}/{language === 'zh' ? '年' : 'yr'}</p>
                 </div>
               </div>
-              <span className="text-[7.5px] font-black uppercase bg-white/15 px-2 py-0.5 rounded border border-white/5 shrink-0">
+              <span className="text-[9px] font-black uppercase bg-white/15 px-2 py-0.5 rounded border border-white/5 shrink-0">
                 {card.benefits.length} {t('perksSuffix')}
               </span>
             </div>
