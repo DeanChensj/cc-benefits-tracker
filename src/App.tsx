@@ -9,6 +9,7 @@ import { WalletAiAssistant } from './components/WalletAiAssistant';
 import { ChurningStatsDrawer } from './components/ChurningStatsDrawer';
 import { CardDetailDrawer } from './components/CardDetailDrawer';
 import { Toast } from './components/Toast';
+import { WelcomeOfferSection } from './components/WelcomeOfferSection';
 import { ZenModal } from './components/ZenModal';
 import { EmptyWalletState } from './components/EmptyWalletState';
 import { AnnualFeeWarningsWidget } from './components/AnnualFeeWarningsWidget';
@@ -72,8 +73,6 @@ function App() {
     removeInstanceOffer,
     updateCardMultipliers,
     updateCardPointCurrency,
-    toggleSignupBonus,
-    updateSignupBonusValue,
     toggleLoyaltyAward,
     deleteLoyaltyAward,
     updateAwardUsedQuantity,
@@ -997,127 +996,7 @@ function App() {
           theme={theme}
         />
 
-        {/* Configure and Add Modal */}
-        <ZenModal
-          isOpen={isConfigureAddOpen}
-          onClose={() => {
-            setIsConfigureAddOpen(false);
-            setConfiguredTemplate(null);
-          }}
-          title={t('configureCard')}
-          theme={theme}
-        >
-          <div className="space-y-4">
-            <div>
-              <label className="block text-xs font-bold mb-1 text-slate-500 dark:text-slate-400">
-                {t('cardNickname')}
-              </label>
-              <input
-                type="text"
-                id="configure-card-name"
-                defaultValue={configuredTemplate?.name || ''}
-                className={`w-full px-3 py-2 rounded-lg border text-sm font-medium focus:outline-none focus:ring-2 transition-all duration-200 ${
-                  themeClass('bg-slate-800/50 border-slate-750 text-white focus:ring-purple-500/30 focus:border-purple-500', 'bg-slate-50 border-slate-200 text-slate-900 focus:ring-purple-500/20 focus:border-purple-500')
-                }`}
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-bold mb-1 text-slate-500 dark:text-slate-400">
-                {t('cardOpenDate')}
-              </label>
-              <input
-                type="date"
-                id="configure-card-date"
-                defaultValue={new Date().toISOString().slice(0, 10)}
-                className={`w-full px-3 py-2 rounded-lg border text-sm font-medium focus:outline-none focus:ring-2 transition-all duration-200 ${
-                  themeClass('bg-slate-800/50 border-slate-750 text-white focus:ring-purple-500/30 focus:border-purple-500', 'bg-slate-50 border-slate-200 text-slate-900 focus:ring-purple-500/20 focus:border-purple-500')
-                }`}
-              />
-            </div>
-            
-            <div>
-              <label className="block text-xs font-bold mb-1 text-slate-500 dark:text-slate-400">
-                {t('formSUBLabel')}
-              </label>
-              <div className={`flex items-center justify-between gap-3 p-3 rounded-xl border ${
-                themeClass('bg-slate-900/40 border-slate-850/60', 'bg-slate-50 border-slate-200')
-              }`}>
-                <label className="flex items-center gap-2 text-xs font-bold cursor-pointer select-none">
-                  <input
-                    type="checkbox"
-                    id="configure-card-sub-active"
-                    defaultChecked={true}
-                    className="w-4 h-4 text-purple-600 rounded border-slate-800 focus:ring-purple-500 cursor-pointer"
-                    onChange={(e) => {
-                      const valueInput = document.getElementById('configure-card-sub-value-container');
-                      if (valueInput) {
-                        valueInput.style.display = e.target.checked ? 'flex' : 'none';
-                      }
-                    }}
-                  />
-                  <span>{t('formSUBActiveMessage')}</span>
-                </label>
-                <div id="configure-card-sub-value-container" className="flex items-center gap-1 text-xs font-mono shrink-0">
-                  <span className="text-slate-500 font-bold">$</span>
-                  <input
-                    type="number"
-                    id="configure-card-sub-value"
-                    min="0"
-                    max="99999"
-                    defaultValue={configuredTemplate?.signupBonusValue || 0}
-                    className={`w-16 text-center text-xs font-black rounded focus:outline-none py-1 border ${
-                      themeClass('bg-slate-900 border-slate-800 text-slate-100', 'bg-white border-slate-200 text-slate-800')
-                    }`}
-                  />
-                </div>
-              </div>
-            </div>
 
-            <div className="flex justify-end gap-2 mt-6">
-              <button
-                onClick={() => {
-                  setIsConfigureAddOpen(false);
-                  setConfiguredTemplate(null);
-                }}
-                className={`px-4 py-2 rounded-lg text-xs font-bold transition active:scale-95 cursor-pointer ${
-                  themeClass('bg-slate-800 hover:bg-slate-750 text-slate-300', 'bg-slate-100 hover:bg-slate-200 text-slate-600')
-                }`}
-              >
-                {t('cancel')}
-              </button>
-              <button
-                onClick={() => {
-                  const nameInput = document.getElementById('configure-card-name') as HTMLInputElement;
-                  const dateInput = document.getElementById('configure-card-date') as HTMLInputElement;
-                  const subActiveInput = document.getElementById('configure-card-sub-active') as HTMLInputElement;
-                  const subValueInput = document.getElementById('configure-card-sub-value') as HTMLInputElement;
-                  
-                  if (configuredTemplate) {
-                    const addCustomCard = useCardStore.getState().addCustomCard;
-                    addCustomCard({
-                      templateId: configuredTemplate.id,
-                      customName: nameInput.value || configuredTemplate.name,
-                      cardOpenDate: dateInput.value,
-                      annualFee: configuredTemplate.annualFee,
-                      instanceOffers: [],
-                      signupBonusActive: subActiveInput?.checked,
-                      signupBonusValue: Number(subValueInput?.value) || 0,
-                      lastModified: Date.now()
-                    });
-                    showToast(t('toastCardAdded').replace('{name}', formatCardNameForToast(nameInput.value || configuredTemplate.name)));
-                  }
-                  setIsConfigureAddOpen(false);
-                  setConfiguredTemplate(null);
-                }}
-                className={`px-4 py-2 rounded-lg text-xs font-bold transition active:scale-95 cursor-pointer text-white ${
-                  themeClass('bg-gradient-to-tr from-slate-800 to-slate-850 hover:from-slate-750 hover:to-slate-800 border border-slate-700/50', 'bg-gradient-to-tr from-slate-900 to-black hover:from-slate-800 hover:to-slate-900')
-                }`}
-              >
-                {t('confirm')}
-              </button>
-            </div>
-          </div>
-        </ZenModal>
 
         {/* Standalone Loyalty Voucher Delete Confirmation Modal */}
         <ConfirmationModal
@@ -1238,8 +1117,6 @@ function App() {
           onClose={() => setActiveEditInstanceId(null)}
           updateCardMultipliers={updateCardMultipliers}
           updateCardPointCurrency={updateCardPointCurrency}
-          toggleSignupBonus={toggleSignupBonus}
-          updateSignupBonusValue={updateSignupBonusValue}
           setCardOpenDate={setCardOpenDate}
           renameCard={renameCard}
           themeClass={themeClass}
@@ -1253,6 +1130,122 @@ function App() {
           themeClass={themeClass}
         />
       </Suspense>
+
+      {/* Configure and Add Modal */}
+      <ZenModal
+        isOpen={isConfigureAddOpen}
+        onClose={() => {
+          setIsConfigureAddOpen(false);
+          setConfiguredTemplate(null);
+        }}
+        title={t('configureCard')}
+        theme={theme}
+      >
+        <div className="space-y-4">
+          <div>
+            <label className="block text-xs font-bold mb-1 text-slate-500 dark:text-slate-400">
+              {t('cardNickname')}
+            </label>
+            <input
+              type="text"
+              id="configure-card-name"
+              defaultValue={configuredTemplate?.name || ''}
+              className={`w-full px-3 py-2 rounded-lg border text-sm font-medium focus:outline-none focus:ring-2 transition-all duration-200 ${
+                themeClass('bg-slate-800/50 border-slate-750 text-white focus:ring-purple-500/30 focus:border-purple-500', 'bg-slate-50 border-slate-200 text-slate-900 focus:ring-purple-500/20 focus:border-purple-500')
+              }`}
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-bold mb-1 text-slate-500 dark:text-slate-400">
+              {t('cardOpenDate')}
+            </label>
+            <input
+              type="date"
+              id="configure-card-date"
+              defaultValue={new Date().toISOString().slice(0, 10)}
+              className={`w-full px-3 py-2 rounded-lg border text-sm font-medium focus:outline-none focus:ring-2 transition-all duration-200 ${
+                themeClass('bg-slate-800/50 border-slate-750 text-white focus:ring-purple-500/30 focus:border-purple-500', 'bg-slate-50 border-slate-200 text-slate-900 focus:ring-purple-500/20 focus:border-purple-500')
+              }`}
+            />
+          </div>
+          
+          <WelcomeOfferSection
+            idPrefix="configure"
+            defaultValue={configuredTemplate?.signupBonusValue || 0}
+            theme={theme}
+          />
+
+          <div className="flex justify-end gap-2 mt-6">
+            <button
+              onClick={() => {
+                setIsConfigureAddOpen(false);
+                setConfiguredTemplate(null);
+              }}
+              className={`px-4 py-2 rounded-lg text-xs font-bold transition active:scale-95 cursor-pointer ${
+                themeClass('bg-slate-800 hover:bg-slate-750 text-slate-300', 'bg-slate-100 hover:bg-slate-200 text-slate-600')
+              }`}
+            >
+              {t('cancel')}
+            </button>
+            <button
+              onClick={() => {
+                const nameInput = document.getElementById('configure-card-name') as HTMLInputElement;
+                const dateInput = document.getElementById('configure-card-date') as HTMLInputElement;
+                const subValueInput = document.getElementById('configure-sub-value') as HTMLInputElement;
+                const subRequirementInput = document.getElementById('configure-sub-requirement') as HTMLInputElement;
+                const subMonthsInput = document.getElementById('configure-sub-months') as HTMLInputElement;
+                
+                if (configuredTemplate) {
+                  const addCustomCard = useCardStore.getState().addCustomCard;
+                  
+                  const instanceOffers: Benefit[] = [];
+                  
+                  const requirement = Number(subRequirementInput?.value) || 0;
+                  const months = Number(subMonthsInput?.value) || 3;
+                  const value = Number(subValueInput?.value) || 0;
+                  
+                  if (requirement > 0 || value > 0) {
+                    const openDate = new Date(dateInput.value);
+                    openDate.setMonth(openDate.getMonth() + months);
+                    const expDateStr = openDate.toISOString().slice(0, 10);
+                    
+                    instanceOffers.push({
+                      id: `offer_welcome_${Date.now()}`,
+                      name: 'Welcome Offer',
+                      description: `Spend $${requirement} in ${months} months`,
+                      value: value,
+                      resetPeriod: 'once',
+                      category: 'other',
+                      spendingLimit: requirement,
+                      expirationDate: expDateStr,
+                      type: 'welcome-offer'
+                    });
+                  }
+
+                  addCustomCard({
+                    templateId: configuredTemplate.id,
+                    customName: nameInput.value || configuredTemplate.name,
+                    cardOpenDate: dateInput.value,
+                    annualFee: configuredTemplate.annualFee,
+                    instanceOffers,
+                    signupBonusActive: requirement > 0 || value > 0,
+                    signupBonusValue: Number(subValueInput?.value) || 0,
+                    lastModified: Date.now()
+                  });
+                  showToast(t('toastCardAdded').replace('{name}', formatCardNameForToast(nameInput.value || configuredTemplate.name)));
+                }
+                setIsConfigureAddOpen(false);
+                setConfiguredTemplate(null);
+              }}
+              className={`px-4 py-2 rounded-lg text-xs font-bold transition active:scale-95 cursor-pointer text-white ${
+                themeClass('bg-gradient-to-tr from-slate-800 to-slate-850 hover:from-slate-750 hover:to-slate-800 border border-slate-700/50', 'bg-gradient-to-tr from-slate-900 to-black hover:from-slate-800 hover:to-slate-900')
+              }`}
+            >
+              {t('confirm')}
+            </button>
+          </div>
+        </div>
+      </ZenModal>
 
       {/* Card Detail Popover Drawer */}
       <CardDetailDrawer 

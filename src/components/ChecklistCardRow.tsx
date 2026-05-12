@@ -180,6 +180,13 @@ export const ChecklistCardRow = React.memo(function ChecklistCardRow({
               isUsed ? 'line-through text-slate-500 opacity-65' : themeClass('text-slate-105', 'text-slate-800')
             }`}>
               {benefit.name}
+              {benefit.type === 'welcome-offer' && (
+                <span className={`ml-1.5 px-1.5 py-0.5 text-[9px] font-black uppercase rounded-md tracking-wider shrink-0 ${
+                  themeClass('bg-purple-500/20 text-purple-300', 'bg-purple-500/10 text-purple-600')
+                }`}>
+                  SUB
+                </span>
+              )}
             </span>
             {renderMutedMetadata()}
           </div>

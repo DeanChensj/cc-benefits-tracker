@@ -12,8 +12,6 @@ interface EditCardModalProps {
   instance: OwnedCardInstance | null;
   updateCardMultipliers: (id: string, multipliers: Record<string, number | undefined>) => void;
   updateCardPointCurrency: (id: string, currency: PointCurrency) => void;
-  toggleSignupBonus: (id: string) => void;
-  updateSignupBonusValue: (id: string, value: number) => void;
   setCardOpenDate: (id: string, dateStr: string) => void;
   renameCard: (id: string, name: string) => void;
   themeClass: (dark: string, light: string) => string;
@@ -26,8 +24,6 @@ export function EditCardModal({
   instance,
   updateCardMultipliers,
   updateCardPointCurrency,
-  toggleSignupBonus,
-  updateSignupBonusValue,
   setCardOpenDate,
   renameCard,
   themeClass,
@@ -133,42 +129,6 @@ export function EditCardModal({
               </div>
             </div>
           )}
-
-          {/* 1. Signup Bonus override */}
-          <div className="space-y-2">
-            <label className={`text-[10px] font-black uppercase tracking-widest ${themeClass('text-slate-500', 'text-slate-400')}`}>
-              {t('formSUBLabel')}
-            </label>
-            <div className={`flex items-center justify-between gap-3 p-3 rounded-xl border ${
-              themeClass('bg-slate-955/40 border-slate-850/60', 'bg-slate-55 border-slate-200 shadow-inner')
-            }`}>
-              <label className="flex items-center gap-2 text-xs font-bold cursor-pointer select-none">
-                <input
-                  type="checkbox"
-                  checked={!!instance.signupBonusActive}
-                  onChange={() => toggleSignupBonus(instance.id)}
-                  className="w-4 h-4 text-purple-600 rounded border-slate-800 focus:ring-purple-500 cursor-pointer"
-                />
-                <span>{t('formSUBActiveMessage')}</span>
-              </label>
-              {instance.signupBonusActive && (
-                <div className="flex items-center gap-1 text-xs font-mono shrink-0">
-                  <span className="text-slate-455 font-bold">$</span>
-                  <input
-                    type="number"
-                    min="0"
-                    max="99999"
-                    placeholder={template?.signupBonusValue !== undefined ? `${template.signupBonusValue}` : '0'}
-                    value={instance.signupBonusValue !== undefined ? instance.signupBonusValue : ''}
-                    onChange={(e) => updateSignupBonusValue(instance.id, Number(e.target.value) || 0)}
-                    className={`w-16 text-center text-xs font-black rounded focus:outline-none py-1 border ${
-                      themeClass('bg-slate-955 border-slate-800 text-slate-100', 'bg-white border-slate-200 text-slate-800')
-                    }`}
-                  />
-                </div>
-              )}
-            </div>
-          </div>
 
           {/* 2. Custom Point Multipliers */}
           {canCustomizePoints && (

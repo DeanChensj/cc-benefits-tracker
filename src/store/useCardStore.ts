@@ -116,7 +116,7 @@ export interface CardStore {
 
 // Helper to generate log key based on reset period and current date
 export const getLogKey = (
-  resetPeriod: 'monthly' | 'quarterly' | 'semi-annual' | 'annual-calendar' | 'annual-anniversary' | 'fixed',
+  resetPeriod: 'monthly' | 'quarterly' | 'semi-annual' | 'annual-calendar' | 'annual-anniversary' | 'fixed' | 'once',
   instanceId: string, // Unique instance ID
   benefitId: string,
   currentDate: Date,
@@ -144,6 +144,9 @@ export const getLogKey = (
 
     case 'annual-calendar':
       return `${year}:${instanceId}:${benefitId}`;
+
+    case 'once':
+      return `once:${instanceId}:${benefitId}`;
 
     case 'annual-anniversary':
       if (cardOpenDateStr) {

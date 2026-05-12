@@ -3,8 +3,9 @@ import { CreditCard, Plus, Trash2 } from 'lucide-react';
 import type { OwnedCardInstance } from '../store/useCardStore';
 import { useCardStore } from '../store/useCardStore';
 import { translations, resolveCardNetwork } from '../utils/i18n';
-import type { PointCurrency } from '../data/cards.db';
+import type { PointCurrency, Benefit } from '../data/cards.db';
 import { ZenModal } from './ZenModal';
+import { WelcomeOfferSection } from './WelcomeOfferSection';
 
 interface CreateCardModalProps {
   isOpen: boolean;
@@ -41,8 +42,6 @@ export function CreateCardModal({
   const [customColor, setCustomColor] = useState('from-purple-600 to-indigo-900');
   const [customCardOpenDate, setCustomCardOpenDate] = useState(getLocalDateString());
   const [customPointCurrency, setCustomPointCurrency] = useState<PointCurrency>('cash');
-  const [customSignupBonusActive, setCustomSignupBonusActive] = useState(false);
-  const [customSignupBonusValue, setCustomSignupBonusValue] = useState(0);
   const [customMultipliers, setCustomMultipliers] = useState<Record<string, number>>({ dining: 1, travel: 1, shopping: 1, entertainment: 1 });
   const [newBenefits, setNewBenefits] = useState<{
     name: string;
@@ -69,6 +68,29 @@ export function CreateCardModal({
         spendingLimit: b.spendingLimit ? Number(b.spendingLimit) : undefined
       }));
 
+    const subValue = Number((document.getElementById('create-sub-value') as HTMLInputElement)?.value) || 0;
+    const subRequirement = Number((document.getElementById('create-sub-requirement') as HTMLInputElement)?.value) || 0;
+    const subMonths = Number((document.getElementById('create-sub-months') as HTMLInputElement)?.value) || 3;
+
+    const instanceOffers: Benefit[] = [];
+    if (subRequirement > 0 || subValue > 0) {
+      const openDate = new Date(customCardOpenDate);
+      openDate.setMonth(openDate.getMonth() + subMonths);
+      const expDateStr = openDate.toISOString().slice(0, 10);
+      
+      instanceOffers.push({
+        id: `offer_welcome_${Date.now()}`,
+        name: 'Welcome Offer',
+        description: `Spend $${subRequirement} in ${subMonths} months`,
+        value: subValue,
+        resetPeriod: 'once',
+        category: 'other',
+        spendingLimit: subRequirement,
+        expirationDate: expDateStr,
+        type: 'welcome-offer'
+      });
+    }
+
     addCustomCard({
       templateId: 'custom',
       customName: finalCardName,
@@ -77,10 +99,11 @@ export function CreateCardModal({
       cardOpenDate: customCardOpenDate,
       annualFee: customAnnualFee || 0,
       pointCurrency: customPointCurrency,
-      signupBonusActive: customSignupBonusActive,
-      signupBonusValue: customSignupBonusValue,
+      signupBonusActive: subRequirement > 0 || subValue > 0,
+      signupBonusValue: subValue,
       multipliers: customMultipliers,
       customBenefits: preparedBenefits,
+      instanceOffers: instanceOffers,
     });
 
     // Reset states
@@ -90,8 +113,6 @@ export function CreateCardModal({
     setCustomColor('from-purple-600 to-indigo-900');
     setCustomCardOpenDate(getLocalDateString());
     setCustomPointCurrency('cash');
-    setCustomSignupBonusActive(false);
-    setCustomSignupBonusValue(0);
     setCustomMultipliers({ dining: 1, travel: 1, shopping: 1, entertainment: 1 });
     setNewBenefits([{ name: '', value: 0, resetPeriod: 'monthly', category: 'dining', description: '' }]);
     onClose();
@@ -206,7 +227,8 @@ export function CreateCardModal({
                   }`}
                 />
               </div>
-            </div>
+
+              </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div>
@@ -289,39 +311,13 @@ export function CreateCardModal({
                   <option value="ua-miles">{t('curr_ua_miles')}</option>
                   <option value="delta-miles">{t('curr_delta_miles')}</option>
                 </select>
-              </div>
-
-              <div className="flex flex-col justify-end">
-                <div className={`flex items-center justify-between gap-2 p-2.5 rounded-xl border h-[37px] transition-colors duration-250 ${
-                  themeClass('bg-slate-955 border-slate-800/80', 'bg-slate-100 border-slate-200/90 shadow-inner')
-                }`}>
-                  <label className="flex items-center gap-1.5 text-[9.5px] font-bold cursor-pointer select-none shrink-0">
-                    <input
-                      type="checkbox"
-                      checked={customSignupBonusActive}
-                      onChange={() => setCustomSignupBonusActive(!customSignupBonusActive)}
-                      className="w-3.5 h-3.5 text-purple-600 rounded border-slate-305 focus:ring-purple-500 cursor-pointer"
-                    />
-                    <span>{t('formSUBActive')}</span>
-                  </label>
-                  {customSignupBonusActive && (
-                    <div className="flex items-center gap-0.5 text-[10.5px] font-mono shrink-0 ml-1.5">
-                      <span className="text-slate-455 font-bold">$</span>
-                      <input
-                        type="number"
-                        min="0"
-                        placeholder="0"
-                        value={customSignupBonusValue || ''}
-                        onChange={(e) => setCustomSignupBonusValue(Number(e.target.value) || 0)}
-                        className={`w-14 text-center text-xs font-black rounded focus:outline-none py-0.5 border transition ${
-                          themeClass('bg-slate-900 border-slate-800/80 text-slate-100', 'bg-white border-slate-200 text-slate-800')
-                        }`}
-                      />
-                    </div>
-                  )}
-                </div>
-              </div>
+               </div>
             </div>
+
+            <WelcomeOfferSection
+              idPrefix="create"
+              theme={theme}
+            />
 
             {/* Category Point Multipliers customizers */}
             <div className="space-y-2">

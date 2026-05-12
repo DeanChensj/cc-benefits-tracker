@@ -107,9 +107,7 @@ export const getCardRecoupedValue = (
   const offers = instance.instanceOffers || [];
   const allBenefits = [...benefits, ...offers];
 
-  const subValue = (instance.signupBonusActive && instance.signupBonusValue !== undefined) 
-    ? instance.signupBonusValue 
-    : 0;
+
 
   // Compute card anniversary boundaries based on simulated/current date
   const year = currentDate.getFullYear();
@@ -124,7 +122,7 @@ export const getCardRecoupedValue = (
     ? currentAnniv 
     : new Date(year + 1, openDate.getMonth(), openDate.getDate());
 
-  let sum = subValue;
+  let sum = 0;
 
   // Audit all historical log entries in sandbox store
   Object.keys(logs).forEach((obfuscatedKey) => {

@@ -3,10 +3,11 @@ export interface Benefit {
   name: string;
   description: string;
   value: number;
-  resetPeriod: 'monthly' | 'quarterly' | 'semi-annual' | 'annual-calendar' | 'annual-anniversary' | 'fixed';
+  resetPeriod: 'monthly' | 'quarterly' | 'semi-annual' | 'annual-calendar' | 'annual-anniversary' | 'fixed' | 'once';
   category: 'dining' | 'travel' | 'shopping' | 'entertainment' | 'other';
-  expirationDate?: string; // e.g., '2026-12-31' (only for 'fixed' resetPeriod)
+  expirationDate?: string; // e.g., '2026-12-31' (only for 'fixed' or 'once' resetPeriod)
   spendingLimit?: number; // e.g., 1500 for CFF 5%, 6000 for BCP 6% (only for progressive limit perks)
+  type?: 'built-in' | 'custom' | 'welcome-offer';
 }
 
 export type PointCurrency = 'amex-mr' | 'chase-ur' | 'citi-typ' | 'capitalone-miles' | 'hyatt' | 'marriott' | 'ihg' | 'hilton' | 'aa-miles' | 'ua-miles' | 'delta-miles' | 'cash';
