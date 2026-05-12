@@ -414,8 +414,9 @@ export function CreateCardModal({
                     </button>
                   )}
 
-                  <div className="grid grid-cols-12 gap-2.5">
-                    <div className="col-span-6">
+                               <div className="space-y-3">
+                    {/* Row 1: Name */}
+                    <div>
                       <label className="block text-[8.5px] font-bold uppercase text-slate-455 mb-0.8">{t('formOfferName')}</label>
                       <input
                         type="text"
@@ -431,106 +432,111 @@ export function CreateCardModal({
                         }`}
                       />
                     </div>
-                    <div className="col-span-3">
-                      <label className="block text-[8.5px] font-bold uppercase text-slate-455 mb-0.8">{t('formPerkValue')}</label>
-                      <input
-                        type="number"
-                        placeholder="5"
-                        value={benefit.value || ''}
-                        onChange={(e) => {
-                          const updated = [...newBenefits];
-                          updated[idx].value = Number(e.target.value);
-                          setNewBenefits(updated);
-                        }}
-                        className={`w-full border text-xs rounded-lg px-2.5 py-1.5 focus:outline-none font-black ${
-                          themeClass('bg-slate-900 border-slate-800 text-slate-200 focus:border-purple-500', 'bg-white border-slate-250 text-slate-800 focus:border-purple-500')
-                        }`}
-                      />
+
+                    {/* Row 2: Value & Limit */}
+                    <div className="grid grid-cols-2 gap-2.5">
+                      <div>
+                        <label className="block text-[8.5px] font-bold uppercase text-slate-455 mb-0.8">{t('formPerkValue')}</label>
+                        <input
+                          type="number"
+                          placeholder="5"
+                          value={benefit.value || ''}
+                          onChange={(e) => {
+                            const updated = [...newBenefits];
+                            updated[idx].value = Number(e.target.value);
+                            setNewBenefits(updated);
+                          }}
+                          className={`w-full border text-xs rounded-lg px-2.5 py-1.5 focus:outline-none font-black ${
+                            themeClass('bg-slate-900 border-slate-800 text-slate-200 focus:border-purple-500', 'bg-white border-slate-250 text-slate-800 focus:border-purple-500')
+                          }`}
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[8.5px] font-bold uppercase text-slate-455 mb-0.8" title="Leave blank for standard statement credits">{t('formPerkLimit')}</label>
+                        <input
+                          type="number"
+                          placeholder={t('optional')}
+                          value={benefit.spendingLimit || ''}
+                          onChange={(e) => {
+                            const updated = [...newBenefits];
+                            updated[idx].spendingLimit = e.target.value ? Number(e.target.value) : undefined;
+                            setNewBenefits(updated);
+                          }}
+                          className={`w-full border text-xs rounded-lg px-2 py-1.5 focus:outline-none font-semibold ${
+                            themeClass('bg-slate-900 border-slate-800 text-slate-200 focus:border-purple-500', 'bg-white border-slate-250 text-slate-800 focus:border-purple-500')
+                          }`}
+                        />
+                      </div>
                     </div>
-                    <div className="col-span-3">
-                      <label className="block text-[8.5px] font-bold uppercase text-slate-455 mb-0.8" title="Leave blank for standard statement credits">{t('formPerkLimit')}</label>
-                      <input
-                        type="number"
-                        placeholder={t('optional')}
-                        value={benefit.spendingLimit || ''}
-                        onChange={(e) => {
-                          const updated = [...newBenefits];
-                          updated[idx].spendingLimit = e.target.value ? Number(e.target.value) : undefined;
-                          setNewBenefits(updated);
-                        }}
-                        className={`w-full border text-xs rounded-lg px-2 py-1.5 focus:outline-none font-semibold ${
-                          themeClass('bg-slate-900 border-slate-800 text-slate-200 focus:border-purple-500', 'bg-white border-slate-250 text-slate-800 focus:border-purple-500')
-                        }`}
-                      />
+
+                    {/* Row 3: Reset Period & Category */}
+                    <div className="grid grid-cols-2 gap-2.5">
+                      <div>
+                        <label className="block text-[8.5px] font-bold uppercase text-slate-455 mb-0.8">{t('formResetPeriod')}</label>
+                        <select
+                          value={benefit.resetPeriod}
+                          onChange={(e) => {
+                            const updated = [...newBenefits];
+                            updated[idx].resetPeriod = e.target.value as 'monthly' | 'quarterly' | 'semi-annual' | 'annual-calendar' | 'annual-anniversary' | 'fixed';
+                            if (e.target.value === 'fixed' && !updated[idx].expirationDate) {
+                              updated[idx].expirationDate = getLocalDateString();
+                            }
+                            setNewBenefits(updated);
+                          }}
+                          className={`w-full border text-[11px] rounded-lg px-2 py-1 focus:outline-none cursor-pointer font-bold transition ${
+                            themeClass('bg-slate-900 border-slate-800 text-slate-300 focus:border-purple-500', 'bg-white border-slate-250 text-slate-800 focus:border-purple-500')
+                          }`}
+                        >
+                          <option value="monthly">{t('periodMonthly')}</option>
+                          <option value="quarterly">{t('periodQuarterly')}</option>
+                          <option value="semi-annual">{t('periodSemiAnnual')}</option>
+                          <option value="annual-calendar">{t('periodAnnualCalendar')}</option>
+                          <option value="annual-anniversary">{t('periodAnnualAnniversary')}</option>
+                          <option value="fixed">{t('periodFixed')}</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-[8.5px] font-bold uppercase text-slate-455 mb-0.8">{t('formCategory')}</label>
+                        <select
+                          value={benefit.category}
+                          onChange={(e) => {
+                            const updated = [...newBenefits];
+                            updated[idx].category = e.target.value as 'dining' | 'travel' | 'shopping' | 'entertainment' | 'other';
+                            setNewBenefits(updated);
+                          }}
+                          className={`w-full border text-[11px] rounded-lg px-2 py-1 focus:outline-none cursor-pointer font-bold transition ${
+                            themeClass('bg-slate-900 border-slate-800 text-slate-300 focus:border-purple-500', 'bg-white border-slate-250 text-slate-800 focus:border-purple-500')
+                          }`}
+                        >
+                          <option value="dining">{t('catDining')}</option>
+                          <option value="travel">{t('catTravel')}</option>
+                          <option value="shopping">{t('catShopping')}</option>
+                          <option value="entertainment">{t('catEntertainment')}</option>
+                          <option value="other">{t('catOther')}</option>
+                        </select>
+                      </div>
                     </div>
+
+                    {/* Expiration Date if Fixed */}
+                    {benefit.resetPeriod === 'fixed' && (
+                      <div className="pt-1">
+                        <label className="block text-[8.5px] font-bold uppercase text-slate-455 mb-0.8">{t('formExpirationDate')}</label>
+                        <input
+                          type="date"
+                          required
+                          value={benefit.expirationDate || ''}
+                          onChange={(e) => {
+                            const updated = [...newBenefits];
+                            updated[idx].expirationDate = e.target.value;
+                            setNewBenefits(updated);
+                          }}
+                          className={`w-full border text-xs rounded-lg px-2.5 py-1.5 focus:outline-none font-semibold cursor-pointer transition ${
+                            themeClass('bg-slate-900 border-slate-800 text-slate-300 focus:border-purple-500', 'bg-white border-slate-200 text-slate-800 focus:border-purple-500')
+                          }`}
+                        />
+                      </div>
+                    )}
                   </div>
-
-                  <div className="grid grid-cols-2 gap-2.5">
-                    <div>
-                      <label className="block text-[8.5px] font-bold uppercase text-slate-455 mb-0.8">{t('formResetPeriod')}</label>
-                      <select
-                        value={benefit.resetPeriod}
-                        onChange={(e) => {
-                          const updated = [...newBenefits];
-                          updated[idx].resetPeriod = e.target.value as 'monthly' | 'quarterly' | 'semi-annual' | 'annual-calendar' | 'annual-anniversary' | 'fixed';
-                          if (e.target.value === 'fixed' && !updated[idx].expirationDate) {
-                            updated[idx].expirationDate = getLocalDateString();
-                          }
-                          setNewBenefits(updated);
-                        }}
-                        className={`w-full border text-[11px] rounded-lg px-2 py-1 focus:outline-none cursor-pointer font-bold transition ${
-                          themeClass('bg-slate-900 border-slate-800 text-slate-300 focus:border-purple-500', 'bg-white border-slate-250 text-slate-800 focus:border-purple-500')
-                        }`}
-                      >
-                        <option value="monthly">{t('periodMonthly')}</option>
-                        <option value="quarterly">{t('periodQuarterly')}</option>
-                        <option value="semi-annual">{t('periodSemiAnnual')}</option>
-                        <option value="annual-calendar">{t('periodAnnualCalendar')}</option>
-                        <option value="annual-anniversary">{t('periodAnnualAnniversary')}</option>
-                        <option value="fixed">{t('periodFixed')}</option>
-                      </select>
-                    </div>
-
-                    <div>
-                      <label className="block text-[8.5px] font-bold uppercase text-slate-455 mb-0.8">{t('formCategory')}</label>
-                      <select
-                        value={benefit.category}
-                        onChange={(e) => {
-                          const updated = [...newBenefits];
-                          updated[idx].category = e.target.value as 'dining' | 'travel' | 'shopping' | 'entertainment' | 'other';
-                          setNewBenefits(updated);
-                        }}
-                        className={`w-full border text-[11px] rounded-lg px-2 py-1 focus:outline-none cursor-pointer font-bold transition ${
-                          themeClass('bg-slate-900 border-slate-800 text-slate-300 focus:border-purple-500', 'bg-white border-slate-200 text-slate-800 focus:border-purple-500')
-                        }`}
-                      >
-                        <option value="dining">{t('catDining')}</option>
-                        <option value="travel">{t('catTravel')}</option>
-                        <option value="shopping">{t('catShopping')}</option>
-                        <option value="entertainment">{t('catEntertainment')}</option>
-                        <option value="other">{t('catOther')}</option>
-                      </select>
-                    </div>
-                  </div>
-
-                  {benefit.resetPeriod === 'fixed' && (
-                    <div className="pt-1">
-                      <label className="block text-[8.5px] font-bold uppercase text-slate-455 mb-0.8">{t('formExpirationDate')}</label>
-                      <input
-                        type="date"
-                        required
-                        value={benefit.expirationDate || ''}
-                        onChange={(e) => {
-                          const updated = [...newBenefits];
-                          updated[idx].expirationDate = e.target.value;
-                          setNewBenefits(updated);
-                        }}
-                        className={`w-full border text-xs rounded-lg px-2.5 py-1.5 focus:outline-none font-semibold cursor-pointer transition ${
-                          themeClass('bg-slate-900 border-slate-800 text-slate-300 focus:border-purple-500', 'bg-white border-slate-200 text-slate-800 focus:border-purple-500')
-                        }`}
-                      />
-                    </div>
-                  )}
                 </div>
               ))}
             </div>
