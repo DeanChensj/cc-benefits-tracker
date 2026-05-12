@@ -123,14 +123,13 @@ function App() {
     }));
   };
 
-  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' | 'warning'; onUndo?: () => void } | null>(null);
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' | 'warning' } | null>(null);
 
   const showToast = (
     message: string, 
-    type: 'success' | 'error' | 'info' | 'warning' = 'success',
-    onUndo?: () => void
+    type: 'success' | 'error' | 'info' | 'warning' = 'success'
   ) => {
-    setToast({ message, type, onUndo });
+    setToast({ message, type });
   };
 
   useEffect(() => {
@@ -168,29 +167,8 @@ function App() {
     }
 
     showToast(
-      ab.loyaltyAward ? t('toastVoucherLogged') : t('toastPerkLogged'),
-      'success', 
-      () => {
-        if (lastActionRef.current) {
-          const snap = lastActionRef.current;
-          if (ab.loyaltyAward) {
-            if (snap.prevSpentProgress !== undefined) {
-              updateAwardUsedQuantity(snap.logKey, snap.prevSpentProgress);
-            }
-          } else {
-            if (snap.prevSpentProgress !== undefined) {
-              updateProgressLog(snap.logKey, snap.prevSpentProgress);
-            }
-            const currentObfuscated = obfuscateKey(snap.logKey);
-            const currentEntry = parseLogEntry(useCardStore.getState().logs[currentObfuscated]);
-            if (!currentEntry || (!!currentEntry.resolved !== snap.prevResolved)) {
-              toggleBenefit(snap.logKey);
-            }
-          }
-          lastActionRef.current = null;
-          showToast(t('toastActionReverted'), 'info');
-        }
-      }
+      `${t('resolveAction')} "${ab.benefit.name}"`,
+      'success'
     );
   };
 
@@ -207,22 +185,7 @@ function App() {
 
     showToast(
       language === 'zh' ? `📈 消费进度已更新为 $${spent}` : `Progress updated to $${spent}`, 
-      'success', 
-      () => {
-        if (lastActionRef.current) {
-          const snap = lastActionRef.current;
-          if (snap.prevSpentProgress !== undefined) {
-            updateProgressLog(snap.logKey, snap.prevSpentProgress);
-          }
-          const currentObfuscated = obfuscateKey(snap.logKey);
-          const currentEntry = parseLogEntry(useCardStore.getState().logs[currentObfuscated]);
-          if (!currentEntry || (!!currentEntry.resolved !== snap.prevResolved)) {
-            toggleBenefit(snap.logKey);
-          }
-          lastActionRef.current = null;
-          showToast(language === 'zh' ? '↩️ 操作已成功撤销' : 'Action reverted', 'info');
-        }
-      }
+      'success'
     );
   };
 
@@ -1190,9 +1153,8 @@ function App() {
       {/* 🎨 Tailwind CSS Theme Safelist Force-compiler block */}
       <div className="hidden from-blue-700 to-indigo-900 from-blue-800 from-sky-900 via-indigo-950 to-black from-blue-600 to-sky-900 from-slate-900 from-blue-500 to-indigo-700" />
 
-      {/* Premium Floating Toast Notification */}
       {toast && (
-        <Toast message={toast.message} type={toast.type} theme={theme} onUndo={toast.onUndo} />
+        <Toast message={toast.message} type={toast.type} theme={theme} />
       )}
     </div>
   );
