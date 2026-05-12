@@ -248,10 +248,22 @@ export const useCardStore = create<CardStore>()(
           const now = new Date();
           const todayStr = `${now.getFullYear()}-${(now.getMonth() + 1).toString().padStart(2, '0')}-${now.getDate().toString().padStart(2, '0')}`;
 
+          // Force read latest state using get() instead of state callback parameter!
+          const currentCards = get().ownedCards;
+
           const newInstance: OwnedCardInstance = {
             id: uniqueId,
             templateId,
-            customName: template.name,
+            customName: (() => {
+              const baseName = template.name;
+              let newName = baseName;
+              let count = 1;
+              while (currentCards.some((c) => c.customName.toLowerCase().trim() === newName.toLowerCase().trim())) {
+                newName = `${baseName} (${count})`;
+                count++;
+              }
+              return newName;
+            })(),
             cardOpenDate: todayStr,
             annualFee: template.annualFee,
             instanceOffers: [], // Initialize empty offers array
@@ -272,15 +284,31 @@ export const useCardStore = create<CardStore>()(
           const now = new Date();
           const todayStr = `${now.getFullYear()}-${(now.getMonth() + 1).toString().padStart(2, '0')}-${now.getDate().toString().padStart(2, '0')}`;
           
+          const newNamesInBatch = new Set<string>();
           const newInstances = templateIds.map((templateId, index) => {
             const template = CARDS_DB.find((c) => c.id === templateId);
             if (!template) return null;
             
             const uniqueId = `inst_${Date.now()}_${index}_${Math.random().toString(36).substring(2, 7)}`;
+            
+            const baseName = template.name;
+            let newName = baseName;
+            let count = 1;
+            const currentCards = get().ownedCards;
+            
+            while (
+              currentCards.some((c) => c.customName.toLowerCase().trim() === newName.toLowerCase().trim()) ||
+              newNamesInBatch.has(newName.toLowerCase().trim())
+            ) {
+              newName = `${baseName} (${count})`;
+              count++;
+            }
+            newNamesInBatch.add(newName.toLowerCase().trim());
+
             return {
               id: uniqueId,
               templateId,
-              customName: template.name,
+              customName: newName,
               cardOpenDate: todayStr,
               annualFee: template.annualFee,
               instanceOffers: [],
@@ -302,9 +330,22 @@ export const useCardStore = create<CardStore>()(
       addCustomCard: (customCard) =>
         set((state) => {
           const uniqueId = `inst_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
+          
+          const currentCards = get().ownedCards;
+
           const newInstance: OwnedCardInstance = {
             ...customCard,
             id: uniqueId,
+            customName: (() => {
+              const baseName = customCard.customName;
+              let newName = baseName;
+              let count = 1;
+              while (currentCards.some((c) => c.customName.toLowerCase().trim() === newName.toLowerCase().trim())) {
+                newName = `${baseName} (${count})`;
+                count++;
+              }
+              return newName;
+            })(),
             instanceOffers: [], // Initialize empty offers array
             lastModified: Date.now()
           };
