@@ -333,7 +333,7 @@ export function WalletLibraryTab({
 
       {deckSubTab === 'templates' && (
         <div className="space-y-3.5">
-          {useCardStore.getState().ownedCards.length === 0 && (
+          {ownedCards.length === 0 && (
             <div className={`p-4 rounded-2xl border text-left relative overflow-hidden shadow-lg ${
               themeClass(
                 'bg-gradient-to-br from-purple-950/30 via-indigo-950/15 to-slate-950/40 border-purple-500/15 text-slate-300',
