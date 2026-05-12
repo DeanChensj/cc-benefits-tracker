@@ -73,7 +73,7 @@ export function CreateCardModal({
     const subMonths = Number((document.getElementById('create-sub-months') as HTMLInputElement)?.value) || 3;
 
     const instanceOffers: Benefit[] = [];
-    if (subRequirement > 0 || subValue > 0) {
+    if (subValue > 0) {
       instanceOffers.push(
         createWelcomeOffer(customCardOpenDate, subRequirement, subMonths, subValue)
       );
@@ -87,7 +87,7 @@ export function CreateCardModal({
       cardOpenDate: customCardOpenDate,
       annualFee: customAnnualFee || 0,
       pointCurrency: customPointCurrency,
-      signupBonusActive: subRequirement > 0 || subValue > 0,
+      signupBonusActive: subValue > 0,
       signupBonusValue: subValue,
       multipliers: customMultipliers,
       customBenefits: preparedBenefits,

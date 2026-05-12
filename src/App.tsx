@@ -1208,7 +1208,7 @@ function App() {
                   const months = Number(subMonthsInput?.value) || 3;
                   const value = Number(subValueInput?.value) || 0;
                   
-                  if (subActiveInput?.checked && (requirement > 0 || value > 0)) {
+                  if (subActiveInput?.checked && value > 0) {
                     instanceOffers.push(
                       createWelcomeOffer(dateInput.value, requirement, months, value)
                     );
