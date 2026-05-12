@@ -66,7 +66,9 @@ export function ZenModal({
         </div>
 
         {/* Modal Content Body */}
-        {children}
+        <div className="overflow-y-auto max-h-[65vh] pr-1">
+          {children}
+        </div>
       </div>
     </div>
   );
