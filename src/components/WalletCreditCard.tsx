@@ -3,6 +3,8 @@ import { CARDS_DB, CARD_MULTIPLIERS } from '../data/cards.db';
 import type { OwnedCardInstance } from '../store/useCardStore';
 import { useCardStore } from '../store/useCardStore';
 import { translations, formatCardName, resolveCardNetwork } from '../utils/i18n';
+import { parseLogEntry } from '../utils/logUtils';
+import { obfuscateKey } from '../utils/cryptoUtils';
 
 interface WalletCreditCardProps {
   instance: OwnedCardInstance;
@@ -32,11 +34,37 @@ export function WalletCreditCard({
   const language = useCardStore((state) => state.language);
   const t = (key: keyof typeof translations['en']): string => (translations[language][key] || translations['en'][key]) as string;
 
+  const logs = useCardStore((state) => state.logs);
+  const subOffer = instance.instanceOffers?.find((o) => o.type === 'welcome-offer');
+  
+  let subSpent = 0;
+  let subRequirement = 0;
+  let subDaysLeft = 0;
+  let showSub = false;
+  
+  if (subOffer) {
+    subRequirement = subOffer.spendingLimit || 0;
+    const logKey = `fixed:${instance.id}:${subOffer.id}:${subOffer.expirationDate}`;
+    const logVal = logs[obfuscateKey(logKey)];
+    const parsed = parseLogEntry(logVal);
+    subSpent = parsed?.spentProgress || 0;
+    
+    if (subOffer.expirationDate) {
+      const expDate = new Date(subOffer.expirationDate);
+      const today = new Date();
+      const diffTime = expDate.getTime() - today.getTime();
+      subDaysLeft = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    }
+    
+    showSub = true;
+  }
+
   const template = CARDS_DB.find((t) => t.id === instance.templateId);
   const cardColor = instance.templateId === 'custom' 
     ? (instance.color || 'from-purple-950/50 to-slate-950')
     : (template?.color || 'from-slate-800 to-slate-900');
-  const rawBenefits = instance.templateId === 'custom' ? (instance.customBenefits || []) : (template?.benefits || []);
+  const baseBenefits = instance.templateId === 'custom' ? (instance.customBenefits || []) : (template?.benefits || []);
+  const rawBenefits = [...baseBenefits, ...(instance.instanceOffers || [])];
   
   const getPeriodScore = (period: string) => {
     if (period === 'monthly') return 1;
@@ -170,6 +198,29 @@ export function WalletCreditCard({
             <span>(</span><span>(</span><span>(</span>
           </div>
         </div>
+
+        {/* Dynamic Welcome Offer (SUB) Progress Bar (Glanceable at card face!) */}
+        {showSub && (
+          <div className="z-10 relative mb-1.5 mt-auto">
+            <div className="flex items-center justify-between text-[8px] font-black uppercase tracking-wider mb-1">
+              <span className={isSilverCard ? 'text-slate-700' : 'text-white/80'}>
+                {t('welcomeOffer')}
+              </span>
+              <span className={`font-bold ${isSilverCard ? 'text-amber-600' : 'text-amber-400'} ${subDaysLeft <= 7 && subDaysLeft > 0 ? 'animate-pulse text-red-500' : ''}`}>
+                {subDaysLeft <= 0 
+                  ? t('expired') 
+                  : t('daysLeft').replace('{days}', String(subDaysLeft))}
+              </span>
+            </div>
+            <div className={`w-full h-1 rounded-full overflow-hidden border ${isSilverCard ? 'bg-slate-200/60 border-slate-300/30' : 'bg-white/10 border-white/10'}`}>
+              <div className="h-full bg-gradient-to-r from-amber-400 to-amber-500" style={{ width: `${Math.min((subSpent / (subRequirement || 1)) * 100, 100)}%` }} />
+            </div>
+            <div className="flex items-center justify-between text-[7.5px] font-mono font-bold mt-0.5">
+              <span className={isSilverCard ? 'text-slate-600' : 'text-white/60'}>${subSpent.toLocaleString()} / ${subRequirement.toLocaleString()}</span>
+              <span className={isSilverCard ? 'text-slate-600' : 'text-white/60'}>{Math.round((subSpent / (subRequirement || 1)) * 100)}%</span>
+            </div>
+          </div>
+        )}
 
         {/* Card Face Footer: Template Name & Custom Label Duet */}
         <div className="flex items-end justify-between z-10 relative">

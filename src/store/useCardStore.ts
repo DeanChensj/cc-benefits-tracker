@@ -379,7 +379,7 @@ export const useCardStore = create<CardStore>()(
               }
               return newName;
             })(),
-            instanceOffers: [], // Initialize empty offers array
+            instanceOffers: customCard.instanceOffers || [], // Use passed offers or initialize empty array
             lastModified: Date.now()
           };
           

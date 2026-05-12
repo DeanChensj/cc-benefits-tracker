@@ -47,6 +47,9 @@ const translationsEn = {
   perkPeriodAnnual: 'Y',
   perkPeriodOnce: 'O',
   flatRateCard: 'Flat Rate Card',
+  welcomeOffer: 'Welcome Offer',
+  daysLeft: '{days}D LEFT',
+  expired: 'EXPIRED',
 
   
   // Vouchers / Awards
@@ -463,6 +466,9 @@ const translationsZh: typeof translationsEn = {
   perkPeriodAnnual: '年',
   perkPeriodOnce: '次',
   flatRateCard: '常驻无多倍返点',
+  welcomeOffer: '开卡挑战',
+  daysLeft: '剩 {days} 天',
+  expired: '已截止',
   
   // Vouchers / Awards
   vouchersTitle: '独立房券与里程券',
