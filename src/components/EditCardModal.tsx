@@ -84,7 +84,7 @@ export function EditCardModal({
                 renameCard(instance.id, trimmed || fallback);
               }}
               className={`w-full border text-xs rounded-xl px-3 py-2.5 focus:outline-none font-semibold ${
-                themeClass('bg-slate-950 border-slate-800 focus:border-purple-500 text-slate-205', 'bg-slate-55 border-slate-200 focus:border-purple-500 text-slate-800 shadow-inner')
+                themeClass('bg-slate-950 border-slate-800 focus:border-purple-500 text-slate-200', 'bg-slate-50 border-slate-200 focus:border-purple-500 text-slate-800 shadow-inner')
               }`}
             />
           </div>
@@ -95,7 +95,7 @@ export function EditCardModal({
               {t('openDateLabel')}
             </label>
             <div className={`flex items-center justify-between gap-3 p-3 rounded-xl border ${
-              themeClass('bg-slate-955/40 border-slate-850/60', 'bg-slate-55 border-slate-200 shadow-inner')
+              themeClass('bg-slate-950/40 border-slate-850/60', 'bg-slate-55 border-slate-200 shadow-inner')
             }`}>
               <span className={`text-xs font-bold ${themeClass('text-slate-300', 'text-slate-700')}`}>{t('openDateLabel')}</span>
               <input
@@ -116,7 +116,7 @@ export function EditCardModal({
                 {t('earningCurrencyLabel')}
               </label>
               <div className={`flex items-center justify-between gap-3 p-2.5 rounded-xl border ${
-                themeClass('bg-slate-955/40 border-slate-850/60', 'bg-slate-55 border-slate-200 shadow-inner')
+                themeClass('bg-slate-950/40 border-slate-850/60', 'bg-slate-55 border-slate-200 shadow-inner')
               }`}>
                 <span className={`text-xs font-bold ${themeClass('text-slate-300', 'text-slate-700')}`}>
                   {t('rewardCurrency')}
@@ -125,7 +125,7 @@ export function EditCardModal({
                   value={instance.pointCurrency || 'cash'}
                   onChange={(e) => updateCardPointCurrency(instance.id, e.target.value as PointCurrency)}
                   className={`text-xs rounded px-2 py-1 focus:outline-none cursor-pointer font-bold border transition ${
-                    themeClass('bg-slate-950 border-slate-800 text-slate-100 focus:border-purple-500', 'bg-white border-slate-200 text-slate-805 focus:border-purple-500 shadow-sm')
+                    themeClass('bg-slate-950 border-slate-800 text-slate-100 focus:border-purple-500', 'bg-white border-slate-200 text-slate-800 focus:border-purple-500 shadow-sm')
                   }`}
                 >
                   <option value="cash">{t('curr_cash')}</option>
@@ -164,7 +164,7 @@ export function EditCardModal({
                       updateWelcomeOffer(instance.id, subRequirement, subMonths, val);
                     }}
                     className={`w-16 text-center text-xs font-bold rounded focus:outline-none py-0.5 border ${
-                      themeClass('bg-slate-955 border-slate-800 text-slate-100', 'bg-white border-slate-200 text-slate-800')
+                      themeClass('bg-slate-950 border-slate-800 text-slate-100', 'bg-white border-slate-200 text-slate-800')
                     }`}
                   />
                 </div>
@@ -185,7 +185,7 @@ export function EditCardModal({
                       updateWelcomeOffer(instance.id, val, subMonths, subValue);
                     }}
                     className={`w-full px-2 py-1 rounded focus:outline-none text-xs font-medium border ${
-                      themeClass('bg-slate-955 border-slate-800 text-slate-100', 'bg-white border-slate-200 text-slate-800')
+                      themeClass('bg-slate-950 border-slate-800 text-slate-100', 'bg-white border-slate-200 text-slate-800')
                     }`}
                   />
                 </div>
@@ -204,7 +204,7 @@ export function EditCardModal({
                       updateWelcomeOffer(instance.id, subRequirement, val, subValue);
                     }}
                     className={`w-full px-2 py-1 rounded focus:outline-none text-xs font-medium border ${
-                      themeClass('bg-slate-955 border-slate-800 text-slate-100', 'bg-white border-slate-200 text-slate-800')
+                      themeClass('bg-slate-950 border-slate-800 text-slate-100', 'bg-white border-slate-200 text-slate-800')
                     }`}
                   />
                 </div>
@@ -221,7 +221,7 @@ export function EditCardModal({
               <div className="grid grid-cols-2 gap-3">
                 {/* Dining */}
                 <div className={`flex items-center justify-between gap-2 border p-2 rounded-xl ${
-                  themeClass('bg-slate-955/40 border-slate-850/60', 'bg-slate-50 border-slate-200 shadow-inner')
+                  themeClass('bg-slate-950/40 border-slate-850/60', 'bg-slate-50 border-slate-200 shadow-inner')
                 }`}>
                   <span className={`text-xs font-bold ${themeClass('text-slate-300', 'text-slate-700')}`}>{t('catDining')}</span>
                   <input
@@ -244,7 +244,7 @@ export function EditCardModal({
                 </div>
                 {/* Travel */}
                 <div className={`flex items-center justify-between gap-2 border p-2 rounded-xl ${
-                  themeClass('bg-slate-955/40 border-slate-850/60', 'bg-slate-50 border-slate-200 shadow-inner')
+                  themeClass('bg-slate-950/40 border-slate-850/60', 'bg-slate-50 border-slate-200 shadow-inner')
                 }`}>
                   <span className={`text-xs font-bold ${themeClass('text-slate-300', 'text-slate-700')}`}>{t('catTravel')}</span>
                   <input
@@ -261,13 +261,13 @@ export function EditCardModal({
                       });
                     }}
                     className={`w-10 text-center text-xs font-black rounded focus:outline-none py-1 border ${
-                      themeClass('bg-slate-955 border-slate-800 text-slate-100', 'bg-white border-slate-200 text-slate-800')
+                      themeClass('bg-slate-950 border-slate-800 text-slate-100', 'bg-white border-slate-200 text-slate-800')
                     }`}
                   />
                 </div>
                 {/* Shopping */}
                 <div className={`flex items-center justify-between gap-2 border p-2 rounded-xl ${
-                  themeClass('bg-slate-955/40 border-slate-850/60', 'bg-slate-50 border-slate-200 shadow-inner')
+                  themeClass('bg-slate-950/40 border-slate-850/60', 'bg-slate-50 border-slate-200 shadow-inner')
                 }`}>
                   <span className={`text-xs font-bold ${themeClass('text-slate-300', 'text-slate-700')}`}>{t('catShopping')}</span>
                   <input
@@ -284,13 +284,13 @@ export function EditCardModal({
                       });
                     }}
                     className={`w-10 text-center text-xs font-black rounded focus:outline-none py-1 border ${
-                      themeClass('bg-slate-955 border-slate-800 text-slate-100', 'bg-white border-slate-200 text-slate-800')
+                      themeClass('bg-slate-950 border-slate-800 text-slate-100', 'bg-white border-slate-200 text-slate-800')
                     }`}
                   />
                 </div>
                 {/* Entertainment */}
                 <div className={`flex items-center justify-between gap-2 border p-2 rounded-xl ${
-                  themeClass('bg-slate-955/40 border-slate-850/60', 'bg-slate-50 border-slate-200 shadow-inner')
+                  themeClass('bg-slate-950/40 border-slate-850/60', 'bg-slate-50 border-slate-200 shadow-inner')
                 }`}>
                   <span className={`text-xs font-bold ${themeClass('text-slate-300', 'text-slate-700')}`}>{t('catEntertainment')}</span>
                   <input
@@ -307,7 +307,7 @@ export function EditCardModal({
                       });
                     }}
                     className={`w-10 text-center text-xs font-black rounded focus:outline-none py-1 border ${
-                      themeClass('bg-slate-955 border-slate-800 text-slate-100', 'bg-white border-slate-200 text-slate-800')
+                      themeClass('bg-slate-950 border-slate-800 text-slate-100', 'bg-white border-slate-200 text-slate-800')
                     }`}
                   />
                 </div>

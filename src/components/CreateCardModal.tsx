@@ -141,7 +141,7 @@ export function CreateCardModal({
               <div className={`w-5 h-3.5 rounded border shrink-0 ${
                 themeClass('border-slate-800 bg-transparent', 'border-slate-250 bg-transparent')
               }`} />
-              <div className={`flex items-center gap-[1px] rotate-90 text-[5px] opacity-40 ${themeClass('text-slate-400', 'text-slate-505')}`}>
+              <div className={`flex items-center gap-[1px] rotate-90 text-[5px] opacity-40 ${themeClass('text-slate-400', 'text-slate-500')}`}>
                 <span>(</span><span>(</span><span>(</span>
               </div>
             </div>
@@ -153,7 +153,7 @@ export function CreateCardModal({
                   {customCardName.trim() || 'CUSTOM CARD'}
                 </h4>
                 {customAnnualFee > 0 ? (
-                  <p className={`text-[6px] uppercase tracking-wider opacity-65 font-extrabold mt-0.5 leading-none ${themeClass('text-slate-400', 'text-slate-505')}`}>
+                  <p className={`text-[6px] uppercase tracking-wider opacity-65 font-extrabold mt-0.5 leading-none ${themeClass('text-slate-400', 'text-slate-500')}`}>
                     {t('feeLabelUpper')}: ${customAnnualFee}
                   </p>
                 ) : (
@@ -162,7 +162,7 @@ export function CreateCardModal({
                   </p>
                 )}
               </div>
-              <span className={`text-[8px] font-black italic tracking-widest opacity-70 shrink-0 uppercase ${themeClass('text-slate-400', 'text-slate-505')}`}>
+              <span className={`text-[8px] font-black italic tracking-widest opacity-70 shrink-0 uppercase ${themeClass('text-slate-400', 'text-slate-500')}`}>
                 {resolveCardNetwork(customBank, 'custom', customPointCurrency)}
               </span>
             </div>
@@ -402,13 +402,13 @@ export function CreateCardModal({
             <div className="space-y-3.5 max-h-[180px] overflow-y-auto pr-1 scrollbar-thin">
               {newBenefits.map((benefit, idx) => (
                 <div key={idx} className={`p-3.5 rounded-xl border space-y-3.5 relative transition-all duration-250 ${
-                  themeClass('bg-slate-950/20 border-slate-855/60', 'bg-slate-100/30 border-slate-200 shadow-[inset_0_1px_2px_rgba(15,23,42,0.01)]')
+                  themeClass('bg-slate-950/20 border-slate-800/60', 'bg-slate-100/30 border-slate-200 shadow-[inset_0_1px_2px_rgba(15,23,42,0.01)]')
                 }`}>
                   {newBenefits.length > 1 && (
                     <button
                       type="button"
                       onClick={() => setNewBenefits(newBenefits.filter((_, i) => i !== idx))}
-                      className="absolute top-3 right-3 text-slate-505 hover:text-red-400 transition cursor-pointer p-0.5 rounded"
+                      className="absolute top-3 right-3 text-slate-500 hover:text-red-400 transition cursor-pointer p-0.5 rounded"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
@@ -427,7 +427,7 @@ export function CreateCardModal({
                           setNewBenefits(updated);
                         }}
                         className={`w-full border text-xs rounded-lg px-2.5 py-1.5 focus:outline-none font-semibold ${
-                          themeClass('bg-slate-900 border-slate-855 text-slate-200 focus:border-purple-500', 'bg-white border-slate-250 text-slate-800 focus:border-purple-500')
+                          themeClass('bg-slate-900 border-slate-800 text-slate-200 focus:border-purple-500', 'bg-white border-slate-250 text-slate-800 focus:border-purple-500')
                         }`}
                       />
                     </div>
@@ -443,7 +443,7 @@ export function CreateCardModal({
                           setNewBenefits(updated);
                         }}
                         className={`w-full border text-xs rounded-lg px-2.5 py-1.5 focus:outline-none font-black ${
-                          themeClass('bg-slate-900 border-slate-855 text-slate-200 focus:border-purple-500', 'bg-white border-slate-250 text-slate-800 focus:border-purple-500')
+                          themeClass('bg-slate-900 border-slate-800 text-slate-200 focus:border-purple-500', 'bg-white border-slate-250 text-slate-800 focus:border-purple-500')
                         }`}
                       />
                     </div>
@@ -479,7 +479,7 @@ export function CreateCardModal({
                           setNewBenefits(updated);
                         }}
                         className={`w-full border text-[11px] rounded-lg px-2 py-1 focus:outline-none cursor-pointer font-bold transition ${
-                          themeClass('bg-slate-900 border-slate-855 text-slate-300 focus:border-purple-500', 'bg-white border-slate-250 text-slate-800 focus:border-purple-500')
+                          themeClass('bg-slate-900 border-slate-800 text-slate-300 focus:border-purple-500', 'bg-white border-slate-250 text-slate-800 focus:border-purple-500')
                         }`}
                       >
                         <option value="monthly">{t('periodMonthly')}</option>
@@ -501,7 +501,7 @@ export function CreateCardModal({
                           setNewBenefits(updated);
                         }}
                         className={`w-full border text-[11px] rounded-lg px-2 py-1 focus:outline-none cursor-pointer font-bold transition ${
-                          themeClass('bg-slate-900 border-slate-855 text-slate-305 focus:border-purple-500', 'bg-white border-slate-250 text-slate-800 focus:border-purple-500')
+                          themeClass('bg-slate-900 border-slate-800 text-slate-300 focus:border-purple-500', 'bg-white border-slate-200 text-slate-800 focus:border-purple-500')
                         }`}
                       >
                         <option value="dining">{t('catDining')}</option>
@@ -526,7 +526,7 @@ export function CreateCardModal({
                           setNewBenefits(updated);
                         }}
                         className={`w-full border text-xs rounded-lg px-2.5 py-1.5 focus:outline-none font-semibold cursor-pointer transition ${
-                          themeClass('bg-slate-900 border-slate-855 text-slate-300 focus:border-purple-500', 'bg-white border-slate-255 text-slate-805 focus:border-purple-500')
+                          themeClass('bg-slate-900 border-slate-800 text-slate-300 focus:border-purple-500', 'bg-white border-slate-200 text-slate-800 focus:border-purple-500')
                         }`}
                       />
                     </div>
@@ -537,7 +537,7 @@ export function CreateCardModal({
           </div>
 
           {/* Actions Footer */}
-          <div className={`flex gap-3 pt-4 border-t mt-4 ${themeClass('border-slate-855', 'border-slate-200')}`}>
+          <div className={`flex gap-3 pt-4 border-t mt-4 ${themeClass('border-slate-800', 'border-slate-200')}`}>
             <button
               type="button"
               onClick={() => {

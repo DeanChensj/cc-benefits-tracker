@@ -252,7 +252,7 @@ export function ActiveChecklistTab({
                       <Sparkles className="w-3 h-3" />
                     </div>
                     <p className={`text-[9px] font-black uppercase tracking-widest ${themeClass('text-slate-500', 'text-slate-400')}`}>
-                      {useCardStore.getState().language === 'zh' ? '今日省钱' : 'Today Saved'}
+                      {t('todaySaved')}
                     </p>
                   </div>
                   <p className={`text-xl font-black font-mono ${themeClass('text-emerald-400', 'text-emerald-600')}`}>
@@ -269,7 +269,7 @@ export function ActiveChecklistTab({
                       <CreditCard className="w-3 h-3" />
                     </div>
                     <p className={`text-[9px] font-black uppercase tracking-widest ${themeClass('text-slate-500', 'text-slate-400')}`}>
-                      {useCardStore.getState().language === 'zh' ? '本月累计' : 'This Month'}
+                      {t('thisMonthSavings')}
                     </p>
                   </div>
                   <p className={`text-xl font-black font-mono ${themeClass('text-emerald-400', 'text-emerald-600')}`}>
