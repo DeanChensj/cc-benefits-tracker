@@ -201,7 +201,7 @@ export function ActiveChecklistTab({
           return (
             <div 
               key={key}
-              className={`border rounded-2xl overflow-hidden transition duration-200 shadow-sm ${
+              className={`border rounded-2xl overflow-hidden transition duration-200 shadow-sm w-full ${
                 themeClass('bg-slate-900/20 border-slate-850/60', 'bg-white border-slate-200')
               } border-l-[4px] ${
                 isAwards 
