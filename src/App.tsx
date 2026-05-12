@@ -1004,13 +1004,13 @@ function App() {
             setIsConfigureAddOpen(false);
             setConfiguredTemplate(null);
           }}
-          title={language === 'zh' ? '配置并添加卡片' : 'Configure & Add Card'}
+          title={t('configureCard')}
           theme={theme}
         >
           <div className="space-y-4">
             <div>
               <label className="block text-xs font-bold mb-1 text-slate-500 dark:text-slate-400">
-                {language === 'zh' ? '卡片昵称' : 'Card Nickname'}
+                {t('cardNickname')}
               </label>
               <input
                 type="text"
@@ -1023,7 +1023,7 @@ function App() {
             </div>
             <div>
               <label className="block text-xs font-bold mb-1 text-slate-500 dark:text-slate-400">
-                {language === 'zh' ? '开卡日期' : 'Card Open Date'}
+                {t('cardOpenDate')}
               </label>
               <input
                 type="date"

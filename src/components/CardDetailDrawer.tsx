@@ -248,7 +248,7 @@ export function CardDetailDrawer({ isOpen, card, onClose, onAdd, onConfigureAdd,
             }`}
           >
             <Zap className="w-3.5 h-3.5 fill-amber-500 stroke-amber-500" />
-            {language === 'zh' ? '闪电添加' : 'Quick Add'}
+            {t('quickAdd')}
           </button>
           <button
             onClick={() => {
@@ -260,7 +260,7 @@ export function CardDetailDrawer({ isOpen, card, onClose, onAdd, onConfigureAdd,
             }`}
           >
             <Settings className="w-3.5 h-3.5" />
-            {language === 'zh' ? '配置并添加' : 'Configure & Add'}
+            {t('configureAdd')}
           </button>
         </div>
       </div>
