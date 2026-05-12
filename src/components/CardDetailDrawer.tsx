@@ -152,7 +152,9 @@ export function CardDetailDrawer({ isOpen, card, onClose, onAdd, onConfigureAdd,
                   {t(`curr_${currency.replace('-', '_')}` as keyof typeof translations['en'])}
                 </p>
                 {currency !== 'cash' && (
-                  <span className="text-[7.5px] font-black px-1 py-0.2 rounded bg-purple-500/10 dark:bg-purple-500/20 text-purple-450 dark:text-purple-300 border border-purple-500/15 shrink-0">
+                  <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-md select-none shrink-0 ${
+                    themeClass('bg-slate-800 text-slate-300', 'bg-slate-100 text-slate-700')
+                  }`}>
                     {cpp} cpp
                   </span>
                 )}
