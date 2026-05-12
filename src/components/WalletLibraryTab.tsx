@@ -119,7 +119,9 @@ export function WalletLibraryTab({
   const [isClaimedArchiveCollapsed, setIsClaimedArchiveCollapsed] = useState(true);
   const [awardSearchQuery, setAwardSearchQuery] = useState('');
   const [awardSortBy, setAwardSortBy] = useState<'expiry' | 'value-desc' | 'value-asc'>('expiry');
-  const [isCompactView, setIsCompactView] = useState(false);
+  const [isCompactView, setIsCompactView] = useState(() => {
+    return localStorage.getItem('cc-tracker-compact-view') === 'true';
+  });
 
   const searchedCards = useMemo(() => {
     return ownedCards.filter((instance) => {
@@ -233,7 +235,11 @@ export function WalletLibraryTab({
                 {/* Compact View Toggle Button */}
                 <button
                   type="button"
-                  onClick={() => setIsCompactView(!isCompactView)}
+                  onClick={() => {
+                    const newValue = !isCompactView;
+                    setIsCompactView(newValue);
+                    localStorage.setItem('cc-tracker-compact-view', String(newValue));
+                  }}
                   className={`w-7 h-7 flex items-center justify-center rounded-full border transition-all duration-250 cursor-pointer shrink-0 ml-1.5 ${
                     isCompactView
                       ? themeClass('bg-slate-100 text-slate-955 shadow-md', 'bg-slate-900 text-white shadow-sm')
