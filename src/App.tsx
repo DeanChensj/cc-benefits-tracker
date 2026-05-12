@@ -134,7 +134,8 @@ function App() {
 
   useEffect(() => {
     if (toast) {
-      const timer = setTimeout(() => setToast(null), 3000);
+      const duration = (toast.type === 'warning' || toast.type === 'error') ? 2500 : 1500;
+      const timer = setTimeout(() => setToast(null), duration);
       return () => clearTimeout(timer);
     }
   }, [toast]);
