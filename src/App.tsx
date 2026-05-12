@@ -171,10 +171,7 @@ function App() {
       toggleBenefit(key);
     }
 
-    showToast(
-      `${t('resolveAction')} "${ab.benefit.name}"`,
-      'success'
-    );
+
   };
 
   const handleUpdateProgressLog = (logKey: string, spent: number) => {
