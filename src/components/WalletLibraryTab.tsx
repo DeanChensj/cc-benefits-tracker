@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Plus, Sparkles, CreditCard, Compass } from 'lucide-react';
 import { WalletCreditCard } from './WalletCreditCard';
 import { CardTemplatesCatalog } from './CardTemplatesCatalog';
@@ -119,6 +119,19 @@ export function WalletLibraryTab({
   const [isClaimedArchiveCollapsed, setIsClaimedArchiveCollapsed] = useState(true);
   const [awardSearchQuery, setAwardSearchQuery] = useState('');
   const [awardSortBy, setAwardSortBy] = useState<'expiry' | 'value-desc' | 'value-asc'>('expiry');
+
+  const searchedCards = useMemo(() => {
+    return ownedCards.filter((instance) => {
+      if (searchQuery) {
+        const query = searchQuery.toLowerCase();
+        const template = CARDS_DB.find((t) => t.id === instance.templateId);
+        const cardLabel = instance.customName.toLowerCase();
+        const bank = (instance.bank || template?.bank || '').toLowerCase();
+        if (!cardLabel.includes(query) && !bank.includes(query)) return false;
+      }
+      return true;
+    });
+  }, [ownedCards, searchQuery]);
 
   // Calculate Chase 5/24 status dynamically
   const now = new Date();
@@ -262,16 +275,6 @@ export function WalletLibraryTab({
             ) : (
               <div className="space-y-8">
                 {(['Amex', 'Chase', 'Citi', 'Other'] as const).map((bankName) => {
-                  const searchedCards = ownedCards.filter((instance) => {
-                    if (searchQuery) {
-                      const query = searchQuery.toLowerCase();
-                      const template = CARDS_DB.find((t) => t.id === instance.templateId);
-                      const cardLabel = instance.customName.toLowerCase();
-                      const bank = (instance.bank || template?.bank || '').toLowerCase();
-                      if (!cardLabel.includes(query) && !bank.includes(query)) return false;
-                    }
-                    return true;
-                  });
 
                   const bankCards = searchedCards.filter((c) => {
                     const template = CARDS_DB.find((t) => t.id === c.templateId);

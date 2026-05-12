@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useCardStore } from '../store/useCardStore';
 import { translations } from '../utils/i18n';
 
@@ -20,6 +21,8 @@ export function WelcomeOfferSection({
   const t = (key: keyof typeof translations['en']) => translations[language][key] || translations['en'][key];
   const themeClass = (dark: string, light: string) => theme === 'dark' ? dark : light;
 
+  const [showDetails, setShowDetails] = useState(true);
+
   return (
     <div className="space-y-3 pt-3 border-t border-slate-800/30 dark:border-slate-750/30">
       <div className="flex items-center justify-between gap-3">
@@ -27,14 +30,9 @@ export function WelcomeOfferSection({
           <input
             type="checkbox"
             id={`${idPrefix}-sub-active`}
-            defaultChecked={true}
+            checked={showDetails}
             className="w-4 h-4 text-purple-600 rounded border-slate-800 focus:ring-purple-500 cursor-pointer"
-            onChange={(e) => {
-              const container = document.getElementById(`${idPrefix}-sub-details`);
-              if (container) {
-                container.style.display = e.target.checked ? 'grid' : 'none';
-              }
-            }}
+            onChange={(e) => setShowDetails(e.target.checked)}
           />
           <span className="text-slate-600 dark:text-slate-400">{t('trackSUB')}</span>
         </label>
@@ -53,37 +51,39 @@ export function WelcomeOfferSection({
         </div>
       </div>
       
-      <div id={`${idPrefix}-sub-details`} className="grid grid-cols-2 gap-3 pt-2 border-t border-slate-800/30 dark:border-slate-750/30">
-        <div>
-          <label className="block text-[10px] font-medium mb-1 text-slate-500 dark:text-slate-450 uppercase">
-            {t('spendingRequirement')}
-          </label>
-          <input
-            type="number"
-            id={`${idPrefix}-sub-requirement`}
-            min="0"
-            defaultValue={defaultRequirement}
-            className={`w-full px-2 py-1 rounded focus:outline-none text-xs font-medium border ${
-              themeClass('bg-slate-900 border-slate-800 text-slate-100', 'bg-white border-slate-200 text-slate-800')
-            }`}
-          />
+      {showDetails && (
+        <div id={`${idPrefix}-sub-details`} className="grid grid-cols-2 gap-3 pt-2 border-t border-slate-800/30 dark:border-slate-750/30">
+          <div>
+            <label className="block text-[10px] font-medium mb-1 text-slate-500 dark:text-slate-450 uppercase">
+              {t('spendingRequirement')}
+            </label>
+            <input
+              type="number"
+              id={`${idPrefix}-sub-requirement`}
+              min="0"
+              defaultValue={defaultRequirement}
+              className={`w-full px-2 py-1 rounded focus:outline-none text-xs font-medium border ${
+                themeClass('bg-slate-900 border-slate-800 text-slate-100', 'bg-white border-slate-200 text-slate-800')
+              }`}
+            />
+          </div>
+          <div>
+            <label className="block text-[10px] font-medium mb-1 text-slate-500 dark:text-slate-450 uppercase">
+              {t('timeLimit')}
+            </label>
+            <input
+              type="number"
+              id={`${idPrefix}-sub-months`}
+              min="1"
+              max="24"
+              defaultValue={defaultMonths}
+              className={`w-full px-2 py-1 rounded focus:outline-none text-xs font-medium border ${
+                themeClass('bg-slate-900 border-slate-800 text-slate-100', 'bg-white border-slate-200 text-slate-800')
+              }`}
+            />
+          </div>
         </div>
-        <div>
-          <label className="block text-[10px] font-medium mb-1 text-slate-500 dark:text-slate-450 uppercase">
-            {t('timeLimit')}
-          </label>
-          <input
-            type="number"
-            id={`${idPrefix}-sub-months`}
-            min="1"
-            max="24"
-            defaultValue={defaultMonths}
-            className={`w-full px-2 py-1 rounded focus:outline-none text-xs font-medium border ${
-              themeClass('bg-slate-900 border-slate-800 text-slate-100', 'bg-white border-slate-200 text-slate-800')
-            }`}
-          />
-        </div>
-      </div>
+      )}
     </div>
   );
 }
