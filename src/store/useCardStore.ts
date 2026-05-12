@@ -72,7 +72,7 @@ export interface CardStore {
   customClientId: string | null; // Custom Google Client ID (persisted)
 
   // Actions
-  addCard: (templateId: string) => void;
+  addCard: (templateId: string) => string;
   addCardsBatch: (templateIds: string[]) => void;
   addCustomCard: (card: Omit<OwnedCardInstance, 'id'>) => void;
   removeCard: (instanceId: string) => void;
@@ -239,7 +239,8 @@ export const useCardStore = create<CardStore>()(
       lastSyncedTime: null,
       customClientId: null,
 
-      addCard: (templateId) =>
+      addCard: (templateId) => {
+        let generatedName = '';
         set((state) => {
           const template = CARDS_DB.find((c) => c.id === templateId);
           if (!template) return state;
@@ -270,6 +271,8 @@ export const useCardStore = create<CardStore>()(
             lastModified: Date.now()
           };
 
+          generatedName = newInstance.customName;
+
           const nextCards = [...state.ownedCards, newInstance];
           syncPushToCloud(state.gdriveToken, nextCards, state.logs);
 
@@ -277,7 +280,9 @@ export const useCardStore = create<CardStore>()(
             ownedCards: nextCards,
             walletLastModified: Date.now(),
           };
-        }),
+        });
+        return generatedName;
+      },
 
       addCardsBatch: (templateIds) =>
         set((state) => {

@@ -191,12 +191,10 @@ function App() {
   };
 
   const handleAddCard = (templateId: string) => {
-    const template = CARDS_DB.find((t) => t.id === templateId);
-    const cardName = template ? template.name : 'Card';
-    addCard(templateId);
+    const generatedName = addCard(templateId);
     setDeckSubTab('cards');
     localStorage.setItem('cc-tracker-deck-sub-tab', 'cards');
-    showToast(t('toastCardAdded').replace('{name}', formatCardNameForToast(cardName)));
+    showToast(t('toastCardAdded').replace('{name}', formatCardNameForToast(generatedName)));
   };
 
 
@@ -204,8 +202,7 @@ function App() {
     if (!deleteCardInstanceId) return;
     const instance = ownedCards.find((c) => c.id === deleteCardInstanceId);
     if (instance) {
-      const template = CARDS_DB.find((t) => t.id === instance.templateId);
-      const cardName = instance.templateId === 'custom' ? instance.customName : (template?.name || 'Card');
+      const cardName = instance.customName;
       removeCard(deleteCardInstanceId);
       showToast(t('toastCardRemoved').replace('{name}', formatCardNameForToast(cardName)), 'error');
     }
@@ -990,9 +987,7 @@ function App() {
         {/* Custom Delete Confirmation Modal */}
         <DeleteConfirmModal
           isOpen={!!deleteCardInstanceId}
-          cardName={ownedCards.find((c) => c.id === deleteCardInstanceId)?.templateId === 'custom' 
-            ? (ownedCards.find((c) => c.id === deleteCardInstanceId)?.customName || 'Card') 
-            : (CARDS_DB.find((t) => t.id === (ownedCards.find((c) => c.id === deleteCardInstanceId)?.templateId || ''))?.name || 'Card')}
+          cardName={ownedCards.find((c) => c.id === deleteCardInstanceId)?.customName || 'Card'}
           onConfirm={handleConfirmRemoveCard}
           onCancel={() => setDeleteCardInstanceId(null)}
           theme={theme}
