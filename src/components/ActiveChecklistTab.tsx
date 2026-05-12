@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Search, Filter } from 'lucide-react';
+import { Search, Filter, Sparkles, CreditCard } from 'lucide-react';
 import { FilterHubPanel } from './FilterHubPanel';
 import { ChecklistCardRow } from './ChecklistCardRow';
 import { AWARD_TEMPLATES, CARDS_DB } from '../data/cards.db';
@@ -12,6 +12,7 @@ import { parseLogEntry } from '../utils/logUtils';
 import type { LogEntry } from '../utils/logUtils';
 import { useCardStore } from '../store/useCardStore';
 import { translations, formatCardName } from '../utils/i18n';
+import { getSavingsForPeriod } from '../utils/valuationUtils';
 
 interface ActiveChecklistTabProps {
   activeBenefits: ActiveBenefit[];
@@ -227,17 +228,58 @@ export function ActiveChecklistTab({
 
       <div className="space-y-4">
         {/* A. ACTIVE ITEMS VIEW BLOCK */}
-        {activeItems.length === 0 ? (
-          <div className={`p-8 rounded-2xl text-center border border-dashed max-w-md mx-auto ${
-            themeClass('border-slate-850 bg-slate-950/20', 'border-slate-250 bg-slate-50/50')
-          }`}>
-            <p className="text-xl">🎯</p>
-            <h4 className={`text-xs font-bold mt-2 ${themeClass('text-slate-300', 'text-slate-700')}`}>{t('allClaimed')}</h4>
-            <p className={`text-[10px] mt-1 leading-normal ${themeClass('text-slate-455', 'text-slate-500')}`}>
-              {t('noPending')}
-            </p>
-          </div>
-        ) : (
+        {activeItems.length === 0 ? (() => {
+          const savedToday = getSavingsForPeriod(logs, 'today', currentDate, ownedCards, loyaltyAwards);
+          const savedThisMonth = getSavingsForPeriod(logs, 'month', currentDate, ownedCards, loyaltyAwards);
+          
+          return (
+            <div className={`p-8 rounded-2xl text-center border border-dashed max-w-md mx-auto ${
+              themeClass('border-slate-850 bg-slate-950/20', 'border-slate-250 bg-slate-50/50')
+            }`}>
+              <p className="text-xl">🎯</p>
+              <h4 className={`text-xs font-bold mt-2 ${themeClass('text-slate-300', 'text-slate-700')}`}>{t('allClaimed')}</h4>
+              <p className={`text-[10px] mt-1 leading-normal ${themeClass('text-slate-455', 'text-slate-500')}`}>
+                {t('noPending')}
+              </p>
+              
+              <div className="mt-6 grid grid-cols-2 gap-3 pt-4 border-t border-slate-800/20 dark:border-slate-200/20">
+                {/* Card 1: Today */}
+                <div className={`p-3 rounded-xl border backdrop-blur-md transition-all duration-300 hover:scale-[1.02] ${
+                  themeClass('bg-slate-900/40 border-purple-500/10 shadow-lg shadow-purple-500/5', 'bg-white/70 border-purple-500/10 shadow-sm shadow-slate-200')
+                }`}>
+                  <div className="flex items-center gap-1.5 mb-1.5">
+                    <div className={`p-1 rounded-md ${themeClass('bg-purple-500/10 text-purple-400', 'bg-purple-50 text-purple-600')}`}>
+                      <Sparkles className="w-3 h-3" />
+                    </div>
+                    <p className={`text-[9px] font-black uppercase tracking-widest ${themeClass('text-slate-500', 'text-slate-400')}`}>
+                      {useCardStore.getState().language === 'zh' ? '今日省钱' : 'Today Saved'}
+                    </p>
+                  </div>
+                  <p className={`text-xl font-black font-mono ${themeClass('text-emerald-400', 'text-emerald-600')}`}>
+                    ${savedToday}
+                  </p>
+                </div>
+
+                {/* Card 2: Month */}
+                <div className={`p-3 rounded-xl border backdrop-blur-md transition-all duration-300 hover:scale-[1.02] ${
+                  themeClass('bg-slate-900/40 border-indigo-500/10 shadow-lg shadow-indigo-500/5', 'bg-white/70 border-indigo-500/10 shadow-sm shadow-slate-200')
+                }`}>
+                  <div className="flex items-center gap-1.5 mb-1.5">
+                    <div className={`p-1 rounded-md ${themeClass('bg-indigo-500/10 text-indigo-400', 'bg-indigo-50 text-indigo-600')}`}>
+                      <CreditCard className="w-3 h-3" />
+                    </div>
+                    <p className={`text-[9px] font-black uppercase tracking-widest ${themeClass('text-slate-500', 'text-slate-400')}`}>
+                      {useCardStore.getState().language === 'zh' ? '本月累计' : 'This Month'}
+                    </p>
+                  </div>
+                  <p className={`text-xl font-black font-mono ${themeClass('text-emerald-400', 'text-emerald-600')}`}>
+                    ${savedThisMonth}
+                  </p>
+                </div>
+              </div>
+            </div>
+          );
+        })() : (
           <div className="space-y-4">
 
             {/* Active Items List render flat/grouped */}

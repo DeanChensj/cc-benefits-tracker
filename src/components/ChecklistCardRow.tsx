@@ -83,7 +83,7 @@ export const ChecklistCardRow = React.memo(function ChecklistCardRow({
 
     // 1. If flat list, render card display & template duet quietly
     if (!isGrouped && !isStandalone && cardInstance) {
-      const typeName = template ? formatCardName(template.name) : (cardInstance.bank || 'Card');
+      const typeName = template ? formatCardName(template.name) : (cardInstance.bank || t('card'));
       const customName = cardInstance.customName ? cardInstance.customName.trim() : '';
       const isDuplicated = !customName || customName === typeName || (template && customName === template.name);
       
@@ -98,7 +98,7 @@ export const ChecklistCardRow = React.memo(function ChecklistCardRow({
         );
       }
     } else if (isStandalone && loyaltyAward) {
-      const brandText = loyaltyAward.customBrand || (AWARD_TEMPLATES[loyaltyAward.templateId]?.brand) || 'Voucher';
+      const brandText = loyaltyAward.customBrand || (AWARD_TEMPLATES[loyaltyAward.templateId]?.brand) || t('voucher');
       items.push(<span key="voucher" className="uppercase tracking-wider text-[10px] font-black text-slate-500 dark:text-slate-350">{brandText}</span>);
     }
 
@@ -184,7 +184,7 @@ export const ChecklistCardRow = React.memo(function ChecklistCardRow({
                 <span className={`ml-1.5 px-1.5 py-0.5 text-[9px] font-black uppercase rounded-md tracking-wider shrink-0 ${
                   themeClass('bg-purple-500/20 text-purple-300', 'bg-purple-500/10 text-purple-600')
                 }`}>
-                  SUB
+                  {t('subBadge')}
                 </span>
               )}
             </span>

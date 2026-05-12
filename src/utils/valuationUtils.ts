@@ -1,5 +1,5 @@
 import { AWARD_TEMPLATES } from '../data/cards.db';
-import type { Benefit } from '../data/cards.db';
+import type { Benefit, LoyaltyAward } from '../data/cards.db';
 import type { OwnedCardInstance } from '../store/useCardStore';
 import type { ActiveBenefit } from './dateUtils';
 import type { LogEntry } from './logUtils';
@@ -7,6 +7,29 @@ import { parseLogEntry } from './logUtils';
 import { obfuscateKey, deobfuscateKey } from './cryptoUtils';
 import { CARDS_DB } from '../data/cards.db';
 
+// Helper to parse benefit ID from a raw log key
+export const getBenefitIdFromKey = (rawKey: string): string | null => {
+  const parts = rawKey.split(':');
+  if (parts.length < 3) return null;
+  if (parts[0] === 'anniv' && parts.length >= 5) return parts[4];
+  return parts[2];
+};
+
+// Helper to build a fast lookup map for benefit values
+export const getBenefitValueMap = (
+  ownedCards: OwnedCardInstance[],
+  loyaltyAwards: LoyaltyAward[]
+): Map<string, number> => {
+  const map = new Map<string, number>();
+  CARDS_DB.forEach(t => t.benefits.forEach(b => map.set(b.id, b.value)));
+  ownedCards.forEach(c => c.instanceOffers?.forEach((b: Benefit) => map.set(b.id, b.value)));
+  loyaltyAwards.forEach(a => {
+    const isCustom = a.templateId === 'custom';
+    const val = isCustom ? (a.customValue || 0) : (AWARD_TEMPLATES[a.templateId]?.value || 0);
+    map.set(a.id, val);
+  });
+  return map;
+};
 export const getAnnualValue = (benefit: Benefit): number => {
   // Filter out spend-to-earn cashback multipliers (e.g. rate <= 10%)
   if (benefit.spendingLimit && (benefit.value / benefit.spendingLimit <= 0.1)) return 0;
@@ -84,8 +107,11 @@ export const getResolvedValue = (ab: ActiveBenefit, logs: Record<string, LogEntr
     const progressPercent = Math.min(spent / ab.benefit.spendingLimit, 1);
     return Math.round((ab.benefit.value * progressPercent) * 100) / 100;
   }
+  if (parsed.resolved) {
+    return ab.benefit.value;
+  }
   
-  return ab.benefit.value;
+  return 0;
 };
 
 // Helper to calculate recouped value of a specific card instance across historical cycles
@@ -132,7 +158,8 @@ export const getCardRecoupedValue = (
 
     const cycle = parts[0];
     const logInstanceId = parts[1];
-    const logBenefitId = parts[2];
+    const logBenefitId = getBenefitIdFromKey(rawKey);
+    if (!logBenefitId) return;
 
     if (logInstanceId !== instanceId) return;
 
@@ -156,6 +183,53 @@ export const getCardRecoupedValue = (
     } else if (parsed.resolved) {
       sum += benefit.value;
     }
+  });
+
+  return Math.round(sum * 100) / 100;
+};
+
+export const getSavingsForPeriod = (
+  logs: Record<string, LogEntry>,
+  period: 'today' | 'month',
+  currentDate: Date,
+  ownedCards: OwnedCardInstance[],
+  loyaltyAwards: LoyaltyAward[]
+): number => {
+  let sum = 0;
+  
+  const getLocalDateStr = (date: Date) => {
+    return `${date.getFullYear()}-${(date.getMonth()+1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')}`;
+  };
+  
+  const todayStr = getLocalDateStr(currentDate);
+  const monthStr = todayStr.slice(0, 7); // YYYY-MM
+
+  // Build benefit value map
+  const benefitValueMap = getBenefitValueMap(ownedCards, loyaltyAwards);
+
+  Object.keys(logs).forEach((obfuscatedKey) => {
+    const rawKey = deobfuscateKey(obfuscatedKey);
+    const benefitId = getBenefitIdFromKey(rawKey);
+    if (!benefitId) return;
+    const logVal = logs[obfuscatedKey];
+    if (!logVal) return;
+
+    // Parse log
+    const parsed = parseLogEntry(logVal);
+    if (!parsed) return;
+
+    if (!parsed.resolved || !parsed.timestamp) return;
+
+    const logDate = getLocalDateStr(new Date(parsed.timestamp));
+    
+    if (period === 'today') {
+      if (logDate !== todayStr) return;
+    } else if (period === 'month') {
+      if (!logDate.startsWith(monthStr)) return;
+    }
+
+    const val = benefitValueMap.get(benefitId) || 0;
+    sum += val;
   });
 
   return Math.round(sum * 100) / 100;
