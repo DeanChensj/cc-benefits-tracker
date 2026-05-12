@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo, useRef, lazy, Suspense } from 'react';
 // Meticulously audited and verified PWA release build with dynamic re-auth and contrast fixes
 import { CARDS_DB, CARD_MULTIPLIERS, AWARD_TEMPLATES } from './data/cards.db';
 import type { CardTemplate, Benefit, LoyaltyAward } from './data/cards.db';
-import { useCardStore, getLogKey } from './store/useCardStore';
+import { useCardStore, getLogKey, createWelcomeOffer } from './store/useCardStore';
 import type { OwnedCardInstance } from './store/useCardStore';
 import { translations, formatCardNameForToast } from './utils/i18n';
 import { WalletAiAssistant } from './components/WalletAiAssistant';
@@ -73,6 +73,7 @@ function App() {
     removeInstanceOffer,
     updateCardMultipliers,
     updateCardPointCurrency,
+    updateWelcomeOffer,
     toggleLoyaltyAward,
     deleteLoyaltyAward,
     updateAwardUsedQuantity,
@@ -1112,11 +1113,13 @@ function App() {
 
       <Suspense fallback={null}>
         <EditCardModal
+          key={activeEditInstanceId || 'none'}
           isOpen={!!activeEditInstanceId}
           instance={activeEditInstance}
           onClose={() => setActiveEditInstanceId(null)}
           updateCardMultipliers={updateCardMultipliers}
           updateCardPointCurrency={updateCardPointCurrency}
+          updateWelcomeOffer={updateWelcomeOffer}
           setCardOpenDate={setCardOpenDate}
           renameCard={renameCard}
           themeClass={themeClass}
@@ -1205,21 +1208,9 @@ function App() {
                   const value = Number(subValueInput?.value) || 0;
                   
                   if (requirement > 0 || value > 0) {
-                    const openDate = new Date(dateInput.value);
-                    openDate.setMonth(openDate.getMonth() + months);
-                    const expDateStr = openDate.toISOString().slice(0, 10);
-                    
-                    instanceOffers.push({
-                      id: `offer_welcome_${Date.now()}`,
-                      name: 'Welcome Offer',
-                      description: `Spend $${requirement} in ${months} months`,
-                      value: value,
-                      resetPeriod: 'once',
-                      category: 'other',
-                      spendingLimit: requirement,
-                      expirationDate: expDateStr,
-                      type: 'welcome-offer'
-                    });
+                    instanceOffers.push(
+                      createWelcomeOffer(dateInput.value, requirement, months, value)
+                    );
                   }
 
                   addCustomCard({

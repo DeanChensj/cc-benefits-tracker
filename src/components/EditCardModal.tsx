@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { CreditCard } from 'lucide-react';
 import type { OwnedCardInstance } from '../store/useCardStore';
 import { CARDS_DB, CARD_MULTIPLIERS } from '../data/cards.db';
@@ -12,6 +13,7 @@ interface EditCardModalProps {
   instance: OwnedCardInstance | null;
   updateCardMultipliers: (id: string, multipliers: Record<string, number | undefined>) => void;
   updateCardPointCurrency: (id: string, currency: PointCurrency) => void;
+  updateWelcomeOffer: (id: string, requirement: number, months: number, value: number) => void;
   setCardOpenDate: (id: string, dateStr: string) => void;
   renameCard: (id: string, name: string) => void;
   themeClass: (dark: string, light: string) => string;
@@ -24,11 +26,22 @@ export function EditCardModal({
   instance,
   updateCardMultipliers,
   updateCardPointCurrency,
+  updateWelcomeOffer,
   setCardOpenDate,
   renameCard,
   themeClass,
   theme
 }: EditCardModalProps) {
+  const welcomeOffer = instance?.instanceOffers?.find((o) => o.type === 'welcome-offer');
+  const defaultRequirement = welcomeOffer?.spendingLimit || 0;
+  const exp = welcomeOffer?.expirationDate ? new Date(welcomeOffer.expirationDate) : null;
+  const open = new Date(instance?.cardOpenDate || '2026-01-01');
+  const defaultMonths = exp ? (exp.getFullYear() - open.getFullYear()) * 12 + exp.getMonth() - open.getMonth() : 3;
+
+  const [subValue, setSubValue] = useState(instance?.signupBonusValue || 0);
+  const [subRequirement, setSubRequirement] = useState(defaultRequirement);
+  const [subMonths, setSubMonths] = useState(defaultMonths);
+
   const language = useCardStore((state) => state.language);
   const t = (key: keyof typeof translations['en']) => translations[language][key] || translations['en'][key];
 
@@ -41,6 +54,8 @@ export function EditCardModal({
   const defaultTravel = CARD_MULTIPLIERS[instance.templateId]?.travel || 1;
   const defaultShopping = CARD_MULTIPLIERS[instance.templateId]?.shopping || 1;
   const defaultEntertainment = CARD_MULTIPLIERS[instance.templateId]?.entertainment || 1;
+  
+
 
   return (
     <ZenModal
@@ -129,6 +144,73 @@ export function EditCardModal({
               </div>
             </div>
           )}
+
+          {/* 1. Welcome Offer Section */}
+          <div className="space-y-2 mb-4">
+
+            <div className="space-y-3 pt-3 border-t border-slate-800/30 dark:border-slate-750/30">
+              <div className="flex items-center justify-between gap-3">
+                <span className="text-xs font-semibold text-slate-600 dark:text-slate-400">{t('formSUBLabel')}</span>
+                <div className="flex items-center gap-1 text-xs font-mono shrink-0">
+                  <span className="text-slate-500 font-bold">$</span>
+                  <input
+                    type="number"
+                    min="0"
+                    max="99999"
+                    value={subValue}
+                    onChange={(e) => {
+                      const val = Number(e.target.value) || 0;
+                      setSubValue(val);
+                      updateWelcomeOffer(instance.id, subRequirement, subMonths, val);
+                    }}
+                    className={`w-16 text-center text-xs font-bold rounded focus:outline-none py-0.5 border ${
+                      themeClass('bg-slate-955 border-slate-800 text-slate-100', 'bg-white border-slate-200 text-slate-800')
+                    }`}
+                  />
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-[10px] font-medium mb-1 text-slate-500 dark:text-slate-450 uppercase">
+                    {t('spendingRequirement')}
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    value={subRequirement}
+                    onChange={(e) => {
+                      const val = Number(e.target.value) || 0;
+                      setSubRequirement(val);
+                      updateWelcomeOffer(instance.id, val, subMonths, subValue);
+                    }}
+                    className={`w-full px-2 py-1 rounded focus:outline-none text-xs font-medium border ${
+                      themeClass('bg-slate-955 border-slate-800 text-slate-100', 'bg-white border-slate-200 text-slate-800')
+                    }`}
+                  />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-medium mb-1 text-slate-500 dark:text-slate-455 uppercase">
+                    {t('timeLimit')}
+                  </label>
+                  <input
+                    type="number"
+                    min="1"
+                    max="24"
+                    value={subMonths}
+                    onChange={(e) => {
+                      const val = Number(e.target.value) || 1;
+                      setSubMonths(val);
+                      updateWelcomeOffer(instance.id, subRequirement, val, subValue);
+                    }}
+                    className={`w-full px-2 py-1 rounded focus:outline-none text-xs font-medium border ${
+                      themeClass('bg-slate-955 border-slate-800 text-slate-100', 'bg-white border-slate-200 text-slate-800')
+                    }`}
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
 
           {/* 2. Custom Point Multipliers */}
           {canCustomizePoints && (

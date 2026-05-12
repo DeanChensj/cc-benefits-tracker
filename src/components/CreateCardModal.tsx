@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { CreditCard, Plus, Trash2 } from 'lucide-react';
 import type { OwnedCardInstance } from '../store/useCardStore';
-import { useCardStore } from '../store/useCardStore';
+import { useCardStore, createWelcomeOffer } from '../store/useCardStore';
 import { translations, resolveCardNetwork } from '../utils/i18n';
 import type { PointCurrency, Benefit } from '../data/cards.db';
 import { ZenModal } from './ZenModal';
@@ -74,21 +74,9 @@ export function CreateCardModal({
 
     const instanceOffers: Benefit[] = [];
     if (subRequirement > 0 || subValue > 0) {
-      const openDate = new Date(customCardOpenDate);
-      openDate.setMonth(openDate.getMonth() + subMonths);
-      const expDateStr = openDate.toISOString().slice(0, 10);
-      
-      instanceOffers.push({
-        id: `offer_welcome_${Date.now()}`,
-        name: 'Welcome Offer',
-        description: `Spend $${subRequirement} in ${subMonths} months`,
-        value: subValue,
-        resetPeriod: 'once',
-        category: 'other',
-        spendingLimit: subRequirement,
-        expirationDate: expDateStr,
-        type: 'welcome-offer'
-      });
+      instanceOffers.push(
+        createWelcomeOffer(customCardOpenDate, subRequirement, subMonths, subValue)
+      );
     }
 
     addCustomCard({

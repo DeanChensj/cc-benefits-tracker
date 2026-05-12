@@ -92,6 +92,7 @@ export interface CardStore {
 
   // Instance Offer Actions
   addInstanceOffer: (instanceId: string, offer: Omit<Benefit, 'id'>) => void;
+  updateWelcomeOffer: (instanceId: string, requirement: number, months: number, value: number) => void;
   removeInstanceOffer: (instanceId: string, offerId: string) => void;
   // Multiplier Customizer Actions
   updateCardMultipliers: (instanceId: string, multipliers: OwnedCardInstance['multipliers']) => void;
@@ -176,6 +177,30 @@ export const getLogKey = (
     default:
       return `${year}-${month}:${instanceId}:${benefitId}`;
   }
+};
+
+// Helper to create a Welcome Offer benefit
+export const createWelcomeOffer = (
+  openDateStr: string,
+  requirement: number,
+  months: number,
+  value: number
+): Benefit => {
+  const openDate = new Date(openDateStr);
+  openDate.setMonth(openDate.getMonth() + months);
+  const expDateStr = openDate.toISOString().slice(0, 10);
+  
+  return {
+    id: `offer_welcome_${Date.now()}`,
+    name: 'Welcome Offer',
+    description: `Spend $${requirement} in ${months} months`,
+    value: value,
+    resetPeriod: 'once',
+    category: 'other',
+    spendingLimit: requirement,
+    expirationDate: expDateStr,
+    type: 'welcome-offer'
+  };
 };
 
 // Helper to extract year from a legacy plain key (supports: monthly, quarterly, semi-annual, annual, anniv, fixed)
@@ -663,6 +688,58 @@ export const useCardStore = create<CardStore>()(
           });
           syncPushToCloud(state.gdriveToken, nextCards, state.logs);
 
+          return {
+            ownedCards: nextCards,
+            walletLastModified: Date.now(),
+          };
+        }),
+
+      updateWelcomeOffer: (instanceId, requirement, months, value) =>
+        set((state) => {
+          const nextCards = state.ownedCards.map((c) => {
+            if (c.id === instanceId) {
+              const nextOffers = c.instanceOffers ? [...c.instanceOffers] : [];
+              const welcomeIdx = nextOffers.findIndex((o) => o.type === 'welcome-offer');
+              
+              const openDate = new Date(c.cardOpenDate);
+              openDate.setMonth(openDate.getMonth() + months);
+              const expDateStr = openDate.toISOString().slice(0, 10);
+              
+              if (welcomeIdx >= 0) {
+                nextOffers[welcomeIdx] = {
+                  ...nextOffers[welcomeIdx],
+                  description: `Spend $${requirement} in ${months} months`,
+                  value: value,
+                  spendingLimit: requirement,
+                  expirationDate: expDateStr
+                };
+              } else {
+                nextOffers.push({
+                  id: `offer_welcome_${Date.now()}`,
+                  name: 'Welcome Offer',
+                  description: `Spend $${requirement} in ${months} months`,
+                  value: value,
+                  resetPeriod: 'once',
+                  category: 'other',
+                  spendingLimit: requirement,
+                  expirationDate: expDateStr,
+                  type: 'welcome-offer'
+                });
+              }
+              
+              return {
+                ...c,
+                instanceOffers: nextOffers,
+                signupBonusActive: requirement > 0 || value > 0,
+                signupBonusValue: value,
+                lastModified: Date.now()
+              };
+            }
+            return c;
+          });
+          
+          syncPushToCloud(state.gdriveToken, nextCards, state.logs);
+          
           return {
             ownedCards: nextCards,
             walletLastModified: Date.now(),
