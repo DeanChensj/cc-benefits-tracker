@@ -1034,6 +1034,45 @@ function App() {
                 }`}
               />
             </div>
+            
+            <div>
+              <label className="block text-xs font-bold mb-1 text-slate-500 dark:text-slate-400">
+                {t('formSUBLabel')}
+              </label>
+              <div className={`flex items-center justify-between gap-3 p-3 rounded-xl border ${
+                themeClass('bg-slate-900/40 border-slate-850/60', 'bg-slate-50 border-slate-200')
+              }`}>
+                <label className="flex items-center gap-2 text-xs font-bold cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    id="configure-card-sub-active"
+                    defaultChecked={true}
+                    className="w-4 h-4 text-purple-600 rounded border-slate-800 focus:ring-purple-500 cursor-pointer"
+                    onChange={(e) => {
+                      const valueInput = document.getElementById('configure-card-sub-value-container');
+                      if (valueInput) {
+                        valueInput.style.display = e.target.checked ? 'flex' : 'none';
+                      }
+                    }}
+                  />
+                  <span>{t('formSUBActiveMessage')}</span>
+                </label>
+                <div id="configure-card-sub-value-container" className="flex items-center gap-1 text-xs font-mono shrink-0">
+                  <span className="text-slate-500 font-bold">$</span>
+                  <input
+                    type="number"
+                    id="configure-card-sub-value"
+                    min="0"
+                    max="99999"
+                    defaultValue={configuredTemplate?.signupBonusValue || 0}
+                    className={`w-16 text-center text-xs font-black rounded focus:outline-none py-1 border ${
+                      themeClass('bg-slate-900 border-slate-800 text-slate-100', 'bg-white border-slate-200 text-slate-800')
+                    }`}
+                  />
+                </div>
+              </div>
+            </div>
+
             <div className="flex justify-end gap-2 mt-6">
               <button
                 onClick={() => {
@@ -1050,6 +1089,9 @@ function App() {
                 onClick={() => {
                   const nameInput = document.getElementById('configure-card-name') as HTMLInputElement;
                   const dateInput = document.getElementById('configure-card-date') as HTMLInputElement;
+                  const subActiveInput = document.getElementById('configure-card-sub-active') as HTMLInputElement;
+                  const subValueInput = document.getElementById('configure-card-sub-value') as HTMLInputElement;
+                  
                   if (configuredTemplate) {
                     const addCustomCard = useCardStore.getState().addCustomCard;
                     addCustomCard({
@@ -1058,6 +1100,8 @@ function App() {
                       cardOpenDate: dateInput.value,
                       annualFee: configuredTemplate.annualFee,
                       instanceOffers: [],
+                      signupBonusActive: subActiveInput?.checked,
+                      signupBonusValue: Number(subValueInput?.value) || 0,
                       lastModified: Date.now()
                     });
                     showToast(t('toastCardAdded').replace('{name}', formatCardNameForToast(nameInput.value || configuredTemplate.name)));
