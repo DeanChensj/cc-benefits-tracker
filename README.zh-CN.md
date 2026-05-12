@@ -2,6 +2,8 @@
 
 [English Version](./README.md) | 中文版说明
 
+🌐 **官方网站**: [https://perkfolio.cc/](https://perkfolio.cc/)
+
 ---
 
 一款极致隐私、本地优先的个人美卡报销与福利追踪管理工具。
