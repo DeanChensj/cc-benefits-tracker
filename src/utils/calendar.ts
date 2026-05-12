@@ -1,6 +1,7 @@
 import { CARDS_DB, AWARD_TEMPLATES } from '../data/cards.db';
 import type { Benefit, LoyaltyAward } from '../data/cards.db';
 import type { OwnedCardInstance } from '../store/useCardStore';
+import { getLogKey } from '../store/useCardStore';
 import { obfuscateKey } from './cryptoUtils';
 import type { LogEntry } from './logUtils';
 
@@ -45,7 +46,14 @@ export const downloadICSFile = (
     }
 
     benefits.forEach((benefit) => {
-      const logKey = `${cardInstance.id}:${benefit.id}`;
+      const logKey = getLogKey(
+        benefit.resetPeriod,
+        cardInstance.id,
+        benefit.id,
+        now,
+        cardInstance.cardOpenDate,
+        benefit.expirationDate
+      );
       const parsedKey = obfuscateKey(logKey);
       const logEntry = logs[parsedKey];
 
@@ -131,7 +139,7 @@ export const downloadICSFile = (
       name: award.customName || 'Custom Voucher',
       brand: award.customBrand || 'Other',
       value: award.customValue || 0
-    } : AWARD_TEMPLATES[award.templateId];
+    } : (AWARD_TEMPLATES[award.templateId] || { name: 'Voucher', brand: 'Other', value: 0, description: 'Voucher' });
 
     const uid = `${award.id}@perkfolio`;
     const title = `🎁 Expiring: ${info.name}`;

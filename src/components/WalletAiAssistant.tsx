@@ -435,10 +435,22 @@ Additional Rules:
                       {msg.text.split('\n').map((line, lIdx) => {
                         const boldRegex = /\*\*(.*?)\*\*/g;
                         
+                        const escapeHtml = (text: string): string => {
+                          return text
+                            .replace(/&/g, '&amp;')
+                            .replace(/</g, '&lt;')
+                            .replace(/>/g, '&gt;')
+                            .replace(/"/g, '&quot;')
+                            .replace(/'/g, '&#039;');
+                        };
+                        
+                        const safeLine = escapeHtml(line);
+                        
                         if (line.startsWith('- ')) {
+                          const safeContent = escapeHtml(line.substring(2));
                           return (
                             <li key={lIdx} className={`list-disc list-inside ml-1 text-[11px] mt-1 ${theme === 'dark' ? 'text-slate-300' : 'text-slate-700'}`}>
-                              <span dangerouslySetInnerHTML={{ __html: line.substring(2).replace(boldRegex, '<strong>$1</strong>') }} />
+                              <span dangerouslySetInnerHTML={{ __html: safeContent.replace(boldRegex, '<strong>$1</strong>') }} />
                             </li>
                           );
                         }
@@ -447,7 +459,7 @@ Additional Rules:
                           <p 
                             key={lIdx} 
                             className={`mt-1 first:mt-0 text-[11px] leading-normal ${msg.role === 'user' ? 'text-white' : theme === 'dark' ? 'text-slate-200' : 'text-slate-800'}`}
-                            dangerouslySetInnerHTML={{ __html: line.replace(boldRegex, '<strong>$1</strong>') }}
+                            dangerouslySetInnerHTML={{ __html: safeLine.replace(boldRegex, '<strong>$1</strong>') }}
                           />
                         );
                       })}
