@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { CheckCircle2, Eye, EyeOff } from 'lucide-react';
 import type { ActiveBenefit } from '../utils/dateUtils';
 import type { LogEntry } from '../utils/logUtils';
@@ -44,6 +44,12 @@ export const ChecklistCardRow = React.memo(function ChecklistCardRow({
   const t = (key: keyof typeof translations['en']) => translations[language][key] || translations['en'][key];
   const { cardInstance, benefit, logKey, isUsed, loyaltyAward } = ab;
   const isStandalone = !cardInstance;
+  
+  const [localUsed, setLocalUsed] = useState(isUsed);
+  
+  useEffect(() => {
+    setLocalUsed(isUsed);
+  }, [isUsed]);
   
   const skipBenefit = useCardStore((state) => state.skipBenefit);
   const logVal = logs[obfuscateKey(logKey)];
@@ -129,7 +135,7 @@ export const ChecklistCardRow = React.memo(function ChecklistCardRow({
           setIsExpanded(!isExpanded);
         }
       }}
-      className={`group flex flex-col py-[9px] px-3.5 transition-all duration-300 gap-2.5 cursor-pointer border border-l-[3.5px] rounded-xl ${getCategoryBorderColor()} ${
+      className={`group relative flex flex-col py-[9px] px-3.5 transition-all duration-300 gap-2.5 cursor-pointer border border-l-[3.5px] rounded-xl overflow-hidden ${getCategoryBorderColor()} ${
         isExpired
           ? themeClass('bg-slate-955/10 border-slate-850/30 opacity-40 cursor-not-allowed', 'bg-red-50/10 border-slate-200/45 opacity-65 cursor-not-allowed')
           : isUsed
@@ -140,8 +146,10 @@ export const ChecklistCardRow = React.memo(function ChecklistCardRow({
             )
       }`}
     >
+
+      
       {/* Row 1: Title, Checkbox, and Valuation Amount */}
-      <div className="flex items-stretch justify-between gap-3.5 w-full min-w-0">
+      <div className="flex items-stretch justify-between gap-3.5 w-full min-w-0 relative z-10">
         {/* Left Details block */}
         <div className="flex items-start gap-3 min-w-0 flex-grow">
           {/* Perfect Circular Checkbox Hairlines */}
@@ -154,10 +162,13 @@ export const ChecklistCardRow = React.memo(function ChecklistCardRow({
                 const isFullySpent = spent >= limit;
                 updateProgressLog(logKey, isFullySpent ? 0 : limit);
               } else {
-                toggleBenefit(logKey);
+                setLocalUsed(!localUsed);
+                setTimeout(() => {
+                  toggleBenefit(logKey);
+                }, 300);
               }
             }}
-            className={`w-5 h-5 flex items-center justify-center rounded-full border transition-colors duration-200 shrink-0 mt-0.5 cursor-pointer ${
+            className={`w-5 h-5 flex items-center justify-center rounded-full border transition-colors duration-200 shrink-0 mt-0.5 cursor-pointer shadow-inner ${
               isExpired
                 ? 'border-red-900 bg-red-950/10 text-red-500'
                 : isUsed 
@@ -175,11 +186,13 @@ export const ChecklistCardRow = React.memo(function ChecklistCardRow({
           {/* Title & Duet Metadata Stack */}
           {/* Title & Duet Metadata Stack */}
           <div className="flex-grow min-w-0 flex flex-col text-left gap-2 py-0.5">
-            <span className={`text-sm font-extrabold mt-0.5 leading-tight ${
+            <span className={`relative inline-block text-sm font-extrabold mt-0.5 leading-tight ${
               isExpired ? 'text-slate-450 line-through opacity-60' :
-              isUsed ? 'line-through text-slate-500 opacity-65' : themeClass('text-slate-105', 'text-slate-800')
+              isUsed ? 'text-slate-500 opacity-65' : themeClass('text-slate-105', 'text-slate-800')
             }`}>
               {benefit.name}
+              {/* Real DOM Strikethrough Line */}
+              <div className={`absolute left-0 top-1/2 -translate-y-1/2 h-[1px] bg-emerald-500 transition-all duration-500 ${localUsed ? 'w-full' : 'w-0'}`} style={{ transitionTimingFunction: 'cubic-bezier(0.34, 1.56, 0.64, 1)' }} />
               {benefit.type === 'welcome-offer' && (
                 <span className={`ml-1.5 px-1.5 py-0.5 text-[9px] font-black uppercase rounded-md tracking-wider shrink-0 ${
                   themeClass('bg-purple-500/20 text-purple-300', 'bg-purple-500/10 text-purple-600')
@@ -193,7 +206,7 @@ export const ChecklistCardRow = React.memo(function ChecklistCardRow({
         </div>
 
         {/* Right amount value & period ($50 / 月) */}
-        <div className="text-right flex flex-col items-end justify-start shrink-0 min-w-[90px] py-0.5 select-none gap-1">
+        <div className={`text-right flex flex-col items-end justify-start shrink-0 w-[140px] py-0.5 select-none gap-1 pl-2 border-l ${themeClass('border-slate-800/30', 'border-slate-200/60')}`}>
           {/* Row 1: Amount & Period combined */}
           <div className={`flex items-baseline gap-0.5 font-mono leading-none ${isExpired || isUsed ? 'text-slate-500 opacity-60' : themeClass('text-emerald-400', 'text-emerald-600')}`}>
             <span className="text-[13px] font-black">+${benefit.value}</span>

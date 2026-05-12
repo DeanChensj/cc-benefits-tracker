@@ -127,3 +127,24 @@
 .bg-zen-light-card {
   background-color: #ffffff;
 }
+
+/* Smooth strikethrough animation for checklist items */
+.strikethrough {
+  position: relative;
+}
+
+.strikethrough::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 0;
+  height: 1.5px;
+  background: #10b981;
+  transition: width 0.3s ease-out;
+  transform: translateY(-50%);
+}
+
+.strikethrough-active::after {
+  width: 100%;
+}
