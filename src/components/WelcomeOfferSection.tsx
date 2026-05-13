@@ -52,7 +52,7 @@ export function WelcomeOfferSection({
       </div>
       
       {showDetails && (
-        <div id={`${idPrefix}-sub-details`} className="grid grid-cols-2 gap-3 pt-2 border-t border-slate-800/30 dark:border-slate-750/30">
+        <div id={`${idPrefix}-sub-details`} className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-slate-800/30 dark:border-slate-750/30">
           <div>
             <label className="block text-[10px] font-medium mb-1 text-slate-500 dark:text-slate-450 uppercase">
               {t('spendingRequirement')}
