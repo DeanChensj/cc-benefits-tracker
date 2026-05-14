@@ -80,6 +80,7 @@ export interface CardStore {
   customClientId: string | null; // Custom Google Client ID (persisted)
   lastSyncTimestamp: number; // Last successful sync timestamp
   pendingRemoteData: RemoteSyncData | null; // Pending remote data during conflict
+  isGroupedView: boolean; // Group by card in checklist
 
   // Actions
   addCard: (templateId: string) => string;
@@ -93,6 +94,7 @@ export interface CardStore {
   updateProgressLog: (logKey: string, spent: number) => void; // Updates linear spent progress values
   toggleTheme: () => void;
   toggleLanguage: () => void;
+  setIsGroupedView: (isGrouped: boolean) => void;
   
   // Google Drive Actions
   setGDriveCredentials: (token: string | null, email: string | null) => void;
@@ -187,6 +189,7 @@ export const useCardStore = create<CardStore>()(
       customClientId: null,
       lastSyncTimestamp: 0,
       pendingRemoteData: null,
+      isGroupedView: false,
 
       addCard: (templateId) => {
         let generatedName = '';
@@ -425,6 +428,11 @@ export const useCardStore = create<CardStore>()(
       toggleLanguage: () =>
         set((state) => ({
           language: state.language === 'zh' ? 'en' : 'zh',
+        })),
+
+      setIsGroupedView: (isGrouped) =>
+        set(() => ({
+          isGroupedView: isGrouped,
         })),
 
       // Google Drive Actions
@@ -1185,6 +1193,7 @@ export const useCardStore = create<CardStore>()(
           pointValuations: state.pointValuations || DEFAULT_VALUATIONS,
           theme: state.theme,
           language: state.language,
+          isGroupedView: state.isGroupedView,
           customClientId: state.customClientId,
           gdriveEmail: state.gdriveEmail,
           syncStatus: state.syncStatus === 'synced' ? 'synced' : 'disconnected'

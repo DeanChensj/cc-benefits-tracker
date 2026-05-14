@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { Search, Filter, Sparkles, CreditCard } from 'lucide-react';
+import { Search, Filter, Sparkles, CreditCard, Layers } from 'lucide-react';
 import { FilterHubPanel } from './FilterHubPanel';
 import { ChecklistCardRow } from './ChecklistCardRow';
-import { AWARD_TEMPLATES } from '../data/cards.db';
+import { CARDS_DB, AWARD_TEMPLATES } from '../data/cards.db';
 import type { LoyaltyAward } from '../data/cards.db';
 import { getDaysLeft, getDaysLeftForDate, getUrgencyScore } from '../utils/dateUtils';
 import type { ActiveBenefit } from '../utils/dateUtils';
@@ -38,6 +38,9 @@ export function ActiveChecklistTab({
   loyaltyAwards
 }: ActiveChecklistTabProps) {
   const language = useCardStore((state) => state.language);
+  const isGroupedView = useCardStore((state) => state.isGroupedView);
+  const setIsGroupedView = useCardStore((state) => state.setIsGroupedView);
+  const [collapsedGroups, setCollapsedGroups] = useState<Record<string, boolean>>({});
   const t = (key: keyof typeof translations['en']) => translations[language][key] || translations['en'][key];
 
   const [searchQuery, setSearchQuery] = useState('');
@@ -192,8 +195,23 @@ export function ActiveChecklistTab({
           />
         </div>
 
-        <button
-          onClick={() => setIsFiltersExpanded(!isFiltersExpanded)}
+          <button
+            onClick={() => setIsGroupedView(!isGroupedView)}
+            className={`flex items-center gap-1.5 px-3 py-2.5 rounded-2xl border text-xs font-bold transition duration-200 active:scale-95 shrink-0 cursor-pointer select-none ${
+              isGroupedView
+                ? 'bg-purple-600 text-white border-transparent shadow-md shadow-purple-600/20'
+                : themeClass(
+                    'bg-slate-900 hover:bg-slate-850 border-slate-800 text-slate-300',
+                    'bg-white hover:bg-slate-50 border-slate-255 text-slate-750 shadow-sm'
+                  )
+            }`}
+            title={isGroupedView ? t('flatView') : t('groupedView')}
+          >
+            <Layers className="w-4 h-4" />
+          </button>
+
+          <button
+            onClick={() => setIsFiltersExpanded(!isFiltersExpanded)}
           className={`flex items-center gap-1.5 px-4 py-2.5 rounded-2xl border text-xs font-bold transition duration-200 active:scale-95 shrink-0 cursor-pointer select-none sm:hidden ${
             isFiltersExpanded
               ? 'bg-purple-600 text-white border-transparent shadow-md shadow-purple-600/20'
@@ -283,7 +301,76 @@ export function ActiveChecklistTab({
           );
         })() : (
           <div className="space-y-4">
-            {renderItems(activeItems)}
+            {!isGroupedView ? (
+              renderItems(activeItems)
+            ) : (() => {
+              const grouped = activeItems.reduce((acc, ab) => {
+                const key = ab.cardInstance ? ab.cardInstance.id : 'awards';
+                if (!acc[key]) acc[key] = [];
+                acc[key].push(ab);
+                return acc;
+              }, {} as Record<string, typeof activeItems>);
+
+              return (
+                <div className="space-y-4">
+                  {Object.entries(grouped).map(([key, items]) => {
+                    const isAwards = key === 'awards';
+                    const card = !isAwards ? ownedCards.find((c) => c.id === key) : null;
+                    if (!isAwards && !card) return null;
+
+                    const template = card && card.templateId !== 'custom'
+                      ? CARDS_DB.find((tmpl) => tmpl.id === card.templateId)
+                      : null;
+
+                    const cardName = isAwards 
+                      ? '🎁 ' + t('standaloneVouchers') 
+                      : (card?.customName || template?.name || 'Credit Card');
+
+                    const brandColor = isAwards 
+                      ? 'from-purple-600 to-indigo-800 text-white'
+                      : (card?.color || template?.color || 'from-slate-600 to-slate-800 text-white');
+
+                    const isCollapsed = !!collapsedGroups[key];
+
+                    return (
+                      <div 
+                        key={key}
+                        className={`border rounded-2xl overflow-hidden transition duration-200 ${
+                          themeClass('bg-slate-900/10 border-slate-850/60', 'bg-slate-50/30 border-slate-200')
+                        }`}
+                      >
+                        {/* Collapsible Section Card Header */}
+                        <div
+                          onClick={() => setCollapsedGroups(prev => ({ ...prev, [key]: !prev[key] }))}
+                          className={`flex items-center justify-between p-3 cursor-pointer select-none bg-gradient-to-r ${brandColor} border-b ${
+                            themeClass('border-slate-900/40', 'border-slate-200/40')
+                          }`}
+                        >
+                          <div className="flex items-center gap-2 min-w-0">
+                            <span className="text-xs font-bold truncate">{cardName}</span>
+                            <span className={`text-[8px] font-extrabold px-1.5 py-0.5 rounded-md tracking-wide shrink-0 bg-white/20 text-white`}>
+                              {items.length} {t('itemsSuffix')}
+                            </span>
+                          </div>
+                          <span className="text-[9px] font-black opacity-80 px-1.5">
+                            {isCollapsed ? t('expand') : t('collapse')}
+                          </span>
+                        </div>
+
+                        {/* Group checklist rows */}
+                        <div className={`transition-all duration-300 ease-in-out overflow-hidden ${
+                          isCollapsed 
+                            ? 'max-h-0 opacity-0 pointer-events-none' 
+                            : 'max-h-[1200px] opacity-100 p-3 space-y-2.5'
+                        } ${themeClass('bg-slate-955/20', 'bg-white/50')}`}>
+                          {items.map(renderBenefitRow)}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              );
+            })()}
           </div>
         )}
 

@@ -389,6 +389,8 @@ const translationsEn = {
   syncConflictDesc: 'Detected un-synced changes on both local and cloud. Please choose which version to keep.',
   keepCloudBtn: 'Keep Cloud (Overwrite Local)',
   keepLocalBtn: 'Keep Local (Overwrite Cloud)',
+  flatView: 'Flat View',
+  groupedView: 'Grouped View',
 
   // 16. Point Currency Names
   earningCurrencyLabel: 'Earning Program',
@@ -827,6 +829,8 @@ const translationsZh: typeof translationsEn = {
   syncConflictDesc: '检测到本地与云端均有未同步的新改动。请选择您想保留的版本。',
   keepCloudBtn: '保留云端 (覆盖本地)',
   keepLocalBtn: '保留本地 (覆盖云端)',
+  flatView: '平铺视图',
+  groupedView: '分组视图',
 
   // 16. Point Currency Names
   earningCurrencyLabel: '返点积累币种',

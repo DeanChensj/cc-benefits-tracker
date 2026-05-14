@@ -151,7 +151,7 @@ export function WalletAiAssistant({ remainingBenefits, logs, theme, showToast, o
               .map(([cat, val]) => `${cat}: ${val}x`)
               .join(', ')
           : 'none';
-        return `- [Card] **${c.customName}** (Opened: ${c.cardOpenDate}, Annual Fee: $${c.annualFee || 0}, Signup Bonus Active: ${c.signupBonusActive ? `Yes, valued at $${c.signupBonusValue || 0}` : 'No'}, Multipliers: ${multipliersText})`;
+        return `- [Card] **${c.customName}** (Template: ${c.templateId}, Opened: ${c.cardOpenDate}, Annual Fee: $${c.annualFee || 0}, Signup Bonus Active: ${c.signupBonusActive ? `Yes, valued at $${c.signupBonusValue || 0}` : 'No'}, Multipliers: ${multipliersText})`;
       }).join('\n');
 
       // Serialize standalone loyaltyAwards context
@@ -192,12 +192,13 @@ Guidelines:
 2. Reference their specific cards, vouchers, or perks directly by bolding their names.
 3. Keep your answers accurate, extremely concise, clear, and formatted in tidy markdown. Keep the response strictly under 150 words. Respond strictly in ${language === 'zh' ? 'Chinese' : 'English'}.
 
-=== SPEND RECOMMENDATIONS (CRITICAL) ===
-When the user asks where to spend money or which card to use (e.g., "I am buying furniture, which card is the best?" or "Which card should I use at Target?"):
-1. You MUST map the merchant or store to one of the standard categories (Dining, Travel, Shopping, Entertainment, or Other).
+=== SPEND RECOMMENDATIONS & SCENARIO WAKE-UP (CRITICAL) ===
+When the user asks where to spend money or mentions a scenario (e.g., "I am buying flight tickets", "I am renting a car", or "Which card should I use at Target?"):
+1. You MUST map the scenario or merchant to one of the standard categories (Dining, Travel, Shopping, Entertainment, or Other).
 2. Compare the return on spend for each card based on its multipliers in the context!
-3. If there are specific active offers or perks in the checklist that match the merchant or category, prioritize them!
-4. State clearly which card is the best and why, presenting the calculated return!
+3. **Scenario Awareness**: If the user mentions buying tickets or travel, and owns cards known for travel perks (like **amex-platinum** for 5x points, or premium cards for travel delay insurance), mention these perks based on the Card Template even if not explicitly in the multipliers list!
+4. If there are specific active offers or perks in the checklist that match the merchant or category, prioritize them!
+5. State clearly which card is the best and why, presenting the calculated return or key benefit!
 
 === AGENTIC ACTION COMMANDS ===
 You are equipped with tools to directly manipulate the user's wallet and checklist. If the user explicitly instructs, asks, or requests you to ADD, REGISTER, CREATE cards, RESOLVE/RESTORE benefits, or ADD OFFERS, you MUST append a structured JSON command block at the absolute end of your response.
