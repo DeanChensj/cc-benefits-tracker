@@ -385,6 +385,10 @@ const translationsEn = {
   wipeAllDataBtn: 'Wipe All Local Data',
   languageSettings: 'Language Settings',
   currentLanguage: 'Current Language',
+  syncConflictTitle: 'Sync Conflict',
+  syncConflictDesc: 'Detected un-synced changes on both local and cloud. Please choose which version to keep.',
+  keepCloudBtn: 'Keep Cloud (Overwrite Local)',
+  keepLocalBtn: 'Keep Local (Overwrite Cloud)',
 
   // 16. Point Currency Names
   earningCurrencyLabel: 'Earning Program',
@@ -819,6 +823,10 @@ const translationsZh: typeof translationsEn = {
   wipeAllDataBtn: '全盘抹除本地数据',
   languageSettings: '语言设置',
   currentLanguage: '当前语言',
+  syncConflictTitle: '同步冲突',
+  syncConflictDesc: '检测到本地与云端均有未同步的新改动。请选择您想保留的版本。',
+  keepCloudBtn: '保留云端 (覆盖本地)',
+  keepLocalBtn: '保留本地 (覆盖云端)',
 
   // 16. Point Currency Names
   earningCurrencyLabel: '返点积累币种',

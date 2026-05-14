@@ -1,5 +1,7 @@
 import { lazy, Suspense } from 'react';
 import { useCardStore } from '../store/useCardStore';
+import { ZenModal } from './ZenModal';
+import { Cloud } from 'lucide-react';
 import type { OwnedCardInstance } from '../store/useCardStore';
 import { translations } from '../utils/i18n';
 import { CARDS_DB } from '../data/cards.db';
@@ -17,8 +19,8 @@ const CreateAwardModal = lazy(() => import('./CreateAwardModal').then(m => ({ de
 const SettingsModal = lazy(() => import('./SettingsModal').then(m => ({ default: m.SettingsModal })));
 
 interface ModalsContainerProps {
-  activeModal: 'sync' | 'create-card' | 'create-award' | 'wrapped' | 'disconnect-gdrive' | 'wipe' | 'settings' | null;
-  setActiveModal: (modal: 'sync' | 'create-card' | 'create-award' | 'wrapped' | 'disconnect-gdrive' | 'wipe' | 'settings' | null) => void;
+  activeModal: 'sync' | 'create-card' | 'create-award' | 'wrapped' | 'disconnect-gdrive' | 'wipe' | 'settings' | 'sync-conflict' | null;
+  setActiveModal: (modal: 'sync' | 'create-card' | 'create-award' | 'wrapped' | 'disconnect-gdrive' | 'wipe' | 'settings' | 'sync-conflict' | null) => void;
   addOfferInstanceId: string | null;
   setAddOfferInstanceId: (id: string | null) => void;
   deleteCardInstanceId: string | null;
@@ -39,6 +41,7 @@ interface ModalsContainerProps {
   securedSUBs: number;
   handleLinkGoogleDrive: () => Promise<void>;
   handleDisconnectGoogleDrive: () => void;
+  resolveSyncConflict: (choice: 'local' | 'cloud') => Promise<void>;
 }
 
 export function ModalsContainer({
@@ -63,7 +66,8 @@ export function ModalsContainer({
   expiredValue,
   securedSUBs,
   handleLinkGoogleDrive,
-  handleDisconnectGoogleDrive
+  handleDisconnectGoogleDrive,
+  resolveSyncConflict
 }: ModalsContainerProps) {
   const {
     theme,
@@ -213,6 +217,46 @@ export function ModalsContainer({
           handleLinkGoogleDrive={handleLinkGoogleDrive}
           handleDisconnectGoogleDrive={handleDisconnectGoogleDrive}
         />
+
+        {/* Sync Conflict Modal */}
+        <ZenModal
+          isOpen={activeModal === 'sync-conflict'}
+          onClose={() => setActiveModal(null)}
+          theme={theme}
+          title={t('syncConflictTitle')}
+          icon={<Cloud className="w-4 h-4 text-amber-500" />}
+          maxWidthClass="max-w-md"
+        >
+          <div className="p-4 space-y-4">
+            <p className={`text-xs leading-relaxed ${themeClass('text-slate-300', 'text-slate-600')}`}>
+              {t('syncConflictDesc')}
+            </p>
+            <div className="flex flex-col sm:flex-row gap-2">
+              <button
+                type="button"
+                onClick={async () => {
+                  await resolveSyncConflict('cloud');
+                  setActiveModal(null);
+                }}
+                className="flex-1 py-2 px-3 rounded-lg text-[10px] font-bold transition active:scale-95 cursor-pointer bg-gradient-to-tr from-purple-600 to-indigo-600 text-white hover:from-purple-500 hover:to-indigo-500"
+              >
+                {t('keepCloudBtn')}
+              </button>
+              <button
+                type="button"
+                onClick={async () => {
+                  await resolveSyncConflict('local');
+                  setActiveModal(null);
+                }}
+                className={`flex-1 py-2 px-3 rounded-lg text-[10px] font-bold transition active:scale-95 cursor-pointer ${
+                  themeClass('bg-slate-800 hover:bg-slate-700 text-slate-300', 'bg-slate-100 hover:bg-slate-200 text-slate-700')
+                }`}
+              >
+                {t('keepLocalBtn')}
+              </button>
+            </div>
+          </div>
+        </ZenModal>
       </Suspense>
 
       <Suspense fallback={null}>

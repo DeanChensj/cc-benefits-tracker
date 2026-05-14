@@ -72,7 +72,7 @@ function App() {
     if (!hasCards) return 'templates';
     return (localStorage.getItem('cc-tracker-deck-sub-tab') as 'cards' | 'awards' | 'templates') || 'cards';
   });
-  const [activeModal, setActiveModal] = useState<'sync' | 'create-card' | 'create-award' | 'wrapped' | 'disconnect-gdrive' | 'wipe' | 'settings' | null>(null);
+  const [activeModal, setActiveModal] = useState<'sync' | 'create-card' | 'create-award' | 'wrapped' | 'disconnect-gdrive' | 'wipe' | 'settings' | 'sync-conflict' | null>(null);
   const [addOfferInstanceId, setAddOfferInstanceId] = useState<string | null>(null);
   const [deleteCardInstanceId, setDeleteCardInstanceId] = useState<string | null>(null);
   const [deleteAwardId, setDeleteAwardId] = useState<string | null>(null);
@@ -114,6 +114,13 @@ function App() {
       return () => clearTimeout(timer);
     }
   }, [toast]);
+
+  useEffect(() => {
+    if (syncStatus === 'conflict') {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setActiveModal('sync-conflict');
+    }
+  }, [syncStatus]);
 
   const handleChecklistToggle = (key: string) => {
     const ab = activeBenefits.find((b) => b.logKey === key);
@@ -495,6 +502,7 @@ function App() {
         handleConfirmDisconnectGoogleDrive={handleConfirmDisconnectGoogleDrive}
         handleLinkGoogleDrive={handleLinkGoogleDrive}
         handleDisconnectGoogleDrive={handleDisconnectGoogleDrive}
+        resolveSyncConflict={useCardStore.getState().resolveSyncConflict}
         resolvedValue={resolvedValue}
         expiredValue={expiredValue}
       />

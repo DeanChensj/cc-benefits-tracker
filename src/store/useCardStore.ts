@@ -50,6 +50,15 @@ export interface AgentCommand {
   expirationDate?: string;
 }
 
+interface RemoteSyncData {
+  ownedCards?: OwnedCardInstance[];
+  loyaltyAwards?: LoyaltyAward[];
+  logs?: Record<string, import('../utils/logUtils').LogEntry>;
+  deletedCardIds?: string[];
+  deletedAwardIds?: string[];
+  walletLastModified?: number;
+}
+
 export interface CardStore {
   ownedCards: OwnedCardInstance[];
   loyaltyAwards: LoyaltyAward[];
@@ -66,9 +75,11 @@ export interface CardStore {
   // Google Drive Sync States
   gdriveToken: string | null; // Temporary in-memory OAuth access token
   gdriveEmail: string | null; // Connected google account email
-  syncStatus: 'disconnected' | 'syncing' | 'synced' | 'error';
+  syncStatus: 'disconnected' | 'syncing' | 'synced' | 'error' | 'conflict';
   lastSyncedTime: string | null;
   customClientId: string | null; // Custom Google Client ID (persisted)
+  lastSyncTimestamp: number; // Last successful sync timestamp
+  pendingRemoteData: RemoteSyncData | null; // Pending remote data during conflict
 
   // Actions
   addCard: (templateId: string) => string;
@@ -85,9 +96,10 @@ export interface CardStore {
   
   // Google Drive Actions
   setGDriveCredentials: (token: string | null, email: string | null) => void;
-  setSyncStatus: (status: 'disconnected' | 'syncing' | 'synced' | 'error') => void;
+  setSyncStatus: (status: 'disconnected' | 'syncing' | 'synced' | 'error' | 'conflict') => void;
   syncWithGDrive: () => Promise<void>;
   setCustomClientId: (clientId: string | null) => void;
+  resolveSyncConflict: (choice: 'local' | 'cloud') => Promise<void>;
 
   // Instance Offer Actions
   addInstanceOffer: (instanceId: string, offer: Omit<Benefit, 'id'>) => void;
@@ -173,6 +185,8 @@ export const useCardStore = create<CardStore>()(
       syncStatus: 'disconnected',
       lastSyncedTime: null,
       customClientId: null,
+      lastSyncTimestamp: 0,
+      pendingRemoteData: null,
 
       addCard: (templateId) => {
         let generatedName = '';
@@ -454,6 +468,20 @@ export const useCardStore = create<CardStore>()(
             });
           } else {
             const remoteData = await downloadSyncFile(gdriveToken, fileId);
+            
+            const remoteWalletTime = remoteData.walletLastModified || 0;
+            const localWalletTime = walletLastModified || 0;
+            const lastSync = get().lastSyncTimestamp || 0;
+
+            // Conflict Detection: Both sides modified since last sync
+            if (localWalletTime > lastSync && remoteWalletTime > lastSync) {
+              set({ 
+                pendingRemoteData: remoteData,
+                syncStatus: 'conflict'
+              });
+              return;
+            }
+
             const remoteCards = remoteData.ownedCards || [];
             const remoteAwards = remoteData.loyaltyAwards || [];
             const remoteLogs = remoteData.logs || {};
@@ -518,8 +546,6 @@ export const useCardStore = create<CardStore>()(
             const mergedAwards = Array.from(awardMap.values());
 
             // 4. LogEntry-level LWW checklist merge (unchanged)
-            const localWalletTime = walletLastModified || 0;
-            const remoteWalletTime = remoteData.walletLastModified || 0;
             const finalWalletTime = Math.max(localWalletTime, remoteWalletTime);
 
             const mergedLogs = { ...logs };
@@ -561,8 +587,62 @@ export const useCardStore = create<CardStore>()(
               deletedAwardIds: mergedDeletedAwards,
               logs: mergedLogs,
               walletLastModified: finalWalletTime,
+              lastSyncTimestamp: finalWalletTime,
               syncStatus: 'synced',
               lastSyncedTime: new Date().toLocaleTimeString()
+            });
+          }
+        } catch (err) {
+          set({ syncStatus: 'error' });
+          throw err;
+        }
+      },
+
+      resolveSyncConflict: async (choice) => {
+        const { gdriveToken, pendingRemoteData, ownedCards, loyaltyAwards, logs, deletedCardIds, deletedAwardIds } = get();
+        if (!gdriveToken || !pendingRemoteData) return;
+
+        set({ syncStatus: 'syncing' });
+        try {
+          const fileId = await findSyncFile(gdriveToken);
+          
+          if (choice === 'cloud') {
+            // Overwrite with cloud data
+            const remoteCards = pendingRemoteData.ownedCards || [];
+            const remoteAwards = pendingRemoteData.loyaltyAwards || [];
+            const remoteLogs = pendingRemoteData.logs || {};
+            const remoteDeletedCards = pendingRemoteData.deletedCardIds || [];
+            const remoteDeletedAwards = pendingRemoteData.deletedAwardIds || [];
+            const remoteWalletTime = pendingRemoteData.walletLastModified || Date.now();
+
+            set({
+              ownedCards: remoteCards,
+              loyaltyAwards: remoteAwards,
+              logs: remoteLogs,
+              deletedCardIds: remoteDeletedCards,
+              deletedAwardIds: remoteDeletedAwards,
+              walletLastModified: remoteWalletTime,
+              lastSyncTimestamp: remoteWalletTime,
+              syncStatus: 'synced',
+              lastSyncedTime: new Date().toLocaleTimeString(),
+              pendingRemoteData: null
+            });
+          } else {
+            // Overwrite cloud with local data
+            const dataToUpload = {
+              ownedCards,
+              loyaltyAwards,
+              logs,
+              deletedCardIds: deletedCardIds || [],
+              deletedAwardIds: deletedAwardIds || [],
+              walletLastModified: Date.now()
+            };
+            await uploadSyncFile(gdriveToken, fileId, dataToUpload);
+            set({
+              lastSyncTimestamp: dataToUpload.walletLastModified,
+              syncStatus: 'synced',
+              lastSyncedTime: new Date().toLocaleTimeString(),
+              pendingRemoteData: null
             });
           }
         } catch (err) {
