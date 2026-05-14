@@ -140,7 +140,11 @@ export function ActiveChecklistTab({
     const parsed = parseLogEntry(logEntry);
     const spent = isProgressive ? (parsed?.spentProgress || 0) : 0;
     const spentPercent = isProgressive ? Math.min((spent / (ab.benefit.spendingLimit || 1)) * 100, 100) : 0;
-    const cashbackEarned = isProgressive ? Math.round((ab.benefit.value * Math.min(spent / (ab.benefit.spendingLimit || 1), 1)) * 100) / 100 : 0;
+    const cashbackEarned = isProgressive 
+      ? (ab.benefit.type === 'welcome-offer' 
+        ? (spent >= (ab.benefit.spendingLimit || 0) ? ab.benefit.value : 0)
+        : Math.round((ab.benefit.value * Math.min(spent / (ab.benefit.spendingLimit || 1), 1)) * 100) / 100)
+      : 0;
 
     return (
       <ChecklistCardRow

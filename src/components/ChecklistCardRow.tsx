@@ -44,8 +44,20 @@ export const ChecklistCardRow = React.memo(function ChecklistCardRow({
   const t = (key: keyof typeof translations['en']) => translations[language][key] || translations['en'][key];
   const { cardInstance, benefit, logKey, isUsed, loyaltyAward } = ab;
   const isStandalone = !cardInstance;
+
   
   const [localUsed, setLocalUsed] = useState(isUsed);
+
+  const getBenefitDescription = (b: typeof benefit) => {
+    if (b.description) return b.description;
+    if (b.type === 'welcome-offer' && b.spendingLimit && b.expirationDate && cardInstance?.cardOpenDate) {
+      const openDate = new Date(cardInstance.cardOpenDate);
+      const expDate = new Date(b.expirationDate);
+      const months = (expDate.getFullYear() - openDate.getFullYear()) * 12 + (expDate.getMonth() - openDate.getMonth());
+      return `Spend $${b.spendingLimit} in ${months} months`;
+    }
+    return '';
+  };
   
   useEffect(() => {
     setLocalUsed(isUsed);
@@ -143,6 +155,7 @@ export const ChecklistCardRow = React.memo(function ChecklistCardRow({
 
   // Get color class for left border indicator
   const getCategoryBorderColor = () => {
+    if (benefit.type === 'welcome-offer') return 'border-l-purple-600';
     const cat = benefit.category;
     if (cat === 'dining') return 'border-l-rose-500';
     if (cat === 'travel') return 'border-l-sky-500';
@@ -163,6 +176,8 @@ export const ChecklistCardRow = React.memo(function ChecklistCardRow({
           ? themeClass('bg-slate-955/10 border-slate-850/30 opacity-40 cursor-not-allowed', 'bg-red-50/10 border-slate-200/45 opacity-65 cursor-not-allowed')
           : isUsed
           ? themeClass('bg-slate-900/20 border-slate-850/50 opacity-50', 'bg-slate-50 border-slate-200 opacity-60')
+          : benefit.type === 'welcome-offer'
+          ? themeClass('bg-gradient-to-br from-purple-900/30 via-slate-900/50 to-slate-900/50 border-purple-700/30', 'bg-gradient-to-br from-purple-50/50 via-white to-white border-purple-200')
           : themeClass(
               'bg-slate-900/40 border-slate-850/80 hover:bg-slate-900/60 hover:border-slate-750 shadow-[0_4px_12px_rgba(0,0,0,0.1)] backdrop-blur-sm', 
               'bg-white border-slate-200 hover:bg-slate-50 hover:border-slate-300 shadow-[0_2px_6px_rgba(15,23,42,0.02)]'
@@ -281,9 +296,9 @@ export const ChecklistCardRow = React.memo(function ChecklistCardRow({
           : 'max-h-0 opacity-0 pointer-events-none'
       }`}>
         <div className="relative min-h-[36px]">
-          {benefit.description && (
+          {getBenefitDescription(benefit) && (
             <p className={`text-xs leading-relaxed pl-[38px] pr-12 pb-2.5 w-full text-left ${themeClass('text-slate-400', 'text-slate-500')}`}>
-              {benefit.description}
+              {getBenefitDescription(benefit)}
             </p>
           )}
           <button
@@ -314,12 +329,104 @@ export const ChecklistCardRow = React.memo(function ChecklistCardRow({
           const isFullyResolved = currentProgress >= limit;
           const isZeroProgress = currentProgress <= 0;
 
+          if (benefit.type === 'welcome-offer') {
+            return (
+              <div 
+                onClick={(e) => e.stopPropagation()}
+                className={`p-4 mt-3 rounded-xl border flex flex-col gap-4 w-full transition-all duration-300 ${
+                  themeClass(
+                    'bg-purple-900/20 border-purple-700/30', 
+                    'bg-purple-50/50 border-purple-200 shadow-sm'
+                  )
+                }`}
+              >
+                {/* Mission Header */}
+                <div className="flex justify-between items-center">
+                  <div className="flex flex-col">
+                    <span className={`text-2xl font-black font-mono leading-none ${themeClass('text-white', 'text-slate-900')}`}>
+                      ${Math.max(limit - currentProgress, 0)}
+                    </span>
+                    <span className={`text-[10px] font-medium mt-1 leading-none ${themeClass('text-slate-400', 'text-slate-500')}`}>
+                      {language === 'zh' ? `还需消费以拿满 $${benefit.value} 奖励` : `left to earn $${benefit.value} bonus`}
+                    </span>
+                  </div>
+                  
+                  {/* Controls */}
+                  <div className="flex items-center gap-1">
+                    <div className={`flex items-center rounded-lg border overflow-hidden text-xs ${
+                      themeClass('border-purple-700/50 bg-slate-900/50', 'border-purple-200 bg-white shadow-sm')
+                    }`}>
+                      <button
+                        type="button"
+                        disabled={isExpired || isZeroProgress}
+                        onClick={() => {
+                          const newSpent = Math.max(currentProgress - step, 0);
+                          updateProgressLog(logKey, newSpent);
+                        }}
+                        className={`px-2.5 py-1.5 text-[9px] font-black tracking-wider uppercase transition duration-150 select-none cursor-pointer active:scale-[0.92] ${
+                          isZeroProgress || isExpired
+                            ? 'opacity-35 cursor-not-allowed text-slate-500'
+                            : themeClass('text-slate-300 hover:bg-purple-800/30', 'text-slate-600 hover:bg-purple-50')
+                        }`}
+                      >
+                        -{step}
+                      </button>
+                      <div className={`flex items-center px-1.5 py-1.5 border-l border-r ${
+                        themeClass('border-purple-700/50 bg-slate-900/25', 'border-purple-200 bg-purple-50/30')
+                      }`}>
+                        <span className="text-[9.5px] font-bold text-slate-500 mr-0.5">$</span>
+                        <input
+                          type="number"
+                          disabled={isExpired}
+                          value={currentProgress || ''}
+                          onChange={(e) => updateProgressLog(logKey, Number(e.target.value))}
+                          className={`w-16 border-0 p-0 text-center text-xs bg-transparent focus:outline-none font-mono font-black ${
+                            themeClass('text-white', 'text-slate-800')
+                          }`}
+                        />
+                      </div>
+                      <button
+                        type="button"
+                        disabled={isExpired || isFullyResolved}
+                        onClick={() => {
+                          const newSpent = Math.min(currentProgress + step, limit);
+                          updateProgressLog(logKey, newSpent);
+                        }}
+                        className={`px-2.5 py-1.5 text-[9px] font-black tracking-wider uppercase transition duration-150 select-none cursor-pointer active:scale-[0.92] ${
+                          isFullyResolved || isExpired
+                            ? 'opacity-35 cursor-not-allowed text-slate-500'
+                            : themeClass('text-purple-400 hover:bg-purple-800/30', 'text-purple-600 hover:bg-purple-50')
+                        }`}
+                      >
+                        +{step}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Progress Bar */}
+                <div className="space-y-1.5">
+                  <div className="flex justify-between text-[9px] font-bold text-slate-500 dark:text-slate-400">
+                    <span>{t('spent')}: ${currentProgress}</span>
+                    <span>{language === 'zh' ? '目标' : 'Goal'}: ${limit}</span>
+                  </div>
+                  <div className="h-2 w-full bg-slate-200 dark:bg-slate-850 rounded-full overflow-hidden">
+                    <div 
+                      className="h-full rounded-full bg-gradient-to-r from-purple-600 to-indigo-500"
+                      style={{ width: `${spentPercent}%` }}
+                    />
+                  </div>
+                </div>
+              </div>
+            );
+          }
+
           return (
             <div 
               onClick={(e) => e.stopPropagation()} // Prevent row click checklist toggle
               className={`p-3.5 sm:p-4 mt-3 rounded-xl border flex flex-col sm:flex-row sm:items-center justify-between gap-5 w-full transition-all duration-300 ${
                 themeClass(
-                  'bg-slate-950/20 border-slate-850/45', 
+                  'bg-slate-955/20 border-slate-850/45', 
                   'bg-slate-50/40 border-slate-200/80 shadow-[inset_0_1px_3px_rgba(15,23,42,0.01)]'
                 )
               }`}
@@ -364,7 +471,7 @@ export const ChecklistCardRow = React.memo(function ChecklistCardRow({
                         const val = Number(e.target.value);
                         updateProgressLog(logKey, val);
                       }}
-                      className={`w-10 border-0 p-0 text-center text-xs bg-transparent focus:outline-none font-mono font-black ${
+                      className={`w-16 border-0 p-0 text-center text-xs bg-transparent focus:outline-none font-mono font-black ${
                         themeClass('text-slate-200 focus:text-white', 'text-slate-800 focus:text-slate-900')
                       }`}
                     />
@@ -400,10 +507,15 @@ export const ChecklistCardRow = React.memo(function ChecklistCardRow({
                   {/* Left: Spent progress */}
                   <div className="flex flex-col items-start gap-0.5">
                     <span className={`text-[8px] font-black uppercase tracking-widest leading-none ${themeClass('text-slate-455', 'text-slate-500')}`}>
-                      {t('spent')}
+                      {ab.benefit.type === 'welcome-offer' ? (language === 'zh' ? '还差消费' : 'Need to Spend') : t('spent')}
                     </span>
                     <span className={`text-xs font-black font-mono mt-0.5 leading-none ${themeClass('text-slate-200', 'text-slate-750')}`}>
-                      ${currentProgress} <span className="text-[9.5px] font-medium text-slate-450 dark:text-slate-500">/ ${limit}</span>
+                      {ab.benefit.type === 'welcome-offer' 
+                        ? `$${Math.max(limit - currentProgress, 0)}` 
+                        : `$${currentProgress}`} 
+                      <span className="text-[9.5px] font-medium text-slate-450 dark:text-slate-500">
+                        {ab.benefit.type === 'welcome-offer' ? ` (${t('spent')}: $${currentProgress})` : `/ $${limit}`}
+                      </span>
                     </span>
                   </div>
 
