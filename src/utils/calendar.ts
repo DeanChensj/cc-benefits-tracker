@@ -1,7 +1,7 @@
 import { CARDS_DB, AWARD_TEMPLATES } from '../data/cards.db';
 import type { Benefit, LoyaltyAward } from '../data/cards.db';
 import type { OwnedCardInstance } from '../store/useCardStore';
-import { getLogKey } from '../store/useCardStore';
+import { getLogKey } from './storeHelpers';
 import { obfuscateKey } from './cryptoUtils';
 import type { LogEntry } from './logUtils';
 

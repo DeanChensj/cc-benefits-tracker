@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { CreditCard, Plus, Trash2 } from 'lucide-react';
 import type { OwnedCardInstance } from '../store/useCardStore';
-import { useCardStore, createWelcomeOffer } from '../store/useCardStore';
+import { useCardStore } from '../store/useCardStore';
+import { createWelcomeOffer } from '../utils/storeHelpers';
 import { translations, resolveCardNetwork } from '../utils/i18n';
 import type { PointCurrency, Benefit } from '../data/cards.db';
 import { ZenModal } from './ZenModal';

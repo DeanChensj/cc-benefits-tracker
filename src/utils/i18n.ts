@@ -50,6 +50,8 @@ const translationsEn = {
   welcomeOffer: 'Welcome Offer',
   daysLeft: '{days}D LEFT',
   expired: 'EXPIRED',
+  groupByBank: 'Group by Bank',
+  groupByCardType: 'Group by Card Type',
 
   
   // Vouchers / Awards
@@ -469,6 +471,8 @@ const translationsZh: typeof translationsEn = {
   welcomeOffer: '开卡挑战',
   daysLeft: '剩 {days} 天',
   expired: '已截止',
+  groupByBank: '按银行分组',
+  groupByCardType: '按卡型分组',
   
   // Vouchers / Awards
   vouchersTitle: '独立房券与里程券',

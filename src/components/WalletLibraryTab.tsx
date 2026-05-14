@@ -122,7 +122,6 @@ export function WalletLibraryTab({
   const [isCompactView, setIsCompactView] = useState(() => {
     return localStorage.getItem('cc-tracker-compact-view') === 'true';
   });
-
   const searchedCards = useMemo(() => {
     return ownedCards.filter((instance) => {
       if (searchQuery) {
@@ -249,6 +248,8 @@ export function WalletLibraryTab({
                 >
                   {isCompactView ? <LayoutGrid className="w-3.5 h-3.5" /> : <List className="w-3.5 h-3.5" />}
                 </button>
+                
+                {/* Compact View Toggle Button */}
               </h3>
               <div className="flex items-center gap-2 flex-wrap md:flex-nowrap shrink-0">
 
@@ -294,61 +295,62 @@ export function WalletLibraryTab({
                 </p>
               </div>
             ) : (
-              <div className="space-y-8">
-                {(['Amex', 'Chase', 'Citi', 'Other'] as const).map((bankName) => {
+              <div className={isCompactView ? "space-y-2" : "space-y-8"}>
+                {
+                  // Group by Bank
+                  (['Amex', 'Chase', 'Citi', 'Other'] as const).map((bankName) => {
+                    const bankCards = searchedCards.filter((c) => {
+                      const template = CARDS_DB.find((t) => t.id === c.templateId);
+                      const b = c.bank || template?.bank || '';
+                      if (bankName === 'Other') {
+                        return b !== 'Amex' && b !== 'Chase' && b !== 'Citi';
+                      }
+                      return b === bankName;
+                    });
 
-                  const bankCards = searchedCards.filter((c) => {
-                    const template = CARDS_DB.find((t) => t.id === c.templateId);
-                    const b = c.bank || template?.bank || '';
-                    if (bankName === 'Other') {
-                      return b !== 'Amex' && b !== 'Chase' && b !== 'Citi';
-                    }
-                    return b === bankName;
-                  });
+                    if (bankCards.length === 0) return null;
 
-                  if (bankCards.length === 0) return null;
+                    const isCollapsed = !!collapsedWalletBanks[bankName];
 
-                  const isCollapsed = !!collapsedWalletBanks[bankName];
-
-                  return (
-                    <div key={bankName} className="space-y-3.5 animate-fade-in">
-                      <BankHeader
-                        bankName={bankName}
-                        count={bankCards.length}
-                        suffix="Active Cards"
-                        themeClass={themeClass}
-                        collapsible={true}
-                        isCollapsed={isCollapsed}
-                        onToggle={() => setCollapsedWalletBanks((prev) => ({ ...prev, [bankName]: !prev[bankName] }))}
-                      />
-                      
-                      <div className={`transition-all duration-300 ease-in-out overflow-hidden ${
-                        isCollapsed 
-                          ? 'max-h-0 opacity-0 pointer-events-none' 
-                          : 'max-h-[4000px] opacity-100 mt-3.5'
-                      }`}>
-                        <div className={isCompactView ? "space-y-2 mt-3.5" : "grid sm:grid-cols-2 gap-2.5 sm:gap-4"}>
-                          {bankCards.map((instance) => (
-                            <WalletCreditCard
-                              key={instance.id}
-                              instance={instance}
-                              isCompactView={isCompactView}
-                              
-                              isCardExpanded={!!expandedCardIds[instance.id]}
-                              toggleCardExpanded={toggleCardExpanded}
-                              getCardRecoupedValue={getCardRecoupedValue}
-                              handleRemoveCard={setDeleteCardInstanceId}
-                              removeInstanceOffer={removeInstanceOffer}
-                              setAddOfferInstanceId={setAddOfferInstanceId}
-                              onEditCard={onEditCard}
-                              themeClass={themeClass}
-                            />
-                          ))}
+                    return (
+                      <div key={bankName} className="space-y-3.5 animate-fade-in">
+                        <BankHeader
+                          bankName={bankName}
+                          count={bankCards.length}
+                          suffix="Active Cards"
+                          themeClass={themeClass}
+                          collapsible={true}
+                          isCollapsed={isCollapsed}
+                          onToggle={() => setCollapsedWalletBanks((prev) => ({ ...prev, [bankName]: !prev[bankName] }))}
+                        />
+                        
+                        <div className={`transition-all duration-300 ease-in-out overflow-hidden ${
+                          isCollapsed 
+                            ? 'max-h-0 opacity-0 pointer-events-none' 
+                            : 'max-h-[4000px] opacity-100 mt-3.5'
+                        }`}>
+                          <div className={isCompactView ? "space-y-2 mt-3.5" : "grid sm:grid-cols-2 gap-2.5 sm:gap-4"}>
+                            {bankCards.map((instance) => (
+                              <WalletCreditCard
+                                key={instance.id}
+                                instance={instance}
+                                isCompactView={isCompactView}
+                                isCardExpanded={!!expandedCardIds[instance.id]}
+                                toggleCardExpanded={toggleCardExpanded}
+                                getCardRecoupedValue={getCardRecoupedValue}
+                                handleRemoveCard={setDeleteCardInstanceId}
+                                removeInstanceOffer={removeInstanceOffer}
+                                setAddOfferInstanceId={setAddOfferInstanceId}
+                                onEditCard={onEditCard}
+                                themeClass={themeClass}
+                              />
+                            ))}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  );
-                })}
+                    );
+                  })
+                }
                 <AdvancedSettingsSection themeClass={themeClass} onWipe={onWipe} />
               </div>
             )}
