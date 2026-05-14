@@ -3,6 +3,7 @@ import { useCardStore } from '../store/useCardStore';
 import { translations } from '../utils/i18n';
 import { ZenModal } from './ZenModal';
 import { Globe, Cloud, Calendar, Target, Trash2, ChevronDown, Settings } from 'lucide-react';
+import { DEFAULT_VALUATIONS } from '../data/cards.db';
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -47,10 +48,10 @@ export function SettingsModal({ isOpen, onClose, onOpenCalendarExport, onOpenWip
           <h3 className={`text-xs font-extrabold uppercase tracking-wider flex items-center gap-1.5 ${themeClass('text-slate-400', 'text-slate-600')}`}>
             <span className="w-1.5 h-1.5 rounded-full bg-purple-500 shrink-0" />
             <Globe className="w-3.5 h-3.5" />
-            {language === 'zh' ? '语言设置' : 'Language'}
+            {t('languageSettings')}
           </h3>
           <div className={`flex items-center justify-between p-3 rounded-xl border ${themeClass('bg-gradient-to-b from-slate-900/60 to-slate-950/60 border-slate-800/50 backdrop-blur-sm', 'bg-white border-slate-200 shadow-sm')}`}>
-            <span className="text-xs font-bold">{language === 'zh' ? '当前语言' : 'Current Language'}</span>
+            <span className="text-xs font-bold">{t('currentLanguage')}</span>
             <div className="text-[11px] font-semibold tracking-wide select-none flex items-center gap-1.5">
               {language === 'zh' ? (
                 <>
@@ -98,26 +99,44 @@ export function SettingsModal({ isOpen, onClose, onOpenCalendarExport, onOpenWip
               </span>
             </div>
             <div className="flex flex-col sm:flex-row gap-2">
-              <button
-                type="button"
-                onClick={gdriveEmail ? handleDisconnectGoogleDrive : handleLinkGoogleDrive}
-                className={`flex-grow py-2 px-3 rounded-lg text-[10px] font-bold transition active:scale-95 cursor-pointer ${
-                  gdriveEmail
-                    ? themeClass('bg-slate-800 hover:bg-slate-700 text-slate-300', 'bg-slate-100 hover:bg-slate-200 text-slate-700')
-                    : 'bg-gradient-to-tr from-purple-600 to-indigo-600 text-white hover:from-purple-500 hover:to-indigo-500'
-                }`}
-              >
-                {gdriveEmail ? t('cloudDisconnect') : t('cloudConnectBtn')}
-              </button>
-              {gdriveEmail && (
+              {gdriveEmail ? (
+                <>
+                  {syncStatus === 'synced' ? (
+                    <button
+                      type="button"
+                      onClick={() => triggerSync()}
+                      className={`flex-1 py-2 px-3 rounded-lg text-[10px] font-bold transition active:scale-95 cursor-pointer ${
+                        themeClass('bg-slate-800 hover:bg-slate-700 text-slate-300', 'bg-slate-100 hover:bg-slate-200 text-slate-700')
+                      }`}
+                    >
+                      {t('cloudSyncNow')}
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={handleLinkGoogleDrive}
+                      className={`flex-1 py-2 px-3 rounded-lg text-[10px] font-bold transition active:scale-95 cursor-pointer bg-gradient-to-tr from-purple-600 to-indigo-600 text-white hover:from-purple-500 hover:to-indigo-500`}
+                    >
+                      {t('cloudConnectBtn')}
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    onClick={handleDisconnectGoogleDrive}
+                    className={`flex-1 py-2 px-3 rounded-lg text-[10px] font-bold transition active:scale-95 cursor-pointer ${
+                      themeClass('bg-slate-800 hover:bg-slate-700 text-slate-300', 'bg-slate-100 hover:bg-slate-200 text-slate-700')
+                    }`}
+                  >
+                    {t('cloudDisconnect')}
+                  </button>
+                </>
+              ) : (
                 <button
                   type="button"
-                  onClick={() => triggerSync()}
-                  className={`py-2 px-3 rounded-lg text-[10px] font-bold transition active:scale-95 cursor-pointer ${
-                    themeClass('bg-slate-800 hover:bg-slate-700 text-slate-300', 'bg-slate-100 hover:bg-slate-200 text-slate-700')
-                  }`}
+                  onClick={handleLinkGoogleDrive}
+                  className={`flex-grow py-2 px-3 rounded-lg text-[10px] font-bold transition active:scale-95 cursor-pointer bg-gradient-to-tr from-purple-600 to-indigo-600 text-white hover:from-purple-500 hover:to-indigo-500`}
                 >
-                  {t('cloudSyncNow')}
+                  {t('cloudConnectBtn')}
                 </button>
               )}
             </div>
@@ -167,6 +186,19 @@ export function SettingsModal({ isOpen, onClose, onOpenCalendarExport, onOpenWip
               <p className={`text-[10px] leading-relaxed ${themeClass('text-slate-450', 'text-slate-500')}`}>
                 {t('valEditorDesc')}
               </p>
+              <button
+                type="button"
+                onClick={() => {
+                  Object.entries(DEFAULT_VALUATIONS).forEach(([currency, value]) => {
+                    updatePointValuation(currency, value);
+                  });
+                }}
+                className={`w-full py-1.5 px-3 rounded-lg text-[10px] font-bold transition active:scale-95 cursor-pointer border mb-2 ${
+                  themeClass('bg-slate-800 hover:bg-slate-700 text-slate-300 border-slate-700', 'bg-slate-100 hover:bg-slate-200 text-slate-700 border-slate-300')
+                }`}
+              >
+                {language === 'zh' ? '重置为行业标准估值' : 'Reset to Industry Standards'}
+              </button>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 {Object.entries(pointValuations || {}).map(([currency, value]) => (
                   <div key={currency} className={`flex items-center justify-between gap-2 p-1.5 rounded-lg border ${
