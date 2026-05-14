@@ -3,7 +3,7 @@ import { Plus, Check, Sparkles } from 'lucide-react';
 import { CARDS_DB } from '../data/cards.db';
 import type { CardTemplate } from '../data/cards.db';
 import { getCardPotentialValue } from '../utils/valuationUtils';
-import { BankHeader } from './WalletLibraryTab'; // Re-use bank header styles
+import { BankHeader } from './WalletCardsTab'; // Re-use bank header styles
 import { useCardStore } from '../store/useCardStore';
 
 interface CardTemplatesCatalogProps {
