@@ -327,8 +327,8 @@ export function ActiveChecklistTab({
                       : (card?.customName || template?.name || 'Credit Card');
 
                     const brandColor = isAwards 
-                      ? 'from-purple-600 to-indigo-800 text-white'
-                      : (card?.color || template?.color || 'from-slate-600 to-slate-800 text-white');
+                      ? 'from-purple-600 to-indigo-800'
+                      : (card?.color || template?.color || 'from-slate-600 to-slate-800');
 
                     const isCollapsed = !!collapsedGroups[key];
 
@@ -347,12 +347,24 @@ export function ActiveChecklistTab({
                           }`}
                         >
                           <div className="flex items-center gap-2 min-w-0">
-                            <span className="text-xs font-bold truncate">{cardName}</span>
-                            <span className={`text-[8px] font-extrabold px-1.5 py-0.5 rounded-md tracking-wide shrink-0 bg-white/20 text-white`}>
+                            {/* High-contrast pill for card name */}
+                            <span className={`text-[11px] font-bold px-2.5 py-1 rounded-lg shadow-sm ${
+                              isCollapsed ? 'truncate' : 'whitespace-normal'
+                            } ${
+                              themeClass('bg-slate-900/90 text-white', 'bg-white/90 text-slate-800')
+                            }`}>
+                              {cardName}
+                            </span>
+                            
+                            <span className={`text-[9px] font-extrabold px-1.5 py-0.5 rounded-md tracking-wide shrink-0 ${
+                              themeClass('bg-white/20 text-white', 'bg-white/80 text-slate-700')
+                            }`}>
                               {items.length} {t('itemsSuffix')}
                             </span>
                           </div>
-                          <span className="text-[9px] font-black opacity-80 px-1.5">
+                          <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-md cursor-pointer ${
+                            themeClass('bg-slate-900/50 text-white', 'bg-white/50 text-slate-800')
+                          }`}>
                             {isCollapsed ? t('expand') : t('collapse')}
                           </span>
                         </div>
