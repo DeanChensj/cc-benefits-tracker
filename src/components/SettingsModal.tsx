@@ -97,7 +97,7 @@ export function SettingsModal({ isOpen, onClose, onOpenCalendarExport, onOpenWip
                  syncStatus === 'error' ? 'Failed' : 'Disconnected'}
               </span>
             </div>
-            <div className="flex gap-2">
+            <div className="flex flex-col sm:flex-row gap-2">
               <button
                 type="button"
                 onClick={gdriveEmail ? handleDisconnectGoogleDrive : handleLinkGoogleDrive}
@@ -167,7 +167,7 @@ export function SettingsModal({ isOpen, onClose, onOpenCalendarExport, onOpenWip
               <p className={`text-[10px] leading-relaxed ${themeClass('text-slate-450', 'text-slate-500')}`}>
                 {t('valEditorDesc')}
               </p>
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 {Object.entries(pointValuations || {}).map(([currency, value]) => (
                   <div key={currency} className={`flex items-center justify-between gap-2 p-1.5 rounded-lg border ${
                     themeClass('bg-slate-900/20 border-slate-850', 'bg-white border-slate-200 shadow-sm')

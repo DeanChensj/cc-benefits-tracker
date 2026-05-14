@@ -379,7 +379,7 @@ const translationsEn = {
   catOtherBadge: 'Other / Flat',
 
   // 15. Advanced settings & valuations editor keys
-  valEditorTitle: '🎯 Points Valuations Editor (cpp)',
+  valEditorTitle: 'Points Valuations Editor',
   valEditorDesc: 'Adjust your point values in Cents Per Point (cpp). PerkFolio calculates exact Return-on-Spend (ROS%) to generate mathematically accurate card recommendations.',
   dangerZoneDesc: '🚨 Danger Zone: Hard reset will permanently erase all your cards, logs, checklist states, and customized settings. This action is irreversible.',
   wipeAllDataBtn: 'Wipe All Local Data',
@@ -811,9 +811,9 @@ const translationsZh: typeof translationsEn = {
   catOtherBadge: '其他/无门槛',
 
   // 15. Advanced settings & valuations editor keys
-  valEditorTitle: '🎯 点数估值微调面板 (Cents Per Point / cpp)',
+  valEditorTitle: '点数估值微调面板',
   valEditorDesc: '系统会根据以下点数估值自动计算每张卡的“实际消费收益率(ROS%)”并进行精确推荐。您可以按个人消费习惯自由微调各项点数价值（如 Amex MR/Chase UR 等）：',
-  dangerZoneDesc: '🚨 危险区：点击以下按钮将清除当前浏览器中所有的卡片组合、打卡报销日志和AI对话缓存。重置后数据不可恢复。',
+  dangerZoneDesc: '点击以下按钮将清除当前浏览器中所有的卡片组合、打卡报销日志和AI对话缓存。重置后数据不可恢复。',
   wipeAllDataBtn: '全盘抹除本地数据',
 
   // 16. Point Currency Names
