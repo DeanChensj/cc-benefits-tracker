@@ -35,6 +35,7 @@ interface ModalsContainerProps {
   handleConfirmDisconnectGoogleDrive: () => void;
   resolvedValue: number;
   expiredValue: number;
+  securedSUBs: number;
 }
 
 export function ModalsContainer({
@@ -56,7 +57,8 @@ export function ModalsContainer({
   handleConfirmRemoveCard,
   handleConfirmDisconnectGoogleDrive,
   resolvedValue,
-  expiredValue
+  expiredValue,
+  securedSUBs
 }: ModalsContainerProps) {
   const {
     theme,
@@ -192,6 +194,7 @@ export function ModalsContainer({
           loyaltyAwards={loyaltyAwards}
           resolvedValue={resolvedValue}
           expiredValue={expiredValue}
+          securedSUBs={securedSUBs}
           themeClass={themeClass}
           theme={theme}
         />

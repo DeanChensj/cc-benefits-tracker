@@ -112,6 +112,9 @@ export const getResolvedValue = (ab: ActiveBenefit, logs: Record<string, LogEntr
 
   if (ab.benefit.spendingLimit) {
     const spent = parsed.spentProgress || 0;
+    if (ab.benefit.type === 'welcome-offer') {
+      return spent >= ab.benefit.spendingLimit ? ab.benefit.value : 0;
+    }
     const progressPercent = Math.min(spent / ab.benefit.spendingLimit, 1);
     return Math.round((ab.benefit.value * progressPercent) * 100) / 100;
   }
@@ -186,8 +189,14 @@ export const getCardRecoupedValue = (
 
     if (benefit.spendingLimit) {
       const spent = parsed.spentProgress || 0;
-      const progressPercent = Math.min(spent / benefit.spendingLimit, 1);
-      sum += benefit.value * progressPercent;
+      if (benefit.type === 'welcome-offer') {
+        if (spent >= benefit.spendingLimit) {
+          sum += benefit.value;
+        }
+      } else {
+        const progressPercent = Math.min(spent / benefit.spendingLimit, 1);
+        sum += benefit.value * progressPercent;
+      }
     } else if (parsed.resolved) {
       sum += benefit.value;
     }

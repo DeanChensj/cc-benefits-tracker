@@ -15,6 +15,7 @@ interface SavingsWrappedModalProps {
   loyaltyAwards: LoyaltyAward[];
   resolvedValue: number;
   expiredValue: number;
+  securedSUBs: number;
   themeClass: (dark: string, light: string) => string;
   theme: 'dark' | 'light';
 }
@@ -26,6 +27,7 @@ export function SavingsWrappedModal({
   loyaltyAwards,
   resolvedValue,
   expiredValue,
+  securedSUBs,
   themeClass,
   theme
 }: SavingsWrappedModalProps) {
@@ -37,16 +39,9 @@ export function SavingsWrappedModal({
   const svgRef = useRef<SVGSVGElement>(null);
 
 
-  // 1. Calculate Total Secured SUBs
-  const securedSUBs = ownedCards.reduce((sum, card) => {
-    if (card.signupBonusActive && card.signupBonusValue !== undefined) {
-      return sum + card.signupBonusValue;
-    }
-    return sum;
-  }, 0);
-
-  // 2. Total Savings Sum (Checked Perks + SUBs!)
-  const totalSavings = Math.round((resolvedValue + securedSUBs) * 100) / 100;
+  // 1. Total Savings Sum (Resolved Value includes SUBs!)
+  const totalSavings = resolvedValue;
+  const perksRecouped = Math.round((resolvedValue - securedSUBs) * 100) / 100;
 
   // 2.5 Calculate dynamic, personalized cryptographic serial number
   const walletSizeStr = String(ownedCards.length).padStart(2, '0');
@@ -366,7 +361,7 @@ export function SavingsWrappedModal({
 
               {/* Row 1 */}
               <text x="40" y="342" fill="#94a3b8" fontSize="8.5" fontWeight="700" fontFamily="Inter, system-ui, sans-serif">{tPoster('wrappedRow1')}</text>
-              <text x="340" y="342" fill="#ffffff" fontSize="10" fontWeight="900" textAnchor="end" fontFamily="Courier, monospace">${resolvedValue}</text>
+              <text x="340" y="342" fill="#ffffff" fontSize="10" fontWeight="900" textAnchor="end" fontFamily="Courier, monospace">${perksRecouped}</text>
 
               {/* Row 2 */}
               <text x="40" y="367" fill="#94a3b8" fontSize="8.5" fontWeight="700" fontFamily="Inter, system-ui, sans-serif">{tPoster('wrappedRow2')}</text>

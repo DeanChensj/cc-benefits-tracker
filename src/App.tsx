@@ -26,7 +26,9 @@ import { Header } from './components/Header';
 import { Footer } from './components/Footer';
 import { StatsPanel } from './components/StatsPanel';
 import { ModalsContainer } from './components/ModalsContainer';
-import { createWelcomeOffer } from './utils/storeHelpers';
+import { createWelcomeOffer, getLogKey } from './utils/storeHelpers';
+import { obfuscateKey } from './utils/cryptoUtils';
+import { parseLogEntry } from './utils/logUtils';
 
 
 
@@ -325,6 +327,32 @@ function App() {
    
   }, [activeBenefits, currentDate]);
 
+  // Calculate Total Secured SUBs based on logs completion!
+  const securedSUBs = useMemo(() => {
+    return ownedCards.reduce((sum, card) => {
+      const welcomeOffer = card.instanceOffers?.find((o) => o.type === 'welcome-offer');
+      if (welcomeOffer) {
+        const logKey = getLogKey(
+          welcomeOffer.resetPeriod,
+          card.id,
+          welcomeOffer.id,
+          currentDate,
+          card.cardOpenDate,
+          welcomeOffer.expirationDate
+        );
+        const obfuscatedKey = obfuscateKey(logKey);
+        const logVal = logs[obfuscatedKey];
+        const parsed = parseLogEntry(logVal);
+        const spent = parsed?.spentProgress || 0;
+        
+        if (welcomeOffer.spendingLimit !== undefined && spent >= welcomeOffer.spendingLimit) {
+          return sum + (card.signupBonusValue || 0);
+        }
+      }
+      return sum;
+    }, 0);
+  }, [ownedCards, logs, currentDate]);
+
 
 
 
@@ -450,6 +478,7 @@ function App() {
       <Footer />
 
       <ModalsContainer
+        securedSUBs={securedSUBs}
         activeModal={activeModal}
         setActiveModal={setActiveModal}
         addOfferInstanceId={addOfferInstanceId}

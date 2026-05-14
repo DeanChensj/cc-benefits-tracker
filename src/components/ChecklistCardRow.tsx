@@ -241,12 +241,12 @@ export const ChecklistCardRow = React.memo(function ChecklistCardRow({
           <div className={`flex items-baseline gap-0.5 font-mono leading-none ${isExpired || isUsed ? 'text-slate-500 opacity-60' : themeClass('text-emerald-400', 'text-emerald-600')}`}>
             <span className="text-[13px] font-black">+${benefit.value}</span>
             <span className="text-[8px] font-black uppercase tracking-widest opacity-75 ml-0.5">
-              / {benefit.resetPeriod === 'monthly' ? (language === 'zh' ? '月' : 'MO') :
-                 benefit.resetPeriod === 'quarterly' ? (language === 'zh' ? '季' : 'QTR') :
-                 benefit.resetPeriod === 'semi-annual' ? (language === 'zh' ? '半年' : '6MO') :
-                 benefit.resetPeriod === 'annual-calendar' ? (language === 'zh' ? '年' : 'YR') :
-                 benefit.resetPeriod === 'annual-anniversary' ? (language === 'zh' ? '周年' : 'ANNIV') : 
-                 (language === 'zh' ? '次' : 'ONCE')}
+              / {benefit.resetPeriod === 'monthly' ? t('perMonth') :
+                 benefit.resetPeriod === 'quarterly' ? t('perQuarter') :
+                 benefit.resetPeriod === 'semi-annual' ? t('perHalfYear') :
+                 benefit.resetPeriod === 'annual-calendar' ? t('perYear') :
+                 benefit.resetPeriod === 'annual-anniversary' ? t('perAnniversary') : 
+                 t('perOnce')}
             </span>
           </div>
 
@@ -260,8 +260,8 @@ export const ChecklistCardRow = React.memo(function ChecklistCardRow({
                 : 'text-amber-600 dark:text-amber-400'
             }`}>
               {daysLeft <= 0 
-                ? (language === 'zh' ? '今日到期！' : 'TODAY') 
-                : (language === 'zh' ? `剩 ${daysLeft} 天` : `${daysLeft}D LEFT`)}
+                ? t('todayExpires') 
+                : t('daysLeft').replace('{days}', String(daysLeft))}
             </span>
           )}
 
@@ -297,7 +297,7 @@ export const ChecklistCardRow = React.memo(function ChecklistCardRow({
                 ? 'text-amber-500 hover:text-amber-400 bg-amber-500/10'
                 : themeClass('text-slate-500 hover:text-white hover:bg-white/5', 'text-slate-400 hover:text-slate-800 hover:bg-black/5')
             }`}
-            title={isSkipped ? (language === 'zh' ? '恢复显示' : 'Restore') : (language === 'zh' ? '忽略此期' : 'Ignore')}
+            title={isSkipped ? t('restore') : t('ignore')}
           >
             {isSkipped ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
           </button>
@@ -345,7 +345,7 @@ export const ChecklistCardRow = React.memo(function ChecklistCardRow({
                             'text-slate-505 hover:bg-slate-100 hover:text-slate-800'
                           )
                     }`}
-                    title={language === 'zh' ? `减少 $${step}` : `Reduce $${step}`}
+                    title={`${t('reduce')} $${step}`}
                   >
                     -{step}
                   </button>
@@ -386,7 +386,7 @@ export const ChecklistCardRow = React.memo(function ChecklistCardRow({
                             'bg-purple-50 text-purple-600 hover:bg-purple-100'
                           )
                     }`}
-                    title={language === 'zh' ? `增加 $${step}` : `Add $${step}`}
+                    title={`${t('add')} $${step}`}
                   >
                     +{step}
                   </button>
@@ -400,7 +400,7 @@ export const ChecklistCardRow = React.memo(function ChecklistCardRow({
                   {/* Left: Spent progress */}
                   <div className="flex flex-col items-start gap-0.5">
                     <span className={`text-[8px] font-black uppercase tracking-widest leading-none ${themeClass('text-slate-455', 'text-slate-500')}`}>
-                      {language === 'zh' ? '已消费' : 'Spent'}
+                      {t('spent')}
                     </span>
                     <span className={`text-xs font-black font-mono mt-0.5 leading-none ${themeClass('text-slate-200', 'text-slate-750')}`}>
                       ${currentProgress} <span className="text-[9.5px] font-medium text-slate-450 dark:text-slate-500">/ ${limit}</span>
@@ -410,7 +410,7 @@ export const ChecklistCardRow = React.memo(function ChecklistCardRow({
                   {/* Right: Cashback earned */}
                   <div className="flex flex-col items-end gap-0.5">
                     <span className={`text-[8px] font-black uppercase tracking-widest leading-none ${themeClass('text-slate-455', 'text-slate-500')}`}>
-                      {language === 'zh' ? '已回本' : 'Earned'}
+                      {t('earned')}
                     </span>
                     <span className="text-xs font-black font-mono mt-0.5 leading-none text-emerald-500 dark:text-emerald-450">
                       +${cashbackEarned}
