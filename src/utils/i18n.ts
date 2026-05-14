@@ -52,6 +52,18 @@ const translationsEn = {
   expired: 'EXPIRED',
   groupByBank: 'Group by Bank',
   groupByCardType: 'Group by Card Type',
+  todayExpires: 'TODAY',
+  restore: 'Restore',
+  ignore: 'Ignore',
+  reduce: 'Reduce',
+  spent: 'Spent',
+  earned: 'Earned',
+  perMonth: 'MO',
+  perQuarter: 'QTR',
+  perHalfYear: '6MO',
+  perYear: 'YR',
+  perAnniversary: 'ANNIV',
+  perOnce: 'ONCE',
 
   
   // Vouchers / Awards
@@ -473,6 +485,18 @@ const translationsZh: typeof translationsEn = {
   expired: '已截止',
   groupByBank: '按银行分组',
   groupByCardType: '按卡型分组',
+  todayExpires: '今日到期！',
+  restore: '恢复显示',
+  ignore: '忽略此期',
+  reduce: '减少',
+  spent: '已消费',
+  earned: '已回本',
+  perMonth: '月',
+  perQuarter: '季',
+  perHalfYear: '半年',
+  perYear: '年',
+  perAnniversary: '周年',
+  perOnce: '次',
   
   // Vouchers / Awards
   vouchersTitle: '独立房券与里程券',
