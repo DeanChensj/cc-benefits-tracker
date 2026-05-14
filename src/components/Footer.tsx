@@ -2,7 +2,7 @@ import { useCardStore } from '../store/useCardStore';
 import { translations } from '../utils/i18n';
 
 export function Footer() {
-  const { theme, language, toggleLanguage } = useCardStore();
+  const { theme, language } = useCardStore();
 
   const themeClass = (dark: string, light: string) => theme === 'dark' ? dark : light;
   const t = (key: keyof typeof translations['en']) => translations[language][key] || translations['en'][key];
@@ -36,23 +36,7 @@ export function Footer() {
       <p className={`text-[9px] font-bold tracking-wider uppercase ${themeClass('text-slate-500/80', 'text-slate-455')}`}>
         {t('footerPassion')}
       </p>
-      {/* Footer language selector */}
-      <div className="text-[10px] text-slate-500 dark:text-slate-450 font-semibold tracking-wide select-none flex items-center justify-center gap-1.5 mt-1 mb-1">
-        <span>🌐 Language:</span>
-        {language === 'zh' ? (
-          <>
-            <span className="text-emerald-500 font-bold">简体中文</span>
-            <span className="opacity-30">•</span>
-            <button type="button" onClick={toggleLanguage} className="hover:text-purple-400 cursor-pointer underline">English</button>
-          </>
-        ) : (
-          <>
-            <button type="button" onClick={toggleLanguage} className="hover:text-purple-400 cursor-pointer underline">简体中文</button>
-            <span className="opacity-30">•</span>
-            <span className="text-emerald-500 font-bold">English</span>
-          </>
-        )}
-      </div>
+
       <p className="text-[8.5px] leading-relaxed max-w-md mx-auto opacity-70 text-slate-500 dark:text-slate-450 font-medium">
         {t('footerPruneDesc')}
       </p>

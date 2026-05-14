@@ -1,12 +1,10 @@
-import { Sun, Moon, Calendar, Sparkles, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Sun, Moon, Sparkles, ChevronLeft, ChevronRight, Settings, Cloud } from 'lucide-react';
 import { useCardStore } from '../store/useCardStore';
 import { translations } from '../utils/i18n';
-import { CloudSyncBanner } from './CloudSyncBanner';
+
 
 interface HeaderProps {
-  setActiveModal: (modal: 'sync' | 'create-card' | 'create-award' | 'wrapped' | 'disconnect-gdrive' | 'wipe' | null) => void;
-  handleLinkGoogleDrive: () => Promise<void>;
-  handleDisconnectGoogleDrive: () => void;
+  setActiveModal: (modal: 'sync' | 'create-card' | 'create-award' | 'wrapped' | 'disconnect-gdrive' | 'wipe' | 'settings' | null) => void;
   showToast: (message: string, type?: 'success' | 'error' | 'info' | 'warning') => void;
   adjustMonth: (amount: number) => void;
   currentDate: Date;
@@ -15,8 +13,6 @@ interface HeaderProps {
 
 export function Header({
   setActiveModal,
-  handleLinkGoogleDrive,
-  handleDisconnectGoogleDrive,
   showToast,
   adjustMonth,
   currentDate,
@@ -28,10 +24,6 @@ export function Header({
     ownedCards,
     loyaltyAwards,
     syncStatus,
-    gdriveEmail,
-    lastSyncedTime,
-    setGDriveCredentials,
-    setSyncStatus,
     toggleTheme
   } = useCardStore();
 
@@ -124,17 +116,20 @@ export function Header({
             </button>
           )}
 
-          <CloudSyncBanner
-            syncStatus={syncStatus}
-            setSyncStatus={setSyncStatus}
-            gdriveEmail={gdriveEmail}
-            lastSyncedTime={lastSyncedTime}
-            setGDriveCredentials={setGDriveCredentials}
-            handleLinkGoogleDrive={handleLinkGoogleDrive}
-            handleDisconnectGoogleDrive={handleDisconnectGoogleDrive}
-            showToast={showToast}
-            themeClass={themeClass}
-          />
+          {/* Cloud Status Icon */}
+          <div 
+            className={`p-1.5 rounded-full text-[10px] font-bold flex items-center justify-center ${
+              syncStatus === 'synced' ? 'text-emerald-500' :
+              syncStatus === 'syncing' ? 'text-amber-500 animate-pulse' :
+              syncStatus === 'error' ? 'text-red-500' :
+              'text-slate-500'
+            }`}
+            title={syncStatus === 'synced' ? 'Cloud Backup Active' :
+                   syncStatus === 'syncing' ? 'Syncing...' :
+                   syncStatus === 'error' ? 'Sync Failed' : 'Cloud Disconnected'}
+          >
+            <Cloud className="w-4 h-4" />
+          </div>
 
           <button
             onClick={toggleTheme}
@@ -153,20 +148,19 @@ export function Header({
             )}
           </button>
 
-          {ownedCards.length > 0 && (
-            <button
-              onClick={() => setActiveModal('sync')}
-              className={`p-2 rounded-xl border transition duration-300 active:scale-90 cursor-pointer ${
-                themeClass(
-                  'bg-slate-900 border-slate-800 hover:bg-slate-800 text-amber-500',
-                  'bg-white border-slate-250 hover:bg-slate-100 text-amber-600 shadow-sm'
-                )
-              }`}
-              title={t('syncReminders')}
-            >
-              <Calendar className="w-4 h-4" />
-            </button>
-          )}
+          {/* Settings Gear Button */}
+          <button
+            onClick={() => setActiveModal('settings')}
+            className={`p-2 rounded-xl border transition duration-300 active:scale-90 cursor-pointer ${
+              themeClass(
+                'bg-slate-900 border-slate-800 hover:bg-slate-800 text-purple-400',
+                'bg-white border-slate-250 hover:bg-slate-100 text-purple-600 shadow-sm'
+              )
+            }`}
+            title={language === 'zh' ? '设置' : 'Settings'}
+          >
+            <Settings className="w-4 h-4" />
+          </button>
 
           <div className={`flex items-center rounded-full p-0.5 text-[11px] font-extrabold border ${
             themeClass('bg-slate-900 border-slate-800 text-slate-300', 'bg-slate-100 border-slate-250 text-slate-700')

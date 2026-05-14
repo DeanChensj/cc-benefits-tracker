@@ -14,10 +14,11 @@ const SavingsWrappedModal = lazy(() => import('./SavingsWrappedModal').then(m =>
 const EditCardModal = lazy(() => import('./EditCardModal').then(m => ({ default: m.EditCardModal })));
 const EditAwardModal = lazy(() => import('./EditAwardModal').then(m => ({ default: m.EditAwardModal })));
 const CreateAwardModal = lazy(() => import('./CreateAwardModal').then(m => ({ default: m.CreateAwardModal })));
+const SettingsModal = lazy(() => import('./SettingsModal').then(m => ({ default: m.SettingsModal })));
 
 interface ModalsContainerProps {
-  activeModal: 'sync' | 'create-card' | 'create-award' | 'wrapped' | 'disconnect-gdrive' | 'wipe' | null;
-  setActiveModal: (modal: 'sync' | 'create-card' | 'create-award' | 'wrapped' | 'disconnect-gdrive' | 'wipe' | null) => void;
+  activeModal: 'sync' | 'create-card' | 'create-award' | 'wrapped' | 'disconnect-gdrive' | 'wipe' | 'settings' | null;
+  setActiveModal: (modal: 'sync' | 'create-card' | 'create-award' | 'wrapped' | 'disconnect-gdrive' | 'wipe' | 'settings' | null) => void;
   addOfferInstanceId: string | null;
   setAddOfferInstanceId: (id: string | null) => void;
   deleteCardInstanceId: string | null;
@@ -36,6 +37,8 @@ interface ModalsContainerProps {
   resolvedValue: number;
   expiredValue: number;
   securedSUBs: number;
+  handleLinkGoogleDrive: () => Promise<void>;
+  handleDisconnectGoogleDrive: () => void;
 }
 
 export function ModalsContainer({
@@ -58,7 +61,9 @@ export function ModalsContainer({
   handleConfirmDisconnectGoogleDrive,
   resolvedValue,
   expiredValue,
-  securedSUBs
+  securedSUBs,
+  handleLinkGoogleDrive,
+  handleDisconnectGoogleDrive
 }: ModalsContainerProps) {
   const {
     theme,
@@ -197,6 +202,16 @@ export function ModalsContainer({
           securedSUBs={securedSUBs}
           themeClass={themeClass}
           theme={theme}
+        />
+
+        {/* Settings Modal */}
+        <SettingsModal
+          isOpen={activeModal === 'settings'}
+          onClose={() => setActiveModal(null)}
+          onOpenCalendarExport={() => setActiveModal('sync')}
+          onOpenWipeModal={() => setActiveModal('wipe')}
+          handleLinkGoogleDrive={handleLinkGoogleDrive}
+          handleDisconnectGoogleDrive={handleDisconnectGoogleDrive}
         />
       </Suspense>
 

@@ -72,7 +72,7 @@ function App() {
     if (!hasCards) return 'templates';
     return (localStorage.getItem('cc-tracker-deck-sub-tab') as 'cards' | 'awards' | 'templates') || 'cards';
   });
-  const [activeModal, setActiveModal] = useState<'sync' | 'create-card' | 'create-award' | 'wrapped' | 'disconnect-gdrive' | 'wipe' | null>(null);
+  const [activeModal, setActiveModal] = useState<'sync' | 'create-card' | 'create-award' | 'wrapped' | 'disconnect-gdrive' | 'wipe' | 'settings' | null>(null);
   const [addOfferInstanceId, setAddOfferInstanceId] = useState<string | null>(null);
   const [deleteCardInstanceId, setDeleteCardInstanceId] = useState<string | null>(null);
   const [deleteAwardId, setDeleteAwardId] = useState<string | null>(null);
@@ -373,8 +373,6 @@ function App() {
     }`}>
       <Header
         setActiveModal={setActiveModal}
-        handleLinkGoogleDrive={handleLinkGoogleDrive}
-        handleDisconnectGoogleDrive={handleDisconnectGoogleDrive}
         showToast={showToast}
         adjustMonth={adjustMonth}
         currentDate={currentDate}
@@ -459,7 +457,6 @@ function App() {
             setIsCreateAwardModalOpen={(open) => setActiveModal(open ? 'create-award' : null)}
             setDeleteCardInstanceId={setDeleteCardInstanceId}
             setDeleteAwardId={setDeleteAwardId}
-            onWipe={() => setActiveModal('wipe')}
             themeClass={themeClass}
             selectedTemplates={selectedTemplates}
             setSelectedTemplates={setSelectedTemplates}
@@ -496,6 +493,8 @@ function App() {
         getLocalDateString={getLocalDateString}
         handleConfirmRemoveCard={handleConfirmRemoveCard}
         handleConfirmDisconnectGoogleDrive={handleConfirmDisconnectGoogleDrive}
+        handleLinkGoogleDrive={handleLinkGoogleDrive}
+        handleDisconnectGoogleDrive={handleDisconnectGoogleDrive}
         resolvedValue={resolvedValue}
         expiredValue={expiredValue}
       />

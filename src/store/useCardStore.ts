@@ -112,6 +112,7 @@ export interface CardStore {
   pruneExpiredLogs: (currentDate: Date) => void;
 
   resetAll: () => void;
+  triggerSync: () => Promise<void>;
 }
 
 
@@ -1053,6 +1054,10 @@ export const useCardStore = create<CardStore>()(
           deletedCardIds: [],
           deletedAwardIds: [],
         })),
+      triggerSync: async () => {
+        const state = get();
+        await syncPushToCloud(state.gdriveToken, state.ownedCards, state.logs);
+      },
 
       updatePointValuation: (currency, value) =>
         set((state) => {

@@ -3,7 +3,7 @@ import { Plus, Sparkles, CreditCard, Compass, LayoutGrid, List } from 'lucide-re
 import { WalletCreditCard } from './WalletCreditCard';
 import { CardTemplatesCatalog } from './CardTemplatesCatalog';
 import { CheckoutWinnersRow } from './CheckoutWinnersRow';
-import { AdvancedSettingsSection } from './AdvancedSettingsSection';
+
 import { VoucherTicketCard } from './VoucherTicketCard';
 import { CARDS_DB, AWARD_TEMPLATES } from '../data/cards.db';
 import type { LoyaltyAward, CardTemplate } from '../data/cards.db';
@@ -22,7 +22,7 @@ interface WalletLibraryTabProps {
   setIsChurningDrawerOpen: (open: boolean) => void;
   setDeleteCardInstanceId: (instanceId: string | null) => void;
   setDeleteAwardId: (awardId: string | null) => void;
-  onWipe: () => void;
+
   themeClass: (dark: string, light: string) => string;
   selectedTemplates: string[];
   setSelectedTemplates: React.Dispatch<React.SetStateAction<string[]>>;
@@ -98,7 +98,7 @@ export function WalletLibraryTab({
   setIsChurningDrawerOpen,
   setDeleteCardInstanceId,
   setDeleteAwardId,
-  onWipe,
+
   themeClass,
   selectedTemplates,
   setSelectedTemplates,
@@ -351,7 +351,7 @@ export function WalletLibraryTab({
                     );
                   })
                 }
-                <AdvancedSettingsSection themeClass={themeClass} onWipe={onWipe} />
+
               </div>
             )}
         </div>
