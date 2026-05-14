@@ -59,16 +59,39 @@ export const ChecklistCardRow = React.memo(function ChecklistCardRow({
   const isProgressiveCap = benefit.spendingLimit !== undefined;
   const isAnnual = benefit.resetPeriod === 'annual-calendar' || benefit.resetPeriod === 'annual-anniversary';
 
-  // Calculate smart expiration threshold based on resetPeriod
-  const threshold = 
-    benefit.resetPeriod === 'monthly' ? 7 :
-    benefit.resetPeriod === 'quarterly' ? 15 : 30;
-
-  // Smart rule: Never show countdowns for annual progressive spending limit caps!
-  const isNearingExpiration = 
-    (isProgressiveCap && isAnnual) 
-      ? false 
-      : (daysLeft !== null && daysLeft <= threshold);
+  // Calculate urgency level based on resetPeriod and daysLeft
+  const getUrgencyLevel = () => {
+    if (daysLeft === null) return 0;
+    if (isProgressiveCap && isAnnual) return 0; // Never show countdowns for annual progressive spending limit caps!
+    
+    const period = benefit.resetPeriod;
+    
+    if (period === 'monthly') {
+      if (daysLeft <= 1) return 3;
+      if (daysLeft <= 3) return 2;
+      if (daysLeft <= 7) return 1;
+    } else if (period === 'quarterly') {
+      if (daysLeft <= 3) return 3;
+      if (daysLeft <= 7) return 2;
+      if (daysLeft <= 15) return 1;
+    } else if (period === 'semi-annual') {
+      if (daysLeft <= 7) return 3;
+      if (daysLeft <= 15) return 2;
+      if (daysLeft <= 30) return 1;
+    } else if (period === 'annual-calendar' || period === 'annual-anniversary') {
+      if (daysLeft <= 7) return 3;
+      if (daysLeft <= 15) return 2;
+      if (daysLeft <= 45) return 1;
+    } else if (period === 'once' || period === 'fixed') {
+      if (daysLeft <= 7) return 3;
+      if (daysLeft <= 15) return 2;
+      if (daysLeft <= 30) return 1;
+    }
+    
+    return 0;
+  };
+  
+  const urgencyLevel = getUrgencyLevel();
   const template = cardInstance && cardInstance.templateId !== 'custom'
     ? CARDS_DB.find(t => t.id === cardInstance.templateId)
     : null;
@@ -228,10 +251,12 @@ export const ChecklistCardRow = React.memo(function ChecklistCardRow({
           </div>
 
           {/* Row 2: Expiration Warning (Middle!) */}
-          {(!isUsed && isNearingExpiration && daysLeft !== null) && (
+          {(!isUsed && !isExpired && urgencyLevel > 0 && daysLeft !== null) && (
             <span className={`text-[9px] font-black uppercase tracking-widest mt-0.5 ${
-              daysLeft <= 2 
-                ? 'text-red-500 dark:text-red-400 animate-pulse' 
+              urgencyLevel === 3
+                ? 'text-red-500 dark:text-red-400 animate-pulse'
+                : urgencyLevel === 2
+                ? 'text-orange-500 dark:text-orange-400'
                 : 'text-amber-600 dark:text-amber-400'
             }`}>
               {daysLeft <= 0 
