@@ -196,7 +196,7 @@ export const ChecklistCardRow = React.memo(function ChecklistCardRow({
                 }, 300);
               }
             }}
-            className={`w-5 h-5 flex items-center justify-center rounded-full border transition-all duration-200 shrink-0 mt-0.5 cursor-pointer shadow-inner active:scale-[0.95] ${localUsed ? 'animate-bounce-subtle' : ''} ${
+            className={`w-5 h-5 flex items-center justify-center rounded-md border transition-all duration-200 shrink-0 mt-0.5 cursor-pointer shadow-inner active:scale-[0.95] ${localUsed ? 'animate-bounce-subtle' : ''} ${
               isExpired
                 ? 'border-red-900 bg-red-950/10 text-red-500'
                 : isUsed 
