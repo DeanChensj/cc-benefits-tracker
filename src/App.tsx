@@ -17,8 +17,7 @@ import { ActiveChecklistTab } from './components/ActiveChecklistTab';
 import { WalletLibraryTab } from './components/WalletLibraryTab';
 import { getLocalDateString, getAnnualFeeWarningInfo } from './utils/dateUtils';
 import { getResolvedValue, getCardRecoupedValue } from './utils/valuationUtils';
-import { parseLogEntry } from './utils/logUtils';
-import { obfuscateKey } from './utils/cryptoUtils';
+
 import { loadGoogleGsiScript, requestGDriveToken, fetchUserEmail } from './utils/gdrive';
 import { useActiveBenefits } from './hooks/useActiveBenefits';
 import type { ActiveBenefit } from './hooks/useActiveBenefits';
@@ -85,7 +84,7 @@ function App() {
   const [isConfigureAddOpen, setIsConfigureAddOpen] = useState(false);
   const [configuredTemplate, setConfiguredTemplate] = useState<CardTemplate | null>(null);
 
-  const lastActionRef = useRef<{ logKey: string; prevResolved: boolean; prevSpentProgress?: number } | null>(null);
+
 
   const [dismissedWarningCardIds, setDismissedWarningCardIds] = useState<Record<string, boolean>>({});
   const [isChurningDrawerOpen, setIsChurningDrawerOpen] = useState(false);
@@ -122,21 +121,11 @@ function App() {
       const targetAward = loyaltyAwards.find((a) => a.id === ab.loyaltyAward?.id);
       if (!targetAward) return;
 
-      lastActionRef.current = {
-        logKey: targetAward.id,
-        prevResolved: targetAward.usedQuantity >= targetAward.quantity,
-        prevSpentProgress: targetAward.usedQuantity
-      };
+
 
       toggleLoyaltyAward(targetAward.id);
     } else {
-      const obfuscated = obfuscateKey(key);
-      const entry = parseLogEntry(logs[obfuscated]);
-      lastActionRef.current = {
-        logKey: key,
-        prevResolved: entry ? !!entry.resolved : false,
-        prevSpentProgress: entry ? entry.spentProgress : 0
-      };
+
 
       toggleBenefit(key);
     }
@@ -145,13 +134,7 @@ function App() {
   };
 
   const handleUpdateProgressLog = (logKey: string, spent: number) => {
-    const obfuscated = obfuscateKey(logKey);
-    const entry = parseLogEntry(logs[obfuscated]);
-    lastActionRef.current = {
-      logKey,
-      prevResolved: entry ? !!entry.resolved : false,
-      prevSpentProgress: entry ? entry.spentProgress : 0
-    };
+
 
     updateProgressLog(logKey, spent);
 
