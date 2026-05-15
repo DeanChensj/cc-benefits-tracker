@@ -4,8 +4,8 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/png" href="./icon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>PerkFolio — The Local-First, No-Plaid Credit Card Tracker</title>
-    <meta name="description" content="The ultimate zero-trust local card app. Track your Amex, Chase, and Citi credit card benefits securely without Plaid or account logins." />
+    <title>PerkFolio — Credit Card Tracker & Guides | 信用卡权益追踪与玩卡攻略</title>
+    <meta name="description" content="The ultimate zero-trust local card app. Track your Amex Platinum, Chase Sapphire benefits securely without Plaid. | 最懂你的信用卡福利追踪工具，轻松追踪 5/24 进度和开卡礼。" />
     
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website" />
@@ -47,6 +47,32 @@
     
     <!-- Privacy-First Cookieless Analytics (Umami) -->
     <script defer src="https://cloud.umami.is/script.js" data-website-id="e2c4581c-f2e4-4257-876a-d414a3c919f9"></script>
+
+    <!-- Structured Data for FAQ (SEO) -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "How to track the Chase 5/24 rule online? / 如何在网上追踪 Chase 5/24 规则？",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "You can use this Local-First CC Tracker! Just add your cards with their opening dates, and the app will automatically calculate your 5/24 status. / 您可以使用本 Local-First 信用卡追踪工具！只需添加卡片并输入开卡日期，即可自动计算 5/24 状态。"
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How to maximize Amex Platinum statement credits? / 如何最大化美运白金卡报销？",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "The app breaks down complex monthly credits into a simple todo list. / 本应用将复杂的按月报销拆分为简单的待办清单。"
+          }
+        }
+      ]
+    }
+    </script>
   </head>
   <body class="bg-slate-950">
     <div id="root"></div>
