@@ -1,4 +1,4 @@
-import { Sparkles, CreditCard, Zap } from 'lucide-react';
+import { Sparkles, CreditCard, Zap, Plus, Search } from 'lucide-react';
 import { translations } from '../utils/i18n';
 import { useCardStore } from '../store/useCardStore';
 import { CARDS_DB } from '../data/cards.db';
@@ -52,6 +52,16 @@ export function EmptyWalletState({ onManualAdd, onBrowse, onImportComplete, them
         <p className={`text-xs max-w-md mx-auto leading-relaxed ${themeClass('text-slate-400', 'text-slate-500')}`}>
           {t('startWalletDesc')}
         </p>
+        <div className="pt-3">
+          <button
+            onClick={injectDemoData}
+            className="relative inline-flex items-center justify-center px-6 py-3 overflow-hidden font-bold text-white rounded-2xl group bg-gradient-to-br from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 shadow-lg shadow-purple-500/30 transition-all duration-300 active:scale-95 cursor-pointer text-xs"
+          >
+            <span className="absolute w-0 h-0 transition-all duration-300 ease-out bg-white opacity-10 group-hover:w-full group-hover:h-32"></span>
+            <Zap className="w-3.5 h-3.5 mr-1.5 animate-pulse" />
+            <span>{t('enterDemoModeNow')}</span>
+          </button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-6">
@@ -91,29 +101,31 @@ export function EmptyWalletState({ onManualAdd, onBrowse, onImportComplete, them
       </div>
 
       <div className="text-center pt-4 flex flex-wrap justify-center gap-3">
-        <button
-          onClick={injectDemoData}
-          className="text-xs font-bold px-4 py-2 rounded-xl border transition active:scale-[0.98] cursor-pointer bg-gradient-to-tr from-purple-600 to-indigo-600 text-white border-transparent shadow-md shadow-purple-600/20"
-        >
-          {language === 'zh' ? '进入演示模式' : 'Enter Demo Mode'}
-        </button>
         {onManualAdd && (
           <button
             onClick={onManualAdd}
-            className={`text-xs font-bold px-4 py-2 rounded-xl border transition active:scale-[0.98] cursor-pointer ${
-              themeClass('bg-slate-800 hover:bg-slate-700 text-slate-300 border-slate-700', 'bg-slate-100 hover:bg-slate-200 text-slate-700 border-slate-300')
+            className={`text-xs font-bold px-5 py-2.5 rounded-xl border transition duration-200 active:scale-[0.98] cursor-pointer flex items-center gap-1.5 ${
+              themeClass(
+                'bg-slate-900/50 hover:bg-slate-850/50 border-slate-800 text-slate-300 hover:text-white shadow-inner',
+                'bg-white/80 hover:bg-white border-slate-250 text-slate-700 hover:text-slate-900 shadow-sm'
+              )
             }`}
           >
+            <Plus className="w-3.5 h-3.5" />
             {t('addCardManually')}
           </button>
         )}
         {onBrowse && (
           <button
             onClick={onBrowse}
-            className={`text-xs font-bold px-4 py-2 rounded-xl border transition active:scale-[0.98] cursor-pointer ${
-              themeClass('bg-slate-800 hover:bg-slate-700 text-slate-300 border-slate-700', 'bg-slate-100 hover:bg-slate-200 text-slate-700 border-slate-300')
+            className={`text-xs font-bold px-5 py-2.5 rounded-xl border transition duration-200 active:scale-[0.98] cursor-pointer flex items-center gap-1.5 ${
+              themeClass(
+                'bg-slate-900/50 hover:bg-slate-850/50 border-slate-800 text-slate-300 hover:text-white shadow-inner',
+                'bg-white/80 hover:bg-white border-slate-250 text-slate-700 hover:text-slate-900 shadow-sm'
+              )
             }`}
           >
+            <Search className="w-3.5 h-3.5" />
             {t('browseTemplates')}
           </button>
         )}
