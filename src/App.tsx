@@ -65,13 +65,9 @@ function App() {
   // Date to evaluate states against (defaults to current system date)
   const [currentDate, setCurrentDate] = useState(new Date());
   const [activeTab, setActiveTab] = useState<'todo' | 'cards'>(() => {
-    const hasCards = useCardStore.getState().ownedCards.length > 0;
-    if (!hasCards) return 'cards';
     return (localStorage.getItem('cc-tracker-active-tab') as 'todo' | 'cards') || 'todo';
   });
   const [deckSubTab, setDeckSubTab] = useState<'cards' | 'awards' | 'templates'>(() => {
-    const hasCards = useCardStore.getState().ownedCards.length > 0;
-    if (!hasCards) return 'templates';
     return (localStorage.getItem('cc-tracker-deck-sub-tab') as 'cards' | 'awards' | 'templates') || 'cards';
   });
   const [activeModal, setActiveModal] = useState<'sync' | 'create-card' | 'create-award' | 'wrapped' | 'disconnect-gdrive' | 'wipe' | 'settings' | 'sync-conflict' | null>(null);
@@ -454,7 +450,6 @@ function App() {
             {ownedCards.length === 0 && loyaltyAwards.length === 0 ? (
               <EmptyWalletState 
                 onBrowse={() => setActiveTab('cards')} 
-                onImportComplete={() => setActiveTab('cards')} 
                 themeClass={themeClass} 
               />
             ) : (
