@@ -1,9 +1,11 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { CARDS_DB, DEFAULT_VALUATIONS } from '../data/cards.db';
+import { getDemoData } from '../data/demoData';
 import type { Benefit, LoyaltyAward, PointCurrency } from '../data/cards.db';
 import { translations } from '../utils/i18n';
-import { findSyncFile, uploadSyncFile, downloadSyncFile } from '../utils/gdrive';
+import { findSyncFile, uploadSyncFile } from '../utils/gdrive';
+import { syncPushToCloud, performGDriveSync } from '../utils/syncUtils';
 import type { LogEntry } from '../utils/logUtils';
 import { parseLogEntry } from '../utils/logUtils';
 import { obfuscateKey, deobfuscateKey } from '../utils/cryptoUtils';
@@ -166,44 +168,6 @@ export interface CardStore {
   resetAll: () => void;
   triggerSync: () => Promise<void>;
 }
-
-
-
-// In-memory reference to the background sync debounce timer
-let syncTimeout: ReturnType<typeof setTimeout> | null = null;
-
-// Helper to push updates to Google Drive silently in the background with a 5-second debounce buffer
-const syncPushToCloud = async (
-  token: string | null,
-  ownedCards: OwnedCardInstance[],
-  logs: Record<string, LogEntry>
-) => {
-  if (!token) return;
-
-  if (syncTimeout) {
-    clearTimeout(syncTimeout);
-  }
-
-  syncTimeout = setTimeout(async () => {
-    syncTimeout = null;
-    try {
-      const fileId = await findSyncFile(token);
-      const storeState = useCardStore.getState();
-      const loyaltyAwards = storeState?.loyaltyAwards || [];
-      const deletedCardIds = storeState?.deletedCardIds || [];
-      const deletedAwardIds = storeState?.deletedAwardIds || [];
-      await uploadSyncFile(token, fileId, { 
-        ownedCards, 
-        logs, 
-        loyaltyAwards,
-        deletedCardIds,
-        deletedAwardIds
-      });
-    } catch (err) {
-      console.error('Silent background cloud sync failed:', err);
-    }
-  }, 5000);
-};
 
 
 
@@ -445,156 +409,7 @@ export const useCardStore = create<CardStore>()(
         })),
 
       syncWithGDrive: async () => {
-        const { gdriveToken, ownedCards, loyaltyAwards, logs, walletLastModified, deletedCardIds, deletedAwardIds } = get();
-        if (!gdriveToken) return;
-
-        set({ syncStatus: 'syncing' });
-        try {
-          const fileId = await findSyncFile(gdriveToken);
-          if (!fileId) {
-            const dataToUpload = { 
-              ownedCards, 
-              loyaltyAwards,
-              logs, 
-              deletedCardIds: deletedCardIds || [],
-              deletedAwardIds: deletedAwardIds || [],
-              walletLastModified: walletLastModified || Date.now() 
-            };
-            await uploadSyncFile(gdriveToken, null, dataToUpload);
-            set({ 
-              syncStatus: 'synced', 
-              lastSyncedTime: new Date().toLocaleTimeString() 
-            });
-          } else {
-            const remoteData = await downloadSyncFile(gdriveToken, fileId);
-            
-            const remoteWalletTime = remoteData.walletLastModified || 0;
-            const localWalletTime = walletLastModified || 0;
-            const lastSync = get().lastSyncTimestamp || 0;
-
-            // Conflict Detection: Both sides modified since last sync
-            if (localWalletTime > lastSync && remoteWalletTime > lastSync) {
-              set({ 
-                pendingRemoteData: remoteData,
-                syncStatus: 'conflict'
-              });
-              return;
-            }
-
-            const remoteCards = remoteData.ownedCards || [];
-            const remoteAwards = remoteData.loyaltyAwards || [];
-            const remoteLogs = remoteData.logs || {};
-
-            // 1. Merge Tombstone Deletion Trackers
-            const localDeletedCards = deletedCardIds || [];
-            const remoteDeletedCards = remoteData.deletedCardIds || [];
-            const mergedDeletedCards = Array.from(new Set([...localDeletedCards, ...remoteDeletedCards]));
-
-            const localDeletedAwards = deletedAwardIds || [];
-            const remoteDeletedAwards = remoteData.deletedAwardIds || [];
-            const mergedDeletedAwards = Array.from(new Set([...localDeletedAwards, ...remoteDeletedAwards]));
-
-            // 2. Instance-level LWW ownedCards Merge (Tombstone Excluded)
-            const cardMap = new Map<string, OwnedCardInstance>();
-            remoteCards.forEach((c: OwnedCardInstance) => {
-              if (!mergedDeletedCards.includes(c.id)) {
-                cardMap.set(c.id, c);
-              }
-            });
-            ownedCards.forEach((c: OwnedCardInstance) => {
-              if (mergedDeletedCards.includes(c.id)) {
-                cardMap.delete(c.id);
-                return;
-              }
-              const existing = cardMap.get(c.id);
-              if (!existing) {
-                cardMap.set(c.id, c);
-              } else {
-                const localTime = c.lastModified || 0;
-                const remoteTime = existing.lastModified || 0;
-                if (localTime > remoteTime) {
-                  cardMap.set(c.id, c);
-                }
-              }
-            });
-            const mergedCards = Array.from(cardMap.values());
-
-            // 3. Instance-level LWW loyaltyAwards Merge (Tombstone Excluded)
-            const awardMap = new Map<string, LoyaltyAward>();
-            remoteAwards.forEach((a: LoyaltyAward) => {
-              if (!mergedDeletedAwards.includes(a.id)) {
-                awardMap.set(a.id, a);
-              }
-            });
-            loyaltyAwards.forEach((a: LoyaltyAward) => {
-              if (mergedDeletedAwards.includes(a.id)) {
-                awardMap.delete(a.id);
-                return;
-              }
-              const existing = awardMap.get(a.id);
-              if (!existing) {
-                awardMap.set(a.id, a);
-              } else {
-                const localTime = a.lastModified || 0;
-                const remoteTime = existing.lastModified || 0;
-                if (localTime > remoteTime) {
-                  awardMap.set(a.id, a);
-                }
-              }
-            });
-            const mergedAwards = Array.from(awardMap.values());
-
-            // 4. LogEntry-level LWW checklist merge (unchanged)
-            const finalWalletTime = Math.max(localWalletTime, remoteWalletTime);
-
-            const mergedLogs = { ...logs };
-            const currentYear = new Date().getFullYear();
-
-            Object.entries(remoteLogs).forEach(([key, val]) => {
-              const remoteVal = val as LogEntry;
-              const plainKey = deobfuscateKey(key);
-              const logYear = getYearFromPlainKey(plainKey);
-              if (logYear !== null && (currentYear - logYear > 1)) {
-                return;
-              }
-
-              if (mergedLogs[key] === undefined) {
-                mergedLogs[key] = remoteVal;
-              } else {
-                const localTime = mergedLogs[key].timestamp || 0;
-                const remoteTime = remoteVal.timestamp || 0;
-                if (remoteTime > localTime) {
-                  mergedLogs[key] = remoteVal;
-                }
-              }
-            });
-
-            const finalMergedData = { 
-              ownedCards: mergedCards, 
-              deletedCardIds: mergedDeletedCards,
-              loyaltyAwards: mergedAwards,
-              deletedAwardIds: mergedDeletedAwards,
-              logs: mergedLogs, 
-              walletLastModified: finalWalletTime 
-            };
-            await uploadSyncFile(gdriveToken, fileId, finalMergedData);
-
-            set({
-              ownedCards: mergedCards,
-              deletedCardIds: mergedDeletedCards,
-              loyaltyAwards: mergedAwards,
-              deletedAwardIds: mergedDeletedAwards,
-              logs: mergedLogs,
-              walletLastModified: finalWalletTime,
-              lastSyncTimestamp: finalWalletTime,
-              syncStatus: 'synced',
-              lastSyncedTime: new Date().toLocaleTimeString()
-            });
-          }
-        } catch (err) {
-          set({ syncStatus: 'error' });
-          throw err;
-        }
+        await performGDriveSync(get, set);
       },
 
       resolveSyncConflict: async (choice) => {
@@ -653,109 +468,10 @@ export const useCardStore = create<CardStore>()(
       setAiPrompt: (prompt) => set({ aiPrompt: prompt }),
 
       injectDemoData: () => {
-        const now = new Date();
-        const year = now.getFullYear();
-        const monthStr = (now.getMonth() + 1).toString().padStart(2, '0');
-        const dateStr = now.getDate().toString().padStart(2, '0');
-        const todayStr = `${year}-${monthStr}-${dateStr}`;
-        
-        const jan1Str = `${year}-01-01`;
-
         const language = get().language;
         const t = (key: keyof typeof translations['en']) => translations[language][key] || translations['en'][key];
 
-        const demoCards: OwnedCardInstance[] = [
-          {
-            id: 'demo_csr',
-            templateId: 'chase-sapphire-reserve',
-            customName: t('demoCsrName'),
-            cardOpenDate: jan1Str,
-            annualFee: 795,
-            pointCurrency: 'chase-ur',
-            instanceOffers: [
-              {
-                id: 'demo_csr_wo',
-                name: 'Welcome Offer',
-                description: 'Spend $4000 in 3 months',
-                value: 900,
-                resetPeriod: 'once',
-                category: 'other',
-                spendingLimit: 4000,
-                expirationDate: `${year}-04-01`,
-                type: 'welcome-offer'
-              }
-            ]
-          },
-          {
-            id: 'demo_plat',
-            templateId: 'amex-platinum',
-            customName: t('demoPlatName'),
-            cardOpenDate: todayStr, // Opened today!
-            annualFee: 895,
-            pointCurrency: 'amex-mr',
-            instanceOffers: [
-              {
-                id: 'demo_plat_wo',
-                name: 'Welcome Offer',
-                description: 'Spend $4000 in 6 months',
-                value: 3000, // As requested!
-                resetPeriod: 'once',
-                category: 'other',
-                spendingLimit: 4000,
-                expirationDate: (() => {
-                  const d = new Date(todayStr);
-                  d.setMonth(d.getMonth() + 6);
-                  return d.toISOString().slice(0, 10);
-                })(),
-                type: 'welcome-offer'
-              }
-            ]
-          }
-        ];
-
-        const demoAwards: LoyaltyAward[] = [
-          {
-            id: 'demo_award_1',
-            templateId: 'hyatt-c4-fnr',
-            customName: t('demoHyattName'),
-            quantity: 1,
-            usedQuantity: 0,
-            expirationDate: `${year}-12-31`,
-            lastModified: Date.now()
-          },
-          {
-            id: 'demo_award_2',
-            templateId: 'marriott-85k-fnr',
-            customName: t('demoMarriottName'),
-            quantity: 1,
-            usedQuantity: 1,
-            expirationDate: `${year}-06-30`,
-            lastModified: Date.now()
-          }
-        ];
-
-        const demoLogs: Record<string, import('../utils/logUtils').LogEntry> = {};
-        
-        // 1. Complete CSR Welcome Offer
-        demoLogs[obfuscateKey('once:demo_csr:demo_csr_wo')] = { 
-          spentProgress: 4000, 
-          timestamp: Date.now() - 60*24*3600*1000, 
-          resolved: true, 
-          value: 900 
-        };
-
-        // 2. Claim 2 more benefits for CSR
-        // CSR Travel Credit ($300)
-        const travelKey = `${year}:demo_csr:csr-travel`;
-        demoLogs[obfuscateKey(travelKey)] = { spentProgress: 300, timestamp: Date.now(), resolved: true, value: 300 };
-
-        // CSR DoorDash Credit ($25)
-        const ddKey = `${year}-${monthStr}:demo_csr:csr-doordash`;
-        demoLogs[obfuscateKey(ddKey)] = { spentProgress: 25, timestamp: Date.now(), resolved: true, value: 25 };
-
-        // 3. Add some normal logs (Uber Cash)
-        const uberKeyCurr = `${year}-${monthStr}:demo_plat:amex-plat-uber`;
-        demoLogs[obfuscateKey(uberKeyCurr)] = { spentProgress: 15, timestamp: Date.now(), resolved: true, value: 15 };
+        const { demoCards, demoAwards, demoLogs } = getDemoData(t);
 
         set({
           ownedCards: demoCards,
