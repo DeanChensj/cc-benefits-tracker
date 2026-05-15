@@ -129,7 +129,7 @@ export function WalletCreditCard({
   }
 
   return (
-    <div className="flex flex-col w-full transition duration-200 hover:scale-[1.01]">
+    <div className="flex flex-col w-full min-w-0 transition duration-200 hover:scale-[1.01]">
       {/* A. Upper Part: Realistic Virtual Credit Card Face (1.58:1 Ratio) */}
       <div
         className={`aspect-[1.58/1] w-full rounded-2xl relative p-4 flex flex-col justify-between overflow-hidden shadow-xl select-none bg-gradient-to-tr ${cardColor} border transition-all duration-500 hover:scale-[1.02] hover:shadow-2xl hover:shadow-purple-500/10 dark:hover:shadow-purple-500/15 hover:border-purple-500/30 group/card ${
