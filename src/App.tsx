@@ -435,7 +435,11 @@ function App() {
         {activeTab === 'todo' && (
           <section>
             {ownedCards.length === 0 && loyaltyAwards.length === 0 ? (
-              <EmptyWalletState onBrowse={() => setActiveTab('cards')} themeClass={themeClass} />
+              <EmptyWalletState 
+                onBrowse={() => setActiveTab('cards')} 
+                onImportComplete={() => setActiveTab('cards')} 
+                themeClass={themeClass} 
+              />
             ) : (
               <ActiveChecklistTab
                 activeBenefits={activeBenefits}

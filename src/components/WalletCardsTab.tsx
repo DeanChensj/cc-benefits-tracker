@@ -6,6 +6,7 @@ import { CARDS_DB } from '../data/cards.db';
 import type { OwnedCardInstance } from '../store/useCardStore';
 import { CheckoutWinnersRow } from './CheckoutWinnersRow';
 import { WalletCreditCard } from './WalletCreditCard';
+import { EmptyWalletState } from './EmptyWalletState';
 
 interface BankHeaderProps {
   bankName: string;
@@ -185,13 +186,9 @@ export function WalletCardsTab({
         <CheckoutWinnersRow checkoutWinners={checkoutWinners} activeTab="cards" deckSubTab="cards" />
 
         {ownedCards.length === 0 ? (
-          <div className="text-center py-10">
-            <p className="text-2xl mb-2">💳</p>
-            <p className={`text-xs font-bold ${themeClass('text-slate-300', 'text-slate-800')}`}>{t('noCardsYet')}</p>
-            <p className={`text-[10px] mt-1 leading-normal ${themeClass('text-slate-455', 'text-slate-500')}`}>
-              {t('noCardsDesc')}
-            </p>
-          </div>
+          <EmptyWalletState
+            themeClass={themeClass}
+          />
         ) : (
           <div className={isCompactView ? "space-y-2" : "space-y-8"}>
             {

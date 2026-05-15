@@ -877,6 +877,16 @@ export const CARDS_DB: CardTemplate[] = [
     benefits: []
   },
   {
+    id: 'amex-bbp',
+    name: 'Amex Blue Business Plus',
+    bank: 'Amex',
+    color: 'from-blue-400 via-blue-200 to-blue-600',
+    annualFee: 0,
+    pointCurrency: 'amex-mr',
+    officialUrl: 'https://www.americanexpress.com/us/credit-cards/business/business-credit-cards/blue-business-plus-credit-card-amex/',
+    benefits: []
+  },
+  {
     id: 'amex-hilton-surpass',
     name: 'Amex Hilton Honors Surpass',
     bank: 'Amex',
@@ -929,6 +939,7 @@ export const CARDS_DB: CardTemplate[] = [
 
 export const CARD_MULTIPLIERS: Record<string, { dining?: number; travel?: number; shopping?: number; entertainment?: number }> = {
   'amex-gold': { dining: 4, shopping: 4 }, // 4x Dining, 4x Groceries
+  'amex-bbp': { dining: 2, travel: 2, shopping: 2, entertainment: 2 }, // 2x on everything
   'chase-ink-preferred': { travel: 3 },
   'amex-everyday': { shopping: 2 },
   'amex-hilton-surpass': { dining: 6, shopping: 6 },
