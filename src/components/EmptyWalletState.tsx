@@ -13,6 +13,7 @@ interface EmptyWalletStateProps {
 export function EmptyWalletState({ onManualAdd, onBrowse, onImportComplete, themeClass }: EmptyWalletStateProps) {
   const addCardsBatch = useCardStore((state) => state.addCardsBatch);
   const language = useCardStore((state) => state.language);
+  const injectDemoData = useCardStore((state) => state.injectDemoData);
   const t = (key: keyof typeof translations['en']) => translations[language][key] || translations['en'][key];
 
   const combos = [
@@ -90,6 +91,12 @@ export function EmptyWalletState({ onManualAdd, onBrowse, onImportComplete, them
       </div>
 
       <div className="text-center pt-4 flex flex-wrap justify-center gap-3">
+        <button
+          onClick={injectDemoData}
+          className="text-xs font-bold px-4 py-2 rounded-xl border transition active:scale-[0.98] cursor-pointer bg-gradient-to-tr from-purple-600 to-indigo-600 text-white border-transparent shadow-md shadow-purple-600/20"
+        >
+          {language === 'zh' ? '进入演示模式' : 'Enter Demo Mode'}
+        </button>
         {onManualAdd && (
           <button
             onClick={onManualAdd}

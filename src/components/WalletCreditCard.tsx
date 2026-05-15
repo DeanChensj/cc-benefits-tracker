@@ -44,7 +44,9 @@ export function WalletCreditCard({
   
   if (subOffer) {
     subRequirement = subOffer.spendingLimit || 0;
-    const logKey = `fixed:${instance.id}:${subOffer.id}:${subOffer.expirationDate}`;
+    const logKey = subOffer.resetPeriod === 'once' 
+      ? `once:${instance.id}:${subOffer.id}` 
+      : `fixed:${instance.id}:${subOffer.id}:${subOffer.expirationDate}`;
     const logVal = logs[obfuscateKey(logKey)];
     const parsed = parseLogEntry(logVal);
     subSpent = parsed?.spentProgress || 0;

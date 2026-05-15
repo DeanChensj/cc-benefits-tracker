@@ -403,6 +403,13 @@ const translationsEn = {
   addCardManually: 'Add Card Manually',
   browseTemplates: 'Browse Templates',
   includesCards: 'Includes: ',
+  demoModeWarning: 'You are currently in Demo Mode. Data is simulated.',
+  clearDemoBtn: 'Clear Data & Start Fresh',
+  demoCsrName: 'Chase Sapphire Reserve (Demo)',
+  demoPlatName: 'Amex Platinum (Demo)',
+  demoGoldName: 'Amex Gold (Demo)',
+  demoHyattName: 'Hyatt Free Night (Demo)',
+  demoMarriottName: 'Marriott Free Night (Demo)',
 
   // 16. Point Currency Names
   earningCurrencyLabel: 'Earning Program',
@@ -855,6 +862,13 @@ const translationsZh: typeof translationsEn = {
   addCardManually: '手动添加卡片',
   browseTemplates: '浏览模板库',
   includesCards: '包含卡片: ',
+  demoModeWarning: '您当前处于演示模式，数据均为虚构。',
+  clearDemoBtn: '点此清除数据并开始使用',
+  demoCsrName: 'Chase Sapphire Reserve (演示)',
+  demoPlatName: 'Amex Platinum (演示)',
+  demoGoldName: 'Amex Gold (演示)',
+  demoHyattName: 'Hyatt 免房券 (演示)',
+  demoMarriottName: 'Marriott 免房券 (演示)',
 
   // 16. Point Currency Names
   earningCurrencyLabel: '返点积累币种',

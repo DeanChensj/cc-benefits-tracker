@@ -81,6 +81,7 @@ export interface CardStore {
   lastSyncTimestamp: number; // Last successful sync timestamp
   pendingRemoteData: RemoteSyncData | null; // Pending remote data during conflict
   isGroupedView: boolean; // Group by card in checklist
+  isDemoMode: boolean; // Flag for demo mode
 
   // Actions
   addCard: (templateId: string) => string;
@@ -102,6 +103,7 @@ export interface CardStore {
   syncWithGDrive: () => Promise<void>;
   setCustomClientId: (clientId: string | null) => void;
   resolveSyncConflict: (choice: 'local' | 'cloud') => Promise<void>;
+  injectDemoData: () => void;
 
   // Instance Offer Actions
   addInstanceOffer: (instanceId: string, offer: Omit<Benefit, 'id'>) => void;
@@ -190,6 +192,7 @@ export const useCardStore = create<CardStore>()(
       lastSyncTimestamp: 0,
       pendingRemoteData: null,
       isGroupedView: false,
+      isDemoMode: false,
 
       addCard: (templateId) => {
         let generatedName = '';
@@ -657,6 +660,121 @@ export const useCardStore = create<CardStore>()(
           set({ syncStatus: 'error' });
           throw err;
         }
+      },
+
+      injectDemoData: () => {
+        const now = new Date();
+        const year = now.getFullYear();
+        const monthStr = (now.getMonth() + 1).toString().padStart(2, '0');
+        const dateStr = now.getDate().toString().padStart(2, '0');
+        const todayStr = `${year}-${monthStr}-${dateStr}`;
+        
+        const jan1Str = `${year}-01-01`;
+
+        const language = get().language;
+        const t = (key: keyof typeof translations['en']) => translations[language][key] || translations['en'][key];
+
+        const demoCards: OwnedCardInstance[] = [
+          {
+            id: 'demo_csr',
+            templateId: 'chase-sapphire-reserve',
+            customName: t('demoCsrName'),
+            cardOpenDate: jan1Str,
+            annualFee: 795,
+            pointCurrency: 'chase-ur',
+            instanceOffers: [
+              {
+                id: 'demo_csr_wo',
+                name: 'Welcome Offer',
+                description: 'Spend $4000 in 3 months',
+                value: 900,
+                resetPeriod: 'once',
+                category: 'other',
+                spendingLimit: 4000,
+                expirationDate: `${year}-04-01`,
+                type: 'welcome-offer'
+              }
+            ]
+          },
+          {
+            id: 'demo_plat',
+            templateId: 'amex-platinum',
+            customName: t('demoPlatName'),
+            cardOpenDate: todayStr, // Opened today!
+            annualFee: 895,
+            pointCurrency: 'amex-mr',
+            instanceOffers: [
+              {
+                id: 'demo_plat_wo',
+                name: 'Welcome Offer',
+                description: 'Spend $4000 in 6 months',
+                value: 3000, // As requested!
+                resetPeriod: 'once',
+                category: 'other',
+                spendingLimit: 4000,
+                expirationDate: (() => {
+                  const d = new Date(todayStr);
+                  d.setMonth(d.getMonth() + 6);
+                  return d.toISOString().slice(0, 10);
+                })(),
+                type: 'welcome-offer'
+              }
+            ]
+          }
+        ];
+
+        const demoAwards: LoyaltyAward[] = [
+          {
+            id: 'demo_award_1',
+            templateId: 'hyatt-c4-fnr',
+            customName: t('demoHyattName'),
+            quantity: 1,
+            usedQuantity: 0,
+            expirationDate: `${year}-12-31`,
+            lastModified: Date.now()
+          },
+          {
+            id: 'demo_award_2',
+            templateId: 'marriott-85k-fnr',
+            customName: t('demoMarriottName'),
+            quantity: 1,
+            usedQuantity: 1,
+            expirationDate: `${year}-06-30`,
+            lastModified: Date.now()
+          }
+        ];
+
+        const demoLogs: Record<string, import('../utils/logUtils').LogEntry> = {};
+        
+        // 1. Complete CSR Welcome Offer
+        demoLogs[obfuscateKey('once:demo_csr:demo_csr_wo')] = { 
+          spentProgress: 4000, 
+          timestamp: Date.now() - 60*24*3600*1000, 
+          resolved: true, 
+          value: 900 
+        };
+
+        // 2. Claim 2 more benefits for CSR
+        // CSR Travel Credit ($300)
+        const travelKey = `${year}:demo_csr:csr-travel`;
+        demoLogs[obfuscateKey(travelKey)] = { spentProgress: 300, timestamp: Date.now(), resolved: true, value: 300 };
+
+        // CSR DoorDash Credit ($25)
+        const ddKey = `${year}-${monthStr}:demo_csr:csr-doordash`;
+        demoLogs[obfuscateKey(ddKey)] = { spentProgress: 25, timestamp: Date.now(), resolved: true, value: 25 };
+
+        // 3. Add some normal logs (Uber Cash)
+        const uberKeyCurr = `${year}-${monthStr}:demo_plat:amex-plat-uber`;
+        demoLogs[obfuscateKey(uberKeyCurr)] = { spentProgress: 15, timestamp: Date.now(), resolved: true, value: 15 };
+
+        set({
+          ownedCards: demoCards,
+          loyaltyAwards: demoAwards,
+          logs: demoLogs,
+          isDemoMode: true,
+          syncStatus: 'disconnected',
+          lastSyncTimestamp: Date.now()
+        });
       },
 
       // Instance Offer Actions
@@ -1141,6 +1259,7 @@ export const useCardStore = create<CardStore>()(
           logs: {},
           deletedCardIds: [],
           deletedAwardIds: [],
+          isDemoMode: false,
         })),
       triggerSync: async () => {
         const state = get();
@@ -1194,6 +1313,7 @@ export const useCardStore = create<CardStore>()(
           theme: state.theme,
           language: state.language,
           isGroupedView: state.isGroupedView,
+          isDemoMode: state.isDemoMode,
           customClientId: state.customClientId,
           gdriveEmail: state.gdriveEmail,
           syncStatus: state.syncStatus === 'synced' ? 'synced' : 'disconnected'

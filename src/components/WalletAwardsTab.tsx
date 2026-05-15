@@ -33,7 +33,10 @@ export function WalletAwardsTab({
       const info = isCustom ? {
         name: a.customName || 'Custom Voucher',
         brand: a.customBrand || 'Other',
-      } : AWARD_TEMPLATES[a.templateId];
+      } : (AWARD_TEMPLATES[a.templateId] || {
+        name: a.customName || 'Unknown Voucher',
+        brand: 'Other'
+      });
       const name = info.name.toLowerCase();
       const brand = info.brand.toLowerCase();
       const notes = (a.notes || '').toLowerCase();
@@ -44,9 +47,9 @@ export function WalletAwardsTab({
 
   const sortedAwards = [...filteredAwards].sort((a, b) => {
     const isCustomA = a.templateId === 'custom';
-    const infoA = isCustomA ? { value: a.customValue || 0 } : AWARD_TEMPLATES[a.templateId];
+    const infoA = isCustomA ? { value: a.customValue || 0 } : (AWARD_TEMPLATES[a.templateId] || { value: 0 });
     const isCustomB = b.templateId === 'custom';
-    const infoB = isCustomB ? { value: b.customValue || 0 } : AWARD_TEMPLATES[b.templateId];
+    const infoB = isCustomB ? { value: b.customValue || 0 } : (AWARD_TEMPLATES[b.templateId] || { value: 0 });
 
     switch (awardSortBy) {
       case 'value-desc':
@@ -73,7 +76,13 @@ export function WalletAwardsTab({
       programType: award.customProgramType || 'other',
       awardType: award.customAwardType || 'other',
       value: award.customValue || 0
-    } : AWARD_TEMPLATES[award.templateId];
+    } : (AWARD_TEMPLATES[award.templateId] || {
+      name: award.customName || 'Unknown Voucher',
+      brand: 'Other',
+      programType: 'other',
+      awardType: 'other',
+      value: 0
+    });
 
     const usedQty = award.usedQuantity || 0;
     const isCompleted = usedQty >= 1;

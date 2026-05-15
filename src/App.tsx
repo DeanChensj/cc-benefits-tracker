@@ -39,6 +39,8 @@ function App() {
     logs, 
     theme,
     syncStatus,
+    isDemoMode,
+    resetAll,
     setGDriveCredentials,
     setSyncStatus,
     customClientId,
@@ -426,6 +428,21 @@ function App() {
         </div>
 
 
+
+        {/* Demo Mode Warning Bar */}
+        {isDemoMode && (
+          <div className="bg-amber-500 text-white text-center py-2 px-4 text-xs font-bold flex flex-col sm:flex-row items-center justify-center gap-2 rounded-xl mb-4 shadow-md shadow-amber-500/10">
+            <span>{language === 'zh' ? '您当前处于演示模式，数据均为虚构。' : 'You are currently in Demo Mode. Data is simulated.'}</span>
+            <button
+              onClick={() => {
+                resetAll();
+              }}
+              className="bg-white/20 hover:bg-white/30 px-2.5 py-1 rounded-lg font-black transition active:scale-95 cursor-pointer text-[10px]"
+            >
+              {language === 'zh' ? '点此清除数据并开始使用' : 'Clear Data & Start Fresh'}
+            </button>
+          </div>
+        )}
 
         {/* 0.5. Annual Fee Anniversary Warning Widget (Fully Conditional) */}
         <AnnualFeeWarningsWidget annualFeeWarnings={annualFeeWarnings} activeTab={activeTab} dismissWarning={dismissWarning} showToast={showToast} themeClass={themeClass} />

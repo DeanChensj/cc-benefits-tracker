@@ -107,7 +107,10 @@ export function SavingsWrappedModal({
       const info = isCustom ? {
         name: award.customName || 'Custom Award',
         brand: award.customBrand || 'Other'
-      } : AWARD_TEMPLATES[award.templateId];
+      } : (AWARD_TEMPLATES[award.templateId] || {
+        name: award.customName || 'Unknown Voucher',
+        brand: 'Other'
+      });
 
       const labelName = info.name;
       return {

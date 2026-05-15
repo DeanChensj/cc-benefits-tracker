@@ -107,7 +107,13 @@ export function useActiveBenefits(
         programType: award.customProgramType || 'other',
         awardType: award.customAwardType || 'other',
         value: award.customValue || 0
-      } : AWARD_TEMPLATES[award.templateId];
+      } : (AWARD_TEMPLATES[award.templateId] || {
+        name: award.customName || 'Unknown Voucher',
+        brand: 'Other',
+        programType: 'other',
+        awardType: 'other',
+        value: 0
+      });
 
       const usedQty = award.usedQuantity || 0;
       const isFullyUsed = usedQty >= 1;
