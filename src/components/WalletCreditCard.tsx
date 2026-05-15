@@ -5,6 +5,7 @@ import { useCardStore } from '../store/useCardStore';
 import { translations, formatCardName, resolveCardNetwork } from '../utils/i18n';
 import { parseLogEntry } from '../utils/logUtils';
 import { obfuscateKey } from '../utils/cryptoUtils';
+import { calculateCardRoi } from '../utils/valuationUtils';
 
 interface WalletCreditCardProps {
   instance: OwnedCardInstance;
@@ -35,6 +36,9 @@ export function WalletCreditCard({
   const t = (key: keyof typeof translations['en']): string => (translations[language][key] || translations['en'][key]) as string;
 
   const logs = useCardStore((state) => state.logs);
+  const ownedCards = useCardStore((state) => state.ownedCards);
+  const setAiPrompt = useCardStore((state) => state.setAiPrompt);
+  const roi = calculateCardRoi(instance.id, ownedCards, logs);
   const subOffer = instance.instanceOffers?.find((o) => o.type === 'welcome-offer');
   
   let subSpent = 0;
@@ -414,6 +418,43 @@ export function WalletCreditCard({
                     </p>
                   </div>
                 )}
+              </div>
+            </div>
+
+            {/* 🧠 ROI Intelligence & AI Advisor */}
+            <div className={`mt-3 p-3 rounded-xl border text-left ${
+              themeClass('bg-white/5 border-white/5', 'bg-slate-955/5 border-slate-800/10')
+            }`}>
+              <div className="flex items-center justify-between mb-2">
+                <h4 className={`text-[9px] font-black uppercase tracking-wider ${themeClass('text-purple-400', 'text-purple-600')}`}>
+                  {t('roiAdvisor')}
+                </h4>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setAiPrompt(language === 'zh' 
+                      ? `分析我的卡片 ${instance.customName || template?.name} 的 ROI。数据如下：年费 $${roi.totalAnnualFee}，已回血 $${roi.totalRecouped}，ROI 为 ${roi.roiPercent}%，有效年费 $${roi.effectiveAnnualFee}。请给出降级或保留的建议。`
+                      : `Analyze the ROI for my card ${instance.customName || template?.name}. Data: Annual Fee $${roi.totalAnnualFee}, Recouped $${roi.totalRecouped}, ROI is ${roi.roiPercent}%, Effective Annual Fee $${roi.effectiveAnnualFee}. Please suggest whether to downgrade or keep it.`);
+                  }}
+                  className="text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded-md bg-purple-600 text-white hover:bg-purple-500 transition active:scale-95 cursor-pointer"
+                >
+                  {t('wakeAi')}
+                </button>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-2 text-xs">
+                <div>
+                  <p className={`text-[8px] uppercase font-extrabold ${themeClass('text-slate-400', 'text-slate-500')}`}>{t('roiPercent')}</p>
+                  <p className={`font-mono font-black text-lg mt-0.5 ${roi.roiPercent >= 100 || roi.roiPercent === Infinity ? 'text-emerald-500' : 'text-rose-500'}`}>
+                    {roi.roiPercent === Infinity ? t('pureProfit') : `${roi.roiPercent}%`}
+                  </p>
+                </div>
+                <div>
+                  <p className={`text-[8px] uppercase font-extrabold ${themeClass('text-slate-400', 'text-slate-500')}`}>{t('effectiveAf')}</p>
+                  <p className={`font-mono font-black text-lg mt-0.5 ${themeClass('text-white', 'text-slate-900')}`}>
+                    ${roi.effectiveAnnualFee}
+                  </p>
+                </div>
               </div>
             </div>
           </div>

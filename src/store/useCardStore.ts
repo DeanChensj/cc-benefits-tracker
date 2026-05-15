@@ -82,6 +82,7 @@ export interface CardStore {
   pendingRemoteData: RemoteSyncData | null; // Pending remote data during conflict
   isGroupedView: boolean; // Group by card in checklist
   isDemoMode: boolean; // Flag for demo mode
+  aiPrompt: string | null; // Prompt to trigger AI assistant
 
   // Actions
   addCard: (templateId: string) => string;
@@ -104,6 +105,7 @@ export interface CardStore {
   setCustomClientId: (clientId: string | null) => void;
   resolveSyncConflict: (choice: 'local' | 'cloud') => Promise<void>;
   injectDemoData: () => void;
+  setAiPrompt: (prompt: string | null) => void;
 
   // Instance Offer Actions
   addInstanceOffer: (instanceId: string, offer: Omit<Benefit, 'id'>) => void;
@@ -193,6 +195,7 @@ export const useCardStore = create<CardStore>()(
       pendingRemoteData: null,
       isGroupedView: false,
       isDemoMode: false,
+      aiPrompt: null,
 
       addCard: (templateId) => {
         let generatedName = '';
@@ -661,6 +664,8 @@ export const useCardStore = create<CardStore>()(
           throw err;
         }
       },
+
+      setAiPrompt: (prompt) => set({ aiPrompt: prompt }),
 
       injectDemoData: () => {
         const now = new Date();

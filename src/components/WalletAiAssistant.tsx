@@ -80,6 +80,23 @@ export function WalletAiAssistant({ remainingBenefits, logs, theme, showToast, o
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [chatHistory]);
 
+  const aiPrompt = useCardStore((state) => state.aiPrompt);
+  const setAiPrompt = useCardStore((state) => state.setAiPrompt);
+
+  useEffect(() => {
+    if (aiPrompt) {
+      setIsOpen(true);
+      if (savedKey) {
+        sendMessage(aiPrompt);
+      } else {
+        setInputMessage(aiPrompt);
+        showToast?.(language === 'zh' ? '🔑 请先添加您的 Gemini API Key。' : '🔑 Please add your Gemini API key first.', 'info');
+      }
+      setAiPrompt(null);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [aiPrompt, savedKey]);
+
   // Verify and save the API Key
   const handleSaveKey = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -132,9 +149,7 @@ export function WalletAiAssistant({ remainingBenefits, logs, theme, showToast, o
   };
 
   // Compile Prompt and Call Gemini API
-  const handleSendMessage = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const message = inputMessage.trim();
+  async function sendMessage(message: string) {
     if (!message || isGenerating) return;
 
     const updatedHistory = [...chatHistory, { role: 'user' as const, text: message }];
@@ -143,7 +158,6 @@ export function WalletAiAssistant({ remainingBenefits, logs, theme, showToast, o
     setIsGenerating(true);
 
     try {
-      // Serialize ownedCards portfolio context
       const cardsContext = ownedCards.map((c) => {
         const multipliersText = c.multipliers 
           ? Object.entries(c.multipliers)
@@ -154,24 +168,22 @@ export function WalletAiAssistant({ remainingBenefits, logs, theme, showToast, o
         return `- [Card] **${c.customName}** (Template: ${c.templateId}, Opened: ${c.cardOpenDate}, Annual Fee: $${c.annualFee || 0}, Signup Bonus Active: ${c.signupBonusActive ? `Yes, valued at $${c.signupBonusValue || 0}` : 'No'}, Multipliers: ${multipliersText})`;
       }).join('\n');
 
-      // Serialize standalone loyaltyAwards context
       const awardsContext = loyaltyAwards.map((a) => {
         const usedQty = a.usedQuantity || 0;
         return `- [Voucher] **${a.customName || a.templateId}** (Status: ${usedQty >= 1 ? 'Used' : 'Unused'}, Expiry: ${a.expirationDate || 'none'}, Notes: ${a.notes || 'none'})`;
       }).join('\n');
 
-      // Serialize active benefits checklist context
       const activeBenefitsText = remainingBenefits.map((ab) => {
         if (ab.benefit.spendingLimit) {
           const entry = parseLogEntry(logs[ab.logKey]);
           const spent = entry?.spentProgress || 0;
           return `- [Perk] ${ab.benefit.name} (Progress: $${spent} / $${ab.benefit.spendingLimit}, Cashback value: $${ab.benefit.value}, Category: ${ab.benefit.category}) on card "${ab.cardInstance.customName}"`;
         }
-        return `- [Perk] ${ab.benefit.name} (Value: $${ab.benefit.value}, Category: ${ab.benefit.category}) on card "${ab.cardInstance.customName}"`;
+        return `- [Perk] ${ab.benefit.name} (Value: ${ab.benefit.value}, Category: ${ab.benefit.category}) on card "${ab.cardInstance.customName}"`;
       }).join('\n');
 
-      // Construct high-fidelity system prompt
-      const systemPrompt = `You are Wallet AI Assistant, an elite personal credit card and mileage vouchers co-pilot. You have direct, secure access to the user's active personal wallet dataset.
+      const systemPrompt = `You are Wallet AI Assistant, an elite personal credit card actuary and financial advisor. You have direct, secure access to the user's active personal wallet dataset.
+You help users optimize their credit card portfolio, calculate ROI, and suggest actions based on usage.
 
 Here is the user's current local wallet data:
 
@@ -191,6 +203,7 @@ Guidelines:
 1. Provide personalized financial recommendations, card spending selections (Dining, Travel, etc.), voucher tracking updates, or credit card general advice.
 2. Reference their specific cards, vouchers, or perks directly by bolding their names.
 3. Keep your answers accurate, extremely concise, clear, and formatted in tidy markdown. Keep the response strictly under 150 words. Respond strictly in ${language === 'zh' ? 'Chinese' : 'English'}.
+4. When analyzing ROI, be direct and objective. If a card's ROI is negative or low, suggest specific actions like downgrading or canceling.
 
 === SPEND RECOMMENDATIONS & SCENARIO WAKE-UP (CRITICAL) ===
 When the user asks where to spend money or mentions a scenario (e.g., "I am buying flight tickets", "I am renting a car", or "Which card should I use at Target?"):
@@ -198,14 +211,11 @@ When the user asks where to spend money or mentions a scenario (e.g., "I am buyi
 2. Compare the return on spend for each card based on its multipliers in the context!
 3. **Scenario Awareness**: If the user mentions buying tickets or travel, and owns cards known for travel perks (like **amex-platinum** for 5x points, or premium cards for travel delay insurance), mention these perks based on the Card Template even if not explicitly in the multipliers list!
 4. If there are specific active offers or perks in the checklist that match the merchant or category, prioritize them!
-5. State clearly which card is the best and why, presenting the calculated return or key benefit!
 
-=== AGENTIC ACTION COMMANDS ===
-You are equipped with tools to directly manipulate the user's wallet and checklist. If the user explicitly instructs, asks, or requests you to ADD, REGISTER, CREATE cards, RESOLVE/RESTORE benefits, or ADD OFFERS, you MUST append a structured JSON command block at the absolute end of your response.
-
-CRITICAL RULES & LIMITATIONS:
-1. ONLY append command blocks if the user explicitly asks you to perform these actions. If the user is just asking general questions, comparing cards, or asking for advice, you MUST NEVER output any command blocks!
-2. You MUST write the command block as raw flat text inside |||COMMAND: and |||. Do NOT wrap the JSON inside markdown code blocks (never use \`\`\` or \`\`\`json inside the command block) otherwise the system parser will fail!
+=== AGENTIC ACTIONS (DRIVE USER WALLET DIRECTLY) ===
+You are equipped with an Agentic Action Parser. You can execute commands to modify the user's wallet directly on their device!
+If the user asks you to perform an action (e.g. add a card, rename it, or record a perk as used), you MUST output the corresponding JSON command block at the end of your reply.
+The system will automatically strip the command block from the visible chat bubble and execute it.
 
 Command Schemas:
 1. Add Template Card (with optional customName and cardOpenDate):
@@ -238,7 +248,8 @@ Valid CATEGORIES: dining, travel, entertainment, shopping, other.
 
 Additional Rules:
 - You can output multiple commands on separate lines if the user asks to perform multiple actions!
-- Be extremely cheerful in your response, confirming what actions you have executed for them!`;
+- Always provide a friendly, conversational response BEFORE the command block explaining what you did!
+- Do NOT make up card instances or benefit names. Always map user input to the context provided above!`;
 
       const response = await fetch(
         `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${savedKey}`,
@@ -248,10 +259,7 @@ Additional Rules:
           body: JSON.stringify({
             contents: [
               { role: 'user', parts: [{ text: systemPrompt }] },
-              ...chatHistory.map(c => ({
-                role: c.role,
-                parts: [{ text: c.text }]
-              })),
+              ...chatHistory.map(c => ({ role: c.role, parts: [{ text: c.text }] })),
               { role: 'user', parts: [{ text: message }] }
             ]
           })
@@ -261,29 +269,18 @@ Additional Rules:
       if (!response.ok) throw new Error('API Error');
 
       const data = await response.json();
-      let reply = data?.candidates?.[0]?.content?.parts?.[0]?.text || 'Sorry, I could not process that.';
+      let reply = data?.candidates?.[0]?.content?.parts?.[0]?.text || 'Error.';
 
-      // 🔍 Agentic Action Parser RegExp: intercept and execute direct wallet commands
       const cmdRegex = /\|\|\|COMMAND:\s*(\[[\s\S]*?\]|\{[\s\S]*?\})\s*\|\|\|/g;
       let match;
       const matches: string[] = [];
-      
-      while ((match = cmdRegex.exec(reply)) !== null) {
-        matches.push(match[1]);
-      }
-
-      // Strip the commands from the visible chat bubble
+      while ((match = cmdRegex.exec(reply)) !== null) matches.push(match[1]);
       reply = reply.replace(cmdRegex, '').trim();
 
-      // Parse and combine all commands into a single array transaction
       const allCmds: AgentCommand[] = [];
       matches.forEach((jsonStr) => {
         try {
-          const sanitizedJson = jsonStr
-            .replace(/```json/gi, '')
-            .replace(/```/g, '')
-            .trim();
-          const parsed = JSON.parse(sanitizedJson);
+          const parsed = JSON.parse(jsonStr.replace(/```json/gi, '').replace(/```/g, '').trim());
           if (Array.isArray(parsed)) {
             allCmds.push(...parsed);
           } else {
@@ -296,20 +293,20 @@ Additional Rules:
 
       if (allCmds.length > 0) {
         const result = useCardStore.getState().executeAgentCommand(allCmds);
-        if (result.success && showToast) {
-          showToast(result.message, 'success');
-        }
+        if (result.success && showToast) showToast(result.message, 'success');
       }
 
       setChatHistory([...updatedHistory, { role: 'model', text: reply }]);
     } catch {
-      setChatHistory([
-        ...updatedHistory,
-        { role: 'model', text: "❌ **API Connection Failed.** Please ensure your network is connected and your API key is still valid." }
-      ]);
+      setChatHistory([...updatedHistory, { role: 'model', text: "❌ API Failed." }]);
     } finally {
       setIsGenerating(false);
     }
+  }
+
+  const handleSendMessage = async (e: React.FormEvent) => {
+    e.preventDefault();
+    sendMessage(inputMessage.trim());
   };
 
   return (

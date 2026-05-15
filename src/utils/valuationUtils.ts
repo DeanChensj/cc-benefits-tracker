@@ -205,6 +205,134 @@ export const getCardRecoupedValue = (
   return Math.round(sum * 100) / 100;
 };
 
+export interface CardRoiReport {
+  totalAnnualFee: number;
+  totalRecouped: number;
+  roiPercent: number;
+  effectiveAnnualFee: number;
+  benefitBreakdown: Record<string, {
+    name: string;
+    annualValue: number;
+    recouped: number;
+    usageRate: number;
+  }>;
+}
+
+export const calculateCardRoi = (
+  instanceId: string,
+  ownedCards: OwnedCardInstance[],
+  logs: Record<string, LogEntry>,
+  currentDate = new Date()
+): CardRoiReport => {
+  const instance = ownedCards.find((c) => c.id === instanceId);
+  if (!instance) {
+    return { totalAnnualFee: 0, totalRecouped: 0, roiPercent: 0, effectiveAnnualFee: 0, benefitBreakdown: {} };
+  }
+
+  const template = CARDS_DB.find((t) => t.id === instance.templateId);
+  const benefits: Benefit[] = instance.templateId === 'custom'
+    ? (instance.customBenefits || [])
+    : (template?.benefits || []);
+
+  const offers = instance.instanceOffers || [];
+  const allBenefits = [...benefits, ...offers];
+
+  const year = currentDate.getFullYear();
+  const openDate = new Date((instance.cardOpenDate || '2026-01-01') + 'T00:00:00');
+  const todayMidnight = new Date(year, currentDate.getMonth(), currentDate.getDate());
+  const currentAnniv = new Date(year, openDate.getMonth(), openDate.getDate());
+
+  const start = todayMidnight < currentAnniv 
+    ? new Date(year - 1, openDate.getMonth(), openDate.getDate())
+    : currentAnniv;
+  const end = todayMidnight < currentAnniv 
+    ? currentAnniv 
+    : new Date(year + 1, openDate.getMonth(), openDate.getDate());
+
+  const annualFee = instance.annualFee !== undefined 
+    ? instance.annualFee 
+    : (template?.annualFee !== undefined ? template.annualFee : 0);
+
+  const benefitBreakdown: Record<string, { name: string, annualValue: number, recouped: number, usageRate: number }> = {};
+
+  // Initialize breakdown
+  allBenefits.forEach(b => {
+    benefitBreakdown[b.id] = {
+      name: b.name,
+      annualValue: getAnnualValue(b),
+      recouped: 0,
+      usageRate: 0
+    };
+  });
+
+  let totalRecouped = 0;
+
+  Object.keys(logs).forEach((obfuscatedKey) => {
+    const rawKey = deobfuscateKey(obfuscatedKey);
+    const parts = rawKey.split(':');
+    if (parts.length < 3) return;
+
+    const cycle = parts[0];
+    const logInstanceId = parts[1];
+    const logBenefitId = getBenefitIdFromKey(rawKey);
+    if (!logBenefitId) return;
+
+    if (logInstanceId !== instanceId) return;
+
+    const benefit = allBenefits.find((b) => b.id === logBenefitId);
+    if (!benefit) return;
+
+    const entryDate = getLogEntryDate(cycle, benefit.resetPeriod);
+    if (entryDate < start || entryDate >= end) return;
+
+    const logVal = logs[obfuscatedKey];
+    if (!logVal) return;
+    const parsed = parseLogEntry(logVal);
+    if (!parsed) return;
+
+    let recoupedForLog = 0;
+    if (benefit.spendingLimit) {
+      const spent = parsed.spentProgress || 0;
+      if (benefit.type === 'welcome-offer') {
+        if (spent >= benefit.spendingLimit) {
+          recoupedForLog = benefit.value;
+        }
+      } else {
+        const progressPercent = Math.min(spent / benefit.spendingLimit, 1);
+        recoupedForLog = benefit.value * progressPercent;
+      }
+    } else if (parsed.resolved) {
+      recoupedForLog = benefit.value;
+    }
+
+    totalRecouped += recoupedForLog;
+    if (benefitBreakdown[benefit.id]) {
+      benefitBreakdown[benefit.id].recouped += recoupedForLog;
+    }
+  });
+
+  // Calculate usage rates
+  Object.keys(benefitBreakdown).forEach(id => {
+    const b = benefitBreakdown[id];
+    if (b.annualValue > 0) {
+      b.usageRate = Math.round((b.recouped / b.annualValue) * 100);
+    } else {
+      b.usageRate = b.recouped > 0 ? 100 : 0;
+    }
+  });
+
+  const roiPercent = annualFee > 0 ? Math.round((totalRecouped / annualFee) * 100) : (totalRecouped > 0 ? Infinity : 0);
+  const effectiveAnnualFee = Math.max(0, annualFee - totalRecouped);
+
+  return {
+    totalAnnualFee: annualFee,
+    totalRecouped: Math.round(totalRecouped * 100) / 100,
+    roiPercent,
+    effectiveAnnualFee: Math.round(effectiveAnnualFee * 100) / 100,
+    benefitBreakdown
+  };
+};
+
 export const getSavingsForPeriod = (
   logs: Record<string, LogEntry>,
   period: 'today' | 'month',
