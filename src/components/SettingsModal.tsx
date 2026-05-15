@@ -164,6 +164,33 @@ export function SettingsModal({ isOpen, onClose, onOpenCalendarExport, onOpenWip
           </div>
         </div>
 
+        {/* Section: Browser Extension */}
+        <div className="space-y-2">
+          <h3 className={`text-xs font-extrabold uppercase tracking-wider flex items-center gap-1.5 ${themeClass('text-slate-400', 'text-slate-600')}`}>
+            <span className="w-1.5 h-1.5 rounded-full bg-teal-500 shrink-0" />
+            <Globe className="w-3.5 h-3.5" />
+            {t('extTitle')}
+          </h3>
+          <div className={`p-3 rounded-xl border space-y-2 ${themeClass('bg-gradient-to-b from-slate-900/60 to-slate-950/60 border-slate-800/50 backdrop-blur-sm', 'bg-white border-slate-200 shadow-sm')}`}>
+            <div>
+              <p className="text-xs font-bold">{t('extGetTitle')}</p>
+              <p className={`text-[10px] font-medium mt-0.5 ${themeClass('text-slate-400', 'text-slate-500')}`}>
+                {t('extStatus')}
+              </p>
+            </div>
+            
+            <div className={`text-[9px] p-2 rounded-lg ${themeClass('bg-slate-800/50 text-slate-400', 'bg-slate-100 text-slate-600')}`}>
+              <p className="font-bold mb-1">{t('extPowerUserTitle')}</p>
+              <ol className="list-decimal list-inside space-y-0.5">
+                <li>{t('extStep1')}</li>
+                <li>{t('extStep2')}</li>
+                <li>{t('extStep3')}</li>
+                <li>{t('extStep4')}</li>
+              </ol>
+            </div>
+          </div>
+        </div>
+
         {/* Section 4: Points Valuations */}
         <div className="space-y-2">
           <button

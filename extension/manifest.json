@@ -1,0 +1,61 @@
+{
+  "manifest_version": 3,
+  "name": "PerkFolio Assistant",
+  "version": "1.0.0",
+  "description": "Contextual perk reminders and card recommendations for PerkFolio.",
+  "permissions": ["storage"],
+  "host_permissions": [
+    "https://*.uber.com/*",
+    "https://*.ubereats.com/*",
+    "https://*.doordash.com/*",
+    "https://*.grubhub.com/*",
+    "https://*.resy.com/*",
+    "https://*.delta.com/*",
+    "https://*.united.com/*",
+    "https://*.aa.com/*",
+    "https://*.lyft.com/*",
+    "https://*.marriott.com/*",
+    "https://*.hyatt.com/*",
+    "https://*.hilton.com/*",
+    "https://*.ihg.com/*",
+    "https://*.saksfifthavenue.com/*",
+    "https://*.dell.com/*",
+    "https://*.walmart.com/*",
+    "https://*.amazon.com/*",
+    "https://*.disneyplus.com/*",
+    "https://*.hulu.com/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://perkfolio.cc/*"],
+      "js": ["content_web.js"]
+    },
+    {
+      "matches": [
+        "https://*.uber.com/*",
+        "https://*.ubereats.com/*",
+        "https://*.doordash.com/*",
+        "https://*.grubhub.com/*",
+        "https://*.resy.com/*",
+        "https://*.delta.com/*",
+        "https://*.united.com/*",
+        "https://*.aa.com/*",
+        "https://*.lyft.com/*",
+        "https://*.marriott.com/*",
+        "https://*.hyatt.com/*",
+        "https://*.hilton.com/*",
+        "https://*.ihg.com/*",
+        "https://*.saksfifthavenue.com/*",
+        "https://*.dell.com/*",
+        "https://*.walmart.com/*",
+        "https://*.amazon.com/*",
+        "https://*.disneyplus.com/*",
+        "https://*.hulu.com/*"
+      ],
+      "js": ["content_script.js"]
+    }
+  ]
+}
