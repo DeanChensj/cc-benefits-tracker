@@ -18,12 +18,46 @@ export interface OwnedCardInstance {
   color?: string; // Custom gradient classes for custom cards
   customBenefits?: Benefit[]; // Custom base benefits for custom cards
   instanceOffers?: Benefit[]; // Temporary, instance-specific custom offers (e.g. Amex Offers)
+  benefits?: Partial<Benefit>[]; // Cached benefits for extension matching
   annualFee?: number; // Annual fee of the card instance
   multipliers?: Record<string, number | undefined>;
   signupBonusActive?: boolean; // True if user secured the SUB!
   signupBonusValue?: number; // Valuation of the secured SUB
   pointCurrency?: PointCurrency; // Reward currency of the card instance (especially for custom cards)
   lastModified?: number; // Instance-level LWW timestamp
+}
+
+// Centralized function to create a new card instance with benefits mapped for extension
+export function createCardInstance(templateId: string, currentCards: OwnedCardInstance[]): OwnedCardInstance | null {
+  const template = CARDS_DB.find((c) => c.id === templateId);
+  if (!template) return null;
+
+  const uniqueId = `inst_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
+  const now = new Date();
+  const todayStr = `${now.getFullYear()}-${(now.getMonth() + 1).toString().padStart(2, '0')}-${now.getDate().toString().padStart(2, '0')}`;
+
+  const baseName = template.name;
+  let newName = baseName;
+  let count = 1;
+  while (currentCards.some((c) => c.customName.toLowerCase().trim() === newName.toLowerCase().trim())) {
+    newName = `${baseName} (${count})`;
+    count++;
+  }
+
+  return {
+    id: uniqueId,
+    templateId,
+    customName: newName,
+    cardOpenDate: todayStr,
+    annualFee: template.annualFee,
+    instanceOffers: [],
+    benefits: template.benefits.map(b => ({
+      id: b.id,
+      description: b.description,
+      matchedDomains: b.matchedDomains
+    })),
+    lastModified: Date.now()
+  };
 }
 
 export interface AgentCommand {
@@ -200,37 +234,13 @@ export const useCardStore = create<CardStore>()(
       addCard: (templateId) => {
         let generatedName = '';
         set((state) => {
-          const template = CARDS_DB.find((c) => c.id === templateId);
-          if (!template) return state;
-
-          const uniqueId = `inst_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
-          const now = new Date();
-          const todayStr = `${now.getFullYear()}-${(now.getMonth() + 1).toString().padStart(2, '0')}-${now.getDate().toString().padStart(2, '0')}`;
-
-          // Force read latest state using get() instead of state callback parameter!
           const currentCards = get().ownedCards;
-
-          const newInstance: OwnedCardInstance = {
-            id: uniqueId,
-            templateId,
-            customName: (() => {
-              const baseName = template.name;
-              let newName = baseName;
-              let count = 1;
-              while (currentCards.some((c) => c.customName.toLowerCase().trim() === newName.toLowerCase().trim())) {
-                newName = `${baseName} (${count})`;
-                count++;
-              }
-              return newName;
-            })(),
-            cardOpenDate: todayStr,
-            annualFee: template.annualFee,
-            instanceOffers: [], // Initialize empty offers array
-            lastModified: Date.now()
-          };
-
+          const newInstance = createCardInstance(templateId, currentCards);
+          
+          if (!newInstance) return state;
+          
           generatedName = newInstance.customName;
-
+          
           const nextCards = [...state.ownedCards, newInstance];
           syncPushToCloud(state.gdriveToken, nextCards, state.logs);
 
@@ -244,40 +254,15 @@ export const useCardStore = create<CardStore>()(
 
       addCardsBatch: (templateIds) =>
         set((state) => {
-          const now = new Date();
-          const todayStr = `${now.getFullYear()}-${(now.getMonth() + 1).toString().padStart(2, '0')}-${now.getDate().toString().padStart(2, '0')}`;
+          const currentCards = get().ownedCards;
+          const newInstances: OwnedCardInstance[] = [];
           
-          const newNamesInBatch = new Set<string>();
-          const newInstances = templateIds.map((templateId, index) => {
-            const template = CARDS_DB.find((c) => c.id === templateId);
-            if (!template) return null;
-            
-            const uniqueId = `inst_${Date.now()}_${index}_${Math.random().toString(36).substring(2, 7)}`;
-            
-            const baseName = template.name;
-            let newName = baseName;
-            let count = 1;
-            const currentCards = get().ownedCards;
-            
-            while (
-              currentCards.some((c) => c.customName.toLowerCase().trim() === newName.toLowerCase().trim()) ||
-              newNamesInBatch.has(newName.toLowerCase().trim())
-            ) {
-              newName = `${baseName} (${count})`;
-              count++;
+          for (const templateId of templateIds) {
+            const newInstance = createCardInstance(templateId, [...currentCards, ...newInstances]);
+            if (newInstance) {
+              newInstances.push(newInstance);
             }
-            newNamesInBatch.add(newName.toLowerCase().trim());
-
-            return {
-              id: uniqueId,
-              templateId,
-              customName: newName,
-              cardOpenDate: todayStr,
-              annualFee: template.annualFee,
-              instanceOffers: [],
-              lastModified: Date.now()
-            } as OwnedCardInstance;
-          }).filter((item): item is OwnedCardInstance => item !== null);
+          }
 
           if (newInstances.length === 0) return state;
 
@@ -286,7 +271,7 @@ export const useCardStore = create<CardStore>()(
 
           return {
             ownedCards: nextCards,
-            walletLastModified: Date.now()
+            walletLastModified: Date.now(),
           };
         }),
 
@@ -1327,3 +1312,13 @@ export const useCardStore = create<CardStore>()(
     }
   )
 );
+
+// Debounced subscriber to notify extension of data changes
+let debounceTimer: number | null = null;
+useCardStore.subscribe(() => {
+  if (debounceTimer) clearTimeout(debounceTimer);
+  
+  debounceTimer = setTimeout(() => {
+    window.dispatchEvent(new CustomEvent('perkfolio-sync'));
+  }, 1000);
+});

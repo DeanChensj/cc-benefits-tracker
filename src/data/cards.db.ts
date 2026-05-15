@@ -8,6 +8,7 @@ export interface Benefit {
   expirationDate?: string; // e.g., '2026-12-31' (only for 'fixed' or 'once' resetPeriod)
   spendingLimit?: number; // e.g., 1500 for CFF 5%, 6000 for BCP 6% (only for progressive limit perks)
   type?: 'built-in' | 'custom' | 'welcome-offer';
+  matchedDomains?: string[]; // Domains where this perk should be reminded!
 }
 
 export type PointCurrency = 'amex-mr' | 'chase-ur' | 'citi-typ' | 'capitalone-miles' | 'hyatt' | 'marriott' | 'ihg' | 'hilton' | 'aa-miles' | 'ua-miles' | 'delta-miles' | 'cash';
@@ -159,7 +160,8 @@ export const CARDS_DB: CardTemplate[] = [
         description: '$10/month for Uber rides or Uber Eats',
         value: 10,
         resetPeriod: 'monthly',
-        category: 'dining'
+        category: 'dining',
+        matchedDomains: ['uber.com', 'ubereats.com']
       },
       {
         id: 'amex-gold-dining',
@@ -167,7 +169,8 @@ export const CARDS_DB: CardTemplate[] = [
         description: '$10/month at Grubhub, Cheesecake Factory, etc.',
         value: 10,
         resetPeriod: 'monthly',
-        category: 'dining'
+        category: 'dining',
+        matchedDomains: ['grubhub.com', 'cheesecakefactory.com']
       },
       {
         id: 'amex-gold-resy',
@@ -176,7 +179,8 @@ export const CARDS_DB: CardTemplate[] = [
         value: 50,
         resetPeriod: 'semi-annual',
         category: 'dining',
-        spendingLimit: 50
+        spendingLimit: 50,
+        matchedDomains: ['resy.com']
       },
       {
         id: 'amex-gold-dunkin',
@@ -184,7 +188,8 @@ export const CARDS_DB: CardTemplate[] = [
         description: '$7/month statement credit at U.S. Dunkin locations',
         value: 7,
         resetPeriod: 'monthly',
-        category: 'dining'
+        category: 'dining',
+        matchedDomains: ['dunkin.com', 'dunkindonuts.com']
       }
     ]
   },
@@ -204,7 +209,8 @@ export const CARDS_DB: CardTemplate[] = [
         description: '$15/month ($35 in Dec) for Uber or Uber Eats purchases',
         value: 15,
         resetPeriod: 'monthly',
-        category: 'dining'
+        category: 'dining',
+        matchedDomains: ['uber.com', 'ubereats.com']
       },
       {
         id: 'amex-plat-entertainment',
@@ -212,7 +218,8 @@ export const CARDS_DB: CardTemplate[] = [
         description: '$25/month statement credit for YouTube Premium, Disney Bundle, Hulu, etc.',
         value: 25,
         resetPeriod: 'monthly',
-        category: 'entertainment'
+        category: 'entertainment',
+        matchedDomains: ['youtube.com', 'disneyplus.com', 'hulu.com']
       },
       {
         id: 'amex-plat-airline',
@@ -238,7 +245,8 @@ export const CARDS_DB: CardTemplate[] = [
         description: '$12.95/month statement credit to fully cover Walmart+ monthly membership',
         value: 13,
         resetPeriod: 'monthly',
-        category: 'shopping'
+        category: 'shopping',
+        matchedDomains: ['walmart.com']
       },
       {
         id: 'amex-plat-clear',
@@ -246,7 +254,8 @@ export const CARDS_DB: CardTemplate[] = [
         description: '$209/calendar year statement credit to fully cover CLEAR Plus security membership',
         value: 209,
         resetPeriod: 'annual-calendar',
-        category: 'travel'
+        category: 'travel',
+        matchedDomains: ['clearme.com']
       },
       {
         id: 'amex-plat-lululemon',
@@ -255,7 +264,8 @@ export const CARDS_DB: CardTemplate[] = [
         value: 75,
         resetPeriod: 'quarterly',
         category: 'shopping',
-        spendingLimit: 75
+        spendingLimit: 75,
+        matchedDomains: ['lululemon.com']
       },
       {
         id: 'amex-plat-resy-plat',
@@ -264,7 +274,8 @@ export const CARDS_DB: CardTemplate[] = [
         value: 100,
         resetPeriod: 'quarterly',
         category: 'dining',
-        spendingLimit: 100
+        spendingLimit: 100,
+        matchedDomains: ['resy.com']
       },
       {
         id: 'amex-plat-uber-one',
@@ -272,7 +283,18 @@ export const CARDS_DB: CardTemplate[] = [
         description: '$120/calendar year statement credit to fully cover Uber One subscription',
         value: 120,
         resetPeriod: 'annual-calendar',
-        category: 'travel'
+        category: 'travel',
+        matchedDomains: ['uber.com']
+      },
+      {
+        id: 'amex-plat-saks',
+        name: 'Saks Fifth Avenue Credit',
+        description: '$50 semi-annually (Jan-Jun, Jul-Dec) statement credit for Saks Fifth Avenue purchases',
+        value: 50,
+        resetPeriod: 'semi-annual',
+        category: 'shopping',
+        spendingLimit: 50,
+        matchedDomains: ['saksfifthavenue.com']
       }
     ]
   },
