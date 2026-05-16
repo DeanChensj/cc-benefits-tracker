@@ -48,8 +48,7 @@
     {
       "matches": [
         "*://perkfolio.cc/*",
-        "*://*.perkfolio.cc/*",
-        "http://localhost:*/*"
+        "*://*.perkfolio.cc/*"
       ],
       "js": ["content_web.js"]
     },
@@ -102,8 +101,7 @@
       "resources": ["inject.js"],
       "matches": [
         "*://perkfolio.cc/*",
-        "*://*.perkfolio.cc/*",
-        "http://localhost/*"
+        "*://*.perkfolio.cc/*"
       ]
     }
   ]
