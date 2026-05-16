@@ -386,12 +386,14 @@ function App() {
 
       <main className="max-w-4xl mx-auto px-4 pt-3 sm:pt-6 pb-8">
         
-        <StatsPanel
-          totalPotentialValue={totalPotentialValue}
-          resolvedValue={resolvedValue}
-          pendingValue={pendingValue}
-          utilizationRate={utilizationRate}
-        />
+        {(ownedCards.length > 0 || loyaltyAwards.length > 0) && (
+          <StatsPanel
+            totalPotentialValue={totalPotentialValue}
+            resolvedValue={resolvedValue}
+            pendingValue={pendingValue}
+            utilizationRate={utilizationRate}
+          />
+        )}
 
         {/* Tabs panel */}
         <div className={`flex justify-center sm:justify-start mb-2 sm:mb-6 border-b pb-2 sm:pb-4 ${themeClass('border-slate-900', 'border-slate-200')}`}>
