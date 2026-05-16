@@ -399,7 +399,12 @@ export function ActiveChecklistTab({
             >
               <div className="flex items-center gap-2 min-w-0">
                 <span className="text-xs font-black uppercase tracking-wider truncate">
-                  {t('expiredArchive')} ({expiredItems.length} {t('itemsSuffix')})
+                  {t('expiredArchive')}
+                  {filterCardInstanceId !== 'all' && (
+                    <span className="text-[10px] opacity-75 ml-1">
+                      - {filterCardInstanceId === 'awards' ? (language === 'zh' ? '独立代金券' : 'Standalone Vouchers') : ownedCards.find(c => c.id === filterCardInstanceId)?.customName}
+                    </span>
+                  )} ({expiredItems.length} {t('itemsSuffix')})
                 </span>
               </div>
               <span className="text-[9px] font-black opacity-80 px-1.5">
@@ -429,7 +434,12 @@ export function ActiveChecklistTab({
             >
               <div className="flex items-center gap-2 min-w-0">
                 <span className="text-xs font-black uppercase tracking-wider truncate">
-                  {language === 'zh' ? '已忽略的本期福利' : 'Skipped Perks Archive'} ({skippedItems.length})
+                  {language === 'zh' ? '已忽略的本期福利' : 'Skipped Perks Archive'}
+                  {filterCardInstanceId !== 'all' && (
+                    <span className="text-[10px] opacity-75 ml-1">
+                      - {filterCardInstanceId === 'awards' ? (language === 'zh' ? '独立代金券' : 'Standalone Vouchers') : ownedCards.find(c => c.id === filterCardInstanceId)?.customName}
+                    </span>
+                  )} ({skippedItems.length})
                 </span>
               </div>
               <span className="text-[9px] font-black opacity-80 px-1.5">
@@ -459,7 +469,12 @@ export function ActiveChecklistTab({
             >
               <div className="flex items-center gap-2 min-w-0">
                 <span className="text-xs font-black uppercase tracking-wider truncate">
-                  {t('claimedArchive')} ({claimedItems.length} {t('claimedSuffix')})
+                  {t('claimedArchive')}
+                  {filterCardInstanceId !== 'all' && (
+                    <span className="text-[10px] opacity-75 ml-1">
+                      - {filterCardInstanceId === 'awards' ? (language === 'zh' ? '独立代金券' : 'Standalone Vouchers') : ownedCards.find(c => c.id === filterCardInstanceId)?.customName}
+                    </span>
+                  )} ({claimedItems.length} {t('claimedSuffix')})
                 </span>
               </div>
               <span className="text-[9px] font-black opacity-80 px-1.5">
