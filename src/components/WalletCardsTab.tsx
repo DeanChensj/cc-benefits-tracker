@@ -109,144 +109,150 @@ export function WalletCardsTab({
       <div className={`border rounded-xl p-3 sm:p-6 transition duration-300 ${
         themeClass('bg-slate-900/30 border-slate-850', 'bg-white border-slate-200 shadow-sm')
       }`}>
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-2.5 pb-1.5 border-b border-dashed border-slate-200/60 dark:border-slate-800/60 sm:mb-4 sm:pb-2">
-          <h3 className={`text-xs font-bold uppercase tracking-wider flex items-center gap-x-2 gap-y-1 flex-wrap md:flex-nowrap ${themeClass('text-slate-400', 'text-slate-555')}`}>
-            <CreditCard className="w-4 h-4 text-purple-500" />
-            <span className="whitespace-nowrap">{t('activeCardsTitle')} ({ownedCards.length} {ownedCards.length === 1 ? t('cardSuffix') : t('cardsSuffix')})</span>
-            {ownedCards.length > 0 && (
-              <>
-                <span className="opacity-25 dark:opacity-40 text-slate-400 hidden md:inline">•</span>
-                <button
-                  type="button"
-                  onClick={() => setIsChurningDrawerOpen(true)}
-                  className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[9.5px] font-extrabold border transition active:scale-95 hover:scale-[1.02] cursor-pointer mt-0.5 md:mt-0 ${
-                    chase524Count >= 5
-                      ? 'bg-rose-500/10 text-rose-500 border-rose-500/20 dark:bg-rose-500/5 animate-pulse'
-                      : 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20 dark:bg-emerald-500/5'
-                  }`}
-                  title="Audit Churner Cooling application stats"
-                >
-                  <span>Chase:</span>
-                  <span className="font-black">{chase524Count}/24</span>
-                  <span className="w-1.5 h-1.5 rounded-full bg-current shrink-0" />
-                </button>
-              </>
-            )}
-            {/* Compact View Toggle Button */}
-            <button
-              type="button"
-              onClick={() => {
-                const newValue = !isCompactView;
-                setIsCompactView(newValue);
-                localStorage.setItem('cc-tracker-compact-view', String(newValue));
-              }}
-              className={`w-7 h-7 flex items-center justify-center rounded-full border transition-all duration-250 cursor-pointer shrink-0 ml-1.5 ${
-                isCompactView
-                  ? themeClass('bg-slate-100 text-slate-955 shadow-md', 'bg-slate-900 text-white shadow-sm')
-                  : themeClass('text-slate-300 hover:text-slate-50 hover:bg-slate-800/40', 'text-slate-500 hover:text-slate-900 hover:bg-slate-300/30')
-              }`}
-              title={isCompactView ? "Switch to Grid View" : "Switch to Compact View"}
-            >
-              {isCompactView ? <LayoutGrid className="w-3.5 h-3.5" /> : <List className="w-3.5 h-3.5" />}
-            </button>
-          </h3>
-          <div className="flex items-center gap-2 flex-wrap md:flex-nowrap shrink-0">
-
-            <input
-              type="text"
-              placeholder={t('searchCardsPlaceholder')}
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className={`border text-xs rounded-xl px-3 py-1.5 focus:outline-none focus:border-teal-600 focus:ring-2 focus:ring-teal-550/10 w-full md:w-36 font-medium transition ${
-                themeClass('bg-slate-955 border-slate-850 text-slate-200', 'bg-slate-55 border-slate-255 text-slate-800 shadow-inner')
-              }`}
-            />
-            <button
-              onClick={() => {
-                setDeckSubTab('templates');
-                localStorage.setItem('cc-tracker-deck-sub-tab', 'templates');
-              }}
-              className="flex items-center gap-1 bg-gradient-to-tr from-slate-800 to-slate-900 hover:from-slate-750 hover:to-slate-850 text-white dark:from-slate-100 dark:to-slate-200 dark:hover:from-white dark:hover:to-slate-50 dark:text-slate-950 border border-slate-700/25 font-bold px-3 py-1.5 rounded-lg text-xs transition active:scale-95 shadow shadow-black/5 cursor-pointer"
-              title="Switch to template library catalog to add cards"
-            >
-              <Plus className="w-3.5 h-3.5 stroke-[3]" />
-              {t('addTemplateBtn')}
-            </button>
-            <button
-              onClick={() => setIsCreateModalOpen(true)}
-              className="flex items-center gap-1 bg-gradient-to-tr from-slate-800 to-slate-900 hover:from-slate-750 hover:to-slate-850 text-white dark:from-slate-100 dark:to-slate-200 dark:hover:from-white dark:hover:to-slate-50 dark:text-slate-950 border border-slate-700/25 font-bold px-3 py-1.5 rounded-lg text-xs transition active:scale-95 shadow shadow-black/5 cursor-pointer"
-            >
-              <Plus className="w-3.5 h-3.5 stroke-[3]" />
-              {t('createCustomBtn')}
-            </button>
-          </div>
-        </div>
-
-        {/* 0. Glanceable Point Multiplier Checkout Winners Row */}
-        <CheckoutWinnersRow checkoutWinners={checkoutWinners} activeTab="cards" deckSubTab="cards" />
-
         {ownedCards.length === 0 ? (
           <EmptyWalletState
+            onManualAdd={() => setIsCreateModalOpen(true)}
+            onBrowse={() => {
+              setDeckSubTab('templates');
+              localStorage.setItem('cc-tracker-deck-sub-tab', 'templates');
+            }}
             themeClass={themeClass}
           />
         ) : (
-          <div className={isCompactView ? "space-y-2" : "space-y-8"}>
-            {
-              // Group by Bank
-              (['Amex', 'Chase', 'Citi', 'Other'] as const).map((bankName) => {
-                const bankCards = searchedCards.filter((c) => {
-                  const template = CARDS_DB.find((t) => t.id === c.templateId);
-                  const b = c.bank || template?.bank || '';
-                  if (bankName === 'Other') {
-                    return b !== 'Amex' && b !== 'Chase' && b !== 'Citi';
-                  }
-                  return b === bankName;
-                });
+          <>
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-2.5 pb-1.5 border-b border-dashed border-slate-200/60 dark:border-slate-800/60 sm:mb-4 sm:pb-2">
+              <h3 className={`text-xs font-bold uppercase tracking-wider flex items-center gap-x-2 gap-y-1 flex-wrap md:flex-nowrap ${themeClass('text-slate-400', 'text-slate-555')}`}>
+                <CreditCard className="w-4 h-4 text-purple-500" />
+                <span className="whitespace-nowrap">{t('activeCardsTitle')} ({ownedCards.length} {ownedCards.length === 1 ? t('cardSuffix') : t('cardsSuffix')})</span>
+                {ownedCards.length > 0 && (
+                  <>
+                    <span className="opacity-25 dark:opacity-40 text-slate-400 hidden md:inline">•</span>
+                    <button
+                      type="button"
+                      onClick={() => setIsChurningDrawerOpen(true)}
+                      className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[9.5px] font-extrabold border transition active:scale-95 hover:scale-[1.02] cursor-pointer mt-0.5 md:mt-0 ${
+                        chase524Count >= 5
+                          ? 'bg-rose-500/10 text-rose-500 border-rose-500/20 dark:bg-rose-500/5 animate-pulse'
+                          : 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20 dark:bg-emerald-500/5'
+                      }`}
+                      title="Audit Churner Cooling application stats"
+                    >
+                      <span>Chase:</span>
+                      <span className="font-black">{chase524Count}/24</span>
+                      <span className="w-1.5 h-1.5 rounded-full bg-current shrink-0" />
+                    </button>
+                  </>
+                )}
+                {/* Compact View Toggle Button */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    const newValue = !isCompactView;
+                    setIsCompactView(newValue);
+                    localStorage.setItem('cc-tracker-compact-view', String(newValue));
+                  }}
+                  className={`w-7 h-7 flex items-center justify-center rounded-full border transition-all duration-250 cursor-pointer shrink-0 ml-1.5 ${
+                    isCompactView
+                      ? themeClass('bg-slate-100 text-slate-955 shadow-md', 'bg-slate-900 text-white shadow-sm')
+                      : themeClass('text-slate-300 hover:text-slate-50 hover:bg-slate-800/40', 'text-slate-500 hover:text-slate-900 hover:bg-slate-300/30')
+                  }`}
+                  title={isCompactView ? "Switch to Grid View" : "Switch to Compact View"}
+                >
+                  {isCompactView ? <LayoutGrid className="w-3.5 h-3.5" /> : <List className="w-3.5 h-3.5" />}
+                </button>
+              </h3>
+              <div className="flex items-center gap-2 flex-wrap md:flex-nowrap shrink-0">
+                <input
+                  type="text"
+                  placeholder={t('searchCardsPlaceholder')}
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className={`border text-xs rounded-xl px-3 py-1.5 focus:outline-none focus:border-teal-600 focus:ring-2 focus:ring-teal-550/10 w-full md:w-36 font-medium transition ${
+                    themeClass('bg-slate-955 border-slate-850 text-slate-200', 'bg-slate-55 border-slate-255 text-slate-800 shadow-inner')
+                  }`}
+                />
+                <button
+                  onClick={() => {
+                    setDeckSubTab('templates');
+                    localStorage.setItem('cc-tracker-deck-sub-tab', 'templates');
+                  }}
+                  className="flex items-center gap-1 bg-gradient-to-tr from-slate-800 to-slate-900 hover:from-slate-750 hover:to-slate-850 text-white dark:from-slate-100 dark:to-slate-200 dark:hover:from-white dark:hover:to-slate-50 dark:text-slate-950 border border-slate-700/25 font-bold px-3 py-1.5 rounded-lg text-xs transition active:scale-95 shadow shadow-black/5 cursor-pointer"
+                  title="Switch to template library catalog to add cards"
+                >
+                  <Plus className="w-3.5 h-3.5 stroke-[3]" />
+                  {t('addTemplateBtn')}
+                </button>
+                <button
+                  onClick={() => setIsCreateModalOpen(true)}
+                  className="flex items-center gap-1 bg-gradient-to-tr from-slate-800 to-slate-900 hover:from-slate-750 hover:to-slate-850 text-white dark:from-slate-100 dark:to-slate-200 dark:hover:from-white dark:hover:to-slate-50 dark:text-slate-950 border border-slate-700/25 font-bold px-3 py-1.5 rounded-lg text-xs transition active:scale-95 shadow shadow-black/5 cursor-pointer"
+                >
+                  <Plus className="w-3.5 h-3.5 stroke-[3]" />
+                  {t('createCustomBtn')}
+                </button>
+              </div>
+            </div>
 
-                if (bankCards.length === 0) return null;
+            {/* 0. Glanceable Point Multiplier Checkout Winners Row */}
+            <CheckoutWinnersRow checkoutWinners={checkoutWinners} activeTab="cards" deckSubTab="cards" />
 
-                const isCollapsed = !!collapsedWalletBanks[bankName];
+            <div className={isCompactView ? "space-y-2" : "space-y-8"}>
+              {
+                // Group by Bank
+                (['Amex', 'Chase', 'Citi', 'Other'] as const).map((bankName) => {
+                  const bankCards = searchedCards.filter((c) => {
+                    const template = CARDS_DB.find((t) => t.id === c.templateId);
+                    const b = c.bank || template?.bank || '';
+                    if (bankName === 'Other') {
+                      return b !== 'Amex' && b !== 'Chase' && b !== 'Citi';
+                    }
+                    return b === bankName;
+                  });
 
-                return (
-                  <div key={bankName} className="space-y-3.5 animate-fade-in">
-                    <BankHeader
-                      bankName={bankName}
-                      count={bankCards.length}
-                      suffix="Active Cards"
-                      themeClass={themeClass}
-                      collapsible={true}
-                      isCollapsed={isCollapsed}
-                      onToggle={() => setCollapsedWalletBanks((prev) => ({ ...prev, [bankName]: !prev[bankName] }))}
-                    />
-                    
-                    <div className={`transition-all duration-300 ease-in-out overflow-hidden ${
-                      isCollapsed 
-                        ? 'max-h-0 opacity-0 pointer-events-none' 
-                        : 'max-h-[4000px] opacity-100 mt-3.5'
-                    }`}>
-                      <div className={isCompactView ? "space-y-2 mt-3.5" : "grid sm:grid-cols-2 gap-2.5 sm:gap-4"}>
-                        {bankCards.map((instance) => (
-                          <WalletCreditCard
-                            key={instance.id}
-                            instance={instance}
-                            isCompactView={isCompactView}
-                            isCardExpanded={!!expandedCardIds[instance.id]}
-                            toggleCardExpanded={toggleCardExpanded}
-                            getCardRecoupedValue={getCardRecoupedValue}
-                            handleRemoveCard={setDeleteCardInstanceId}
-                            removeInstanceOffer={removeInstanceOffer}
-                            setAddOfferInstanceId={setAddOfferInstanceId}
-                            onEditCard={onEditCard}
-                            themeClass={themeClass}
-                          />
-                        ))}
+                  if (bankCards.length === 0) return null;
+
+                  const isCollapsed = !!collapsedWalletBanks[bankName];
+
+                  return (
+                    <div key={bankName} className="space-y-3.5 animate-fade-in">
+                      <BankHeader
+                        bankName={bankName}
+                        count={bankCards.length}
+                        suffix="Active Cards"
+                        themeClass={themeClass}
+                        collapsible={true}
+                        isCollapsed={isCollapsed}
+                        onToggle={() => setCollapsedWalletBanks((prev) => ({ ...prev, [bankName]: !prev[bankName] }))}
+                      />
+                      
+                      <div className={`transition-all duration-300 ease-in-out overflow-hidden ${
+                        isCollapsed 
+                          ? 'max-h-0 opacity-0 pointer-events-none' 
+                          : 'max-h-[4000px] opacity-100 mt-3.5'
+                      }`}>
+                        <div className={isCompactView ? "space-y-2 mt-3.5" : "grid sm:grid-cols-2 gap-2.5 sm:gap-4"}>
+                          {bankCards.map((instance) => (
+                            <WalletCreditCard
+                              key={instance.id}
+                              instance={instance}
+                              isCompactView={isCompactView}
+                              isCardExpanded={!!expandedCardIds[instance.id]}
+                              toggleCardExpanded={toggleCardExpanded}
+                              getCardRecoupedValue={getCardRecoupedValue}
+                              handleRemoveCard={setDeleteCardInstanceId}
+                              removeInstanceOffer={removeInstanceOffer}
+                              setAddOfferInstanceId={setAddOfferInstanceId}
+                              onEditCard={onEditCard}
+                              themeClass={themeClass}
+                            />
+                          ))}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                );
-              })
-            }
-          </div>
+                  );
+                })
+              }
+            </div>
+          </>
         )}
       </div>
     </div>
