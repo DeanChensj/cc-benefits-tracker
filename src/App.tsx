@@ -1,7 +1,7 @@
-import { useState, useEffect, useMemo, useRef } from 'react';
+import { useState, useMemo } from 'react';
 // Meticulously audited and verified PWA release build with dynamic re-auth and contrast fixes
 import { CARDS_DB } from './data/cards.db';
-import type { CardTemplate, Benefit } from './data/cards.db';
+import type { Benefit } from './data/cards.db';
 import { useCardStore } from './store/useCardStore';
 import type { OwnedCardInstance } from './store/useCardStore';
 import { translations, formatCardNameForToast } from './utils/i18n';
@@ -18,10 +18,11 @@ import { WalletLibraryTab } from './components/WalletLibraryTab';
 import { getLocalDateString, getAnnualFeeWarningInfo } from './utils/dateUtils';
 import { getResolvedValue, getCardRecoupedValue } from './utils/valuationUtils';
 
-import { loadGoogleGsiScript, requestGDriveToken, fetchUserEmail } from './utils/gdrive';
 import { useActiveBenefits } from './hooks/useActiveBenefits';
 import type { ActiveBenefit } from './hooks/useActiveBenefits';
 import { useCheckoutWinners } from './hooks/useCheckoutWinners';
+import { useSelfHealing } from './hooks/useSelfHealing';
+import { useAppHandlers } from './hooks/useAppHandlers';
 import { Header } from './components/Header';
 import { Footer } from './components/Footer';
 import { StatsPanel } from './components/StatsPanel';
@@ -38,241 +39,49 @@ function App() {
     loyaltyAwards,
     logs, 
     theme,
-    syncStatus,
     isDemoMode,
     resetAll,
-    setGDriveCredentials,
-    setSyncStatus,
-    customClientId,
-    addCard, 
-    addCardsBatch,
-    addCustomCard,
-    removeCard, 
-    toggleBenefit, 
-    updateProgressLog,
+    language,
     removeInstanceOffer,
-    toggleLoyaltyAward,
     updateAwardUsedQuantity,
-    pruneExpiredLogs,
-    language
+    addCardsBatch
   } = useCardStore();
 
   const themeClass = (dark: string, light: string) => theme === 'dark' ? dark : light;
   const t = (key: keyof typeof translations['en']) => translations[language][key] || translations['en'][key];
 
-  const lastSyncTimeRef = useRef<number>(0);
-
   // Date to evaluate states against (defaults to current system date)
   const [currentDate, setCurrentDate] = useState(new Date());
-  const [activeTab, setActiveTab] = useState<'todo' | 'cards'>(() => {
-    return (localStorage.getItem('cc-tracker-active-tab') as 'todo' | 'cards') || 'todo';
-  });
-  const [deckSubTab, setDeckSubTab] = useState<'cards' | 'awards' | 'templates'>(() => {
-    return (localStorage.getItem('cc-tracker-deck-sub-tab') as 'cards' | 'awards' | 'templates') || 'cards';
-  });
-  const [activeModal, setActiveModal] = useState<'sync' | 'create-card' | 'create-award' | 'wrapped' | 'disconnect-gdrive' | 'wipe' | 'settings' | 'sync-conflict' | null>(null);
-  const [addOfferInstanceId, setAddOfferInstanceId] = useState<string | null>(null);
-  const [deleteCardInstanceId, setDeleteCardInstanceId] = useState<string | null>(null);
-  const [deleteAwardId, setDeleteAwardId] = useState<string | null>(null);
-  const [selectedTemplates, setSelectedTemplates] = useState<string[]>([]);
-  const [activeTemplateDetail, setActiveTemplateDetail] = useState<CardTemplate | null>(null);
-  const [activeEditInstanceId, setActiveEditInstanceId] = useState<string | null>(null);
-
-  const [activeEditAwardId, setActiveEditAwardId] = useState<string | null>(null);
-
-  
-  const [isConfigureAddOpen, setIsConfigureAddOpen] = useState(false);
-  const [configuredTemplate, setConfiguredTemplate] = useState<CardTemplate | null>(null);
-
-
-
-  const [dismissedWarningCardIds, setDismissedWarningCardIds] = useState<Record<string, boolean>>({});
-  const [isChurningDrawerOpen, setIsChurningDrawerOpen] = useState(false);
-  
-  const dismissWarning = (cardId: string) => {
-    setDismissedWarningCardIds((prev) => ({
-      ...prev,
-      [cardId]: true
-    }));
-  };
-
-  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' | 'warning' } | null>(null);
-
-  const showToast = (
-    message: string, 
-    type: 'success' | 'error' | 'info' | 'warning' = 'success'
-  ) => {
-    setToast({ message, type });
-  };
-
-  useEffect(() => {
-    if (toast) {
-      const duration = (toast.type === 'warning' || toast.type === 'error') ? 2500 : 1500;
-      const timer = setTimeout(() => setToast(null), duration);
-      return () => clearTimeout(timer);
-    }
-  }, [toast]);
-
-  useEffect(() => {
-    if (syncStatus === 'conflict') {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setActiveModal('sync-conflict');
-    }
-  }, [syncStatus]);
-
-  const handleChecklistToggle = (key: string) => {
-    const ab = activeBenefits.find((b) => b.logKey === key);
-    if (!ab) return;
-
-    if (ab.loyaltyAward) {
-      const targetAward = loyaltyAwards.find((a) => a.id === ab.loyaltyAward?.id);
-      if (!targetAward) return;
-
-
-
-      toggleLoyaltyAward(targetAward.id);
-    } else {
-
-
-      toggleBenefit(key);
-    }
-
-
-  };
-
-  const handleUpdateProgressLog = (logKey: string, spent: number) => {
-
-
-    updateProgressLog(logKey, spent);
-
-    showToast(
-      language === 'zh' ? `📈 消费进度已更新为 $${spent}` : `Progress updated to $${spent}`, 
-      'success'
-    );
-  };
-
-  const handleAddCard = (templateId: string) => {
-    const generatedName = addCard(templateId);
-    setDeckSubTab('cards');
-    localStorage.setItem('cc-tracker-deck-sub-tab', 'cards');
-    showToast(t('toastCardAdded').replace('{name}', formatCardNameForToast(generatedName)));
-  };
-
-
-  const handleConfirmRemoveCard = () => {
-    if (!deleteCardInstanceId) return;
-    const instance = ownedCards.find((c) => c.id === deleteCardInstanceId);
-    if (instance) {
-      const cardName = instance.customName;
-      removeCard(deleteCardInstanceId);
-      showToast(t('toastCardRemoved').replace('{name}', formatCardNameForToast(cardName)), 'error');
-    }
-    setDeleteCardInstanceId(null);
-  };
-
-  const handleAddCustomCard = (card: Omit<OwnedCardInstance, 'id'>) => {
-    addCustomCard(card);
-    setDeckSubTab('cards');
-    localStorage.setItem('cc-tracker-deck-sub-tab', 'cards');
-    showToast(t('toastCardCreated').replace('{name}', card.customName));
-  };
-
-
-
-  // Load Google Identity Services script dynamically on mount
-  useEffect(() => {
-    // Self-Healing Migration: Automatically heal stored point valuations defaults
-    const storedValuations = useCardStore.getState().pointValuations;
-    if (storedValuations) {
-      if (storedValuations['chase-ur'] === 2.0 || storedValuations['chase-ur'] === 1.8) {
-        useCardStore.getState().updatePointValuation('chase-ur', 1.6);
-      }
-      if (storedValuations['amex-mr'] === 2.0 || storedValuations['amex-mr'] === 1.8) {
-        useCardStore.getState().updatePointValuation('amex-mr', 1.6);
-      }
-      if (storedValuations['hyatt'] === 2.1) {
-        useCardStore.getState().updatePointValuation('hyatt', 1.4);
-      }
-      
-      // Dynamically populate missing new point currencies
-      const newDefaults: Record<string, number> = {
-        'hilton': 0.5,
-        'aa-miles': 1.5,
-        'ua-miles': 1.3,
-        'delta-miles': 1.2
-      };
-      Object.entries(newDefaults).forEach(([currency, defVal]) => {
-        if (storedValuations[currency] === undefined) {
-          useCardStore.getState().updatePointValuation(currency, defVal);
-        }
-      });
-    }
-
-
-
-    // Dynamically prune expired打卡 logs older than 2 years to maintain tiny capped DB footprint!
-    pruneExpiredLogs(currentDate);
-
-    loadGoogleGsiScript()
-      .then(() => console.log('Google GIS client successfully pre-loaded.'))
-      .catch((err) => console.error('Failed to load Google GIS Client library:', err));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  // Persist navigation tab and main dashboard filter settings in localStorage for seamless reload experience
-  useEffect(() => {
-    localStorage.setItem('cc-tracker-active-tab', activeTab);
-  }, [activeTab]);
-
-  // Auto-Refocus Sync: Trigger background two-way sync merge when browser tab is focused
-  useEffect(() => {
-    const handleFocus = () => {
-      const state = useCardStore.getState();
-      if (state.gdriveToken && state.syncStatus === 'synced') {
-        const now = Date.now();
-        if (now - lastSyncTimeRef.current < 30000) return; // Throttle high-frequency requests
-        lastSyncTimeRef.current = now;
-
-        console.log('🔄 Auto-Refocus Sync: Tab focused. Triggering background sync merge.');
-        state.syncWithGDrive().catch((err) => console.error('Auto-Refocus Sync failed:', err));
-      }
-    };
-
-    window.addEventListener('focus', handleFocus);
-    return () => window.removeEventListener('focus', handleFocus);
-  }, [syncStatus]);
-
-  // Connection & Sync Handlers
-  const handleLinkGoogleDrive = async () => {
-    setSyncStatus('syncing');
-    try {
-      const token = await requestGDriveToken(customClientId);
-      const email = await fetchUserEmail(token);
-      setGDriveCredentials(token, email);
-      
-      // Trigger first two-way sync
-      await useCardStore.getState().syncWithGDrive();
-      showToast(t('toastGDriveConnected'));
-    } catch (err) {
-      console.error(err);
-      setSyncStatus('error');
-      showToast(t('toastGDriveFailed'), 'error');
-    }
-  };
-
-  const handleDisconnectGoogleDrive = () => {
-    setActiveModal('disconnect-gdrive');
-  };
-
-  const handleConfirmDisconnectGoogleDrive = () => {
-    setGDriveCredentials(null, null);
-    showToast(t('toastGDriveUnlinked'), 'info');
-    setActiveModal(null);
-  };
-
-
   const activeBenefits = useActiveBenefits(ownedCards, loyaltyAwards, logs, currentDate);
+  
+  useSelfHealing(currentDate);
 
+  const {
+    activeTab, setActiveTab,
+    deckSubTab, setDeckSubTab,
+    activeModal, setActiveModal,
+    addOfferInstanceId, setAddOfferInstanceId,
+    deleteCardInstanceId, setDeleteCardInstanceId,
+    deleteAwardId, setDeleteAwardId,
+    selectedTemplates, setSelectedTemplates,
+    activeTemplateDetail, setActiveTemplateDetail,
+    activeEditInstanceId, setActiveEditInstanceId,
+    activeEditAwardId, setActiveEditAwardId,
+    isConfigureAddOpen, setIsConfigureAddOpen,
+    configuredTemplate, setConfiguredTemplate,
+    dismissedWarningCardIds, dismissWarning,
+    isChurningDrawerOpen, setIsChurningDrawerOpen,
+    toast, showToast,
+    handleChecklistToggle,
+    handleUpdateProgressLog,
+    handleAddCard,
+    handleConfirmRemoveCard,
+    handleAddCustomCard,
+    handleLinkGoogleDrive,
+    handleDisconnectGoogleDrive,
+    handleConfirmDisconnectGoogleDrive,
+    adjustMonth
+  } = useAppHandlers(currentDate, setCurrentDate, activeBenefits);
 
   const getExpiredValue = (ab: ActiveBenefit): number => {
     const usedQty = ab.loyaltyAward ? (ab.loyaltyAward.usedQuantity || 0) : 0;
@@ -357,20 +166,6 @@ function App() {
       return sum;
     }, 0);
   }, [ownedCards, logs, currentDate]);
-
-
-
-
-
-  const adjustMonth = (amount: number) => {
-    const nextDate = new Date(currentDate);
-    nextDate.setMonth(nextDate.getMonth() + amount);
-    setCurrentDate(nextDate);
-    
-    const newMonthName = nextDate.toLocaleString('default', { month: 'long' });
-    const newYear = nextDate.getFullYear();
-    showToast(t('toastSandboxSet').replace('{year}', String(newYear)).replace('{month}', newMonthName), 'info');
-  };
 
   return (
     <div className={`min-h-screen font-sans selection:bg-amber-500 selection:text-slate-900 transition-colors duration-300 ${
