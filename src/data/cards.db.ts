@@ -64,7 +64,7 @@ export const AWARD_TEMPLATES: Record<string, StaticAwardTemplate> = {
     brand: 'Hyatt',
     programType: 'hotel',
     awardType: 'fnr',
-    value: 450,
+    value: 300,
     description: 'Redeem for a free night at any Category 1-7 Hyatt hotel or resort.'
   },
   'marriott-nua': {
@@ -80,7 +80,7 @@ export const AWARD_TEMPLATES: Record<string, StaticAwardTemplate> = {
     brand: 'Marriott',
     programType: 'hotel',
     awardType: 'fnr',
-    value: 450,
+    value: 300,
     description: 'Redeem for a free night up to 85,000 points at Marriott hotels.'
   },
   'marriott-50k-fnr': {
@@ -88,8 +88,24 @@ export const AWARD_TEMPLATES: Record<string, StaticAwardTemplate> = {
     brand: 'Marriott',
     programType: 'hotel',
     awardType: 'fnr',
-    value: 250,
+    value: 180,
     description: 'Redeem for a free night up to 50,000 points at Marriott hotels.'
+  },
+  'marriott-35k-fnr': {
+    name: 'Marriott 35K Free Night Award',
+    brand: 'Marriott',
+    programType: 'hotel',
+    awardType: 'fnr',
+    value: 130,
+    description: 'Redeem for a free night up to 35,000 points at Marriott hotels.'
+  },
+  'hilton-fnr': {
+    name: 'Hilton Free Night Reward (FNR)',
+    brand: 'Hilton',
+    programType: 'hotel',
+    awardType: 'fnr',
+    value: 250,
+    description: 'Redeem for a free night at almost any participating Hilton hotel or resort worldwide.'
   },
   'alaska-companion': {
     name: 'Alaska Companion Fare Certificate',
@@ -295,6 +311,16 @@ export const CARDS_DB: CardTemplate[] = [
         category: 'shopping',
         spendingLimit: 50,
         matchedDomains: ['saksfifthavenue.com']
+      },
+      {
+        id: 'amex-plat-oura',
+        name: 'Oura Ring Credit',
+        description: '$200/calendar year statement credit for Oura Ring hardware or subscription purchases',
+        value: 200,
+        resetPeriod: 'annual-calendar',
+        category: 'shopping',
+        spendingLimit: 200,
+        matchedDomains: ['ouraring.com']
       }
     ]
   },
