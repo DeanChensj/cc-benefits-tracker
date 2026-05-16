@@ -41,7 +41,7 @@ export function EmptyWalletState({ onManualAdd, onBrowse, onImportComplete, them
   ];
 
   return (
-    <div className="space-y-6 max-w-2xl mx-auto py-8 px-4">
+    <div className="space-y-6 max-w-2xl mx-auto py-2 sm:py-8 px-4">
       <div className="text-center space-y-2">
         <div className="w-12 h-12 bg-purple-500/10 text-purple-400 rounded-2xl flex items-center justify-center mx-auto">
           <Sparkles className="w-6 h-6" />

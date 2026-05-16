@@ -394,8 +394,8 @@ function App() {
         />
 
         {/* Tabs panel */}
-        <div className={`flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 mb-2 sm:mb-6 border-b pb-2 sm:pb-4 ${themeClass('border-slate-900', 'border-slate-200')}`}>
-          <div className={`flex gap-1 p-1 rounded-xl border transition-colors duration-300 self-start ${
+        <div className={`flex justify-center sm:justify-start mb-2 sm:mb-6 border-b pb-2 sm:pb-4 ${themeClass('border-slate-900', 'border-slate-200')}`}>
+          <div className={`flex gap-1 p-1 rounded-xl border transition-colors duration-300 ${
             themeClass('bg-zen-dark-card border-slate-850', 'bg-slate-200/50 border-slate-300/60 shadow-inner')
           }`}>
             <button
@@ -449,7 +449,11 @@ function App() {
           <section>
             {ownedCards.length === 0 && loyaltyAwards.length === 0 ? (
               <EmptyWalletState 
-                onBrowse={() => setActiveTab('cards')} 
+                onBrowse={() => {
+                  setActiveTab('cards');
+                  setDeckSubTab('templates');
+                  localStorage.setItem('cc-tracker-deck-sub-tab', 'templates');
+                }} 
                 themeClass={themeClass} 
               />
             ) : (
