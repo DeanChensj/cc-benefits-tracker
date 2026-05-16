@@ -151,10 +151,6 @@ export interface CardStore {
   updateCardMultipliers: (instanceId: string, multipliers: OwnedCardInstance['multipliers']) => void;
   updateCardPointCurrency: (instanceId: string, currency: PointCurrency) => void;
 
-  // Sign-Up Bonus Actions
-  toggleSignupBonus: (instanceId: string) => void;
-  updateSignupBonusValue: (instanceId: string, value: number) => void;
-
   // Standalone Loyalty Vouchers Actions
   addLoyaltyAward: (award: Omit<LoyaltyAward, 'id' | 'usedQuantity' | 'lastModified'>) => void;
   toggleLoyaltyAward: (awardId: string) => void;
@@ -608,49 +604,6 @@ export const useCardStore = create<CardStore>()(
           return {
             ownedCards: nextCards,
             walletLastModified: Date.now(),
-          };
-        }),
-
-      toggleSignupBonus: (instanceId) =>
-        set((state) => {
-          const nextCards = state.ownedCards.map((c) => {
-            if (c.id === instanceId) {
-              const template = CARDS_DB.find((t) => t.id === c.templateId);
-              const defaultVal = c.signupBonusValue !== undefined 
-                ? c.signupBonusValue 
-                : (template?.signupBonusValue !== undefined ? template.signupBonusValue : 0);
-              return {
-                ...c,
-                signupBonusActive: !c.signupBonusActive,
-                signupBonusValue: defaultVal,
-                lastModified: Date.now()
-              };
-            }
-            return c;
-          });
-          syncPushToCloud(state.gdriveToken, nextCards, state.logs);
-          return { 
-            ownedCards: nextCards,
-            walletLastModified: Date.now()
-          };
-        }),
-
-      updateSignupBonusValue: (instanceId, value) =>
-        set((state) => {
-          const nextCards = state.ownedCards.map((c) => {
-            if (c.id === instanceId) {
-              return {
-                ...c,
-                signupBonusValue: Math.max(0, value),
-                lastModified: Date.now()
-              };
-            }
-            return c;
-          });
-          syncPushToCloud(state.gdriveToken, nextCards, state.logs);
-          return { 
-            ownedCards: nextCards,
-            walletLastModified: Date.now()
           };
         }),
 
