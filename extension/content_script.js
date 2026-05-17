@@ -11,7 +11,7 @@ chrome.storage.local.get(['walletData'], (result) => {
   
   // Loop through owned cards and their benefits to find a match
   for (const card of ownedCards) {
-    const benefits = card.benefits || [];
+    const benefits = [...(card.benefits || []), ...(card.customBenefits || []), ...(card.instanceOffers || [])];
     for (const perk of benefits) {
       const domains = perk.matchedDomains || [];
       const match = domains.find(domain => hostname.includes(domain));
