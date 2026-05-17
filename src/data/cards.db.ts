@@ -1006,6 +1006,136 @@ export const CARDS_DB: CardTemplate[] = [
         category: 'entertainment'
       }
     ]
+  },
+  {
+    id: 'citi-double-cash',
+    name: 'Citi Double Cash Card',
+    bank: 'Citi',
+    color: 'from-blue-500 to-sky-600',
+    annualFee: 0,
+    pointCurrency: 'citi-typ',
+    officialUrl: 'https://www.citi.com/credit-cards/citi-double-cash-credit-card',
+    benefits: []
+  },
+  {
+    id: 'capone-savorone',
+    name: 'Capital One SavorOne Cash Rewards',
+    bank: 'Other',
+    color: 'from-amber-700 via-orange-600 to-red-700',
+    annualFee: 0,
+    pointCurrency: 'cash',
+    officialUrl: 'https://www.capitalone.com/credit-cards/savorone-dining-and-groceries/',
+    benefits: []
+  },
+  {
+    id: 'apple-card',
+    name: 'Apple Card',
+    bank: 'Other',
+    color: 'from-slate-100 via-slate-200 to-white',
+    annualFee: 0,
+    pointCurrency: 'cash',
+    officialUrl: 'https://www.apple.com/apple-card/',
+    benefits: []
+  },
+  {
+    id: 'capone-venture',
+    name: 'Capital One Venture Rewards',
+    bank: 'Other',
+    color: 'from-teal-900 via-teal-800 to-cyan-950',
+    annualFee: 95,
+    pointCurrency: 'capitalone-miles',
+    officialUrl: 'https://www.capitalone.com/credit-cards/venture/',
+    signupBonusValue: 1350,
+    benefits: [
+      {
+        id: 'capone-venture-lounge',
+        name: 'Capital One Lounge Passes',
+        description: '2 complimentary visits per year to Capital One Lounges or Plaza Premium Lounges',
+        value: 90,
+        resetPeriod: 'annual-calendar',
+        category: 'travel'
+      }
+    ]
+  },
+  {
+    id: 'amex-green',
+    name: 'Amex Green Card',
+    bank: 'Amex',
+    color: 'from-emerald-800 via-green-700 to-emerald-950',
+    annualFee: 150,
+    pointCurrency: 'amex-mr',
+    officialUrl: 'https://www.americanexpress.com/us/credit-cards/card/green/',
+    signupBonusValue: 640,
+    benefits: [
+      {
+        id: 'amex-green-clear',
+        name: 'CLEAR Plus Credit',
+        description: '$189 per calendar year statement credit for CLEAR Plus security membership',
+        value: 189,
+        resetPeriod: 'annual-calendar',
+        category: 'travel',
+        matchedDomains: ['clearme.com']
+      },
+      {
+        id: 'amex-green-loungebuddy',
+        name: 'LoungeBuddy Credit',
+        description: '$100 per calendar year statement credit for airport lounge access purchased through LoungeBuddy',
+        value: 100,
+        resetPeriod: 'annual-calendar',
+        category: 'travel',
+        spendingLimit: 100
+      }
+    ]
+  },
+  {
+    id: 'chase-amazon-prime',
+    name: 'Amazon Prime Rewards Visa Signature',
+    bank: 'Chase',
+    color: 'from-slate-800 via-slate-900 to-amber-950',
+    annualFee: 0,
+    pointCurrency: 'cash',
+    officialUrl: 'https://www.amazon.com/primevisa',
+    signupBonusValue: 100,
+    benefits: [
+      {
+        id: 'amazon-prime-cashback',
+        name: '5% Amazon & Whole Foods',
+        description: '5% cash back on online purchases at Amazon.com and in-store at Whole Foods Market',
+        value: 100,
+        resetPeriod: 'annual-calendar',
+        category: 'shopping',
+        matchedDomains: ['amazon.com', 'wholefoodsmarket.com']
+      }
+    ]
+  },
+  {
+    id: 'chase-southwest-priority',
+    name: 'Southwest Rapid Rewards Priority',
+    bank: 'Chase',
+    color: 'from-blue-800 via-blue-900 to-yellow-600',
+    annualFee: 149,
+    pointCurrency: 'cash',
+    officialUrl: 'https://creditcards.chase.com/travel-credit-cards/southwest/priority',
+    signupBonusValue: 700,
+    benefits: [
+      {
+        id: 'southwest-priority-credit',
+        name: '$75 Annual Southwest Credit',
+        description: '$75 statement credit each anniversary year for Southwest Airlines purchases',
+        value: 75,
+        resetPeriod: 'annual-anniversary',
+        category: 'travel',
+        matchedDomains: ['southwest.com']
+      },
+      {
+        id: 'southwest-priority-anniversary',
+        name: '7,500 Anniversary Points',
+        description: 'Receive 7,500 bonus points each year on your cardmember anniversary (valued at ~$105)',
+        value: 105,
+        resetPeriod: 'annual-anniversary',
+        category: 'travel'
+      }
+    ]
   }
 ];
 
@@ -1037,7 +1167,14 @@ export const CARD_MULTIPLIERS: Record<string, { dining?: number; travel?: number
   'chase-freedom-unlimited': { dining: 3, travel: 1.5, shopping: 1.5 }, // 3x dining, 1.5x flat
   'amex-bce': { shopping: 3 }, // 3x groceries/online
   'citi-premier': { travel: 3, dining: 3, shopping: 3 }, // 3x travel/dining/supermarket
-  'citi-aa-platinum-select': { travel: 2, dining: 2, shopping: 2 } // 2x AA Flights/Dining/Gas Stations
+  'citi-aa-platinum-select': { travel: 2, dining: 2, shopping: 2 }, // 2x AA Flights/Dining/Gas Stations
+  'citi-double-cash': { dining: 2, travel: 2, shopping: 2, entertainment: 2 },
+  'capone-savorone': { dining: 3, shopping: 3, entertainment: 3 },
+  'apple-card': { shopping: 2, dining: 2 },
+  'capone-venture': { dining: 2, travel: 2, shopping: 2, entertainment: 2 },
+  'amex-green': { travel: 3, dining: 3 },
+  'chase-amazon-prime': { shopping: 5, dining: 2 },
+  'chase-southwest-priority': { travel: 2 }
 };
 
 
