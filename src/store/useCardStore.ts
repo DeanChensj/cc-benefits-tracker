@@ -270,10 +270,13 @@ export const useCardStore = create<CardStore>()(
       removeCard: (instanceId) =>
         set((state) => {
           const nextCards = state.ownedCards.filter((c) => c.id !== instanceId);
-          const nextLogs = Object.keys(state.logs).reduce((acc, key) => {
-            const parts = key.split(':');
-            if (parts[1] !== instanceId) {
-              acc[key] = state.logs[key];
+          const nextLogs = Object.keys(state.logs).reduce((acc, obfuscatedKey) => {
+            const plainKey = deobfuscateKey(obfuscatedKey);
+            const parts = plainKey.split(':');
+            const logInstanceId = parts[0] === 'anniv' && parts.length >= 5 ? parts[3] : parts[1];
+            
+            if (logInstanceId !== instanceId) {
+              acc[obfuscatedKey] = state.logs[obfuscatedKey];
             }
             return acc;
           }, {} as Record<string, LogEntry>);

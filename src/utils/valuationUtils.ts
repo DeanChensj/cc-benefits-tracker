@@ -16,6 +16,14 @@ export const getBenefitIdFromKey = (rawKey: string): string | null => {
   return parts[2];
 };
 
+// Helper to parse instance ID from a raw log key
+export const getInstanceIdFromKey = (rawKey: string): string | null => {
+  const parts = rawKey.split(':');
+  if (parts.length < 2) return null;
+  if (parts[0] === 'anniv' && parts.length >= 5) return parts[3];
+  return parts[1];
+};
+
 // Helper to build a fast lookup map for benefit values
 export const getBenefitValueMap = (
   ownedCards: OwnedCardInstance[],
@@ -168,7 +176,7 @@ export const getCardRecoupedValue = (
     if (parts.length < 3) return;
 
     const cycle = parts[0];
-    const logInstanceId = parts[1];
+    const logInstanceId = getInstanceIdFromKey(rawKey);
     const logBenefitId = getBenefitIdFromKey(rawKey);
     if (!logBenefitId) return;
 
@@ -273,7 +281,7 @@ export const calculateCardRoi = (
     if (parts.length < 3) return;
 
     const cycle = parts[0];
-    const logInstanceId = parts[1];
+    const logInstanceId = getInstanceIdFromKey(rawKey);
     const logBenefitId = getBenefitIdFromKey(rawKey);
     if (!logBenefitId) return;
 
@@ -373,8 +381,8 @@ export const getSavingsForPeriod = (
       if (!logDate.startsWith(monthStr)) return;
     }
 
-    const parts = rawKey.split(':');
-    const valKey = parts.length === 1 ? benefitId : `${parts[1]}:${benefitId}`;
+    const logInstanceId = getInstanceIdFromKey(rawKey);
+    const valKey = !logInstanceId ? benefitId : `${logInstanceId}:${benefitId}`;
     const val = benefitValueMap.get(valKey) || 0;
     sum += val;
   });
