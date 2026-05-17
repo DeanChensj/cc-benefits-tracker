@@ -48,7 +48,8 @@ export function EditCardModal({
   if (!isOpen || !instance) return null;
 
   const template = CARDS_DB.find((t) => t.id === instance.templateId);
-  const canCustomizePoints = instance.templateId === 'custom' || instance.templateId === 'chase-freedom-flex' || instance.templateId === 'discover-it-cashback';
+  const canCustomizePoints = instance.templateId === 'custom';
+  const isRotatingCard = instance.templateId === 'chase-freedom-flex' || instance.templateId === 'discover-it-cashback';
 
   const defaultDining = CARD_MULTIPLIERS[instance.templateId]?.dining || 1;
   const defaultTravel = CARD_MULTIPLIERS[instance.templateId]?.travel || 1;
@@ -212,8 +213,8 @@ export function EditCardModal({
             </div>
           </div>
 
-          {/* 2. Custom Point Multipliers */}
-          {canCustomizePoints && (
+          {/* 2. Custom Point Multipliers or AI Rotating Notice */}
+          {canCustomizePoints ? (
             <div className="space-y-2.5">
               <label className={`text-[10px] font-black uppercase tracking-widest ${themeClass('text-slate-500', 'text-slate-400')}`}>
                 {t('multipliersTitle')}
@@ -313,7 +314,21 @@ export function EditCardModal({
                 </div>
               </div>
             </div>
-          )}
+          ) : isRotatingCard ? (
+            <div className={`p-3.5 rounded-xl border text-xs space-y-1 font-medium leading-relaxed ${
+              themeClass('bg-slate-955/60 border-slate-850 text-slate-300', 'bg-amber-50/80 border-amber-200 text-amber-900')
+            }`}>
+              <p className="font-bold text-amber-500 dark:text-amber-400 flex items-center gap-1.5">
+                <span>💡</span>
+                <span>{language === 'zh' ? '5% 季度轮转倍率提示' : '5% Rotating Multipliers Notice'}</span>
+              </p>
+              <p className="text-[11px] mt-1">
+                {language === 'zh' 
+                  ? '此卡的 5% 季度轮转商户及返点倍率由系统后台 AI 脚本自动根据当前季度实时更新，无需手动配置！' 
+                  : 'This card\'s 5% rotating categories and multipliers are automatically updated by background AI scripts each quarter. No manual configuration needed!'}
+              </p>
+            </div>
+          ) : null}
         </div>
 
         <button

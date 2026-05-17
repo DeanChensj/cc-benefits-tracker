@@ -4,11 +4,13 @@ export interface Benefit {
   description: string;
   value: number;
   resetPeriod: 'monthly' | 'quarterly' | 'semi-annual' | 'annual-calendar' | 'annual-anniversary' | 'fixed' | 'once';
-  category: 'dining' | 'travel' | 'shopping' | 'entertainment' | 'other';
+  category: 'dining' | 'travel' | 'shopping' | 'entertainment' | 'other' | 'rotating';
   expirationDate?: string; // e.g., '2026-12-31' (only for 'fixed' or 'once' resetPeriod)
   spendingLimit?: number; // e.g., 1500 for CFF 5%, 6000 for BCP 6% (only for progressive limit perks)
   type?: 'built-in' | 'custom' | 'welcome-offer';
   matchedDomains?: string[]; // Domains where this perk should be reminded!
+  subCategories?: string[]; // Sub-merchants for rotating categories (e.g., ['Amazon.com', 'Restaurants'])
+  activeCoreCategories?: ('dining' | 'travel' | 'shopping' | 'entertainment' | 'other')[]; // AI mapped overlaps
 }
 
 export type PointCurrency = 'amex-mr' | 'chase-ur' | 'citi-typ' | 'capitalone-miles' | 'hyatt' | 'marriott' | 'ihg' | 'hilton' | 'aa-miles' | 'ua-miles' | 'delta-miles' | 'cash';
@@ -617,11 +619,14 @@ export const CARDS_DB: CardTemplate[] = [
       {
         id: 'cff-rotating',
         name: '5% Rotating Category',
-        description: '5% cash back on rotating quarterly categories on up to $1,500 spend per quarter',
+        description: 'Q2 2026 (Apr-Jun): Amazon.com and Chase Travel (5% cash back on up to $1,500 spend)',
         value: 75, // $1500 * 5%
         resetPeriod: 'quarterly',
-        category: 'dining',
-        spendingLimit: 1500
+        category: 'rotating',
+        spendingLimit: 1500,
+        subCategories: ['Amazon.com', 'Chase Travel'],
+        activeCoreCategories: ['shopping'],
+        matchedDomains: ['amazon.com', 'wholefoodsmarket.com', 'chasetravel.com']
       },
 
     ]
@@ -725,11 +730,13 @@ export const CARDS_DB: CardTemplate[] = [
       {
         id: 'discover-it-rotating',
         name: '5% Rotating Category',
-        description: '5% cash back on rotating quarterly categories on up to $1,500 spend per quarter',
+        description: 'Q2 2026 (Apr-Jun): Restaurants and Home Improvement Stores (5% cash back on up to $1,500 spend)',
         value: 75,
         resetPeriod: 'quarterly',
-        category: 'shopping',
-        spendingLimit: 1500
+        category: 'rotating',
+        spendingLimit: 1500,
+        subCategories: ['Restaurants', 'Home Improvement'],
+        activeCoreCategories: ['dining', 'shopping']
       }
     ]
   },

@@ -105,6 +105,7 @@ const translationsEn = {
   catShopping: 'Shopping',
   catEntertainment: 'Entertainment',
   catOther: 'Other',
+  catRotating: '5% Rotating Categories',
 
   // Standalone Vouchers dropdown values
   awardFnr: 'Free Night (FN)',
@@ -580,6 +581,7 @@ const translationsZh: typeof translationsEn = {
   catShopping: '购物',
   catEntertainment: '影视娱乐',
   catOther: '其他杂项',
+  catRotating: '5% 季度轮转类别',
 
   // Standalone Vouchers dropdown values
   awardFnr: '免费住宿券 (FN)',

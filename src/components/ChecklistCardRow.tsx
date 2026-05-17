@@ -246,6 +246,20 @@ export const ChecklistCardRow = React.memo(function ChecklistCardRow({
               )}
               
             </div>
+            
+            {/* Sub-categories pill badges */}
+            {benefit.subCategories && benefit.subCategories.length > 0 && (
+              <div className="flex items-center gap-1 flex-wrap -mt-0.5">
+                {benefit.subCategories.map((sub, idx) => (
+                  <span key={idx} className={`px-1.5 py-0.2 rounded-[4px] text-[9px] font-black tracking-wider uppercase border ${
+                    themeClass('bg-slate-900 text-amber-400 border-slate-800', 'bg-slate-100 text-amber-700 border-slate-200')
+                  }`}>
+                    {sub}
+                  </span>
+                ))}
+              </div>
+            )}
+
             {renderMutedMetadata()}
           </div>
         </div>

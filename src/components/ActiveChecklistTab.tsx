@@ -80,6 +80,9 @@ export function ActiveChecklistTab({
           : (AWARD_TEMPLATES[ab.loyaltyAward.templateId]?.awardType || 'other');
         if (awardType !== filterCategory) return false;
       } else {
+        if (ab.benefit.activeCoreCategories && (ab.benefit.activeCoreCategories as string[]).includes(filterCategory)) {
+          return true;
+        }
         if (ab.benefit.category !== filterCategory) return false;
       }
     }

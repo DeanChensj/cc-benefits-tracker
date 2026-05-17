@@ -33,16 +33,21 @@ export function useCheckoutWinners() {
 
       ownedCards.forEach((instance) => {
         let mult = 0;
-        // 1. Check if the instance has manually customized overrides
-        if (instance.multipliers?.[cat] !== undefined) {
+        const template = CARDS_DB.find((t) => t.id === instance.templateId);
+        const rotatingPerk = template?.benefits.find(b => b.category === 'rotating');
+
+        // 1. Check if the card has active rotating categories for this quarter!
+        if (rotatingPerk && rotatingPerk.activeCoreCategories && (rotatingPerk.activeCoreCategories as string[]).includes(cat)) {
+          mult = 5; // Rotating categories are always 5%
+        } else if (instance.multipliers?.[cat] !== undefined) {
+          // 2. Check if the instance has manually customized overrides
           mult = instance.multipliers[cat]!;
         } else if (instance.templateId !== 'custom') {
-          // 2. Fallback to static standard template multipliers
+          // 3. Fallback to static standard template multipliers
           mult = CARD_MULTIPLIERS[instance.templateId]?.[cat] || 0;
         }
 
         // 3. Resolve point type statically & calculate return (cpp)
-        const template = CARDS_DB.find((t) => t.id === instance.templateId);
         const currency = instance.pointCurrency || (template?.pointCurrency || 'cash');
         const cpp = pointValuations[currency] !== undefined ? pointValuations[currency] : 1.0;
         const ros = mult * cpp;

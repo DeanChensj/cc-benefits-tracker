@@ -72,6 +72,7 @@ export function FilterHubPanel({
               <option value="shopping">{t('catShopping')}</option>
               <option value="entertainment">{t('catEntertainment')}</option>
               <option value="other">{t('catOther')}</option>
+              <option value="rotating">{t('catRotating')}</option>
             </>
           )}
         </select>
