@@ -174,19 +174,47 @@ export function SettingsModal({ isOpen, onClose, onOpenCalendarExport, onOpenWip
           <div className={`p-3 rounded-xl border space-y-2 ${themeClass('bg-gradient-to-b from-slate-900/60 to-slate-950/60 border-slate-800/50 backdrop-blur-sm', 'bg-white border-slate-200 shadow-sm')}`}>
             <div>
               <p className="text-xs font-bold">{t('extGetTitle')}</p>
-              <p className={`text-[10px] font-medium mt-0.5 ${themeClass('text-slate-400', 'text-slate-500')}`}>
+              <p className={`text-[10px] font-medium mt-1 leading-relaxed ${themeClass('text-slate-300', 'text-slate-600')}`}>
                 {t('extStatus')}
               </p>
-            </div>
-            
-            <div className={`text-[9px] p-2 rounded-lg ${themeClass('bg-slate-800/50 text-slate-400', 'bg-slate-100 text-slate-600')}`}>
-              <p className="font-bold mb-1">{t('extPowerUserTitle')}</p>
-              <ol className="list-decimal list-inside space-y-0.5">
-                <li>{t('extStep1')}</li>
-                <li>{t('extStep2')}</li>
-                <li>{t('extStep3')}</li>
-                <li>{t('extStep4')}</li>
-              </ol>
+
+              {/* Beautiful Feature Highlights Box */}
+              <div className={`mt-3 p-2.5 rounded-xl border space-y-2.5 text-left ${
+                themeClass('bg-slate-950/50 border-slate-850/80 text-slate-300', 'bg-slate-50/80 border-slate-200 text-slate-700')
+              }`}>
+                <div className="flex items-start gap-2 text-[11px]">
+                  <span className="text-teal-400 mt-0.5 shrink-0">⚡</span>
+                  <div>
+                    <p className="font-bold">{language === 'zh' ? '商户结账智能弹窗' : 'Contextual Checkout Alerts'}</p>
+                    <p className={`text-[10px] mt-0.5 leading-relaxed ${themeClass('text-slate-400', 'text-slate-500')}`}>
+                      {language === 'zh' 
+                        ? '访问 Uber、Grubhub、Saks、Amazon 等商户时，右下角自动弹出对应报销及倍率提示。' 
+                        : 'Get instant statement credit and multiplier reminders when browsing Uber, Saks, Amazon, and more.'}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-2 text-[11px]">
+                  <span className="text-purple-400 mt-0.5 shrink-0">🔒</span>
+                  <div>
+                    <p className="font-bold">{language === 'zh' ? '零绑定本地直读' : 'Zero-Login Local Sync'}</p>
+                    <p className={`text-[10px] mt-0.5 leading-relaxed ${themeClass('text-slate-400', 'text-slate-500')}`}>
+                      {language === 'zh' 
+                        ? '直连本地卡包缓存。无需登录银行账号，无需 Plaid 授权，100% 零数据追踪。' 
+                        : 'Reads directly from your local wallet. No bank logins, no Plaid, 100% zero tracking.'}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <a
+                href="https://chromewebstore.google.com/detail/perkfolio-assistant/bbneiifahonicipbcmhilfklpekcgdfg"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-3.5 block w-full text-center py-2.5 px-4 rounded-xl text-xs font-black tracking-wider bg-gradient-to-tr from-teal-500 to-emerald-500 hover:from-teal-400 hover:to-emerald-400 text-slate-950 shadow-md shadow-teal-500/10 transition duration-200 active:scale-95 select-none"
+              >
+                {t('extDownloadBtn')}
+              </a>
             </div>
           </div>
         </div>
