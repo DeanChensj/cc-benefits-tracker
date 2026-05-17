@@ -1,0 +1,41 @@
+name: Quarterly 5% Categories AI Updater
+
+on:
+  schedule:
+    - cron: '0 0 1 1,4,7,10 *' # Midnight on Jan 1, Apr 1, Jul 1, Oct 1 UTC
+  workflow_dispatch: # Allow manual trigger from GitHub Actions UI
+
+permissions:
+  contents: write # Required to push committed category updates back to repository
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: |
+          npm ci || npm install
+
+      - name: Run AI Rotating Categories Updater Script
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: |
+          npx tsx scripts/update-rotating-categories.ts
+
+      - name: Commit and Push Changes
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add src/data/cards.db.ts
+          git diff --quiet && git diff --staged --quiet || (git commit -m "chore(data): auto-update quarterly 5% rotating categories via Gemini Search Grounding" && git push)
