@@ -72,7 +72,7 @@ export const AWARD_TEMPLATES: Record<string, StaticAwardTemplate> = {
     brand: 'Marriott',
     programType: 'hotel',
     awardType: 'sua',
-    value: 40,
+    value: 30,
     description: 'Request a premium room or suite upgrade per night.'
   },
   'marriott-85k-fnr': {
@@ -107,12 +107,20 @@ export const AWARD_TEMPLATES: Record<string, StaticAwardTemplate> = {
     value: 250,
     description: 'Redeem for a free night at almost any participating Hilton hotel or resort worldwide.'
   },
+  'ihg-fnr': {
+    name: 'IHG 40K Free Night Award',
+    brand: 'IHG',
+    programType: 'hotel',
+    awardType: 'fnr',
+    value: 150,
+    description: 'Redeem for a free night up to 40,000 points at IHG hotels (can be topped up with unlimited points).'
+  },
   'alaska-companion': {
     name: 'Alaska Companion Fare Certificate',
     brand: 'Alaska',
     programType: 'airline',
     awardType: 'companion',
-    value: 150,
+    value: 99,
     description: 'Book a companion round-trip fare from $121 ($99 fare + taxes).'
   },
   'delta-companion': {
@@ -128,8 +136,24 @@ export const AWARD_TEMPLATES: Record<string, StaticAwardTemplate> = {
     brand: 'AA',
     programType: 'airline',
     awardType: 'swu',
-    value: 200,
+    value: 250,
     description: 'Confirm a one-way systemwide upgrade to business or first class.'
+  },
+  'united-club-pass': {
+    name: 'United Club One-Time Pass',
+    brand: 'United',
+    programType: 'airline',
+    awardType: 'other',
+    value: 30,
+    description: 'Access any United Club lounge location for one person ($59 retail value).'
+  },
+  'southwest-companion': {
+    name: 'Southwest Companion Pass',
+    brand: 'Southwest',
+    programType: 'airline',
+    awardType: 'companion',
+    value: 500,
+    description: 'Designate a companion to fly with you free of airline charges (does not include taxes/fees).'
   },
   'custom': {
     name: 'Custom Voucher',
