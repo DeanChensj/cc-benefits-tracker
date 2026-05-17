@@ -140,77 +140,8 @@ export const getCardRecoupedValue = (
   logs: Record<string, LogEntry>,
   currentDate = new Date()
 ): number => {
-  const instance = ownedCards.find((c) => c.id === instanceId);
-  if (!instance) return 0;
-
-  const template = CARDS_DB.find((t) => t.id === instance.templateId);
-  const benefits: Benefit[] = instance.templateId === 'custom'
-    ? (instance.customBenefits || [])
-    : (template?.benefits || []);
-
-  // Append card-instance specific custom offers
-  const offers = instance.instanceOffers || [];
-  const allBenefits = [...benefits, ...offers];
-
-
-
-  // Compute card anniversary boundaries based on simulated/current date
-  const year = currentDate.getFullYear();
-  const openDate = new Date((instance.cardOpenDate || '2026-01-01') + 'T00:00:00');
-  const todayMidnight = new Date(year, currentDate.getMonth(), currentDate.getDate());
-  const currentAnniv = new Date(year, openDate.getMonth(), openDate.getDate());
-
-  const start = todayMidnight < currentAnniv 
-    ? new Date(year - 1, openDate.getMonth(), openDate.getDate())
-    : currentAnniv;
-  const end = todayMidnight < currentAnniv 
-    ? currentAnniv 
-    : new Date(year + 1, openDate.getMonth(), openDate.getDate());
-
-  let sum = 0;
-
-  // Audit all historical log entries in sandbox store
-  Object.keys(logs).forEach((obfuscatedKey) => {
-    const rawKey = deobfuscateKey(obfuscatedKey);
-    const parts = rawKey.split(':');
-    if (parts.length < 3) return;
-
-    const cycle = parts[0];
-    const logInstanceId = getInstanceIdFromKey(rawKey);
-    const logBenefitId = getBenefitIdFromKey(rawKey);
-    if (!logBenefitId) return;
-
-    if (logInstanceId !== instanceId) return;
-
-    // Find matching benefit metadata
-    const benefit = allBenefits.find((b) => b.id === logBenefitId);
-    if (!benefit) return;
-
-    // Check if the log entry falls within the current anniversary year boundaries
-    const entryDate = getLogEntryDate(cycle, benefit.resetPeriod);
-    if (entryDate < start || entryDate >= end) return;
-
-    const logVal = logs[obfuscatedKey];
-    if (!logVal) return;
-    const parsed = parseLogEntry(logVal);
-    if (!parsed) return;
-
-    if (benefit.spendingLimit) {
-      const spent = parsed.spentProgress || 0;
-      if (benefit.type === 'welcome-offer') {
-        if (spent >= benefit.spendingLimit) {
-          sum += benefit.value;
-        }
-      } else {
-        const progressPercent = Math.min(spent / benefit.spendingLimit, 1);
-        sum += benefit.value * progressPercent;
-      }
-    } else if (parsed.resolved) {
-      sum += benefit.value;
-    }
-  });
-
-  return Math.round(sum * 100) / 100;
+  const roi = calculateCardRoi(instanceId, ownedCards, logs, currentDate);
+  return roi.totalRecouped;
 };
 
 export interface CardRoiReport {
