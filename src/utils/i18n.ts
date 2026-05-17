@@ -154,6 +154,8 @@ const translationsEn = {
   // Template catalog i18n
   templatesLibraryTitle: '🗂️ Templates Library',
   templatesLibraryDesc: 'Click templates to select and batch-add multiple cards to your Wallet in one go.',
+  gridView: 'Grid View',
+  compactList: 'Compact List',
   searchTemplatesPlaceholder: '🔍 Search templates by name or bank (e.g. Chase, Amex Gold)...',
   feeAll: 'All',
   feeFree: '$0 Fee',
@@ -627,6 +629,8 @@ const translationsZh: typeof translationsEn = {
   // Template catalog i18n
   templatesLibraryTitle: '🗂️ 推荐卡片模板库',
   templatesLibraryDesc: '点击卡片模板进行选择，支持一键批量添加多张信用卡到钱包。',
+  gridView: '大图模式',
+  compactList: '极简列表',
   searchTemplatesPlaceholder: '🔍 搜索卡片模板名称或银行（如：Chase, Amex Gold）...',
   feeAll: '全部年费',
   feeFree: '免年费',
