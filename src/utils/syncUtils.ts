@@ -28,13 +28,15 @@ export const syncPushToCloud = async (
       const loyaltyAwards = storeState?.loyaltyAwards || [];
       const deletedCardIds = storeState?.deletedCardIds || [];
       const deletedAwardIds = storeState?.deletedAwardIds || [];
+      const walletLastModified = storeState?.walletLastModified || Date.now();
       
       await uploadSyncFile(token, fileId, { 
         ownedCards, 
         logs, 
         loyaltyAwards,
         deletedCardIds,
-        deletedAwardIds
+        deletedAwardIds,
+        walletLastModified
       });
     } catch (err) {
       console.error('Silent background cloud sync failed:', err);

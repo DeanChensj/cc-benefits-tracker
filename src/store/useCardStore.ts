@@ -330,6 +330,7 @@ export const useCardStore = create<CardStore>()(
 
           return {
             logs: nextLogs,
+            walletLastModified: Date.now(),
           };
         }),
 
@@ -349,6 +350,7 @@ export const useCardStore = create<CardStore>()(
 
           return {
             logs: nextLogs,
+            walletLastModified: Date.now(),
           };
         }),
 
@@ -368,6 +370,7 @@ export const useCardStore = create<CardStore>()(
 
           return {
             logs: nextLogs,
+            walletLastModified: Date.now(),
           };
         }),
 
