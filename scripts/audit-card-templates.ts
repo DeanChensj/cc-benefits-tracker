@@ -1,4 +1,5 @@
 import { CARDS_DB } from '../src/data/cards.db';
+import type { CardTemplate, Benefit } from '../src/data/cards.db';
 
 // Send a single consolidated database payload to Gemini for parallel auditing
 async function runConsolidatedAudit(apiKey: string): Promise<string | null> {
@@ -8,7 +9,7 @@ async function runConsolidatedAudit(apiKey: string): Promise<string | null> {
 You are provided with the full database array containing credit card templates.
 Use your Google Search tool to check if the annual fee or major statement credits for ANY of these cards have changed compared to the provided static configuration.
 If any discrepancies are found, output a consolidated markdown table highlighting the changes (Card Name, Field, Current Value, Live Value, and Notes).
-If no changes or discrepancies are detected anywhere in the database, output exactly: NO_CHANGE.
+If no changes or discrepancies are detected anywhere in the database, output exactly: NO_CHANGE and nothing else.
 
 Guidelines:
 1. Do not care about or flag discrepancies regarding monetary/dollar valuations of Free Night Awards, hotel vouchers, or Companion Certificates (e.g., assigning $300 or $450 valuations to certificate rewards is an intentional layout choice in our database for math recoup calculations).
@@ -17,13 +18,13 @@ Guidelines:
 4. Keep the output clear, concise, and strictly focused on discrepancies. Do not list cards that match perfectly.`;
 
   // Hydrate templates with officialUrl for the prompt context
-  const auditableTemplates = CARDS_DB.filter((c: any) => !!c.officialUrl).map((c: any) => ({
+  const auditableTemplates = CARDS_DB.filter((c: CardTemplate) => !!c.officialUrl).map((c: CardTemplate) => ({
     id: c.id,
     name: c.name,
     bank: c.bank,
     annualFee: c.annualFee,
     officialUrl: c.officialUrl,
-    benefits: c.benefits.map((b: any) => ({
+    benefits: c.benefits.map((b: Benefit) => ({
       id: b.id,
       name: b.name,
       value: b.value,
@@ -126,7 +127,13 @@ async function run() {
   console.log('⚙️ Running consolidated audit via Gemini Search Grounding...');
   const auditOutput = await runConsolidatedAudit(apiKey);
   const cleanOutput = (auditOutput || '').trim();
-  const isNoChange = cleanOutput.includes('NO_CHANGE') || cleanOutput.toUpperCase() === 'NO_CHANGE' || cleanOutput === '';
+  const cleanOutputLower = cleanOutput.toLowerCase();
+  const isNoChange = cleanOutputLower.includes('no_change') || 
+    cleanOutputLower.includes('no discrepancies') || 
+    cleanOutputLower.includes('no changes') || 
+    cleanOutputLower.includes('no change') || 
+    cleanOutputLower.includes('all match') || 
+    cleanOutput === '';
 
   if (auditOutput && !isNoChange) {
     console.log('⚠️ Discrepancies detected! Creating automated GitHub Issue...');
