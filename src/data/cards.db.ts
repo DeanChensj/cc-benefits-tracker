@@ -1157,12 +1157,12 @@ export const CARD_MULTIPLIERS: Record<string, { dining?: number; travel?: number
   'amex-platinum': { travel: 5 }, // 5x Flights
   'amex-bcp': { shopping: 6, entertainment: 6 }, // 6% Groceries, 6% Streaming
   'amex-delta-reserve': { travel: 3 }, // 3x Delta
-  'amex-delta-platinum': { travel: 3 }, // 3x Delta
+  'amex-delta-platinum': { travel: 3, dining: 2, shopping: 2 }, // 3x Delta, 2x Dining, 2x Groceries
   'amex-biz-platinum': { travel: 5 }, // 5x Flights
   'amex-hilton-aspire': { travel: 7, dining: 7 }, // 14x Hilton, 7x Flights/Dining
   'chase-sapphire-reserve': { travel: 3, dining: 3 }, // 3x Travel, 3x Dining
   'chase-sapphire-preferred': { dining: 3, travel: 2, entertainment: 3 }, // 3x Dining, 3x Streaming, 2x Travel
-  'chase-freedom-flex': { dining: 3, shopping: 5 }, // 3x Dining, 5x Rotating
+  'chase-freedom-flex': { dining: 3 }, // 3x Dining, 3x Drugstores
   'chase-hyatt': { travel: 4, dining: 2 }, // 4x Hyatt, 2x Dining
   'chase-marriott-boundless': { travel: 6, dining: 2 }, // 6x Marriott, 2x Dining
   'chase-ihg-premier': { travel: 10, dining: 5 }, // 10x IHG, 5x Dining
