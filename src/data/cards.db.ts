@@ -903,6 +903,46 @@ export const CARDS_DB: CardTemplate[] = [
     ]
   },
   {
+    id: 'citibusiness-aa-platinum-select',
+    name: 'Citi Business AAdvantage Platinum Select',
+    bank: 'Citi',
+    color: 'from-blue-900 via-slate-800 to-sky-950',
+    annualFee: 99,
+    pointCurrency: 'aa-miles',
+    officialUrl: 'https://www.citi.com/credit-cards/citibusiness-aadvantage-platinum-select-mastercard',
+    signupBonusValue: 975,
+    benefits: [
+      {
+        id: 'citibiz-aa-bag',
+        name: 'First Checked Bag Free',
+        description: 'Free first checked bag on domestic American Airlines flights for you and up to 4 companions on the same reservation.',
+        value: 120,
+        resetPeriod: 'annual-calendar',
+        category: 'travel',
+        matchedDomains: ['aa.com']
+      },
+      {
+        id: 'citibiz-aa-companion',
+        name: '$99 Companion Certificate',
+        description: 'Earn a domestic main cabin companion certificate ($99 ticketing fee applies) after spending $30,000 or more each cardmember anniversary year.',
+        value: 200,
+        resetPeriod: 'annual-anniversary',
+        category: 'travel',
+        spendingLimit: 30000,
+        matchedDomains: ['aa.com']
+      },
+      {
+        id: 'citibiz-aa-wifi',
+        name: '25% In-Flight Savings',
+        description: '25% savings on in-flight Wi-Fi, food, and beverage purchases on American Airlines flights.',
+        value: 25,
+        resetPeriod: 'annual-calendar',
+        category: 'travel',
+        matchedDomains: ['aa.com']
+      }
+    ]
+  },
+  {
     id: 'chase-ink-preferred',
     name: 'Chase Ink Business Preferred',
     bank: 'Chase',
@@ -1175,6 +1215,7 @@ export const CARD_MULTIPLIERS: Record<string, { dining?: number; travel?: number
   'amex-bce': { shopping: 3 }, // 3x groceries/online
   'citi-premier': { travel: 3, dining: 3, shopping: 3 }, // 3x travel/dining/supermarket
   'citi-aa-platinum-select': { travel: 2, dining: 2, shopping: 2 }, // 2x AA Flights/Dining/Gas Stations
+  'citibusiness-aa-platinum-select': { travel: 2, shopping: 1, dining: 1 }, // 2x AA, Telecom, Car Rental, Gas
   'citi-double-cash': { dining: 2, travel: 2, shopping: 2, entertainment: 2 },
   'capone-savorone': { dining: 3, shopping: 3, entertainment: 3 },
   'apple-card': { shopping: 2, dining: 2 },
