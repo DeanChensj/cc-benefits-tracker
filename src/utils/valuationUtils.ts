@@ -288,8 +288,7 @@ export const getSavingsForPeriod = (
   const todayStr = getLocalDateStr(currentDate);
   const monthStr = todayStr.slice(0, 7); // YYYY-MM
 
-  // Build benefit value map
-  const benefitValueMap = getBenefitValueMap(ownedCards, loyaltyAwards);
+
 
   Object.keys(logs).forEach((obfuscatedKey) => {
     const rawKey = deobfuscateKey(obfuscatedKey);
@@ -298,7 +297,6 @@ export const getSavingsForPeriod = (
     const logVal = logs[obfuscatedKey];
     if (!logVal) return;
 
-    // Parse log
     const parsed = parseLogEntry(logVal);
     if (!parsed) return;
 
@@ -313,9 +311,38 @@ export const getSavingsForPeriod = (
     }
 
     const logInstanceId = getInstanceIdFromKey(rawKey);
-    const valKey = !logInstanceId ? benefitId : `${logInstanceId}:${benefitId}`;
-    const val = benefitValueMap.get(valKey) || 0;
-    sum += val;
+    
+    let benefit: Benefit | null = null;
+    if (logInstanceId) {
+      const card = ownedCards.find(c => c.id === logInstanceId);
+      if (card) {
+        const template = card.templateId !== 'custom' ? CARDS_DB.find(t => t.id === card.templateId) : null;
+        const allBenefits = [
+          ...(card.templateId === 'custom' ? (card.customBenefits || []) : (template?.benefits || [])),
+          ...(card.instanceOffers || [])
+        ];
+        benefit = allBenefits.find(b => b.id === benefitId) || null;
+      }
+    } else {
+      // Standalone loyalty award
+      const award = loyaltyAwards.find(a => a.id === benefitId);
+      if (award) {
+        const isCustom = award.templateId === 'custom';
+        const awardVal = isCustom ? (award.customValue || 0) : (AWARD_TEMPLATES[award.templateId]?.value || 0);
+        sum += awardVal * (award.usedQuantity || 0);
+        return;
+      }
+    }
+
+    if (!benefit) return;
+
+    const recoupVal = benefit.spendingLimit
+      ? (benefit.type === 'welcome-offer'
+        ? ((parsed.spentProgress || 0) >= benefit.spendingLimit ? benefit.value : 0)
+        : (benefit.value * Math.min((parsed.spentProgress || 0) / benefit.spendingLimit, 1)))
+      : benefit.value;
+
+    sum += recoupVal;
   });
 
   return Math.round(sum * 100) / 100;
