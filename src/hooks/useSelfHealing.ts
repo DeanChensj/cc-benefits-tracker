@@ -1,11 +1,47 @@
 import { useEffect } from 'react';
 import { useCardStore } from '../store/useCardStore';
 import { loadGoogleGsiScript } from '../utils/gdrive';
+import { CARDS_DB } from '../data/cards.db';
 
 export function useSelfHealing(currentDate: Date) {
   useEffect(() => {
-    // Self-Healing Migration: Automatically heal stored point valuations defaults
     const storeState = useCardStore.getState();
+
+    // Self-Healing Migration: Restore missing benefits metadata on legacy cards
+    const ownedCards = storeState.ownedCards || [];
+    let healedAnyCard = false;
+    const nextCards = ownedCards.map((card) => {
+      if (card.templateId === 'custom') return card;
+
+      const template = CARDS_DB.find((t) => t.id === card.templateId);
+      if (!template) return card;
+
+      const hasMissingBenefits = !card.benefits || card.benefits.length === 0;
+      const hasMissingDomains = card.benefits?.some(b => b.matchedDomains === undefined);
+
+      if (hasMissingBenefits || hasMissingDomains) {
+        healedAnyCard = true;
+        return {
+          ...card,
+          benefits: template.benefits.map(b => ({
+            id: b.id,
+            description: b.description,
+            matchedDomains: b.matchedDomains
+          })),
+          lastModified: Date.now()
+        };
+      }
+      return card;
+    });
+
+    if (healedAnyCard) {
+      useCardStore.setState({ 
+        ownedCards: nextCards,
+        walletLastModified: Date.now()
+      });
+      console.log('🧹 [Self-Healing] Successfully migrated and populated missing benefits metadata on legacy card instances!');
+      storeState.triggerSync();
+    }
     const storedValuations = storeState.pointValuations;
     if (storedValuations) {
       if (storedValuations['chase-ur'] === 2.0 || storedValuations['chase-ur'] === 1.8) {

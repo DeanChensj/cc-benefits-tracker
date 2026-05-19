@@ -1,31 +1,34 @@
 // content_web.js
 
-// Function to inject script into main world to read localStorage
-function triggerMainWorldSync() {
-  const script = document.createElement('script');
-  script.src = chrome.runtime.getURL('inject.js');
-  script.onload = () => script.remove();
-  (document.head || document.documentElement).appendChild(script);
-}
-
-// Listen for data from the main world
-window.addEventListener('perkfolio-data-bridge', (e) => {
-  const data = e.detail;
+// Listen for data from the main world via secure window.postMessage
+window.addEventListener('message', (e) => {
+  // Only accept messages from our own window
+  if (e.source !== window) return;
   
-  if (data) {
-    try {
-      const parsedData = JSON.parse(data);
-      chrome.storage.local.set({ walletData: parsedData });
-    } catch (err) {
-      console.error('Failed to parse wallet data:', err);
+  // Verify safety origins
+  const ALLOWED_ORIGINS = ['https://perkfolio.cc', 'http://localhost:5173', 'http://127.0.0.1:5173'];
+  if (!ALLOWED_ORIGINS.some(origin => e.origin.startsWith(origin))) return;
+
+  if (e.data && e.data.type === 'PERKFOLIO_DATA_BRIDGE') {
+    const data = e.data.detail;
+    if (data) {
+      try {
+        const parsedData = JSON.parse(data);
+        // Robust validation of the sync payload structure before saving
+        if (parsedData && typeof parsedData === 'object' && parsedData.state) {
+          chrome.storage.local.set({ walletData: parsedData });
+        }
+      } catch (err) {
+        console.error('Failed to parse wallet data:', err);
+      }
     }
   }
 });
 
-// 1. Trigger sync immediately on load
-triggerMainWorldSync();
-
-// 2. Listen for update events from the website
-window.addEventListener('perkfolio-sync', () => {
-  triggerMainWorldSync();
+// Listen for webpage mount ready event to trigger handshake pull request
+window.addEventListener('perkfolio-ready', () => {
+  window.dispatchEvent(new CustomEvent('perkfolio-pull-request'));
 });
+
+// Passive backup trigger immediately on load (in case page was already mounted)
+window.dispatchEvent(new CustomEvent('perkfolio-pull-request'));

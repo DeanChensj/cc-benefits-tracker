@@ -50,7 +50,8 @@
         "*://perkfolio.cc/*",
         "*://*.perkfolio.cc/*"
       ],
-      "js": ["content_web.js"]
+      "js": ["content_web.js"],
+      "run_at": "document_start"
     },
     {
       "matches": [
@@ -94,15 +95,6 @@
         "*://*.hulu.com/*"
       ],
       "js": ["content_script.js"]
-    }
-  ],
-  "web_accessible_resources": [
-    {
-      "resources": ["inject.js"],
-      "matches": [
-        "*://perkfolio.cc/*",
-        "*://*.perkfolio.cc/*"
-      ]
     }
   ]
 }
