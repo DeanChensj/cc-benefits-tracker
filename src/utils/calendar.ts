@@ -116,17 +116,22 @@ export const downloadICSFile = (
       const dtend = new Date(dtstart.getTime() + 60 * 60 * 1000); // 1 hr duration
       const dtendStr = formatICSDate(dtend);
 
-      icsContent.push(
+      const eventLines = [
         'BEGIN:VEVENT',
         `UID:${uid}`,
         `DTSTAMP:${formatICSDateTimeUTC(new Date())}`,
         `DTSTART:${dtstartStr}`,
         `DTEND:${dtendStr}`,
         `SUMMARY:${title}`,
-        `DESCRIPTION:${description}`,
-        rrule,
-        'END:VEVENT'
-      );
+        `DESCRIPTION:${description}`
+      ];
+
+      if (rrule) {
+        eventLines.push(rrule);
+      }
+
+      eventLines.push('END:VEVENT');
+      icsContent.push(...eventLines);
     });
   });
 

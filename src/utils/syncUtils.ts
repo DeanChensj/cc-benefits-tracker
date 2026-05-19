@@ -1,5 +1,5 @@
 import { findSyncFile, uploadSyncFile, downloadSyncFile } from './gdrive';
-import type { OwnedCardInstance, CardStore } from '../store/useCardStore';
+import type { OwnedCardInstance, CardStore, RemoteSyncData } from '../store/useCardStore';
 import { useCardStore } from '../store/useCardStore';
 import type { LoyaltyAward } from '../data/cards.db';
 import type { LogEntry } from './logUtils';
@@ -66,7 +66,7 @@ export const performGDriveSync = async (get: () => CardStore, set: (partial: Par
         lastSyncedTime: new Date().toLocaleTimeString() 
       });
     } else {
-      const remoteData = await downloadSyncFile(gdriveToken, fileId);
+      const remoteData = (await downloadSyncFile(gdriveToken, fileId)) as RemoteSyncData;
       
       const remoteWalletTime = remoteData.walletLastModified || 0;
       const localWalletTime = walletLastModified || 0;

@@ -1,8 +1,26 @@
 // Google Drive AppData Sandboxed Sync Helper ( Bring Your Own Cloud )
 
+export interface GoogleOAuthTokenClient {
+  requestAccessToken: (options: { prompt: string }) => void;
+}
+
+export interface GoogleOAuth {
+  initTokenClient: (config: {
+    client_id: string;
+    scope: string;
+    callback: (response: { error?: string | Record<string, unknown>; access_token?: string }) => void;
+  }) => GoogleOAuthTokenClient;
+}
+
+export interface GoogleGSI {
+  accounts?: {
+    oauth2?: GoogleOAuth;
+  };
+}
+
 declare global {
   interface Window {
-    google?: any;
+    google?: GoogleGSI;
   }
 }
 
@@ -37,11 +55,11 @@ export function requestGDriveToken(customClientId?: string | null): Promise<stri
     const client = window.google.accounts.oauth2.initTokenClient({
       client_id: customClientId || CLIENT_ID,
       scope: SCOPES,
-      callback: (response: any) => {
+      callback: (response: { error?: string | Record<string, unknown>; access_token?: string }) => {
         if (response.error) {
           reject(response);
         } else {
-          resolve(response.access_token);
+          resolve(response.access_token || '');
         }
       },
     });
@@ -78,7 +96,7 @@ export async function findSyncFile(token: string): Promise<string | null> {
 }
 
 // Download JSON file content from Google Drive
-export async function downloadSyncFile(token: string, fileId: string): Promise<any> {
+export async function downloadSyncFile(token: string, fileId: string): Promise<unknown> {
   const response = await fetch(
     `https://www.googleapis.com/drive/v3/files/${fileId}?alt=media&t=${Date.now()}`,
     {
@@ -90,8 +108,8 @@ export async function downloadSyncFile(token: string, fileId: string): Promise<a
 }
 
 // Upload (Create or Patch) JSON file content inside user's private, hidden appDataFolder
-export async function uploadSyncFile(token: string, fileId: string | null, data: any): Promise<string> {
-  const fileMetadata: any = {
+export async function uploadSyncFile(token: string, fileId: string | null, data: unknown): Promise<string> {
+  const fileMetadata: { name: string; parents?: string[] } = {
     name: 'cc_tracker_sync.json',
   };
   if (!fileId) {

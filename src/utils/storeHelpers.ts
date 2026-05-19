@@ -1,7 +1,4 @@
-import type { Benefit, LoyaltyAward } from '../data/cards.db';
-import type { LogEntry } from './logUtils';
-import { findSyncFile, uploadSyncFile } from './gdrive';
-import type { OwnedCardInstance } from '../store/useCardStore';
+import type { Benefit } from '../data/cards.db';
 
 // Helper to generate log key based on reset period and current date
 export const getLogKey = (
@@ -97,38 +94,4 @@ export const getYearFromPlainKey = (plainKey: string): number | null => {
   return match ? parseInt(match[1], 10) : null;
 };
 
-// In-memory reference to the background sync debounce timer
-let syncTimeout: ReturnType<typeof setTimeout> | null = null;
 
-// Helper to push updates to Google Drive silently in the background with a 5-second debounce buffer
-// Modified to accept all state as arguments to avoid circular dependency
-export const syncPushToCloud = async (
-  token: string | null,
-  ownedCards: OwnedCardInstance[],
-  logs: Record<string, LogEntry>,
-  loyaltyAwards: LoyaltyAward[],
-  deletedCardIds: string[],
-  deletedAwardIds: string[]
-) => {
-  if (!token) return;
-
-  if (syncTimeout) {
-    clearTimeout(syncTimeout);
-  }
-
-  syncTimeout = setTimeout(async () => {
-    syncTimeout = null;
-    try {
-      const fileId = await findSyncFile(token);
-      await uploadSyncFile(token, fileId, { 
-        ownedCards, 
-        logs, 
-        loyaltyAwards,
-        deletedCardIds,
-        deletedAwardIds
-      });
-    } catch (err) {
-      console.error('Silent background cloud sync failed:', err);
-    }
-  }, 5000);
-};

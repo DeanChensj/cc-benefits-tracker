@@ -86,7 +86,7 @@ export interface AgentCommand {
   expirationDate?: string;
 }
 
-interface RemoteSyncData {
+export interface RemoteSyncData {
   ownedCards?: OwnedCardInstance[];
   loyaltyAwards?: LoyaltyAward[];
   logs?: Record<string, import('../utils/logUtils').LogEntry>;
