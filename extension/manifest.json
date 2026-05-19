@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "PerkFolio Assistant",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Contextual perk reminders and card recommendations for PerkFolio.",
   "permissions": ["storage"],
   "host_permissions": [
