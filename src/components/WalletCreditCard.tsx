@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Trash2, ExternalLink, Edit3, ChevronDown } from 'lucide-react';
 import { CARDS_DB, CARD_MULTIPLIERS } from '../data/cards.db';
 import type { OwnedCardInstance } from '../store/useCardStore';
@@ -34,6 +35,46 @@ export function WalletCreditCard({
 }: WalletCreditCardProps) {
   const language = useCardStore((state) => state.language);
   const t = (key: keyof typeof translations['en']): string => (translations[language][key] || translations['en'][key]) as string;
+
+  const [rotate, setRotate] = useState({ x: 0, y: 0 });
+  const [gloss, setGloss] = useState({ x: 50, y: 50 });
+  const [isHovered, setIsHovered] = useState(false);
+  const [isPressed, setIsPressed] = useState(false);
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    const card = e.currentTarget.getBoundingClientRect();
+    const mouseX = e.clientX - card.left;
+    const mouseY = e.clientY - card.top;
+    
+    // Calculate rotation based on mouse position relative to center (tilt up to 8 degrees)
+    const rX = ((mouseY / card.height) - 0.5) * -16;
+    const rY = ((mouseX / card.width) - 0.5) * 16;
+    
+    // Calculate reflection gloss position (0% to 100%)
+    const gX = (mouseX / card.width) * 100;
+    const gY = (mouseY / card.height) * 100;
+    
+    setRotate({ x: rX, y: rY });
+    setGloss({ x: gX, y: gY });
+  };
+
+  const handleMouseEnter = () => {
+    setIsHovered(true);
+  };
+
+  const handleMouseLeave = () => {
+    setIsHovered(false);
+    setRotate({ x: 0, y: 0 });
+    setGloss({ x: 50, y: 50 });
+  };
+
+  const handleTouchStart = () => {
+    setIsPressed(true);
+  };
+ 
+  const handleTouchEnd = () => {
+    setIsPressed(false);
+  };
 
   const logs = useCardStore((state) => state.logs);
   const ownedCards = useCardStore((state) => state.ownedCards);
@@ -129,10 +170,28 @@ export function WalletCreditCard({
   }
 
   return (
-    <div className="flex flex-col w-full min-w-0 transition duration-200 hover:scale-[1.01]">
+    <div className="flex flex-col w-full min-w-0">
       {/* A. Upper Part: Realistic Virtual Credit Card Face (1.58:1 Ratio) */}
       <div
-        className={`aspect-[1.58/1] w-full rounded-2xl relative p-4 flex flex-col justify-between overflow-hidden shadow-xl select-none bg-gradient-to-tr ${cardColor} border transition-all duration-500 hover:scale-[1.02] hover:shadow-2xl hover:shadow-purple-500/10 dark:hover:shadow-purple-500/15 hover:border-purple-500/30 group/card ${
+        onMouseMove={handleMouseMove}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+        onTouchCancel={handleTouchEnd}
+        style={{
+          transform: isPressed
+            ? 'scale3d(0.98, 0.98, 1)'
+            : isHovered 
+            ? `perspective(1000px) rotateX(${rotate.x}deg) rotateY(${rotate.y}deg) scale3d(1.02, 1.02, 1.02)` 
+            : 'perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)',
+          transition: isPressed
+            ? 'transform 0.1s ease-out'
+            : isHovered 
+            ? 'none' 
+            : 'transform 0.5s cubic-bezier(0.25, 1, 0.5, 1)'
+        }}
+        className={`aspect-[1.58/1] w-full rounded-2xl relative p-4 flex flex-col justify-between overflow-hidden shadow-xl select-none bg-gradient-to-tr ${cardColor} border hover:shadow-2xl hover:shadow-purple-500/10 dark:hover:shadow-purple-500/15 hover:border-purple-500/30 group/card ${
           isSilverCard ? 'text-slate-900 font-extrabold' : 'text-white'
         } ${
           isRecouped 
@@ -142,8 +201,13 @@ export function WalletCreditCard({
             : 'border-purple-900/20'
         }`}
       >
-        {/* Hover Metallic Gloss Sheen */}
-        <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/10 to-transparent opacity-0 group-hover/card:opacity-100 duration-1000 transition-all -translate-x-full group-hover/card:translate-x-full skew-x-12 scale-150 pointer-events-none" />
+        {/* Hover Dynamic Metallic Gloss Sheen (Moves with cursor) */}
+        <div 
+          className="absolute inset-0 pointer-events-none transition-opacity duration-350 opacity-0 group-hover/card:opacity-100 z-20"
+          style={{
+            background: `radial-gradient(circle at ${gloss.x}% ${gloss.y}%, rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0) 65%)`
+          }}
+        />
 
         {/* Card Face Header: Bank/Opened Tag and duplicate actions */}
         <div className="flex items-center justify-between z-10 relative">
