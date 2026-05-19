@@ -57,7 +57,7 @@ export function ActiveChecklistTab({
     if (ab.loyaltyAward) {
       return !!ab.benefit.expirationDate && new Date(ab.benefit.expirationDate + 'T00:00:00') < currentDate;
     }
-    return ab.benefit.resetPeriod === 'fixed' && !!ab.benefit.expirationDate && new Date(ab.benefit.expirationDate + 'T00:00:00') < currentDate;
+    return (ab.benefit.resetPeriod === 'fixed' || ab.benefit.resetPeriod === 'once') && !!ab.benefit.expirationDate && new Date(ab.benefit.expirationDate + 'T00:00:00') < currentDate;
   };
 
   // 1. Master search/category filter
