@@ -32,7 +32,7 @@ export const getDaysLeft = (ab: ActiveBenefit, currentDate: Date): number | null
   const month = currentDate.getMonth(); // 0-11
   const todayMidnight = new Date(year, month, currentDate.getDate());
 
-  if (benefit.resetPeriod === 'fixed' && benefit.expirationDate) {
+  if ((benefit.resetPeriod === 'fixed' || benefit.resetPeriod === 'once') && benefit.expirationDate) {
     const expMidnight = new Date(benefit.expirationDate + 'T00:00:00');
     return Math.round((expMidnight.getTime() - todayMidnight.getTime()) / (1000 * 60 * 60 * 24));
   } else if (benefit.resetPeriod === 'monthly') {
@@ -67,7 +67,7 @@ export const getDaysLeft = (ab: ActiveBenefit, currentDate: Date): number | null
 export const getUrgencyScore = (ab: ActiveBenefit, currentDate: Date): number => {
   if (ab.isUsed) return -10000; // Checked is lowest priority
   
-  const isExpired = ab.benefit.resetPeriod === 'fixed' && 
+  const isExpired = (ab.benefit.resetPeriod === 'fixed' || ab.benefit.resetPeriod === 'once') && 
     ab.benefit.expirationDate && 
     new Date(ab.benefit.expirationDate + 'T00:00:00') < currentDate;
     

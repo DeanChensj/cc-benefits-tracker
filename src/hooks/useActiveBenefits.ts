@@ -116,7 +116,7 @@ export function useActiveBenefits(
       });
 
       const usedQty = award.usedQuantity || 0;
-      const isFullyUsed = usedQty >= 1;
+      const isFullyUsed = usedQty >= award.quantity;
 
       // Synthesize standard Benefit object
       const synthesizedBenefit: Benefit = {
