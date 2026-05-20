@@ -439,28 +439,53 @@ export const CARDS_DB: CardTemplate[] = [
     signupBonusValue: 1500,
     benefits: [
       {
+        id: 'biz-plat-hotel',
+        name: 'Hotel Credit',
+        description: 'Up to $300 statement credit semi-annually (Jan-Jun, Jul-Dec) for prepaid Fine Hotels + Resorts or The Hotel Collection bookings through American Express Travel',
+        value: 300,
+        resetPeriod: 'semi-annual',
+        category: 'travel'
+      },
+      {
+        id: 'biz-plat-airline',
+        name: 'Airline Fee Credit',
+        description: 'Up to $200 statement credit per calendar year for incidental fees charged by a selected qualifying airline',
+        value: 200,
+        resetPeriod: 'annual-calendar',
+        category: 'travel'
+      },
+      {
+        id: 'biz-plat-adobe',
+        name: 'Adobe Credit',
+        description: '$250 statement credit per calendar year after you spend $600 or more on U.S. purchases directly with Adobe',
+        value: 250,
+        spendingLimit: 600,
+        resetPeriod: 'annual-calendar',
+        category: 'shopping'
+      },
+      {
+        id: 'biz-plat-chatgpt',
+        name: 'ChatGPT Business Credit',
+        description: 'Up to $300 statement credit per calendar year on U.S. purchases of ChatGPT Business',
+        value: 300,
+        resetPeriod: 'annual-calendar',
+        category: 'shopping'
+      },
+      {
         id: 'biz-plat-dell',
         name: 'Dell Credit',
-        description: '$200 statement credit semi-annually (Jan-Jun, Jul-Dec)',
-        value: 200,
-        resetPeriod: 'semi-annual',
+        description: 'Up to $150 statement credit per calendar year on U.S. purchases directly with Dell Technologies',
+        value: 150,
+        resetPeriod: 'annual-calendar',
         category: 'shopping'
       },
       {
         id: 'biz-plat-wireless',
         name: 'Wireless Credit',
-        description: '$10/month statement credit for U.S. statement credit wireless',
+        description: 'Statement credits up to $10 per month for wireless phone service purchases made directly with a U.S. wireless telephone service provider',
         value: 10,
         resetPeriod: 'monthly',
         category: 'other'
-      },
-      {
-        id: 'biz-plat-airline',
-        name: 'Airline Fee Credit',
-        description: '$200/calendar year airline incidental credit',
-        value: 200,
-        resetPeriod: 'annual-calendar',
-        category: 'travel'
       }
     ]
   },
