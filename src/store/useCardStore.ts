@@ -822,9 +822,10 @@ export const useCardStore = create<CardStore>()(
               if (!card) throw new Error(`Card named "${cardName}" not found`);
               
               const template = card.templateId !== 'custom' ? CARDS_DB.find((t) => t.id === card.templateId) : null;
-              let benefits: Benefit[] = [];
-              if (template) benefits = [...template.benefits];
-              if (card.instanceOffers) benefits = [...benefits, ...card.instanceOffers];
+              const baseBenefits = card.templateId === 'custom' 
+                ? (card.customBenefits || []) 
+                : (template ? template.benefits : []);
+              const benefits = [...baseBenefits, ...(card.instanceOffers || [])];
               
               const benefit = benefits.find(
                 (b) => b.name.toLowerCase().trim() === benefitName.toLowerCase().trim()
@@ -861,9 +862,10 @@ export const useCardStore = create<CardStore>()(
               if (!card) throw new Error(`Card named "${cardName}" not found`);
               
               const template = card.templateId !== 'custom' ? CARDS_DB.find((t) => t.id === card.templateId) : null;
-              let benefits: Benefit[] = [];
-              if (template) benefits = [...template.benefits];
-              if (card.instanceOffers) benefits = [...benefits, ...card.instanceOffers];
+              const baseBenefits = card.templateId === 'custom' 
+                ? (card.customBenefits || []) 
+                : (template ? template.benefits : []);
+              const benefits = [...baseBenefits, ...(card.instanceOffers || [])];
               
               const benefit = benefits.find(
                 (b) => b.name.toLowerCase().trim() === benefitName.toLowerCase().trim()

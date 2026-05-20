@@ -87,7 +87,7 @@ function App() {
     const usedQty = ab.loyaltyAward ? (ab.loyaltyAward.usedQuantity || 0) : 0;
     const isExpired = ab.loyaltyAward
       ? (usedQty < 1 && !!ab.benefit.expirationDate && new Date(ab.benefit.expirationDate + 'T00:00:00') < currentDate)
-      : (ab.benefit.resetPeriod === 'fixed' && !!ab.benefit.expirationDate && new Date(ab.benefit.expirationDate + 'T00:00:00') < currentDate);
+      : ((ab.benefit.resetPeriod === 'fixed' || ab.benefit.resetPeriod === 'once') && !!ab.benefit.expirationDate && new Date(ab.benefit.expirationDate + 'T00:00:00') < currentDate);
       
     if (!isExpired) return 0;
     return ab.benefit.value - getResolvedValue(ab, logs);
@@ -133,7 +133,7 @@ function App() {
   const remainingBenefits = useMemo(() => {
     return activeBenefits.filter((ab) => {
       if (ab.isUsed || !ab.cardInstance) return false;
-      const isExpired = ab.benefit.resetPeriod === 'fixed' && 
+      const isExpired = (ab.benefit.resetPeriod === 'fixed' || ab.benefit.resetPeriod === 'once') && 
         ab.benefit.expirationDate && 
         new Date(ab.benefit.expirationDate + 'T00:05:00') < currentDate;
       return !isExpired;

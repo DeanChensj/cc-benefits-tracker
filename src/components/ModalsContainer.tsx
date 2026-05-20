@@ -6,12 +6,13 @@ import type { OwnedCardInstance } from '../store/useCardStore';
 import { translations } from '../utils/i18n';
 import { CARDS_DB } from '../data/cards.db';
 
+import { ConfirmationModal } from './ConfirmationModal';
+
 // Lazy load modals
 const CalendarSyncModal = lazy(() => import('./CalendarSyncModal').then(m => ({ default: m.CalendarSyncModal })));
 const CreateCardModal = lazy(() => import('./CreateCardModal').then(m => ({ default: m.CreateCardModal })));
 const AddOfferModal = lazy(() => import('./AddOfferModal').then(m => ({ default: m.AddOfferModal })));
 const DeleteConfirmModal = lazy(() => import('./DeleteConfirmModal').then(m => ({ default: m.DeleteConfirmModal })));
-const ConfirmationModal = lazy(() => import('./ConfirmationModal').then(m => ({ default: m.ConfirmationModal })));
 const SavingsWrappedModal = lazy(() => import('./SavingsWrappedModal').then(m => ({ default: m.SavingsWrappedModal })));
 const EditCardModal = lazy(() => import('./EditCardModal').then(m => ({ default: m.EditCardModal })));
 const EditAwardModal = lazy(() => import('./EditAwardModal').then(m => ({ default: m.EditAwardModal })));

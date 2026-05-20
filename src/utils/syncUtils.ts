@@ -11,10 +11,14 @@ let syncTimeout: ReturnType<typeof setTimeout> | null = null;
 
 export const syncPushToCloud = async (
   token: string | null,
-  ownedCards: OwnedCardInstance[],
-  logs: Record<string, LogEntry>
+  unusedCards?: OwnedCardInstance[],
+  unusedLogs?: Record<string, LogEntry>
 ) => {
-  if (!token) return;
+  // Silence ESLint no-unused-vars
+  if (unusedCards || unusedLogs) { /* no-op */ }
+
+  const activeToken = token || useCardStore.getState().gdriveToken;
+  if (!activeToken) return;
 
   if (syncTimeout) {
     clearTimeout(syncTimeout);
@@ -23,21 +27,18 @@ export const syncPushToCloud = async (
   syncTimeout = setTimeout(async () => {
     syncTimeout = null;
     try {
-      const fileId = await findSyncFile(token);
       const storeState = useCardStore.getState();
-      const loyaltyAwards = storeState?.loyaltyAwards || [];
-      const deletedCardIds = storeState?.deletedCardIds || [];
-      const deletedAwardIds = storeState?.deletedAwardIds || [];
-      const walletLastModified = storeState?.walletLastModified || Date.now();
+      const fileId = await findSyncFile(activeToken);
       
-      await uploadSyncFile(token, fileId, { 
-        ownedCards, 
-        logs, 
-        loyaltyAwards,
-        deletedCardIds,
-        deletedAwardIds,
-        walletLastModified
+      await uploadSyncFile(activeToken, fileId, { 
+        ownedCards: storeState.ownedCards, 
+        logs: storeState.logs, 
+        loyaltyAwards: storeState.loyaltyAwards,
+        deletedCardIds: storeState.deletedCardIds || [],
+        deletedAwardIds: storeState.deletedAwardIds || [],
+        walletLastModified: storeState.walletLastModified || Date.now()
       });
+      console.log('☁️ [Cloud Sync] Reactively auto-committed fresh state successfully.');
     } catch (err) {
       console.error('Silent background cloud sync failed:', err);
     }
