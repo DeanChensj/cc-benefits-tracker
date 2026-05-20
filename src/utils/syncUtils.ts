@@ -29,6 +29,7 @@ export const syncPushToCloud = async (
     try {
       const storeState = useCardStore.getState();
       const fileId = await findSyncFile(activeToken);
+      const uploadTime = storeState.walletLastModified || Date.now();
       
       await uploadSyncFile(activeToken, fileId, { 
         ownedCards: storeState.ownedCards, 
@@ -36,7 +37,14 @@ export const syncPushToCloud = async (
         loyaltyAwards: storeState.loyaltyAwards,
         deletedCardIds: storeState.deletedCardIds || [],
         deletedAwardIds: storeState.deletedAwardIds || [],
-        walletLastModified: storeState.walletLastModified || Date.now()
+        walletLastModified: uploadTime
+      });
+
+      // Update local lastSyncTimestamp to prevent false-positive conflicts
+      useCardStore.setState({
+        lastSyncTimestamp: uploadTime,
+        lastSyncedTime: new Date().toLocaleTimeString(),
+        syncStatus: 'synced'
       });
       console.log('☁️ [Cloud Sync] Reactively auto-committed fresh state successfully.');
     } catch (err) {
@@ -72,6 +80,16 @@ export const performGDriveSync = async (get: () => CardStore, set: (partial: Par
       const remoteWalletTime = remoteData.walletLastModified || 0;
       const localWalletTime = walletLastModified || 0;
       const lastSync = get().lastSyncTimestamp || 0;
+
+      // Symmetrical Equal Timestamp Shield: Skip conflicts if dual-device data is already identical
+      if (localWalletTime === remoteWalletTime) {
+        set({ 
+          syncStatus: 'synced',
+          lastSyncTimestamp: localWalletTime,
+          lastSyncedTime: new Date().toLocaleTimeString()
+        });
+        return;
+      }
 
       // Conflict Detection: Both sides modified since last sync
       if (localWalletTime > lastSync && remoteWalletTime > lastSync) {
