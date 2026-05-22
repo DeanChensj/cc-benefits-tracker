@@ -376,7 +376,7 @@ export function ActiveChecklistTab({
                         <div className={`transition-all duration-300 ease-in-out overflow-hidden ${
                           isCollapsed 
                             ? 'max-h-0 opacity-0 pointer-events-none' 
-                            : 'max-h-[1200px] opacity-100 p-3 space-y-2.5'
+                            : 'max-h-[9999px] opacity-100 p-3 space-y-2.5'
                         } ${themeClass('bg-slate-955/20', 'bg-white/50')}`}>
                           {items.map(renderBenefitRow)}
                         </div>
@@ -417,7 +417,7 @@ export function ActiveChecklistTab({
             <div className={`transition-all duration-300 ease-in-out overflow-hidden ${
               isExpiredCollapsed 
                 ? 'max-h-0 opacity-0 pointer-events-none' 
-                : 'max-h-[1200px] opacity-100 p-3 space-y-2.5'
+                : 'max-h-[9999px] opacity-100 p-3 space-y-2.5'
             } ${themeClass('bg-slate-955/10', 'bg-white/30')}`}>
               {expiredItems.map(renderBenefitRow)}
             </div>
@@ -452,7 +452,7 @@ export function ActiveChecklistTab({
             <div className={`transition-all duration-300 ease-in-out overflow-hidden ${
               isSkippedCollapsed 
                 ? 'max-h-0 opacity-0 pointer-events-none' 
-                : 'max-h-[1200px] opacity-100 p-3 space-y-2.5'
+                : 'max-h-[9999px] opacity-100 p-3 space-y-2.5'
             } ${themeClass('bg-slate-955/10', 'bg-white/30')}`}>
               {skippedItems.map(renderBenefitRow)}
             </div>
@@ -487,7 +487,7 @@ export function ActiveChecklistTab({
             <div className={`transition-all duration-300 ease-in-out overflow-hidden ${
               isClaimedCollapsed 
                 ? 'max-h-0 opacity-0 pointer-events-none' 
-                : 'max-h-[1200px] opacity-100 p-3 space-y-2.5'
+                : 'max-h-[9999px] opacity-100 p-3 space-y-2.5'
             } ${themeClass('bg-slate-955/10', 'bg-white/30')}`}>
               {renderItems(claimedItems)}
             </div>
