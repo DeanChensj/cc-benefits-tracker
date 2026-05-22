@@ -180,13 +180,14 @@ export function WalletAiAssistant({ activeBenefits, logs, theme, showToast, owne
           const cardName = ab.cardInstance?.customName || 'Unknown Card';
           const expText = ab.benefit.expirationDate ? `, Expiry: ${ab.benefit.expirationDate}` : '';
           const statusText = ab.isUsed ? 'Used / Claimed' : 'Pending / Unused';
+          const periodText = `, Cycle: ${ab.benefit.resetPeriod}`;
 
           if (ab.benefit.spendingLimit) {
             const entry = parseLogEntry(logs[ab.logKey]);
             const spent = entry?.spentProgress || 0;
-            return `- [Perk] ${ab.benefit.name} (Status: ${statusText}, Progress: $${spent} / $${ab.benefit.spendingLimit}, Cashback value: $${ab.benefit.value}, Category: ${ab.benefit.category}${expText}) on card "${cardName}"`;
+            return `- [Perk] ${ab.benefit.name} (Status: ${statusText}, Progress: $${spent} / $${ab.benefit.spendingLimit}, Cashback value: $${ab.benefit.value}, Category: ${ab.benefit.category}${periodText}${expText}) on card "${cardName}"`;
           }
-          return `- [Perk] ${ab.benefit.name} (Status: ${statusText}, Value: ${ab.benefit.value}, Category: ${ab.benefit.category}${expText}) on card "${cardName}"`;
+          return `- [Perk] ${ab.benefit.name} (Status: ${statusText}, Value: ${ab.benefit.value}, Category: ${ab.benefit.category}${periodText}${expText}) on card "${cardName}"`;
         }).join('\n');
 
       const systemPrompt = `You are Wallet AI Assistant, an elite personal credit card actuary and financial advisor. You have direct, secure access to the user's active personal wallet dataset.
