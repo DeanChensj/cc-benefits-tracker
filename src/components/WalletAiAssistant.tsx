@@ -19,14 +19,15 @@ import { ConfirmationModal } from './ConfirmationModal';
 import { parseLogEntry } from '../utils/logUtils';
 import type { LogEntry } from '../utils/logUtils';
 
-interface RemainingBenefit {
-  cardInstance: OwnedCardInstance;
+interface ActiveBenefit {
+  cardInstance?: OwnedCardInstance;
   benefit: Benefit;
   logKey: string;
+  isUsed: boolean;
 }
 
 interface SpentAssistantProps {
-  remainingBenefits: RemainingBenefit[];
+  activeBenefits: ActiveBenefit[];
   logs: Record<string, LogEntry>;
   theme: 'dark' | 'light';
   showToast?: (message: string, type?: 'success' | 'error' | 'info' | 'warning') => void;
@@ -39,7 +40,7 @@ interface ChatMessage {
   text: string;
 }
 
-export function WalletAiAssistant({ remainingBenefits, logs, theme, showToast, ownedCards, loyaltyAwards }: SpentAssistantProps) {
+export function WalletAiAssistant({ activeBenefits, logs, theme, showToast, ownedCards, loyaltyAwards }: SpentAssistantProps) {
   const { language } = useCardStore();
   const t = (key: keyof typeof translations['en']) => translations[language][key] || translations['en'][key];
 
@@ -173,14 +174,20 @@ export function WalletAiAssistant({ remainingBenefits, logs, theme, showToast, o
         return `- [Voucher] **${a.customName || a.templateId}** (Status: ${usedQty >= 1 ? 'Used' : 'Unused'}, Expiry: ${a.expirationDate || 'none'}, Notes: ${a.notes || 'none'})`;
       }).join('\n');
 
-      const activeBenefitsText = remainingBenefits.map((ab) => {
-        if (ab.benefit.spendingLimit) {
-          const entry = parseLogEntry(logs[ab.logKey]);
-          const spent = entry?.spentProgress || 0;
-          return `- [Perk] ${ab.benefit.name} (Progress: $${spent} / $${ab.benefit.spendingLimit}, Cashback value: $${ab.benefit.value}, Category: ${ab.benefit.category}) on card "${ab.cardInstance.customName}"`;
-        }
-        return `- [Perk] ${ab.benefit.name} (Value: ${ab.benefit.value}, Category: ${ab.benefit.category}) on card "${ab.cardInstance.customName}"`;
-      }).join('\n');
+      const activeBenefitsText = activeBenefits
+        .filter((ab) => ab.cardInstance) // Only include card-level benefits (loyalty awards mapped in awardsContext)
+        .map((ab) => {
+          const cardName = ab.cardInstance?.customName || 'Unknown Card';
+          const expText = ab.benefit.expirationDate ? `, Expiry: ${ab.benefit.expirationDate}` : '';
+          const statusText = ab.isUsed ? 'Used / Claimed' : 'Pending / Unused';
+
+          if (ab.benefit.spendingLimit) {
+            const entry = parseLogEntry(logs[ab.logKey]);
+            const spent = entry?.spentProgress || 0;
+            return `- [Perk] ${ab.benefit.name} (Status: ${statusText}, Progress: $${spent} / $${ab.benefit.spendingLimit}, Cashback value: $${ab.benefit.value}, Category: ${ab.benefit.category}${expText}) on card "${cardName}"`;
+          }
+          return `- [Perk] ${ab.benefit.name} (Status: ${statusText}, Value: ${ab.benefit.value}, Category: ${ab.benefit.category}${expText}) on card "${cardName}"`;
+        }).join('\n');
 
       const systemPrompt = `You are Wallet AI Assistant, an elite personal credit card actuary and financial advisor. You have direct, secure access to the user's active personal wallet dataset.
 You help users optimize their credit card portfolio, calculate ROI, and suggest actions based on usage.

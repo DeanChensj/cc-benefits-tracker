@@ -3,7 +3,6 @@ import { useState, useMemo } from 'react';
 import { CARDS_DB } from './data/cards.db';
 import type { Benefit } from './data/cards.db';
 import { useCardStore } from './store/useCardStore';
-import type { OwnedCardInstance } from './store/useCardStore';
 import { translations, formatCardNameForToast } from './utils/i18n';
 import { WalletAiAssistant } from './components/WalletAiAssistant';
 import { ChurningStatsDrawer } from './components/ChurningStatsDrawer';
@@ -130,16 +129,7 @@ function App() {
 
 
   // Calculate actual remaining, non-expired active benefits for the AI SpentAssistant (cards only)
-  const remainingBenefits = useMemo(() => {
-    return activeBenefits.filter((ab) => {
-      if (ab.isUsed || !ab.cardInstance) return false;
-      const isExpired = (ab.benefit.resetPeriod === 'fixed' || ab.benefit.resetPeriod === 'once') && 
-        ab.benefit.expirationDate && 
-        new Date(ab.benefit.expirationDate + 'T00:05:00') < currentDate;
-      return !isExpired;
-    }) as unknown as { cardInstance: OwnedCardInstance; benefit: Benefit; logKey: string }[];
-   
-  }, [activeBenefits, currentDate]);
+  // remainingBenefits removed to enable global activeBenefits context stuffing with full status mapping
 
   // Calculate Total Secured SUBs based on logs completion!
   const securedSUBs = useMemo(() => {
@@ -325,7 +315,7 @@ function App() {
       />
 
       {/* Wallet AI Assistant Drawer */}
-      <WalletAiAssistant remainingBenefits={remainingBenefits} logs={logs} theme={theme} showToast={showToast} ownedCards={ownedCards} loyaltyAwards={loyaltyAwards} />
+      <WalletAiAssistant activeBenefits={activeBenefits} logs={logs} theme={theme} showToast={showToast} ownedCards={ownedCards} loyaltyAwards={loyaltyAwards} />
 
 
 
