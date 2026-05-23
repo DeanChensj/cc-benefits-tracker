@@ -777,7 +777,7 @@ export const CARDS_DB: CardTemplate[] = [
     benefits: [
       {
         id: 'marriott-brilliant-dining',
-        name: '$300 Dining Credit ($25/mo)',
+        name: 'Dining Credit',
         description: 'Get up to $25 back per month in statement credits for global restaurant purchases.',
         value: 25,
         resetPeriod: 'monthly',
@@ -824,7 +824,7 @@ export const CARDS_DB: CardTemplate[] = [
     benefits: [
       {
         id: 'biz-gold-office-transit',
-        name: '$240 Office Supply & Transit ($20/mo)',
+        name: 'Office Supply & Transit Credit',
         description: 'Get up to $20 back per month in statement credits for U.S. office supply store or transit purchases.',
         value: 20,
         resetPeriod: 'monthly',
@@ -873,7 +873,7 @@ export const CARDS_DB: CardTemplate[] = [
     benefits: [
       {
         id: 'bce-disney',
-        name: '$84 Disney Bundle Credit',
+        name: 'Disney Bundle Credit',
         description: 'Get a $7 monthly statement credit after spending $9.99 or more on Disney Bundle subscriptions.',
         value: 7,
         resetPeriod: 'monthly',
@@ -881,7 +881,7 @@ export const CARDS_DB: CardTemplate[] = [
       },
       {
         id: 'bce-homechef',
-        name: '$180 Home Chef Credit',
+        name: 'Home Chef Credit',
         description: 'Get up to $15 back per month in statement credits for Home Chef meal kit purchases.',
         value: 15,
         resetPeriod: 'monthly',
