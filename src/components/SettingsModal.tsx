@@ -8,13 +8,12 @@ import { DEFAULT_VALUATIONS } from '../data/cards.db';
 interface SettingsModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onOpenCalendarExport: () => void;
   onOpenWipeModal: () => void;
   handleLinkGoogleDrive: () => Promise<void>;
   handleDisconnectGoogleDrive: () => void;
 }
 
-export function SettingsModal({ isOpen, onClose, onOpenCalendarExport, onOpenWipeModal, handleLinkGoogleDrive, handleDisconnectGoogleDrive }: SettingsModalProps) {
+export function SettingsModal({ isOpen, onClose, onOpenWipeModal, handleLinkGoogleDrive, handleDisconnectGoogleDrive }: SettingsModalProps) {
   const { 
     theme, 
     language, 
@@ -145,29 +144,16 @@ export function SettingsModal({ isOpen, onClose, onOpenCalendarExport, onOpenWip
           </div>
         </div>
 
-        {/* Section 3: Calendar Export */}
+        {/* Section 3: Calendar Sync */}
         <div className="space-y-2">
           <h3 className={`text-xs font-extrabold uppercase tracking-wider flex items-center gap-1.5 ${themeClass('text-slate-400', 'text-slate-600')}`}>
-            <span className="w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0" />
+            <span className="w-1.5 h-1.5 rounded-full bg-sky-500 shrink-0" />
             <Calendar className="w-3.5 h-3.5" />
-            {language === 'zh' ? '日历同步与导出' : 'Calendar Sync & Export'}
+            {language === 'zh' ? '日历云端同步' : 'Calendar Cloud Sync'}
           </h3>
-          
-          <div className={`p-3 rounded-xl border space-y-2 ${themeClass('bg-gradient-to-b from-slate-900/60 to-slate-950/60 border-slate-800/50 backdrop-blur-sm', 'bg-white border-slate-200 shadow-sm')}`}>
-            <p className={`text-[10px] leading-relaxed ${themeClass('text-slate-450', 'text-slate-500')}`}>
-              {t('calSyncDesc')}
-            </p>
-            <button
-              type="button"
-              onClick={onOpenCalendarExport}
-              className={`w-full py-2 px-3 rounded-lg text-[10px] font-bold transition active:scale-95 cursor-pointer bg-gradient-to-tr from-purple-600 to-indigo-600 text-white hover:from-purple-500 hover:to-indigo-500`}
-            >
-              {t('calSyncBtn')}
-            </button>
-          </div>
 
           {/* Dynamic iOS-style Google Calendar Cloud Sync Card */}
-          <div className={`p-3 rounded-xl border space-y-3 mt-2.5 ${themeClass('bg-gradient-to-b from-slate-900/60 to-slate-950/60 border-slate-800/50 backdrop-blur-sm', 'bg-white border-slate-200 shadow-sm')}`}>
+          <div className={`p-3 rounded-xl border space-y-3 ${themeClass('bg-gradient-to-b from-slate-900/60 to-slate-950/60 border-slate-800/50 backdrop-blur-sm', 'bg-white border-slate-200 shadow-sm')}`}>
             <div className="flex items-center justify-between">
               <div className="text-left">
                 <p className="text-xs font-bold">{language === 'zh' ? '⚡ 谷歌日历自动云同步' : '⚡ Google Calendar Auto-Sync'}</p>

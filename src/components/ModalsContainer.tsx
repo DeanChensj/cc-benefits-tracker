@@ -9,7 +9,7 @@ import { CARDS_DB } from '../data/cards.db';
 import { ConfirmationModal } from './ConfirmationModal';
 
 // Lazy load modals
-const CalendarSyncModal = lazy(() => import('./CalendarSyncModal').then(m => ({ default: m.CalendarSyncModal })));
+
 const CreateCardModal = lazy(() => import('./CreateCardModal').then(m => ({ default: m.CreateCardModal })));
 const AddOfferModal = lazy(() => import('./AddOfferModal').then(m => ({ default: m.AddOfferModal })));
 const DeleteConfirmModal = lazy(() => import('./DeleteConfirmModal').then(m => ({ default: m.DeleteConfirmModal })));
@@ -75,7 +75,6 @@ export function ModalsContainer({
     language,
     ownedCards,
     loyaltyAwards,
-    logs,
     deleteLoyaltyAward,
     resetAll,
     updateCardMultipliers,
@@ -96,15 +95,7 @@ export function ModalsContainer({
   return (
     <>
       <Suspense fallback={null}>
-        {/* Calendar Sync Modal */}
-        <CalendarSyncModal 
-          isOpen={activeModal === 'sync'} 
-          onClose={() => setActiveModal(null)} 
-          ownedCards={ownedCards}
-          logs={logs}
-          loyaltyAwards={loyaltyAwards}
-          theme={theme}
-        />
+
 
         {/* Create Custom Card Modal */}
         <CreateCardModal 
@@ -213,7 +204,6 @@ export function ModalsContainer({
         <SettingsModal
           isOpen={activeModal === 'settings'}
           onClose={() => setActiveModal(null)}
-          onOpenCalendarExport={() => setActiveModal('sync')}
           onOpenWipeModal={() => setActiveModal('wipe')}
           handleLinkGoogleDrive={handleLinkGoogleDrive}
           handleDisconnectGoogleDrive={handleDisconnectGoogleDrive}
