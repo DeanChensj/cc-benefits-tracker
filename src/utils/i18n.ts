@@ -224,6 +224,7 @@ const translationsEn = {
   extHighlightAlertsDesc: 'Get instant statement credit and multiplier reminders when browsing Uber, Saks, Amazon, and more.',
   extHighlightSync: 'Zero-Login Local Sync',
   extHighlightSyncDesc: 'Reads directly from your local wallet. No bank logins, no Plaid, 100% zero tracking.',
+  feedbackBtn: 'Submit Feedback & Issues',
 
   // 3. WalletAiAssistant i18n
   aiTitle: 'Wallet AI Copilot',
@@ -705,6 +706,7 @@ const translationsZh: typeof translationsEn = {
   extHighlightAlertsDesc: '访问 Uber、Grubhub、Saks、Amazon 等商户时，右下角自动弹出对应报销及倍率提示。',
   extHighlightSync: '零绑定本地直读',
   extHighlightSyncDesc: '直连本地卡包缓存。无需登录银行账号，无需 Plaid 授权，100% 零数据追踪。',
+  feedbackBtn: '提交反馈与建议',
 
   // 3. WalletAiAssistant i18n
   aiTitle: 'Wallet AI 卡包智能精算助理',

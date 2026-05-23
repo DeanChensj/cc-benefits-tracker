@@ -33,6 +33,26 @@ export function SettingsModal({ isOpen, onClose, onOpenWipeModal, handleLinkGoog
   const [isValuationsOpen, setIsValuationsOpen] = useState(false);
   const [isDangerZoneOpen, setIsDangerZoneOpen] = useState(false);
 
+  const handleFeedbackClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    
+    const isMobile = window.innerWidth < 768;
+    const envText = isMobile ? 'Mobile Web' : 'Desktop Web';
+    
+    const title = encodeURIComponent('[Feedback] A short description of your issue');
+    
+    const bodyTemplate = `### 📋 Feedback Description
+Please provide a detailed description of your feedback, card template request, or bug details:
+
+
+---
+### ⚙️ System Diagnostic Info
+- **Platform**: PerkFolio PWA (${envText})`;
+
+    const url = `https://github.com/DeanChensj/cc-benefits-tracker/issues/new?title=${title}&body=${encodeURIComponent(bodyTemplate)}`;
+    window.open(url, '_blank');
+  };
+
   const handleToggleCalendarSync = async () => {
     const nextState = !isCalendarSyncEnabled;
     if (nextState && !useCardStore.getState().gdriveToken) {
@@ -344,6 +364,20 @@ export function SettingsModal({ isOpen, onClose, onOpenWipeModal, handleLinkGoog
               </button>
             </div>
           </div>
+        </div>
+
+        {/* Sleek, High-End Footer with Feedback & Version */}
+        <div className={`pt-4 border-t mt-4 flex items-center justify-between text-[9px] font-black tracking-wide uppercase select-none ${
+          themeClass('border-slate-850/60 text-slate-500', 'border-slate-200 text-slate-455')
+        }`}>
+          <span>PerkFolio Beta</span>
+          <button
+            type="button"
+            onClick={handleFeedbackClick}
+            className="hover:text-purple-500 dark:hover:text-purple-400 transition flex items-center gap-1 underline cursor-pointer font-black uppercase text-[9px] bg-transparent border-none outline-none p-0"
+          >
+            {t('feedbackBtn')}
+          </button>
         </div>
 
       </div>
