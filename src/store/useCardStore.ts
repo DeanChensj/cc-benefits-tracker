@@ -159,6 +159,7 @@ export interface CardStore {
   // Multiplier Customizer Actions
   updateCardMultipliers: (instanceId: string, multipliers: OwnedCardInstance['multipliers']) => void;
   updateCardPointCurrency: (instanceId: string, currency: PointCurrency) => void;
+  toggleBenefitAutoClaim: (cardId: string, benefitId: string, isEnabled: boolean) => void;
 
   // Standalone Loyalty Vouchers Actions
   addLoyaltyAward: (award: Omit<LoyaltyAward, 'id' | 'usedQuantity' | 'lastModified'>) => void;
@@ -622,6 +623,29 @@ export const useCardStore = create<CardStore>()(
           return {
             ownedCards: nextCards,
             walletLastModified: Date.now(),
+          };
+        }),
+
+      toggleBenefitAutoClaim: (cardId, benefitId, isEnabled) =>
+        set((state) => {
+          const nextCards = state.ownedCards.map((card) => {
+            if (card.id !== cardId) return card;
+
+            const template = CARDS_DB.find((t) => t.id === card.templateId);
+            const benefitsList = card.benefits || template?.benefits || card.customBenefits || [];
+
+            const updatedBenefits = benefitsList.map((b) => {
+              if (b.id !== benefitId) return b;
+              return { ...b, isSubscription: isEnabled };
+            });
+
+            return { ...card, benefits: updatedBenefits, lastModified: Date.now() };
+          });
+
+          syncPushToCloud(state.gdriveToken, nextCards, state.logs);
+          return {
+            ownedCards: nextCards,
+            walletLastModified: Date.now()
           };
         }),
 

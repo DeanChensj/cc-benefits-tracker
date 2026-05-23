@@ -42,8 +42,12 @@ export function EditCardModal({
   const [subRequirement, setSubRequirement] = useState(defaultRequirement);
   const [subMonths, setSubMonths] = useState(defaultMonths);
 
-  const language = useCardStore((state) => state.language);
+  const { language, toggleBenefitAutoClaim } = useCardStore();
   const t = (key: keyof typeof translations['en']) => translations[language][key] || translations['en'][key];
+
+  const isAutoClaimEligible = (b: { resetPeriod?: string; spendingLimit?: number }) => {
+    return b.resetPeriod === 'monthly' && b.spendingLimit === undefined;
+  };
 
   if (!isOpen || !instance) return null;
 
@@ -329,6 +333,69 @@ export function EditCardModal({
               </p>
             </div>
           ) : null}
+
+          {/* 3. Dynamic Benefit Auto-Claim Settings */}
+          {(() => {
+            const benefitsList = (template?.benefits || []).map((tb) => {
+              const ib = instance.benefits?.find((b) => b.id === tb.id);
+              return { ...tb, ...ib };
+            });
+            const recurringBenefits = benefitsList.filter(isAutoClaimEligible);
+            if (recurringBenefits.length === 0) return null;
+
+            return (
+              <div className="space-y-3.5 pt-3.5 border-t border-slate-800/30 dark:border-slate-750/30 text-left">
+                <div>
+                  <h4 className={`text-[10px] font-extrabold uppercase tracking-widest ${themeClass('text-slate-400', 'text-slate-500')}`}>
+                    {t('formAutoClaimTitle')}
+                  </h4>
+                  <p className={`text-[9px] font-medium mt-0.5 leading-relaxed ${themeClass('text-slate-500', 'text-slate-455')}`}>
+                    {t('formAutoClaimDesc')}
+                  </p>
+                </div>
+
+                <div className="space-y-2">
+                  {recurringBenefits.map((b) => {
+                    if (!b.id) return null;
+                    const benefitId = b.id;
+                    const isAutoClaimActive = b.isSubscription === true;
+                    return (
+                      <div
+                        key={b.id}
+                        className={`flex items-center justify-between p-2.5 rounded-xl border transition-colors ${
+                          themeClass('bg-slate-955/25 border-slate-850/50 hover:border-slate-800', 'bg-slate-50/50 border-slate-200 shadow-sm hover:border-slate-300')
+                        }`}
+                      >
+                        <div className="text-left min-w-0">
+                          <p className="text-[10.5px] font-bold truncate text-slate-800 dark:text-slate-200">{b.name}</p>
+                          <p className={`text-[8px] font-black uppercase tracking-widest mt-0.5 ${themeClass('text-slate-550', 'text-slate-455')}`}>
+                            {b.resetPeriod === 'monthly' ? (language === 'zh' ? '按月自动核销' : 'Monthly Auto-Claim') :
+                             b.resetPeriod === 'semi-annual' ? (language === 'zh' ? '半年自动核销' : 'Semi-Annual Auto-Claim') :
+                             b.resetPeriod === 'quarterly' ? (language === 'zh' ? '按季自动核销' : 'Quarterly Auto-Claim') :
+                             (language === 'zh' ? '按年自动核销' : 'Annual Auto-Claim')}
+                          </p>
+                        </div>
+
+                        <button
+                          type="button"
+                          onClick={() => toggleBenefitAutoClaim(instance.id, benefitId, !isAutoClaimActive)}
+                          className={`relative inline-flex h-4.5 w-8 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                            isAutoClaimActive ? 'bg-purple-500 animate-pulse-once' : themeClass('bg-slate-850', 'bg-slate-200')
+                          }`}
+                        >
+                          <span
+                            className={`pointer-events-none inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                              isAutoClaimActive ? 'translate-x-3.5' : 'translate-x-0'
+                            }`}
+                          />
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          })()}
         </div>
 
         <button

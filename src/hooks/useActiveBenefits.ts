@@ -51,9 +51,15 @@ export function calculateActiveBenefits(
         const obfuscatedKey = obfuscateKey(logKey);
         const logVal = logs[obfuscatedKey];
         const parsed = parseLogEntry(logVal);
-        const isUsed = benefit.spendingLimit
-          ? (parsed?.spentProgress || 0) >= benefit.spendingLimit
-          : !!(parsed && parsed.resolved);
+        
+        const instanceBenefit = cardInstance.benefits?.find(b => b.id === benefit.id);
+        const isSubscription = instanceBenefit?.isSubscription === true;
+
+        const isUsed = isSubscription
+          ? true
+          : (benefit.spendingLimit
+            ? (parsed?.spentProgress || 0) >= benefit.spendingLimit
+            : !!(parsed && parsed.resolved));
 
         // Dynamically compute precision date-level expiration for all reset periods timezone-safely!
         let resolvedExpirationDate = benefit.expirationDate;
@@ -89,7 +95,8 @@ export function calculateActiveBenefits(
           template,
           benefit: {
             ...benefit,
-            expirationDate: resolvedExpirationDate
+            expirationDate: resolvedExpirationDate,
+            isSubscription
           },
           logKey,
           isUsed,

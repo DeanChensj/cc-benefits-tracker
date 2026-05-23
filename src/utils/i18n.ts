@@ -225,6 +225,8 @@ const translationsEn = {
   extHighlightSync: '100% Private Local Sync',
   extHighlightSyncDesc: 'Direct encrypted bridge to your offline wallet. No bank logins, zero cloud tracking.',
   feedbackBtn: 'Submit Feedback & Issues',
+  formAutoClaimTitle: 'Auto-Claim Subscriptions',
+  formAutoClaimDesc: 'Automatically mark recurring subscription benefits (Walmart+, streaming, autopays) as resolved every period without manual check-offs.',
 
   // 3. WalletAiAssistant i18n
   aiTitle: 'Wallet AI Copilot',
@@ -707,6 +709,8 @@ const translationsZh: typeof translationsEn = {
   extHighlightSync: '100% 本地私有同步',
   extHighlightSyncDesc: '直连本地加密卡包。无需任何银行账户登录或第三方托管，安全防渗透。',
   feedbackBtn: '提交反馈与建议',
+  formAutoClaimTitle: '自动打卡核销订阅',
+  formAutoClaimDesc: '对于已订阅的自动报销项目（如 Walmart+ 会员、流媒体、话费自动扣款），系统每期初将自动为您标记为已使用，免去手动打卡烦恼。',
 
   // 3. WalletAiAssistant i18n
   aiTitle: 'Wallet AI 卡包智能精算助理',

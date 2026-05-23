@@ -199,7 +199,7 @@ export const ChecklistCardRow = React.memo(function ChecklistCardRow({
           <div 
             onClick={(e) => {
               e.stopPropagation(); // Prevent row expansion toggle
-              if (isExpired) return;
+              if (isExpired || benefit.isSubscription) return;
               if (isProgressive) {
                 const limit = benefit.spendingLimit || 0;
                 const isFullySpent = spent >= limit;
@@ -211,7 +211,9 @@ export const ChecklistCardRow = React.memo(function ChecklistCardRow({
                 }, 300);
               }
             }}
-            className={`w-5 h-5 flex items-center justify-center rounded-md border transition-all duration-200 shrink-0 mt-0.5 cursor-pointer shadow-inner active:scale-[0.95] ${localUsed ? 'animate-bounce-subtle' : ''} ${
+            className={`w-5 h-5 flex items-center justify-center rounded-md border transition-all duration-200 shrink-0 mt-0.5 ${
+              benefit.isSubscription ? 'cursor-default opacity-90' : 'cursor-pointer active:scale-[0.95]'
+            } ${localUsed ? 'animate-bounce-subtle' : ''} ${
               isExpired
                 ? 'border-red-900 bg-red-950/10 text-red-500'
                 : isUsed 
@@ -227,12 +229,11 @@ export const ChecklistCardRow = React.memo(function ChecklistCardRow({
           </div>
 
           {/* Title & Duet Metadata Stack */}
-          {/* Title & Duet Metadata Stack */}
           <div className="w-full min-w-0 flex flex-col text-left gap-2 py-0.5">
             <div className="relative min-w-full flex items-baseline gap-1.5">
 
               <span className={`text-sm font-extrabold mt-0.5 leading-tight ${
-                isExpired ? 'text-slate-450 line-through opacity-60' :
+                isExpired ? 'text-slate-455 line-through opacity-60' :
                 isUsed ? 'text-slate-500 line-through opacity-65' : themeClass('text-slate-105', 'text-slate-800')
               }`}>
                 {benefit.name}
@@ -242,6 +243,13 @@ export const ChecklistCardRow = React.memo(function ChecklistCardRow({
                   themeClass('bg-purple-500/20 text-purple-300', 'bg-purple-500/10 text-purple-600')
                 }`}>
                   {t('subBadge')}
+                </span>
+              )}
+              {benefit.isSubscription && (
+                <span className={`ml-1.5 px-1.5 py-0.5 text-[8.5px] font-black uppercase rounded-md tracking-wider shrink-0 select-none ${
+                  themeClass('bg-indigo-500/20 text-indigo-300 border border-indigo-500/30', 'bg-indigo-50/80 text-indigo-600 border border-indigo-200')
+                }`}>
+                  {language === 'zh' ? '自动打卡' : 'Auto'}
                 </span>
               )}
               

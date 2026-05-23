@@ -11,6 +11,7 @@ export interface Benefit {
   matchedDomains?: string[]; // Domains where this perk should be reminded!
   subCategories?: string[]; // Sub-merchants for rotating categories (e.g., ['Amazon.com', 'Restaurants'])
   activeCoreCategories?: ('dining' | 'travel' | 'shopping' | 'entertainment' | 'other')[]; // AI mapped overlaps
+  isSubscription?: boolean; // True if user enabled subscription Auto-Claim!
 }
 
 export type PointCurrency = 'amex-mr' | 'chase-ur' | 'citi-typ' | 'capitalone-miles' | 'hyatt' | 'marriott' | 'ihg' | 'hilton' | 'aa-miles' | 'ua-miles' | 'delta-miles' | 'cash';
