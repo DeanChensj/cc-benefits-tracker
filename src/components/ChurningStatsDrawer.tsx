@@ -9,9 +9,10 @@ interface ChurningStatsDrawerProps {
   onClose: () => void;
   ownedCards: OwnedCardInstance[];
   theme: 'dark' | 'light';
+  currentDate: Date;
 }
 
-export function ChurningStatsDrawer({ isOpen, onClose, ownedCards, theme }: ChurningStatsDrawerProps) {
+export function ChurningStatsDrawer({ isOpen, onClose, ownedCards, theme, currentDate }: ChurningStatsDrawerProps) {
   const language = useCardStore((state) => state.language);
   const t = (key: keyof typeof translations['en']) => translations[language][key] || translations['en'][key];
 
@@ -20,20 +21,22 @@ export function ChurningStatsDrawer({ isOpen, onClose, ownedCards, theme }: Chur
   const themeClass = (dark: string, light: string) => theme === 'dark' ? dark : light;
 
   // 1. Calculate Chase 5/24 timeline
-  const now = new Date();
+  const now = new Date(currentDate);
+  now.setHours(12, 0, 0, 0);
   const twoYearsAgo = new Date(now.getFullYear() - 2, now.getMonth(), now.getDate());
+  twoYearsAgo.setHours(12, 0, 0, 0);
 
   // Filter and map cards opened in the last 24 months
   const active524Cards = ownedCards
     .filter((card) => {
       if (!card.cardOpenDate) return false;
-      const openDate = new Date(card.cardOpenDate);
+      const openDate = new Date(card.cardOpenDate + 'T12:00:00');
       return openDate >= twoYearsAgo;
     })
     .map((card) => {
-      const openDate = new Date(card.cardOpenDate);
-      // Exit date is exactly 24 months after opening
+      const openDate = new Date(card.cardOpenDate + 'T12:00:00');
       const exitDate = new Date(openDate.getFullYear() + 2, openDate.getMonth(), openDate.getDate());
+      exitDate.setHours(12, 0, 0, 0);
       const daysRemaining = Math.max(0, Math.ceil((exitDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)));
       const template = CARDS_DB.find((t) => t.id === card.templateId);
 
@@ -58,7 +61,11 @@ export function ChurningStatsDrawer({ isOpen, onClose, ownedCards, theme }: Chur
       const bank = card.templateId === 'custom' ? card.bank : template?.bank;
       return bank === 'Amex' && card.cardOpenDate;
     })
-    .map((card) => new Date(card.cardOpenDate))
+    .map((card) => {
+      const d = new Date(card.cardOpenDate + 'T12:00:00');
+      d.setHours(12, 0, 0, 0);
+      return d;
+    })
     .sort((a, b) => b.getTime() - a.getTime()); // Most recent first
 
   const lastAmexOpenDate = amexCards[0] || null;

@@ -486,6 +486,7 @@ function App() {
         onClose={() => setIsChurningDrawerOpen(false)}
         ownedCards={ownedCards}
         theme={theme}
+        currentDate={currentDate}
       />
 
       {/* 🎨 Tailwind CSS Theme Safelist Force-compiler block */}
