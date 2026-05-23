@@ -230,35 +230,11 @@ Please provide a detailed description of your feedback, card template request, o
           </h3>
           <div className={`p-3 rounded-xl border space-y-2 ${themeClass('bg-gradient-to-b from-slate-900/60 to-slate-950/60 border-slate-800/50 backdrop-blur-sm', 'bg-white border-slate-200 shadow-sm')}`}>
             <div>
-              <p className="text-xs font-bold">{t('extGetTitle')}</p>
-              <p className={`text-[10px] font-medium mt-1 leading-relaxed ${themeClass('text-slate-300', 'text-slate-600')}`}>
+              <p className={`text-[10px] font-medium mt-0.5 leading-relaxed ${themeClass('text-slate-300', 'text-slate-600')}`}>
                 {t('extStatus')}
               </p>
 
-              {/* Beautiful Feature Highlights Box */}
-              <div className={`mt-3 p-2.5 rounded-xl border space-y-2.5 text-left ${
-                themeClass('bg-slate-950/50 border-slate-850/80 text-slate-300', 'bg-slate-50/80 border-slate-200 text-slate-700')
-              }`}>
-                <div className="flex items-start gap-2 text-[11px]">
-                  <span className="text-teal-500 dark:text-teal-400 font-black text-[16px] leading-none select-none shrink-0">•</span>
-                  <div>
-                    <p className="font-bold">{t('extHighlightAlerts')}</p>
-                    <p className={`text-[10px] mt-0.5 leading-relaxed ${themeClass('text-slate-450', 'text-slate-550')}`}>
-                      {t('extHighlightAlertsDesc')}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-2 text-[11px]">
-                  <span className="text-purple-500 dark:text-purple-400 font-black text-[16px] leading-none select-none shrink-0">•</span>
-                  <div>
-                    <p className="font-bold">{t('extHighlightSync')}</p>
-                    <p className={`text-[10px] mt-0.5 leading-relaxed ${themeClass('text-slate-450', 'text-slate-550')}`}>
-                      {t('extHighlightSyncDesc')}
-                    </p>
-                  </div>
-                </div>
-              </div>
+              
 
               <a
                 href="https://chromewebstore.google.com/detail/perkfolio-assistant/bbneiifahonicipbcmhilfklpekcgdfg"
