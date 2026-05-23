@@ -202,7 +202,7 @@ const translationsEn = {
   calSyncBtn: 'Export Calendar Reminders (.ics)',
 
   // 2. CloudSyncBanner i18n
-  cloudTitle: 'Google Drive Sync',
+  cloudTitle: 'Google Cloud Connection',
   cloudActive: 'Automatic backup is active.',
   cloudInactive: 'Private sandboxed appData cloud backup.',
   cloudAccount: 'Account:',
@@ -215,6 +215,15 @@ const translationsEn = {
   cloudAdvancedSettings: '⚙️ Advanced Cloud Settings',
   cloudAdvancedDesc: 'Supply your private custom Google OAuth Client ID to establish private sandbox backup boundaries:',
   cloudSaveClientId: 'Save ID',
+  settingsTitle: 'Settings',
+  calCloudSync: 'Calendar Cloud Sync',
+  calAutoSync: 'Google Calendar Auto-Sync',
+  calAutoSyncDesc: 'Check-offs disappear instantly. Multi-device auto-reconciliation.',
+  needCloudBadge: 'Need Cloud',
+  extHighlightAlerts: 'Contextual Checkout Alerts',
+  extHighlightAlertsDesc: 'Get instant statement credit and multiplier reminders when browsing Uber, Saks, Amazon, and more.',
+  extHighlightSync: 'Zero-Login Local Sync',
+  extHighlightSyncDesc: 'Reads directly from your local wallet. No bank logins, no Plaid, 100% zero tracking.',
 
   // 3. WalletAiAssistant i18n
   aiTitle: 'Wallet AI Copilot',
@@ -674,7 +683,7 @@ const translationsZh: typeof translationsEn = {
   calSyncBtn: '导出我的福利日历提醒 (.ics)',
 
   // 2. CloudSyncBanner i18n
-  cloudTitle: 'Google Drive 云端同步备份',
+  cloudTitle: 'Google 谷歌云端联动',
   cloudActive: '本地与 Google Drive 自动增量双向云备份中。',
   cloudInactive: '在您沙盒私有隔离区（appDataFolder）进行数据备份，100% 安全防追踪。',
   cloudAccount: '当前备份账户:',
@@ -687,6 +696,15 @@ const translationsZh: typeof translationsEn = {
   cloudAdvancedSettings: '⚙️ 高级开发者云同步配置',
   cloudAdvancedDesc: '如果您拥有私有云同步隔离要求，可输入您个人的 Google OAuth 客户端 ID（Client ID）：',
   cloudSaveClientId: '保存此 ID',
+  settingsTitle: '应用设置',
+  calCloudSync: '日历云端同步',
+  calAutoSync: '谷歌日历自动云同步',
+  calAutoSyncDesc: '打卡自动消除日程，卡包变更增量自动自愈。',
+  needCloudBadge: '需连云端',
+  extHighlightAlerts: '商户结账智能弹窗',
+  extHighlightAlertsDesc: '访问 Uber、Grubhub、Saks、Amazon 等商户时，右下角自动弹出对应报销及倍率提示。',
+  extHighlightSync: '零绑定本地直读',
+  extHighlightSyncDesc: '直连本地卡包缓存。无需登录银行账号，无需 Plaid 授权，100% 零数据追踪。',
 
   // 3. WalletAiAssistant i18n
   aiTitle: 'Wallet AI 卡包智能精算助理',

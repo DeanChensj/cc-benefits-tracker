@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useCardStore } from '../store/useCardStore';
 import { translations } from '../utils/i18n';
 import { ZenModal } from './ZenModal';
-import { Globe, Cloud, Calendar, Target, Trash2, ChevronDown, Settings } from 'lucide-react';
+import { Globe, Cloud, Target, Trash2, ChevronDown, Settings } from 'lucide-react';
 import { DEFAULT_VALUATIONS } from '../data/cards.db';
 
 interface SettingsModalProps {
@@ -51,7 +51,7 @@ export function SettingsModal({ isOpen, onClose, onOpenWipeModal, handleLinkGoog
       isOpen={isOpen}
       onClose={onClose}
       theme={theme}
-      title={language === 'zh' ? '应用设置' : 'Settings'}
+      title={t('settingsTitle')}
       icon={<Settings className="w-4 h-4 text-purple-500" />}
       maxWidthClass="max-w-md"
     >
@@ -154,48 +154,49 @@ export function SettingsModal({ isOpen, onClose, onOpenWipeModal, handleLinkGoog
                 </button>
               )}
             </div>
-          </div>
-        </div>
 
-        {/* Section 3: Calendar Sync */}
-        <div className="space-y-2">
-          <h3 className={`text-xs font-extrabold uppercase tracking-wider flex items-center gap-1.5 ${themeClass('text-slate-400', 'text-slate-600')}`}>
-            <span className="w-1.5 h-1.5 rounded-full bg-sky-500 shrink-0" />
-            <Calendar className="w-3.5 h-3.5" />
-            {language === 'zh' ? '日历云端同步' : 'Calendar Cloud Sync'}
-          </h3>
-
-          {/* Dynamic iOS-style Google Calendar Cloud Sync Card */}
-          <div className={`p-3 rounded-xl border space-y-3 ${themeClass('bg-gradient-to-b from-slate-900/60 to-slate-950/60 border-slate-800/50 backdrop-blur-sm', 'bg-white border-slate-200 shadow-sm')}`}>
-            <div className="flex items-center justify-between">
-              <div className="text-left">
-                <p className="text-xs font-bold">{language === 'zh' ? '⚡ 谷歌日历自动云同步' : '⚡ Google Calendar Auto-Sync'}</p>
-                <p className={`text-[9px] font-medium mt-0.5 leading-relaxed ${themeClass('text-slate-500', 'text-slate-455')}`}>
-                  {language === 'zh' 
-                    ? '打卡自动消除日程，卡包删改增量自动自愈，100% 私有安全。' 
-                    : 'Check-offs disappear instantly. Multi-device auto-reconciliation.'}
-                </p>
-              </div>
-              
-              {gdriveEmail ? (
-                <button
-                  type="button"
-                  onClick={handleToggleCalendarSync}
-                  className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
-                    isCalendarSyncEnabled ? 'bg-sky-500' : themeClass('bg-slate-800', 'bg-slate-200')
-                  }`}
-                >
-                  <span
-                    className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
-                      isCalendarSyncEnabled ? 'translate-x-4' : 'translate-x-0'
+            {/* Integrated Google Calendar Cloud Sync Sub-Compartment */}
+            <div className={`border-t border-dashed pt-3.5 mt-3.5 transition-all duration-300 ${
+              gdriveEmail 
+                ? themeClass('border-slate-800/60', 'border-slate-200/80') 
+                : themeClass('border-slate-800/30 opacity-35', 'border-slate-200/40 opacity-40 pointer-events-none select-none')
+            }`}>
+              <div className="flex items-center justify-between gap-3">
+                <div className="text-left min-w-0">
+                  <p className={`text-[11px] font-black tracking-wide flex items-center gap-1 ${
+                    themeClass('text-slate-200', 'text-slate-850')
+                  }`}>
+                    {t('calAutoSync')}
+                  </p>
+                  <p className={`text-[9.5px] font-bold mt-0.5 leading-relaxed ${
+                    themeClass('text-slate-500', 'text-slate-550')
+                  }`}>
+                    {t('calAutoSyncDesc')}
+                  </p>
+                </div>
+                
+                {gdriveEmail ? (
+                  <button
+                    type="button"
+                    onClick={handleToggleCalendarSync}
+                    className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                      isCalendarSyncEnabled ? 'bg-sky-500' : themeClass('bg-slate-800', 'bg-slate-200')
                     }`}
-                  />
-                </button>
-              ) : (
-                <span className="text-[9px] font-black opacity-50 uppercase text-slate-500 select-none shrink-0">
-                  {language === 'zh' ? '需连云端' : 'Need Cloud'}
-                </span>
-              )}
+                  >
+                    <span
+                      className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                        isCalendarSyncEnabled ? 'translate-x-4' : 'translate-x-0'
+                      }`}
+                    />
+                  </button>
+                ) : (
+                  <span className={`text-[8px] font-black tracking-wider uppercase px-2 py-0.5 rounded border ${
+                    themeClass('bg-slate-900/50 text-slate-500 border-slate-850/50', 'bg-slate-100 text-slate-500 border-slate-200')
+                  } select-none shrink-0`}>
+                    {t('needCloudBadge')}
+                  </span>
+                )}
+              </div>
             </div>
           </div>
         </div>
@@ -219,25 +220,21 @@ export function SettingsModal({ isOpen, onClose, onOpenWipeModal, handleLinkGoog
                 themeClass('bg-slate-950/50 border-slate-850/80 text-slate-300', 'bg-slate-50/80 border-slate-200 text-slate-700')
               }`}>
                 <div className="flex items-start gap-2 text-[11px]">
-                  <span className="text-teal-400 mt-0.5 shrink-0">⚡</span>
+                  <span className="text-teal-500 dark:text-teal-400 font-black text-[16px] leading-none select-none shrink-0">•</span>
                   <div>
-                    <p className="font-bold">{language === 'zh' ? '商户结账智能弹窗' : 'Contextual Checkout Alerts'}</p>
-                    <p className={`text-[10px] mt-0.5 leading-relaxed ${themeClass('text-slate-400', 'text-slate-500')}`}>
-                      {language === 'zh' 
-                        ? '访问 Uber、Grubhub、Saks、Amazon 等商户时，右下角自动弹出对应报销及倍率提示。' 
-                        : 'Get instant statement credit and multiplier reminders when browsing Uber, Saks, Amazon, and more.'}
+                    <p className="font-bold">{t('extHighlightAlerts')}</p>
+                    <p className={`text-[10px] mt-0.5 leading-relaxed ${themeClass('text-slate-450', 'text-slate-550')}`}>
+                      {t('extHighlightAlertsDesc')}
                     </p>
                   </div>
                 </div>
 
                 <div className="flex items-start gap-2 text-[11px]">
-                  <span className="text-purple-400 mt-0.5 shrink-0">🔒</span>
+                  <span className="text-purple-500 dark:text-purple-400 font-black text-[16px] leading-none select-none shrink-0">•</span>
                   <div>
-                    <p className="font-bold">{language === 'zh' ? '零绑定本地直读' : 'Zero-Login Local Sync'}</p>
-                    <p className={`text-[10px] mt-0.5 leading-relaxed ${themeClass('text-slate-400', 'text-slate-500')}`}>
-                      {language === 'zh' 
-                        ? '直连本地卡包缓存。无需登录银行账号，无需 Plaid 授权，100% 零数据追踪。' 
-                        : 'Reads directly from your local wallet. No bank logins, no Plaid, 100% zero tracking.'}
+                    <p className="font-bold">{t('extHighlightSync')}</p>
+                    <p className={`text-[10px] mt-0.5 leading-relaxed ${themeClass('text-slate-450', 'text-slate-550')}`}>
+                      {t('extHighlightSyncDesc')}
                     </p>
                   </div>
                 </div>
