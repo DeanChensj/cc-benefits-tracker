@@ -25,7 +25,7 @@ declare global {
 }
 
 const CLIENT_ID = '200919207225-04kmtc0j6nmshkjjqkk3qkuv05b8el23.apps.googleusercontent.com';
-const SCOPES = 'https://www.googleapis.com/auth/drive.appdata email';
+const SCOPES = 'https://www.googleapis.com/auth/drive.appdata email https://www.googleapis.com/auth/calendar';
 
 // Load Google Identity Services script dynamically on mount
 export function loadGoogleGsiScript(): Promise<void> {

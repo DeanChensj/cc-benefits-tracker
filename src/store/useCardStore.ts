@@ -93,6 +93,9 @@ export interface RemoteSyncData {
   deletedCardIds?: string[];
   deletedAwardIds?: string[];
   walletLastModified?: number;
+  isCalendarSyncEnabled?: boolean;
+  googleCalendarId?: string | null;
+  calendarEventIds?: Record<string, string>;
 }
 
 export interface CardStore {
@@ -119,6 +122,9 @@ export interface CardStore {
   isGroupedView: boolean; // Group by card in checklist
   isDemoMode: boolean; // Flag for demo mode
   aiPrompt: string | null; // Prompt to trigger AI assistant
+  isCalendarSyncEnabled: boolean;
+  googleCalendarId: string | null;
+  calendarEventIds: Record<string, string>;
 
   // Actions
   addCard: (templateId: string) => string;
@@ -142,6 +148,9 @@ export interface CardStore {
   resolveSyncConflict: (choice: 'local' | 'cloud') => Promise<void>;
   injectDemoData: () => void;
   setAiPrompt: (prompt: string | null) => void;
+  setCalendarSyncEnabled: (enabled: boolean) => void;
+  setGoogleCalendarId: (id: string | null) => void;
+  updateCalendarEventId: (logKey: string, eventId: string | null) => void;
 
   // Instance Offer Actions
   addInstanceOffer: (instanceId: string, offer: Omit<Benefit, 'id'>) => void;
@@ -190,6 +199,9 @@ export const useCardStore = create<CardStore>()(
       isGroupedView: false,
       isDemoMode: false,
       aiPrompt: null,
+      isCalendarSyncEnabled: false,
+      googleCalendarId: null,
+      calendarEventIds: {},
 
       addCard: (templateId) => {
         let generatedName = '';
@@ -944,6 +956,29 @@ export const useCardStore = create<CardStore>()(
             walletLastModified: Date.now()
           };
         }),
+      setCalendarSyncEnabled: (enabled) =>
+        set(() => ({
+          isCalendarSyncEnabled: enabled,
+          walletLastModified: Date.now()
+        })),
+      setGoogleCalendarId: (id) =>
+        set(() => ({
+          googleCalendarId: id,
+          walletLastModified: Date.now()
+        })),
+      updateCalendarEventId: (logKey, eventId) =>
+        set((state) => {
+          const nextIds = { ...state.calendarEventIds };
+          if (eventId === null) {
+            delete nextIds[logKey];
+          } else {
+            nextIds[logKey] = eventId;
+          }
+          return {
+            calendarEventIds: nextIds,
+            walletLastModified: Date.now()
+          };
+        }),
     }),
     {
       name: 'cc-benefits-tracker-storage',
@@ -959,7 +994,7 @@ export const useCardStore = create<CardStore>()(
           }));
           const instanceOffers = card.instanceOffers?.map((o) => ({
             ...o,
-            description: '',
+            description: o.type === 'welcome-offer' ? o.description : '',
             officialUrl: undefined
           }));
           return {
@@ -983,7 +1018,10 @@ export const useCardStore = create<CardStore>()(
           isDemoMode: state.isDemoMode,
           customClientId: state.customClientId,
           gdriveEmail: state.gdriveEmail,
-          syncStatus: state.syncStatus === 'synced' ? 'synced' : 'disconnected'
+          syncStatus: state.syncStatus === 'synced' ? 'synced' : 'disconnected',
+          isCalendarSyncEnabled: state.isCalendarSyncEnabled,
+          googleCalendarId: state.googleCalendarId,
+          calendarEventIds: state.calendarEventIds || {}
         };
       },
     }
