@@ -26,8 +26,6 @@ export function CreateAwardModal({ isOpen, onClose, themeClass }: CreateAwardMod
   // Custom overrides (only used if templateId === 'custom')
   const [customName, setCustomName] = useState<string>('');
   const [customBrand, setCustomBrand] = useState<string>('');
-  const [customProgramType, setCustomProgramType] = useState<'hotel' | 'airline' | 'bank' | 'other'>('hotel');
-  const [customAwardType, setCustomAwardType] = useState<'fnr' | 'sua' | 'goh' | 'companion' | 'swu' | 'points' | 'other'>('fnr');
   const [customValue, setCustomValue] = useState<string>('');
 
   if (!isOpen) return null;
@@ -46,8 +44,8 @@ export function CreateAwardModal({ isOpen, onClose, themeClass }: CreateAwardMod
       // Custom properties
       customName: isCustom ? customName.trim() : undefined,
       customBrand: isCustom ? customBrand.trim() : undefined,
-      customProgramType: isCustom ? customProgramType : undefined,
-      customAwardType: isCustom ? customAwardType : undefined,
+      customProgramType: isCustom ? 'other' : undefined,
+      customAwardType: isCustom ? 'other' : undefined,
       customValue: isCustom ? Math.max(0, val) : undefined,
     });
 
@@ -66,7 +64,6 @@ export function CreateAwardModal({ isOpen, onClose, themeClass }: CreateAwardMod
 
   const liveBrand = isCustom ? (customBrand.trim() || 'Brand') : templateInfo.brand;
   const liveName = isCustom ? (customName.trim() || 'Custom Voucher') : templateInfo.name;
-  const liveAwardType = isCustom ? customAwardType : templateInfo.awardType;
   const liveValue = isCustom ? (Number(customValue) || 0) : templateInfo.value;
   return (
     <ZenModal
@@ -116,8 +113,8 @@ export function CreateAwardModal({ isOpen, onClose, themeClass }: CreateAwardMod
               award={{
                 brand: liveBrand,
                 name: liveName,
-                programType: isCustom ? customProgramType : templateInfo.programType,
-                awardType: liveAwardType,
+                programType: isCustom ? 'other' : templateInfo.programType,
+                awardType: isCustom ? 'other' : templateInfo.awardType,
                 value: liveValue,
                 expirationDate: expirationDate || undefined,
                 notes: notes || undefined
@@ -179,44 +176,6 @@ export function CreateAwardModal({ isOpen, onClose, themeClass }: CreateAwardMod
                       themeClass('bg-slate-950 border-slate-850 text-white', 'bg-slate-55 border-slate-255 text-slate-800')
                     }`}
                   />
-                </div>
-              </div>
-
-              {/* Custom Selectors */}
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1">
-                  <label className="text-[9px] font-bold uppercase text-slate-500">{t('awardFormProgType')}</label>
-                  <select
-                    value={customProgramType}
-                    onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setCustomProgramType(e.target.value as 'hotel' | 'airline' | 'bank' | 'other')}
-                    className={`w-full text-xs font-semibold rounded-xl px-2.5 py-2 focus:outline-none focus:border-teal-600 focus:ring-2 focus:ring-teal-550/10 border transition ${
-                      themeClass('bg-slate-955 border-slate-850 text-white', 'bg-slate-55 border-slate-255 text-slate-800')
-                    }`}
-                  >
-                    <option value="hotel">{t('optHotel')}</option>
-                    <option value="airline">{t('optAirline')}</option>
-                    <option value="bank">{t('optBank')}</option>
-                    <option value="other">{t('optOtherProg')}</option>
-                  </select>
-                </div>
-
-                <div className="space-y-1">
-                  <label className="text-[9px] font-bold uppercase text-slate-500">{t('awardFormAwardType')}</label>
-                  <select
-                    value={customAwardType}
-                    onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setCustomAwardType(e.target.value as 'fnr' | 'sua' | 'goh' | 'companion' | 'swu' | 'points' | 'other')}
-                    className={`w-full text-xs font-semibold rounded-xl px-2.5 py-2 focus:outline-none focus:border-teal-600 focus:ring-2 focus:ring-teal-550/10 border transition ${
-                      themeClass('bg-slate-955 border-slate-850 text-white', 'bg-slate-55 border-slate-255 text-slate-800')
-                    }`}
-                  >
-                    <option value="fnr">{t('awardFnr')}</option>
-                    <option value="sua">{t('awardSua')}</option>
-                    <option value="goh">{t('awardGoh')}</option>
-                    <option value="companion">{t('awardCompanion')}</option>
-                    <option value="swu">{t('awardSwu')}</option>
-                    <option value="points">{t('awardPoints')}</option>
-                    <option value="other">{t('awardOther')}</option>
-                  </select>
                 </div>
               </div>
             </div>
