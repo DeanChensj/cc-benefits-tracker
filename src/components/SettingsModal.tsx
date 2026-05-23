@@ -23,7 +23,9 @@ export function SettingsModal({ isOpen, onClose, onOpenCalendarExport, onOpenWip
     gdriveEmail, 
     pointValuations,
     updatePointValuation,
-    triggerSync
+    triggerSync,
+    isCalendarSyncEnabled,
+    setCalendarSyncEnabled
   } = useCardStore();
 
   const themeClass = (dark: string, light: string) => theme === 'dark' ? dark : light;
@@ -148,8 +150,9 @@ export function SettingsModal({ isOpen, onClose, onOpenCalendarExport, onOpenWip
           <h3 className={`text-xs font-extrabold uppercase tracking-wider flex items-center gap-1.5 ${themeClass('text-slate-400', 'text-slate-600')}`}>
             <span className="w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0" />
             <Calendar className="w-3.5 h-3.5" />
-            {language === 'zh' ? '日历导出' : 'Calendar Export'}
+            {language === 'zh' ? '日历同步与导出' : 'Calendar Sync & Export'}
           </h3>
+          
           <div className={`p-3 rounded-xl border space-y-2 ${themeClass('bg-gradient-to-b from-slate-900/60 to-slate-950/60 border-slate-800/50 backdrop-blur-sm', 'bg-white border-slate-200 shadow-sm')}`}>
             <p className={`text-[10px] leading-relaxed ${themeClass('text-slate-450', 'text-slate-500')}`}>
               {t('calSyncDesc')}
@@ -161,6 +164,40 @@ export function SettingsModal({ isOpen, onClose, onOpenCalendarExport, onOpenWip
             >
               {t('calSyncBtn')}
             </button>
+          </div>
+
+          {/* Dynamic iOS-style Google Calendar Cloud Sync Card */}
+          <div className={`p-3 rounded-xl border space-y-3 mt-2.5 ${themeClass('bg-gradient-to-b from-slate-900/60 to-slate-950/60 border-slate-800/50 backdrop-blur-sm', 'bg-white border-slate-200 shadow-sm')}`}>
+            <div className="flex items-center justify-between">
+              <div className="text-left">
+                <p className="text-xs font-bold">{language === 'zh' ? '⚡ 谷歌日历自动云同步' : '⚡ Google Calendar Auto-Sync'}</p>
+                <p className={`text-[9px] font-medium mt-0.5 leading-relaxed ${themeClass('text-slate-500', 'text-slate-455')}`}>
+                  {language === 'zh' 
+                    ? '打卡自动消除日程，卡包删改增量自动自愈，100% 私有安全。' 
+                    : 'Check-offs disappear instantly. Multi-device auto-reconciliation.'}
+                </p>
+              </div>
+              
+              {gdriveEmail ? (
+                <button
+                  type="button"
+                  onClick={() => setCalendarSyncEnabled(!isCalendarSyncEnabled)}
+                  className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                    isCalendarSyncEnabled ? 'bg-sky-500' : themeClass('bg-slate-800', 'bg-slate-200')
+                  }`}
+                >
+                  <span
+                    className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                      isCalendarSyncEnabled ? 'translate-x-4' : 'translate-x-0'
+                    }`}
+                  />
+                </button>
+              ) : (
+                <span className="text-[9px] font-black opacity-50 uppercase text-slate-500 select-none shrink-0">
+                  {language === 'zh' ? '需连云端' : 'Need Cloud'}
+                </span>
+              )}
+            </div>
           </div>
         </div>
 

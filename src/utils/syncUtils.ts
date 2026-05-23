@@ -6,6 +6,7 @@ import type { LogEntry } from './logUtils';
 import { deobfuscateKey } from './cryptoUtils';
 import { getYearFromPlainKey } from './storeHelpers';
 import type { ActiveBenefit } from '../hooks/useActiveBenefits';
+import { calculateActiveBenefits } from '../hooks/useActiveBenefits';
 
 interface GoogleCalendarResource {
   id: string;
@@ -36,13 +37,46 @@ export const syncPushToCloud = async (
       const storeState = useCardStore.getState();
       const fileId = await findSyncFile(activeToken);
       const uploadTime = storeState.walletLastModified || Date.now();
-      
+
+      // 📅 Google Calendar Direct REST API Sync Integration
+      if (storeState.isCalendarSyncEnabled) {
+        try {
+          let calendarId = storeState.googleCalendarId;
+          if (!calendarId) {
+            calendarId = await findOrCreatePerkFolioCalendar(activeToken);
+            useCardStore.setState({ googleCalendarId: calendarId });
+          }
+          
+          const activeBenefits = calculateActiveBenefits(
+            storeState.ownedCards,
+            storeState.loyaltyAwards,
+            storeState.logs,
+            new Date()
+          );
+          
+          await syncGoogleCalendar(
+            activeToken,
+            calendarId,
+            activeBenefits,
+            storeState.calendarEventIds,
+            storeState.updateCalendarEventId
+          );
+          console.log('📅 [Calendar Sync] Successfully committed fresh calendar events.');
+        } catch (calErr) {
+          console.error('Silent background calendar sync failed:', calErr);
+        }
+      }
+
+      // Google Drive cloud payload sync
       await uploadSyncFile(activeToken, fileId, { 
         ownedCards: storeState.ownedCards, 
         logs: storeState.logs, 
         loyaltyAwards: storeState.loyaltyAwards,
         deletedCardIds: storeState.deletedCardIds || [],
         deletedAwardIds: storeState.deletedAwardIds || [],
+        isCalendarSyncEnabled: storeState.isCalendarSyncEnabled,
+        googleCalendarId: storeState.googleCalendarId,
+        calendarEventIds: storeState.calendarEventIds,
         walletLastModified: uploadTime
       });
 

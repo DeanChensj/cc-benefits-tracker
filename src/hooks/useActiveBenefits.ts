@@ -16,14 +16,13 @@ export interface ActiveBenefit {
   loyaltyAward?: LoyaltyAward;
 }
 
-export function useActiveBenefits(
+export function calculateActiveBenefits(
   ownedCards: OwnedCardInstance[],
   loyaltyAwards: LoyaltyAward[],
   logs: Record<string, LogEntry>,
   currentDate: Date
-) {
-  return useMemo(() => {
-    const activeBenefits: ActiveBenefit[] = [];
+): ActiveBenefit[] {
+  const activeBenefits: ActiveBenefit[] = [];
     ownedCards.forEach((cardInstance) => {
       const template = CARDS_DB.find((t) => t.id === cardInstance.templateId);
       let benefits: Benefit[] = [];
@@ -139,5 +138,15 @@ export function useActiveBenefits(
       });
     });
     return activeBenefits;
+}
+
+export function useActiveBenefits(
+  ownedCards: OwnedCardInstance[],
+  loyaltyAwards: LoyaltyAward[],
+  logs: Record<string, LogEntry>,
+  currentDate: Date
+) {
+  return useMemo(() => {
+    return calculateActiveBenefits(ownedCards, loyaltyAwards, logs, currentDate);
   }, [ownedCards, loyaltyAwards, logs, currentDate]);
 }
