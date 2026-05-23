@@ -5,6 +5,12 @@ import type { LoyaltyAward } from '../data/cards.db';
 import type { LogEntry } from './logUtils';
 import { deobfuscateKey } from './cryptoUtils';
 import { getYearFromPlainKey } from './storeHelpers';
+import type { ActiveBenefit } from '../hooks/useActiveBenefits';
+
+interface GoogleCalendarResource {
+  id: string;
+  summary: string;
+}
 
 // Helper to push updates to Google Drive silently in the background with a 5-second debounce buffer
 let syncTimeout: ReturnType<typeof setTimeout> | null = null;
@@ -212,5 +218,144 @@ export const performGDriveSync = async (get: () => CardStore, set: (partial: Par
   } catch (err) {
     set({ syncStatus: 'error' });
     throw err;
+  }
+};
+
+// =================================================================
+// 📅 Google Calendar Direct REST API Integration Utilities
+// =================================================================
+
+// Helper to calculate next day for Google Calendar's exclusive all-day event end dates
+const getCalendarNextDay = (dateStr: string): string => {
+  const date = new Date(dateStr + 'T00:00:00');
+  date.setDate(date.getDate() + 1);
+  return `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')}`;
+};
+
+// Helper to dynamically find or create the dedicated PerkFolio Reminders calendar
+export const findOrCreatePerkFolioCalendar = async (token: string): Promise<string> => {
+  const listRes = await fetch('https://www.googleapis.com/calendar/v3/users/me/calendarList', {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  if (!listRes.ok) throw new Error('Failed to query Google Calendar list.');
+  const listData = await listRes.json();
+  const calendars = listData.items || [];
+  
+  const targetSummary = '💳 PerkFolio Reminders';
+  const existing = calendars.find((c: GoogleCalendarResource) => c.summary === targetSummary);
+  if (existing) {
+    return existing.id;
+  }
+
+  const createRes = await fetch('https://www.googleapis.com/calendar/v3/calendars', {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      summary: targetSummary,
+      description: 'Dynamic credit card statement credits, quarterly rotating limits, and standalone vouchers reminders synchronized automatically by PerkFolio.cc',
+      timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'America/New_York'
+    })
+  });
+  
+  if (!createRes.ok) throw new Error('Failed to create dedicated Google Calendar.');
+  const newCal = await createRes.json();
+  return newCal.id;
+};
+
+// Helper to perform highly-optimized dynamic delta synchronization for active benefits
+export const syncGoogleCalendar = async (
+  token: string,
+  calendarId: string,
+  activeBenefits: ActiveBenefit[],
+  calendarEventIds: Record<string, string>,
+  updateEventId: (logKey: string, eventId: string | null) => void
+) => {
+  const eventIds = { ...calendarEventIds };
+
+  // 1. Incremental Sync: Create or Delete events based on active benefits
+  for (const ab of activeBenefits) {
+    if (!ab.benefit.expirationDate) continue;
+
+    const logKey = ab.logKey;
+    const existingEventId = eventIds[logKey];
+    const isUsed = ab.isUsed;
+
+    if (isUsed) {
+      if (existingEventId) {
+        try {
+          const delRes = await fetch(`https://www.googleapis.com/calendar/v3/calendars/${calendarId}/events/${existingEventId}`, {
+            method: 'DELETE',
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          if (delRes.ok || delRes.status === 404) {
+            updateEventId(logKey, null);
+            delete eventIds[logKey];
+          }
+        } catch (err) {
+          console.error(`Failed to delete calendar event ${existingEventId} for ${logKey}:`, err);
+        }
+      }
+    } else {
+      if (!existingEventId) {
+        try {
+          const cardName = ab.cardInstance?.customName || 'Standalone Loyalty Award';
+          const summary = `💳 [${cardName}] ${ab.benefit.name}`;
+          const description = `PerkFolio dynamic credit card check-in alarm.\n\nBenefit: ${ab.benefit.name}\nValue: $${ab.benefit.value}\nReset Cycle: ${ab.benefit.resetPeriod}\nLocal Sync Fingerprint: ${logKey}\n\nResolve this benefit on: https://perkfolio.cc/`;
+          
+          const createRes = await fetch(`https://www.googleapis.com/calendar/v3/calendars/${calendarId}/events`, {
+            method: 'POST',
+            headers: {
+              Authorization: `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              summary,
+              description,
+              start: { date: ab.benefit.expirationDate },
+              end: { date: getCalendarNextDay(ab.benefit.expirationDate) },
+              reminders: {
+                useDefault: false,
+                overrides: [
+                  { method: 'popup', minutes: 1440 },
+                  { method: 'popup', minutes: 2880 }
+                ]
+              }
+            })
+          });
+          
+          if (createRes.ok) {
+            const createdEvent = await createRes.json();
+            updateEventId(logKey, createdEvent.id);
+            eventIds[logKey] = createdEvent.id;
+          }
+        } catch (err) {
+          console.error(`Failed to create calendar event for ${logKey}:`, err);
+        }
+      }
+    }
+  }
+
+  // 2. Tombstone Cleanup: Delete orphaned events for cards or vouchers that no longer exist
+  const activeKeys = new Set(activeBenefits.map(ab => ab.logKey));
+  for (const logKey of Object.keys(eventIds)) {
+    if (!activeKeys.has(logKey)) {
+      const orphanedEventId = eventIds[logKey];
+      if (orphanedEventId) {
+        try {
+          const delRes = await fetch(`https://www.googleapis.com/calendar/v3/calendars/${calendarId}/events/${orphanedEventId}`, {
+            method: 'DELETE',
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          if (delRes.ok || delRes.status === 404) {
+            updateEventId(logKey, null);
+          }
+        } catch (err) {
+          console.error(`Failed to clean up orphaned calendar event ${orphanedEventId} for ${logKey}:`, err);
+        }
+      }
+    }
   }
 };
