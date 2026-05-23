@@ -1,6 +1,19 @@
 // content_script.js
 
 // =================================================================
+// 🛡️ Security Sanitization & HTML Escaping Helper (Anti-XSS)
+// =================================================================
+function escapeHTML(str) {
+  if (!str) return '';
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+// =================================================================
 // 🎨 PerkFolio Assistant Design System Tokens & Animation Config
 // =================================================================
 const DESIGN_SYSTEM = {
@@ -138,12 +151,12 @@ function showNotification(cardName, perkText, theme) {
   div.innerHTML = `
     <div style="display: flex; align-items: center; gap: 6px; justify-content: space-between; padding-right: 18px;">
       <span style="background-color: ${activeTheme.badgeBg}; color: ${activeTheme.badgeText}; border: ${activeTheme.badgeBorder}; padding: 2px 8px; border-radius: 6px; font-size: 9.5px; font-weight: 850; text-transform: uppercase; letter-spacing: 0.8px; line-height: normal; display: inline-block; max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-        💳 ${cardName}
+        💳 ${escapeHTML(cardName)}
       </span>
       <span style="font-size: 9px; color: ${activeTheme.descText}; opacity: 0.8; font-weight: bold; letter-spacing: 0.5px; select-none: none;">PerkFolio</span>
     </div>
     <div style="font-size: 11px; color: ${activeTheme.descText}; font-weight: 600; line-height: 1.4; margin-top: 2px; text-align: left;">
-      💡 ${perkText}
+      💡 ${escapeHTML(perkText)}
     </div>
     <button id="perkfolio-close-btn" style="position: absolute; top: 8px; right: 10px; background: none; border: none; color: ${activeTheme.descText}; opacity: 0; font-size: 12px; font-weight: bold; padding: 4px; cursor: pointer; transition: all 0.2s ease; display: flex; align-items: center; justify-content: center; line-height: 1; outline: none;">
       ✕

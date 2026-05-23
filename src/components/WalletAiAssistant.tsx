@@ -33,6 +33,7 @@ interface SpentAssistantProps {
   showToast?: (message: string, type?: 'success' | 'error' | 'info' | 'warning') => void;
   ownedCards: OwnedCardInstance[];
   loyaltyAwards: LoyaltyAward[];
+  currentDate: Date;
 }
 
 interface ChatMessage {
@@ -40,7 +41,7 @@ interface ChatMessage {
   text: string;
 }
 
-export function WalletAiAssistant({ activeBenefits, logs, theme, showToast, ownedCards, loyaltyAwards }: SpentAssistantProps) {
+export function WalletAiAssistant({ activeBenefits, logs, theme, showToast, ownedCards, loyaltyAwards, currentDate }: SpentAssistantProps) {
   const { language } = useCardStore();
   const t = (key: keyof typeof translations['en']) => translations[language][key] || translations['en'][key];
 
@@ -205,7 +206,7 @@ ${awardsContext.length > 0 ? awardsContext : 'No standalone vouchers in wallet.'
 ${activeBenefitsText.length > 0 ? activeBenefitsText : 'No active dynamic card perks remaining for this period.'}
 
 === USER INFORMATION ===
-- Current Simulated Date: ${new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+- Current Simulated Date: ${currentDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
 
 Guidelines:
 1. Provide personalized financial recommendations, card spending selections (Dining, Travel, etc.), voucher tracking updates, or credit card general advice.

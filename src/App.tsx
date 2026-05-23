@@ -85,8 +85,8 @@ function App() {
   const getExpiredValue = (ab: ActiveBenefit): number => {
     const usedQty = ab.loyaltyAward ? (ab.loyaltyAward.usedQuantity || 0) : 0;
     const isExpired = ab.loyaltyAward
-      ? (usedQty < 1 && !!ab.benefit.expirationDate && new Date(ab.benefit.expirationDate + 'T00:00:00') < currentDate)
-      : ((ab.benefit.resetPeriod === 'fixed' || ab.benefit.resetPeriod === 'once') && !!ab.benefit.expirationDate && new Date(ab.benefit.expirationDate + 'T00:00:00') < currentDate);
+      ? (usedQty < 1 && !!ab.benefit.expirationDate && new Date(ab.benefit.expirationDate + 'T23:59:59') < currentDate)
+      : ((ab.benefit.resetPeriod === 'fixed' || ab.benefit.resetPeriod === 'once') && !!ab.benefit.expirationDate && new Date(ab.benefit.expirationDate + 'T23:59:59') < currentDate);
       
     if (!isExpired) return 0;
     return ab.benefit.value - getResolvedValue(ab, logs);
@@ -315,7 +315,7 @@ function App() {
       />
 
       {/* Wallet AI Assistant Drawer */}
-      <WalletAiAssistant activeBenefits={activeBenefits} logs={logs} theme={theme} showToast={showToast} ownedCards={ownedCards} loyaltyAwards={loyaltyAwards} />
+      <WalletAiAssistant activeBenefits={activeBenefits} logs={logs} theme={theme} showToast={showToast} ownedCards={ownedCards} loyaltyAwards={loyaltyAwards} currentDate={currentDate} />
 
 
 

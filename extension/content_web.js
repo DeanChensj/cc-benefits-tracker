@@ -7,7 +7,7 @@ window.addEventListener('message', (e) => {
   
   // Verify safety origins
   const ALLOWED_ORIGINS = ['https://perkfolio.cc', 'http://localhost:5173', 'http://127.0.0.1:5173'];
-  if (!ALLOWED_ORIGINS.some(origin => e.origin.startsWith(origin))) return;
+  if (!ALLOWED_ORIGINS.includes(e.origin)) return;
 
   if (e.data && e.data.type === 'PERKFOLIO_DATA_BRIDGE') {
     const data = e.data.detail;

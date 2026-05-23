@@ -55,9 +55,9 @@ export function ActiveChecklistTab({
   // Core helper to evaluate benefit expiration dynamically in sandbox
   const isBenefitExpired = (ab: ActiveBenefit): boolean => {
     if (ab.loyaltyAward) {
-      return !!ab.benefit.expirationDate && new Date(ab.benefit.expirationDate + 'T00:00:00') < currentDate;
+      return !!ab.benefit.expirationDate && new Date(ab.benefit.expirationDate + 'T23:59:59') < currentDate;
     }
-    return (ab.benefit.resetPeriod === 'fixed' || ab.benefit.resetPeriod === 'once') && !!ab.benefit.expirationDate && new Date(ab.benefit.expirationDate + 'T00:00:00') < currentDate;
+    return (ab.benefit.resetPeriod === 'fixed' || ab.benefit.resetPeriod === 'once') && !!ab.benefit.expirationDate && new Date(ab.benefit.expirationDate + 'T23:59:59') < currentDate;
   };
 
   // 1. Master search/category filter

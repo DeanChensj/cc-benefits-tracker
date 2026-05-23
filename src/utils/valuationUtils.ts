@@ -211,7 +211,7 @@ export const calculateCardRoi = (
     const parts = rawKey.split(':');
     if (parts.length < 3) return;
 
-    const cycle = parts[0];
+    const cycle = parts[0] === 'anniv' ? parts[3] : parts[0];
     const logInstanceId = getInstanceIdFromKey(rawKey);
     const logBenefitId = getBenefitIdFromKey(rawKey);
     if (!logBenefitId) return;
