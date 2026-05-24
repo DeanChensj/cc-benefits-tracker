@@ -376,11 +376,25 @@ export const useCardStore = create<CardStore>()(
           const obfuscatedKey = obfuscateKey(logKey);
           const spentVal = Math.max(0, spent);
           
+          const existing = nextLogs[obfuscatedKey];
+          const prevSpent = (existing && typeof existing.spentProgress === 'number') ? existing.spentProgress : 0;
+          const prevHistory = (existing && Array.isArray(existing.progressHistory)) ? existing.progressHistory : [];
+          
+          const delta = spentVal - prevSpent;
+          const nextHistory = [...prevHistory];
+          if (delta !== 0) {
+            nextHistory.push({
+              spent: delta,
+              timestamp: Date.now()
+            });
+          }
+
           nextLogs[obfuscatedKey] = {
             resolved: spentVal > 0,
             timestamp: Date.now(),
             value: 0,
             spentProgress: spentVal,
+            progressHistory: nextHistory
           };
           syncPushToCloud(state.gdriveToken, state.ownedCards, nextLogs);
 

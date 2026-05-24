@@ -195,7 +195,7 @@ export const ChecklistCardRow = React.memo(function ChecklistCardRow({
         
         {/* Left Details block */}
         <div className="flex items-start gap-3 min-w-0 flex-1">
-          {/* Perfect Circular Checkbox Hairlines */}
+          {/* Checkbox hit target wrapper wrapper (Task 1) */}
           <div 
             onClick={(e) => {
               e.stopPropagation(); // Prevent row expansion toggle
@@ -211,21 +211,25 @@ export const ChecklistCardRow = React.memo(function ChecklistCardRow({
                 }, 300);
               }
             }}
-            className={`w-5 h-5 flex items-center justify-center rounded-md border transition-all duration-200 shrink-0 mt-0.5 ${
-              benefit.isSubscription ? 'cursor-default opacity-90' : 'cursor-pointer active:scale-[0.95]'
-            } ${localUsed ? 'animate-bounce-subtle' : ''} ${
-              isExpired
-                ? 'border-red-900 bg-red-950/10 text-red-500'
-                : isUsed 
-                ? 'bg-emerald-500 border-emerald-500 text-slate-955' 
-                : themeClass('border-slate-500 hover:border-purple-500 bg-slate-900/60 text-transparent hover:bg-purple-500/5', 'border-slate-400 hover:border-purple-500 bg-white text-transparent hover:bg-purple-50/30')
-            }`}
+            className="p-2.5 -m-2.5 shrink-0 select-none flex items-center justify-center"
           >
-            {isExpired ? (
-              <span className="text-[10px] font-bold">✕</span>
-            ) : (
-              <CheckCircle2 className={`w-4 h-4 stroke-[3] transition-all duration-250 transform origin-center ${isUsed ? 'scale-100 rotate-0' : 'scale-0 -rotate-12 opacity-0'}`} />
-            )}
+            <div
+              className={`w-5 h-5 flex items-center justify-center rounded-md border transition-all duration-200 shrink-0 ${
+                benefit.isSubscription ? 'cursor-default opacity-90' : 'cursor-pointer active:scale-[0.95]'
+              } ${localUsed ? 'animate-bounce-subtle' : ''} ${
+                isExpired
+                  ? 'border-red-900 bg-red-950/10 text-red-500'
+                  : isUsed 
+                  ? 'bg-emerald-500 border-emerald-500 text-slate-955' 
+                  : themeClass('border-slate-500 hover:border-purple-500 bg-slate-900/60 text-transparent hover:bg-purple-500/5', 'border-slate-400 hover:border-purple-500 bg-white text-transparent hover:bg-purple-50/30')
+              }`}
+            >
+              {isExpired ? (
+                <span className="text-[10px] font-bold">✕</span>
+              ) : (
+                <CheckCircle2 className={`w-4 h-4 stroke-[3] transition-all duration-250 transform origin-center ${isUsed ? 'scale-100 rotate-0' : 'scale-0 -rotate-12 opacity-0'}`} />
+              )}
+            </div>
           </div>
 
           {/* Title & Duet Metadata Stack */}

@@ -1,8 +1,14 @@
+export interface LogHistoryEntry {
+  spent: number;
+  timestamp: number;
+}
+
 export interface LogEntry {
   resolved: boolean;
   timestamp: number; // UNIX epoch milliseconds
   value: number;
   spentProgress?: number;
+  progressHistory?: LogHistoryEntry[]; // Sub-array progress increments
   skipped?: boolean;
   [key: string]: unknown; // Extensible signature for future features
 }

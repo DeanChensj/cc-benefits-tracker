@@ -304,15 +304,7 @@ export const getSavingsForPeriod = (
     const parsed = parseLogEntry(logVal);
     if (!parsed) return;
 
-    if (!parsed.resolved || !parsed.timestamp) return;
-
-    const logDate = getLocalDateStr(new Date(parsed.timestamp));
-    
-    if (period === 'today') {
-      if (logDate !== todayStr) return;
-    } else if (period === 'month') {
-      if (!logDate.startsWith(monthStr)) return;
-    }
+    if (!parsed.resolved) return;
 
     const logInstanceId = getInstanceIdFromKey(rawKey);
     
@@ -328,23 +320,91 @@ export const getSavingsForPeriod = (
         benefit = allBenefits.find(b => b.id === benefitId) || null;
       }
     } else {
-      // Standalone loyalty award
-      const award = loyaltyAwards.find(a => a.id === benefitId);
-      if (award) {
-        const isCustom = award.templateId === 'custom';
-        const awardVal = isCustom ? (award.customValue || 0) : (AWARD_TEMPLATES[award.templateId]?.value || 0);
-        sum += awardVal * (award.usedQuantity || 0);
-        return;
+      // Standalone loyalty award: falls back to standard date filtering
+      const logDate = getLocalDateStr(new Date(parsed.timestamp || Date.now()));
+      let isMatch = false;
+      if (period === 'today' && logDate === todayStr) isMatch = true;
+      else if (period === 'month' && logDate.startsWith(monthStr)) isMatch = true;
+      
+      if (isMatch) {
+        const award = loyaltyAwards.find(a => a.id === benefitId);
+        if (award) {
+          const isCustom = award.templateId === 'custom';
+          const awardVal = isCustom ? (award.customValue || 0) : (AWARD_TEMPLATES[award.templateId]?.value || 0);
+          sum += awardVal * (award.usedQuantity || 0);
+        }
       }
+      return;
     }
 
     if (!benefit) return;
 
-    const recoupVal = benefit.spendingLimit
-      ? (benefit.type === 'welcome-offer'
-        ? ((parsed.spentProgress || 0) >= benefit.spendingLimit ? benefit.value : 0)
-        : (benefit.value * Math.min((parsed.spentProgress || 0) / benefit.spendingLimit, 1)))
-      : benefit.value;
+    let recoupVal = 0;
+
+    if (benefit.spendingLimit) {
+      const limit = benefit.spendingLimit;
+      
+      if (benefit.type === 'welcome-offer') {
+        // For welcome offer: earned in the month the cumulative spent limit target was crossed
+        const history = parsed.progressHistory || [];
+        let cumulative = 0;
+        let earnedDateStr = '';
+        
+        for (const h of history) {
+          cumulative += h.spent;
+          if (cumulative >= limit) {
+            earnedDateStr = getLocalDateStr(new Date(h.timestamp));
+            break;
+          }
+        }
+        
+        if (!earnedDateStr && (parsed.spentProgress || 0) >= limit) {
+          earnedDateStr = getLocalDateStr(new Date(parsed.timestamp || Date.now()));
+        }
+        
+        if (period === 'today' && earnedDateStr === todayStr) {
+          recoupVal = benefit.value;
+        } else if (period === 'month' && earnedDateStr.startsWith(monthStr)) {
+          recoupVal = benefit.value;
+        }
+      } else {
+        // For progressive spending categories: sum delta increments that occurred in the queried period
+        const history = parsed.progressHistory || [];
+        let periodSpent = 0;
+        
+        if (history.length > 0) {
+          history.forEach((h) => {
+            const hDate = getLocalDateStr(new Date(h.timestamp));
+            if (period === 'today' && hDate === todayStr) {
+              periodSpent += h.spent;
+            } else if (period === 'month' && hDate.startsWith(monthStr)) {
+              periodSpent += h.spent;
+            }
+          });
+          recoupVal = benefit.value * Math.min(periodSpent / limit, 1);
+        } else {
+          // Fallback if history is absent
+          const logDate = getLocalDateStr(new Date(parsed.timestamp || Date.now()));
+          let isMatch = false;
+          if (period === 'today' && logDate === todayStr) isMatch = true;
+          else if (period === 'month' && logDate.startsWith(monthStr)) isMatch = true;
+          
+          if (isMatch) {
+            recoupVal = benefit.value * Math.min((parsed.spentProgress || 0) / limit, 1);
+          }
+        }
+      }
+    } else {
+      // Simple monthly statement credits
+      const logDate = getLocalDateStr(new Date(parsed.timestamp || Date.now()));
+      let isMatch = false;
+      if (period === 'today' && logDate === todayStr) isMatch = true;
+      else if (period === 'month' && logDate.startsWith(monthStr)) isMatch = true;
+      
+      if (isMatch) {
+        recoupVal = benefit.value;
+      }
+    }
 
     sum += recoupVal;
   });
