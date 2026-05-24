@@ -128,12 +128,40 @@ async function run() {
   const auditOutput = await runConsolidatedAudit(apiKey);
   const cleanOutput = (auditOutput || '').trim();
   const cleanOutputLower = cleanOutput.toLowerCase();
-  const isNoChange = cleanOutputLower.includes('no_change') || 
+  
+  let isNoChange = cleanOutputLower.includes('no_change') || 
     cleanOutputLower.includes('no discrepancies') || 
     cleanOutputLower.includes('no changes') || 
     cleanOutputLower.includes('no change') || 
     cleanOutputLower.includes('all match') || 
     cleanOutput === '';
+
+  // Advanced PM Safeguard: If Gemini outputs an empty markdown table (only headers/borders, no data rows), skip issue!
+  if (!isNoChange && cleanOutput.includes('|')) {
+    const lines = cleanOutput.split('\n').map(l => l.trim()).filter(Boolean);
+    const dataRows = lines.filter(l => {
+      const isHeader = l.toLowerCase().includes('card name') || l.toLowerCase().includes('field');
+      const isSeparator = l.includes('|') && l.replace(/[|:\-\s]/g, '') === ''; // e.g. |:---|---:|
+      
+      // Safeguard: Extract text inside cells and check if it is just placeholder text (e.g. "no discrepancies", "all match")
+      const cleanRow = l.replace(/[|:\-\s]/g, '').toLowerCase();
+      const isJunkRow = cleanRow === '' || 
+        cleanRow.includes('nodiscrepancy') || 
+        cleanRow.includes('nodiscrepancies') || 
+        cleanRow.includes('nodicrepancy') || 
+        cleanRow.includes('nodicrepancies') || 
+        cleanRow.includes('nochange') || 
+        cleanRow.includes('allmatch') ||
+        cleanRow.includes('everythingmatch') ||
+        cleanRow.includes('perfectmatch') ||
+        cleanRow.includes('matchperfectly');
+        
+      return l.includes('|') && !isHeader && !isSeparator && !isJunkRow;
+    });
+    if (dataRows.length === 0) {
+      isNoChange = true;
+    }
+  }
 
   if (auditOutput && !isNoChange) {
     console.log('⚠️ Discrepancies detected! Creating automated GitHub Issue...');
