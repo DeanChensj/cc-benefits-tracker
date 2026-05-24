@@ -1,67 +1,52 @@
-// content_script.js
+// =================================================================
+// 💳 PerkFolio Assistant - Safe Context Content Script (MV3 Compliant)
+// =================================================================
 
-// =================================================================
-// 🛡️ Security Sanitization & HTML Escaping Helper (Anti-XSS)
-// =================================================================
-function escapeHTML(str) {
-  if (!str) return '';
-  return str
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
-}
-
-// =================================================================
-// 🎨 PerkFolio Assistant Design System Tokens & Animation Config
-// =================================================================
 const DESIGN_SYSTEM = {
   layout: {
-    bottom: '24px',
-    right: '24px',
-    zIndex: '99999999',
-    padding: '12px 16px',
+    bottom: '20px',
+    right: '20px',
+    zIndex: '999999999',
+    padding: '12px 14px',
     borderRadius: '16px',
-    minWidth: '260px',
-    maxWidth: '320px',
-    blur: '12px',
+    blur: '20px',
+    minWidth: '280px',
+    maxWidth: '360px'
   },
   animation: {
     duration: '0.35s',
     easing: 'cubic-bezier(0.16, 1, 0.3, 1)',
-    entryDelayMs: 100,
+    entryDelayMs: 300,
     exitDelayMs: 350,
-    scaleHover: 'scale3d(1.015, 1.015, 1.015) translateY(-2px)',
-    scaleActive: 'scale3d(0.98, 0.98, 1)',
-    scaleNormal: 'scale3d(1, 1, 1) translateY(0)',
-    scaleEntryStart: 'translateY(15px) scale3d(0.95, 0.95, 0.95)',
-    scaleExitEnd: 'translateY(20px) scale3d(0.9, 0.9, 0.9)',
+    scaleEntryStart: 'translateY(20px) scale3d(0.9, 0.9, 0.9)',
+    scaleNormal: 'translateY(0) scale3d(1, 1, 1)',
+    scaleHover: 'translateY(-2px) scale3d(1.01, 1.01, 1.01)',
+    scaleExitEnd: 'translateY(15px) scale3d(0.92, 0.92, 0.92)'
   },
   themes: {
     dark: {
-      bg: 'rgba(27, 28, 37, 0.92)',
-      text: '#ffffff',
+      bg: 'rgba(15, 23, 42, 0.75)',
       border: '1px solid rgba(255, 255, 255, 0.08)',
-      borderHover: '1px solid rgba(167, 139, 250, 0.35)',
-      shadow: '0 12px 24px -4px rgba(0, 0, 0, 0.4), 0 4px 12px -2px rgba(0, 0, 0, 0.3)',
-      shadowHover: '0 16px 32px -4px rgba(0, 0, 0, 0.45), 0 0 12px rgba(167, 139, 250, 0.15)',
+      borderHover: '1px solid rgba(167, 139, 250, 0.3)',
+      text: '#f8fafc',
+      descText: '#94a3b8',
+      shadow: '0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 0 8px rgba(167, 139, 250, 0.05)',
+      shadowHover: '0 25px 30px -5px rgba(0, 0, 0, 0.6), 0 0 16px rgba(167, 139, 250, 0.15)',
       badgeBg: 'rgba(255, 255, 255, 0.06)',
       badgeBorder: '1px solid rgba(255, 255, 255, 0.06)',
-      badgeText: '#cbd5e1',
-      descText: '#94a3b8',
+      badgeText: '#a855f7',
     },
     light: {
-      bg: 'rgba(255, 255, 255, 0.95)',
+      bg: 'rgba(255, 255, 255, 0.85)',
+      border: '1px solid rgba(15, 23, 42, 0.08)',
+      borderHover: '1px solid rgba(167, 139, 250, 0.25)',
       text: '#0f172a',
-      border: '1px solid rgba(15, 23, 42, 0.06)',
-      borderHover: '1px solid rgba(167, 139, 250, 0.35)',
-      shadow: '0 12px 24px -4px rgba(15, 23, 42, 0.06), 0 4px 12px -2px rgba(15, 23, 42, 0.04)',
+      descText: '#475569',
+      shadow: '0 12px 24px -4px rgba(15, 23, 42, 0.04), 0 0 6px rgba(167, 139, 250, 0.05)',
       shadowHover: '0 16px 32px -4px rgba(15, 23, 42, 0.08), 0 0 12px rgba(167, 139, 250, 0.1)',
       badgeBg: 'rgba(15, 23, 42, 0.04)',
       badgeBorder: '1px solid rgba(15, 23, 42, 0.04)',
       badgeText: '#334155',
-      descText: '#475569',
     }
   }
 };
@@ -70,43 +55,57 @@ chrome.storage.local.get(['walletData'], (result) => {
   const walletData = result.walletData;
   if (!walletData) return;
 
-  const hostname = window.location.hostname;
+  const hostname = window.location.hostname.toLowerCase();
   
-  // Anti-Annoyance Session Filter: Avoid showing popup repeatedly on reloads in same tab session!
+  // Secure isolated tab-session lock filter (Anti-fingerprinting safeguard)
   const sessionKey = `perkfolio_notified_${hostname}`;
-  if (sessionStorage.getItem(sessionKey) === 'true') {
-    return;
-  }
-
-  const ownedCards = walletData.state?.ownedCards || [];
-  const theme = walletData.state?.theme || 'dark';
-  
-  let foundCard = null;
-  let foundPerk = null;
-  
-  // Loop through owned cards and their benefits to find a match
-  for (const card of ownedCards) {
-    const benefits = [...(card.benefits || []), ...(card.customBenefits || []), ...(card.instanceOffers || [])];
-    for (const perk of benefits) {
-      const domains = perk.matchedDomains || [];
-      const match = domains.find(domain => hostname.includes(domain));
-      if (match) {
-        foundCard = card;
-        foundPerk = perk;
-        break;
-      }
+  chrome.storage.session.get([sessionKey], (sessionResult) => {
+    if (sessionResult[sessionKey] === 'true') {
+      return;
     }
-    if (foundCard) break;
-  }
 
-  if (foundCard && foundPerk) {
-    // Lock reminder status for this session tab to prevent repeated alerts
-    sessionStorage.setItem(sessionKey, 'true');
+    const ownedCards = walletData.state?.ownedCards || [];
+    const theme = walletData.state?.theme || 'dark';
     
-    const cardName = foundCard.customName;
-    const perkText = foundPerk.description || foundPerk.name;
-    showNotification(cardName, perkText, theme);
-  }
+    let foundCard = null;
+    let foundPerk = null;
+    
+    for (const card of ownedCards) {
+      if (!card || typeof card !== 'object') continue;
+      const benefits = [
+        ...(Array.isArray(card.benefits) ? card.benefits : []),
+        ...(Array.isArray(card.customBenefits) ? card.customBenefits : []),
+        ...(Array.isArray(card.instanceOffers) ? card.instanceOffers : [])
+      ];
+      
+      for (const perk of benefits) {
+        if (!perk || typeof perk !== 'object') continue;
+        const domains = Array.isArray(perk.matchedDomains) ? perk.matchedDomains : [];
+        
+        // Secure exact/subdomain matches to block DNS spoofing phishing attacks
+        const match = domains.find(domain => {
+          const clean = domain.toLowerCase().trim();
+          return hostname === clean || hostname.endsWith('.' + clean);
+        });
+        
+        if (match) {
+          foundCard = card;
+          foundPerk = perk;
+          break;
+        }
+      }
+      if (foundCard) break;
+    }
+
+    if (foundCard && foundPerk) {
+      // Lock notification status for this tab session
+      chrome.storage.session.set({ [sessionKey]: 'true' });
+      
+      const cardName = foundCard.customName || 'Credit Card';
+      const perkText = foundPerk.description || foundPerk.name || 'Active Perk';
+      showNotification(cardName, perkText, theme);
+    }
+  });
 });
 
 function showNotification(cardName, perkText, theme) {
@@ -114,14 +113,17 @@ function showNotification(cardName, perkText, theme) {
   const activeTheme = DESIGN_SYSTEM.themes[isDark ? 'dark' : 'light'];
   const anim = DESIGN_SYSTEM.animation;
   const lay = DESIGN_SYSTEM.layout;
+  let isExiting = false; // Transition lock to block double-click navigation tab spam
 
   const container = document.createElement('div');
   container.id = 'perkfolio-remind-container';
-  container.style.position = 'fixed';
-  container.style.bottom = lay.bottom;
-  container.style.right = lay.right;
-  container.style.zIndex = lay.zIndex;
-  container.style.cursor = 'pointer';
+  
+  // Enforce layout inline styles with !important to avoid host site overrides
+  container.style.setProperty('position', 'fixed', 'important');
+  container.style.setProperty('bottom', lay.bottom, 'important');
+  container.style.setProperty('right', lay.right, 'important');
+  container.style.setProperty('z-index', lay.zIndex, 'important');
+  container.style.setProperty('cursor', 'pointer', 'important');
   container.style.transition = `all ${anim.duration} ${anim.easing}`;
   container.style.opacity = '0';
   container.style.transform = anim.scaleEntryStart;
@@ -148,64 +150,120 @@ function showNotification(cardName, perkText, theme) {
   div.style.border = activeTheme.border;
   div.style.boxShadow = activeTheme.shadow;
 
-  div.innerHTML = `
-    <div style="display: flex; align-items: center; gap: 6px; justify-content: space-between; padding-right: 18px;">
-      <span style="background-color: ${activeTheme.badgeBg}; color: ${activeTheme.badgeText}; border: ${activeTheme.badgeBorder}; padding: 2px 8px; border-radius: 6px; font-size: 9.5px; font-weight: 850; text-transform: uppercase; letter-spacing: 0.8px; line-height: normal; display: inline-block; max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-        💳 ${escapeHTML(cardName)}
-      </span>
-      <span style="font-size: 9px; color: ${activeTheme.descText}; opacity: 0.8; font-weight: bold; letter-spacing: 0.5px; select-none: none;">PerkFolio</span>
-    </div>
-    <div style="font-size: 11px; color: ${activeTheme.descText}; font-weight: 600; line-height: 1.4; margin-top: 2px; text-align: left;">
-      💡 ${escapeHTML(perkText)}
-    </div>
-    <button id="perkfolio-close-btn" style="position: absolute; top: 8px; right: 10px; background: none; border: none; color: ${activeTheme.descText}; opacity: 0; font-size: 12px; font-weight: bold; padding: 4px; cursor: pointer; transition: all 0.2s ease; display: flex; align-items: center; justify-content: center; line-height: 1; outline: none;">
-      ✕
-    </button>
-  `;
+  // 🛡️ Safe DOM Construction (Zero-innerHTML CWS Compliant Implementation)
+  const header = document.createElement('div');
+  header.style.display = 'flex';
+  header.style.alignItems = 'center';
+  header.style.gap = '6px';
+  header.style.justifyContent = 'space-between';
+  header.style.paddingRight = '18px';
 
-  const closeBtn = div.querySelector('#perkfolio-close-btn');
+  const badge = document.createElement('span');
+  badge.style.backgroundColor = activeTheme.badgeBg;
+  badge.style.color = activeTheme.badgeText;
+  badge.style.border = activeTheme.badgeBorder;
+  badge.style.padding = '2px 8px';
+  badge.style.borderRadius = '6px';
+  badge.style.fontSize = '9.5px';
+  badge.style.fontWeight = '850';
+  badge.style.textTransform = 'uppercase';
+  badge.style.letterSpacing = '0.8px';
+  badge.style.lineHeight = 'normal';
+  badge.style.display = 'inline-block';
+  badge.style.maxWidth = '160px';
+  badge.style.overflow = 'hidden';
+  badge.style.textOverflow = 'ellipsis';
+  badge.style.whiteSpace = 'nowrap';
+  badge.textContent = `💳 ${cardName}`;
 
-  // Hover animations (reveals close button and scales slightly)
+  const branding = document.createElement('span');
+  branding.style.fontSize = '9px';
+  branding.style.color = activeTheme.descText;
+  branding.style.opacity = '0.8';
+  branding.style.fontWeight = 'bold';
+  branding.style.letterSpacing = '0.5px';
+  branding.style.userSelect = 'none';
+  branding.textContent = 'PerkFolio';
+
+  header.appendChild(badge);
+  header.appendChild(branding);
+
+  const body = document.createElement('div');
+  body.style.fontSize = '11px';
+  body.style.color = activeTheme.descText;
+  body.style.fontWeight = '600';
+  body.style.lineHeight = '1.4';
+  body.style.marginTop = '2px';
+  body.style.textAlign = 'left';
+  body.textContent = `💡 ${perkText}`;
+
+  const closeBtn = document.createElement('button');
+  closeBtn.id = 'perkfolio-close-btn';
+  closeBtn.style.position = 'absolute';
+  closeBtn.style.top = '8px';
+  closeBtn.style.right = '10px';
+  closeBtn.style.background = 'none';
+  closeBtn.style.border = 'none';
+  closeBtn.style.color = activeTheme.descText;
+  closeBtn.style.opacity = '0.35'; // Permanently visible at lower opacity to prevent accidental clicks
+  closeBtn.style.fontSize = '12px';
+  closeBtn.style.fontWeight = 'bold';
+  closeBtn.style.padding = '4px';
+  closeBtn.style.cursor = 'pointer';
+  closeBtn.style.transition = 'all 0.2s ease';
+  closeBtn.style.display = 'flex';
+  closeBtn.style.alignItems = 'center';
+  closeBtn.style.justifyContent = 'center';
+  closeBtn.style.lineHeight = '1';
+  closeBtn.style.outline = 'none';
+  closeBtn.textContent = '✕';
+
+  div.appendChild(header);
+  div.appendChild(body);
+  div.appendChild(closeBtn);
+
+  // Hover animations (scales slightly and brightens close button)
   container.addEventListener('mouseenter', () => {
     container.style.transform = anim.scaleHover;
-    if (closeBtn) closeBtn.style.opacity = '0.65';
+    closeBtn.style.opacity = '0.75';
     div.style.border = activeTheme.borderHover;
     div.style.boxShadow = activeTheme.shadowHover;
   });
   
   container.addEventListener('mouseleave', () => {
     container.style.transform = anim.scaleNormal;
-    if (closeBtn) closeBtn.style.opacity = '0';
+    closeBtn.style.opacity = '0.35';
     div.style.border = activeTheme.border;
     div.style.boxShadow = activeTheme.shadow;
   });
 
-  if (closeBtn) {
-    closeBtn.addEventListener('mouseenter', (e) => {
-      e.stopPropagation();
-      closeBtn.style.opacity = '1.0';
-    });
-    closeBtn.addEventListener('mouseleave', (e) => {
-      e.stopPropagation();
-      closeBtn.style.opacity = '0.65';
-    });
-    closeBtn.addEventListener('click', (e) => {
-      e.stopPropagation(); // Block page click redirection
-      
-      // Tactile smooth exit animation
-      container.style.transform = anim.scaleExitEnd;
-      container.style.opacity = '0';
-      setTimeout(() => {
-        container.remove();
-      }, anim.exitDelayMs);
-    });
-  }
+  closeBtn.addEventListener('mouseenter', (e) => {
+    e.stopPropagation();
+    closeBtn.style.opacity = '1.0';
+  });
+  closeBtn.addEventListener('mouseleave', (e) => {
+    e.stopPropagation();
+    closeBtn.style.opacity = '0.75';
+  });
   
-  // Clicking the notification card redirects back to the dashboard
+  closeBtn.addEventListener('click', (e) => {
+    e.stopPropagation(); // Block redirection click
+    if (isExiting) return;
+    isExiting = true;
+    
+    container.style.transform = anim.scaleExitEnd;
+    container.style.opacity = '0';
+    setTimeout(() => {
+      container.remove();
+    }, anim.exitDelayMs);
+  });
+
+  // Click redirection back to the central dashboard PWA
   container.addEventListener('click', () => {
+    if (isExiting) return;
+    isExiting = true;
     window.open('https://perkfolio.cc', '_blank');
     
-    // Slide down & fade out immediately upon click redirection
     container.style.transform = anim.scaleExitEnd;
     container.style.opacity = '0';
     setTimeout(() => {
@@ -216,7 +274,7 @@ function showNotification(cardName, perkText, theme) {
   shadowRoot.appendChild(div);
   document.body.appendChild(container);
 
-  // Entry slide-in animation on mount
+  // Mount entrance animation
   setTimeout(() => {
     container.style.opacity = '1';
     container.style.transform = anim.scaleNormal;

@@ -14,9 +14,14 @@ window.addEventListener('message', (e) => {
     if (data) {
       try {
         const parsedData = JSON.parse(data);
-        // Robust validation of the sync payload structure before saving
-        if (parsedData && typeof parsedData === 'object' && parsedData.state) {
-          chrome.storage.local.set({ walletData: parsedData });
+        // Schema validation to prevent downstream TypeError crashes
+        if (parsedData && typeof parsedData === 'object' && parsedData.state && typeof parsedData.state === 'object') {
+          const state = parsedData.state;
+          if (Array.isArray(state.ownedCards)) {
+            // Sanitize structure: filter out non-object elements
+            state.ownedCards = state.ownedCards.filter(card => card && typeof card === 'object');
+            chrome.storage.local.set({ walletData: parsedData });
+          }
         }
       } catch (err) {
         console.error('Failed to parse wallet data:', err);
