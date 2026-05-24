@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useCardStore } from '../store/useCardStore';
 import type { OwnedCardInstance } from '../store/useCardStore';
 import type { CardTemplate } from '../data/cards.db';
@@ -46,9 +46,9 @@ export function useAppHandlers(currentDate: Date, setCurrentDate: (date: Date) =
   const [isChurningDrawerOpen, setIsChurningDrawerOpen] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' | 'warning' } | null>(null);
 
-  const showToast = (message: string, type: 'success' | 'error' | 'info' | 'warning' = 'success') => {
+  const showToast = useCallback((message: string, type: 'success' | 'error' | 'info' | 'warning' = 'success') => {
     setToast({ message, type });
-  };
+  }, []);
 
   useEffect(() => {
     if (toast) {
@@ -72,7 +72,7 @@ export function useAppHandlers(currentDate: Date, setCurrentDate: (date: Date) =
     }));
   };
 
-  const handleChecklistToggle = (key: string) => {
+  const handleChecklistToggle = useCallback((key: string) => {
     const ab = activeBenefits.find((b) => b.logKey === key);
     if (!ab) return;
 
@@ -83,15 +83,15 @@ export function useAppHandlers(currentDate: Date, setCurrentDate: (date: Date) =
     } else {
       toggleBenefit(key);
     }
-  };
+  }, [activeBenefits, loyaltyAwards, toggleLoyaltyAward, toggleBenefit]);
 
-  const handleUpdateProgressLog = (logKey: string, spent: number) => {
+  const handleUpdateProgressLog = useCallback((logKey: string, spent: number) => {
     updateProgressLog(logKey, spent);
     showToast(
       language === 'zh' ? `📈 消费进度已更新为 $${spent}` : `Progress updated to $${spent}`, 
       'success'
     );
-  };
+  }, [updateProgressLog, language, showToast]);
 
   const handleAddCard = (templateId: string) => {
     const generatedName = addCard(templateId);

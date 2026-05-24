@@ -15,18 +15,19 @@ export function StatsPanel({
   pendingValue,
   utilizationRate
 }: StatsPanelProps) {
-  const { theme, language } = useCardStore();
+  const theme = useCardStore((s) => s.theme);
+  const language = useCardStore((s) => s.language);
 
   const themeClass = (dark: string, light: string) => theme === 'dark' ? dark : light;
   const t = (key: keyof typeof translations['en']) => translations[language][key] || translations['en'][key];
 
   return (
-    <section className="grid grid-cols-4 gap-1.5 sm:gap-3 mb-2 sm:mb-6">
+    <section className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3 mb-4 sm:mb-6">
       {/* Card 1: Potential Value */}
       <div className={`border rounded-xl p-1.5 sm:p-4 transition duration-300 text-center sm:text-left flex flex-col justify-between min-h-[55px] sm:min-h-0 sm:block ${
         themeClass('bg-slate-900/50 border-slate-850/60', 'bg-white border-slate-200 shadow-sm')
       }`}>
-        <p className={`text-[7.5px] sm:text-xs font-medium uppercase tracking-wider flex items-center justify-center sm:justify-start gap-1 ${themeClass('text-slate-400', 'text-slate-555')}`}>
+        <p className={`text-[10px] sm:text-xs font-medium uppercase tracking-wider flex items-center justify-center sm:justify-start gap-1 ${themeClass('text-slate-400', 'text-slate-555')}`}>
           <DollarSign className="w-3.5 h-3.5 text-slate-500 hidden sm:inline" />
           {t('potentialValue')}
         </p>
@@ -37,7 +38,7 @@ export function StatsPanel({
       <div className={`border rounded-xl p-1.5 sm:p-4 transition duration-300 text-center sm:text-left flex flex-col justify-between min-h-[55px] sm:min-h-0 sm:block ${
         themeClass('bg-slate-900/50 border-slate-850/60', 'bg-white border-slate-200 shadow-sm')
       }`}>
-        <p className={`text-[7.5px] sm:text-xs font-medium uppercase tracking-wider flex items-center justify-center sm:justify-start gap-1 ${themeClass('text-slate-400', 'text-slate-555')}`}>
+        <p className={`text-[10px] sm:text-xs font-medium uppercase tracking-wider flex items-center justify-center sm:justify-start gap-1 ${themeClass('text-slate-400', 'text-slate-555')}`}>
           <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 hidden sm:inline" />
           {t('resolved')}
         </p>
@@ -48,7 +49,7 @@ export function StatsPanel({
       <div className={`border rounded-xl p-1.5 sm:p-4 transition duration-300 text-center sm:text-left flex flex-col justify-between min-h-[55px] sm:min-h-0 sm:block ${
         themeClass('bg-slate-900/50 border-slate-850/60', 'bg-white border-slate-200 shadow-sm')
       }`}>
-        <p className={`text-[7.5px] sm:text-xs font-medium uppercase tracking-wider flex items-center justify-center sm:justify-start gap-1 ${themeClass('text-slate-400', 'text-slate-555')}`}>
+        <p className={`text-[10px] sm:text-xs font-medium uppercase tracking-wider flex items-center justify-center sm:justify-start gap-1 ${themeClass('text-slate-400', 'text-slate-555')}`}>
           <Clock className="w-3.5 h-3.5 text-amber-500 hidden sm:inline" />
           {t('remaining')}
         </p>
@@ -60,7 +61,7 @@ export function StatsPanel({
         themeClass('bg-slate-900/50 border-slate-850/60', 'bg-white border-slate-200 shadow-sm')
       }`}>
         <div className="text-center sm:text-left flex-grow flex flex-col justify-between sm:justify-start">
-          <p className={`text-[7.5px] sm:text-xs font-medium uppercase tracking-wider flex items-center justify-center sm:justify-start gap-1 ${themeClass('text-slate-400', 'text-slate-555')}`}>
+          <p className={`text-[10px] sm:text-xs font-medium uppercase tracking-wider flex items-center justify-center sm:justify-start gap-1 ${themeClass('text-slate-400', 'text-slate-555')}`}>
             <Sparkles className="w-3.5 h-3.5 text-purple-500 hidden sm:inline" />
             {t('maximized')}
           </p>

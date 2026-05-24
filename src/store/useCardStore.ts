@@ -840,6 +840,12 @@ export const useCardStore = create<CardStore>()(
             } else if (cmd.action === 'set_card_date' && cmd.cardName && cmd.cardOpenDate) {
               const cardName = cmd.cardName;
               const cardOpenDate = cmd.cardOpenDate;
+              
+              const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+              if (!dateRegex.test(cardOpenDate)) {
+                throw new Error(`Invalid date format "${cardOpenDate}". Expected YYYY-MM-DD.`);
+              }
+
               const cardToUpdate = state.ownedCards.find(
                 (c) => c.customName.toLowerCase().trim() === cardName.toLowerCase().trim()
               );
