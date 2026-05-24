@@ -87,7 +87,7 @@ export function calculateActiveBenefits(
             ? currentAnniv 
             : new Date(year + 1, openDate.getMonth(), openDate.getDate());
             
-          resolvedExpirationDate = expirationDate.toISOString().split('T')[0];
+          resolvedExpirationDate = `${expirationDate.getFullYear()}-${(expirationDate.getMonth() + 1).toString().padStart(2, '0')}-${expirationDate.getDate().toString().padStart(2, '0')}`;
         }
 
         activeBenefits.push({

@@ -301,7 +301,7 @@ Additional Rules:
       });
 
       if (allCmds.length > 0) {
-        const result = useCardStore.getState().executeAgentCommand(allCmds);
+        const result = useCardStore.getState().executeAgentCommand(allCmds, currentDate);
         if (result.success && showToast) showToast(result.message, 'success');
       }
 

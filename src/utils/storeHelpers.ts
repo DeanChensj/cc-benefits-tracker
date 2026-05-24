@@ -50,8 +50,10 @@ export const getLogKey = (
           end = new Date(year + 1, openDate.getMonth(), openDate.getDate());
         }
 
-        const startStr = start.toISOString().split('T')[0];
-        const endStr = end.toISOString().split('T')[0];
+        const formatLocal = (d: Date) => 
+          `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}-${d.getDate().toString().padStart(2, '0')}`;
+        const startStr = formatLocal(start);
+        const endStr = formatLocal(end);
         return `anniv:${startStr}:${endStr}:${instanceId}:${benefitId}`;
       }
       return `${year}-anniversary:${instanceId}:${benefitId}`;

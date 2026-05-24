@@ -109,7 +109,7 @@ export interface CardStore {
   deletedAwardIds?: string[]; // Tombstone awards tracker
   pointValuations?: Record<string, number>; // Custom points valuations
   updatePointValuation: (currency: string, value: number) => void;
-  executeAgentCommand: (cmds: AgentCommand[]) => { success: boolean; message: string };
+  executeAgentCommand: (cmds: AgentCommand[], currentDate?: Date) => { success: boolean; message: string };
   
   // Google Drive Sync States
   gdriveToken: string | null; // Temporary in-memory OAuth access token
@@ -764,11 +764,12 @@ export const useCardStore = create<CardStore>()(
           return {};
         }),
 
-      executeAgentCommand: (cmds) => {
+      executeAgentCommand: (cmds, currentDate) => {
         const state = get();
         const language = state.language;
         const t = (key: keyof typeof translations['en']) => translations[language][key] || translations['en'][key];
         const addedNames: string[] = [];
+        const activeDate = currentDate || new Date();
 
         try {
           const commands: AgentCommand[] = Array.isArray(cmds) ? cmds : [cmds];
@@ -868,12 +869,11 @@ export const useCardStore = create<CardStore>()(
               );
               if (!benefit) throw new Error(`Benefit "${benefitName}" not found on card "${cardName}"`);
               
-              const today = new Date();
               const logKey = getLogKey(
                 benefit.resetPeriod,
                 card.id,
                 benefit.id,
-                today,
+                activeDate,
                 card.cardOpenDate,
                 benefit.expirationDate
               );
@@ -908,12 +908,11 @@ export const useCardStore = create<CardStore>()(
               );
               if (!benefit) throw new Error(`Benefit "${benefitName}" not found on card "${cardName}"`);
               
-              const today = new Date();
               const logKey = getLogKey(
                 benefit.resetPeriod,
                 card.id,
                 benefit.id,
-                today,
+                activeDate,
                 card.cardOpenDate,
                 benefit.expirationDate
               );

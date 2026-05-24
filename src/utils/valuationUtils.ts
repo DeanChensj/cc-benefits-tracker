@@ -89,8 +89,7 @@ export const getLogEntryDate = (cycle: string, resetPeriod: string): Date => {
       return new Date(parseInt(cycle), 5, 15);
     }
     if (resetPeriod === 'annual-anniversary') {
-      const startStr = cycle.split('_to_')[0];
-      return new Date(startStr + 'T12:00:00');
+      return new Date(cycle + 'T12:00:00');
     }
     if (resetPeriod === 'fixed') {
       return new Date(cycle + 'T12:00:00');
@@ -211,7 +210,12 @@ export const calculateCardRoi = (
     const parts = rawKey.split(':');
     if (parts.length < 3) return;
 
-    const cycle = parts[0] === 'anniv' ? parts[3] : parts[0];
+    let cycle = parts[0];
+    if (parts[0] === 'anniv') {
+      cycle = parts[1]; // Extract startStr (e.g. '2026-05-23')
+    } else if (parts[0] === 'fixed') {
+      cycle = parts[3]; // Extract expirationDateStr (e.g. '2026-12-31')
+    }
     const logInstanceId = getInstanceIdFromKey(rawKey);
     const logBenefitId = getBenefitIdFromKey(rawKey);
     if (!logBenefitId) return;
