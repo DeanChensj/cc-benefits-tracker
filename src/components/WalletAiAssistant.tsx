@@ -390,10 +390,23 @@ Additional Rules:
                       className={`w-full border text-xs rounded-xl px-3 py-2.5 focus:outline-none font-mono placeholder:font-sans ${
                         theme === 'dark'
                           ? 'bg-slate-955 border-slate-800 focus:border-purple-500 text-slate-200'
-                          : 'bg-slate-50 border-slate-200 focus:border-purple-500 text-slate-800'
+                          : 'bg-slate-55 border-slate-250 focus:border-purple-500 text-slate-800'
                       }`}
                     />
                   </div>
+
+                  <p className={`text-[9.5px] leading-relaxed text-left flex items-start gap-1.5 p-2.5 rounded-lg border ${
+                    theme === 'dark' 
+                      ? 'bg-slate-955/40 border-slate-800/60 text-slate-500' 
+                      : 'bg-slate-50/50 border-slate-200/60 text-slate-600'
+                  }`}>
+                    <span>🔒</span>
+                    <span>
+                      {language === 'zh' 
+                        ? '隐私安全提示：您的 API 密钥将仅保存在本地浏览器沙盒（localStorage）中，永不上载第三方服务器。建议为密钥配置调用来源限制，确保资产绝对安全。'
+                        : 'Privacy Notice: Your API key resides strictly in your browser\'s local sandboxed storage (localStorage) and is never uploaded to external servers. We recommend setting up usage scopes.'}
+                    </span>
+                  </p>
 
                   <button
                     type="submit"

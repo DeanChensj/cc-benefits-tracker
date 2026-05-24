@@ -1057,28 +1057,4 @@ export const useCardStore = create<CardStore>()(
   )
 );
 
-// Debounced subscriber to notify extension of data changes
-let debounceTimer: number | null = null;
-useCardStore.subscribe(() => {
-  if (debounceTimer) clearTimeout(debounceTimer);
-  
-  debounceTimer = setTimeout(() => {
-    const data = localStorage.getItem('cc-benefits-tracker-storage');
-    if (data) {
-      window.postMessage({ type: 'PERKFOLIO_DATA_BRIDGE', detail: data }, window.location.origin);
-    }
-  }, 1000);
-});
-
-// Handshake responder: listen for pull requests from the extension
-window.addEventListener('perkfolio-pull-request', () => {
-  const data = localStorage.getItem('cc-benefits-tracker-storage');
-  if (data) {
-    window.postMessage({ type: 'PERKFOLIO_DATA_BRIDGE', detail: data }, window.location.origin);
-  }
-});
-
-// Active initialization announcer: tell the extension the webpage is mounted
-setTimeout(() => {
-  window.dispatchEvent(new CustomEvent('perkfolio-ready'));
-}, 300);
+// End of CardStore store definition

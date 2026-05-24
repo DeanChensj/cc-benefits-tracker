@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 // Meticulously audited and verified PWA release build with dynamic re-auth and contrast fixes
 import { CARDS_DB } from './data/cards.db';
 import type { Benefit } from './data/cards.db';
@@ -53,6 +53,42 @@ function App() {
   const activeBenefits = useActiveBenefits(ownedCards, loyaltyAwards, logs, currentDate);
   
   useSelfHealing(currentDate);
+
+  // 🧹 Safe PWA-to-Extension message bridge subscriptions with HMR cleanups (P-03)
+  useEffect(() => {
+    let debounceTimer: number | null = null;
+
+    const unsubscribe = useCardStore.subscribe(() => {
+      if (debounceTimer) clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(() => {
+        const data = localStorage.getItem('cc-benefits-tracker-storage');
+        if (data) {
+          window.postMessage({ type: 'PERKFOLIO_DATA_BRIDGE', detail: data }, window.location.origin);
+        }
+      }, 1000);
+    });
+
+    const handlePullRequest = () => {
+      const data = localStorage.getItem('cc-benefits-tracker-storage');
+      if (data) {
+        window.postMessage({ type: 'PERKFOLIO_DATA_BRIDGE', detail: data }, window.location.origin);
+      }
+    };
+
+    window.addEventListener('perkfolio-pull-request', handlePullRequest);
+
+    // Announce ready to extension upon React mount
+    const readyTimer = setTimeout(() => {
+      window.dispatchEvent(new CustomEvent('perkfolio-ready'));
+    }, 300);
+
+    return () => {
+      unsubscribe();
+      if (debounceTimer) clearTimeout(debounceTimer);
+      clearTimeout(readyTimer);
+      window.removeEventListener('perkfolio-pull-request', handlePullRequest);
+    };
+  }, []);
 
   const {
     activeTab, setActiveTab,

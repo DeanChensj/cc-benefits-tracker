@@ -273,10 +273,10 @@ export function WalletCreditCard({
         {showSub && (
           <div className="z-10 relative mb-1.5 mt-auto">
             <div className="flex items-center justify-between text-[8px] font-black uppercase tracking-wider mb-1">
-              <span className={isSilverCard ? 'text-slate-700' : 'text-white/80'}>
+              <span className={isSilverCard ? 'text-slate-900' : 'text-white/80'}>
                 {t('welcomeOffer')}
               </span>
-              <span className={`font-bold ${isSilverCard ? 'text-amber-600' : 'text-amber-400'} ${subDaysLeft <= 7 && subDaysLeft > 0 ? 'animate-pulse text-red-500' : ''}`}>
+              <span className={`font-bold ${isSilverCard ? 'text-amber-900' : 'text-amber-400'} ${subDaysLeft <= 7 && subDaysLeft > 0 ? 'animate-pulse text-red-500' : ''}`}>
                 {subDaysLeft <= 0 
                   ? t('expired') 
                   : t('daysLeft').replace('{days}', String(subDaysLeft))}
@@ -286,8 +286,8 @@ export function WalletCreditCard({
               <div className="h-full bg-gradient-to-r from-amber-400 to-amber-500" style={{ width: `${Math.min((subSpent / (subRequirement || 1)) * 100, 100)}%` }} />
             </div>
             <div className="flex items-center justify-between text-[7.5px] font-mono font-bold mt-0.5">
-              <span className={isSilverCard ? 'text-slate-600' : 'text-white/60'}>${subSpent.toLocaleString()} / ${subRequirement.toLocaleString()}</span>
-              <span className={isSilverCard ? 'text-slate-600' : 'text-white/60'}>{Math.round((subSpent / (subRequirement || 1)) * 100)}%</span>
+              <span className={isSilverCard ? 'text-slate-800' : 'text-white/60'}>${subSpent.toLocaleString()} / ${subRequirement.toLocaleString()}</span>
+              <span className={isSilverCard ? 'text-slate-800' : 'text-white/60'}>{Math.round((subSpent / (subRequirement || 1)) * 100)}%</span>
             </div>
           </div>
         )}
