@@ -670,7 +670,7 @@ export const useCardStore = create<CardStore>()(
         set((state) => {
           const nextAwards = state.loyaltyAwards.map((a) =>
             a.id === awardId
-              ? { ...a, usedQuantity: a.usedQuantity > 0 ? 0 : 1, lastModified: Date.now() }
+              ? { ...a, usedQuantity: a.usedQuantity === a.quantity ? 0 : a.quantity, lastModified: Date.now() }
               : a
           );
           syncPushToCloud(state.gdriveToken, state.ownedCards, state.logs);
