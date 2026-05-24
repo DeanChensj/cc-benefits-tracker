@@ -33,18 +33,17 @@ import { parseLogEntry } from './utils/logUtils';
 
 
 function App() {
-  const { 
-    ownedCards, 
-    loyaltyAwards,
-    logs, 
-    theme,
-    isDemoMode,
-    resetAll,
-    language,
-    removeInstanceOffer,
-    updateAwardUsedQuantity,
-    addCardsBatch
-  } = useCardStore();
+  const ownedCards = useCardStore((s) => s.ownedCards);
+  const loyaltyAwards = useCardStore((s) => s.loyaltyAwards);
+  const logs = useCardStore((s) => s.logs);
+  const theme = useCardStore((s) => s.theme);
+  const isDemoMode = useCardStore((s) => s.isDemoMode);
+  const language = useCardStore((s) => s.language);
+
+  const resetAll = useCardStore((s) => s.resetAll);
+  const removeInstanceOffer = useCardStore((s) => s.removeInstanceOffer);
+  const updateAwardUsedQuantity = useCardStore((s) => s.updateAwardUsedQuantity);
+  const addCardsBatch = useCardStore((s) => s.addCardsBatch);
 
   const themeClass = (dark: string, light: string) => theme === 'dark' ? dark : light;
   const t = (key: keyof typeof translations['en']) => translations[language][key] || translations['en'][key];

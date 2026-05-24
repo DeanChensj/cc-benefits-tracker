@@ -7,21 +7,20 @@ import { requestGDriveToken, fetchUserEmail } from '../utils/gdrive';
 import type { ActiveBenefit } from '../utils/dateUtils';
 
 export function useAppHandlers(currentDate: Date, setCurrentDate: (date: Date) => void, activeBenefits: ActiveBenefit[]) {
-  const {
-    ownedCards,
-    loyaltyAwards,
-    syncStatus,
-    language,
-    customClientId,
-    addCard,
-    addCustomCard,
-    removeCard,
-    toggleBenefit,
-    updateProgressLog,
-    toggleLoyaltyAward,
-    setGDriveCredentials,
-    setSyncStatus
-  } = useCardStore();
+  const ownedCards = useCardStore((s) => s.ownedCards);
+  const loyaltyAwards = useCardStore((s) => s.loyaltyAwards);
+  const syncStatus = useCardStore((s) => s.syncStatus);
+  const language = useCardStore((s) => s.language);
+  const customClientId = useCardStore((s) => s.customClientId);
+
+  const addCard = useCardStore((s) => s.addCard);
+  const addCustomCard = useCardStore((s) => s.addCustomCard);
+  const removeCard = useCardStore((s) => s.removeCard);
+  const toggleBenefit = useCardStore((s) => s.toggleBenefit);
+  const updateProgressLog = useCardStore((s) => s.updateProgressLog);
+  const toggleLoyaltyAward = useCardStore((s) => s.toggleLoyaltyAward);
+  const setGDriveCredentials = useCardStore((s) => s.setGDriveCredentials);
+  const setSyncStatus = useCardStore((s) => s.setSyncStatus);
 
   const t = (key: keyof typeof translations['en']) => translations[language][key] || translations['en'][key];
 
