@@ -130,6 +130,28 @@ function showNotification(cardName, perkText, theme) {
   
   const shadowRoot = container.attachShadow({ mode: 'closed' });
   
+  const style = document.createElement('style');
+  style.textContent = `
+    * {
+      all: initial;
+      box-sizing: border-box;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+      line-height: normal !important;
+      text-transform: none !important;
+      letter-spacing: normal !important;
+    }
+    div {
+      display: flex;
+    }
+    span {
+      display: inline-block;
+    }
+    button {
+      display: flex;
+    }
+  `;
+  shadowRoot.appendChild(style);
+  
   const div = document.createElement('div');
   div.style.position = 'relative';
   div.style.padding = lay.padding;
