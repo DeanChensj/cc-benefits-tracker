@@ -51,11 +51,13 @@ const DESIGN_SYSTEM = {
   }
 };
 
-chrome.storage.local.get(['walletData'], (result) => {
+chrome.storage.local.get(['walletData', 'perkfolio_positions'], (result) => {
   const walletData = result.walletData;
   if (!walletData) return;
 
   const hostname = window.location.hostname.toLowerCase();
+  const positions = result.perkfolio_positions || {};
+  const savedPosition = positions[hostname]; // Mapped coordinate memory (x/y offsets)
   
   // Secure isolated tab-session lock filter (Anti-fingerprinting safeguard)
   const sessionKey = `perkfolio_notified_${hostname}`;
@@ -103,12 +105,12 @@ chrome.storage.local.get(['walletData'], (result) => {
       
       const cardName = foundCard.customName || 'Credit Card';
       const perkText = foundPerk.description || foundPerk.name || 'Active Perk';
-      showNotification(cardName, perkText, theme);
+      showNotification(cardName, perkText, theme, savedPosition);
     }
   });
 });
 
-function showNotification(cardName, perkText, theme) {
+function showNotification(cardName, perkText, theme, savedPosition) {
   const isDark = theme === 'dark';
   const activeTheme = DESIGN_SYSTEM.themes[isDark ? 'dark' : 'light'];
   const anim = DESIGN_SYSTEM.animation;
@@ -120,10 +122,14 @@ function showNotification(cardName, perkText, theme) {
   
   // Enforce layout inline styles with !important to avoid host site overrides
   container.style.setProperty('position', 'fixed', 'important');
-  container.style.setProperty('bottom', lay.bottom, 'important');
-  container.style.setProperty('right', lay.right, 'important');
+  
+  const initialBottom = savedPosition ? savedPosition.bottom : lay.bottom;
+  const initialRight = savedPosition ? savedPosition.right : lay.right;
+  
+  container.style.setProperty('bottom', initialBottom, 'important');
+  container.style.setProperty('right', initialRight, 'important');
   container.style.setProperty('z-index', lay.zIndex, 'important');
-  container.style.setProperty('cursor', 'pointer', 'important');
+  container.style.setProperty('cursor', 'grab', 'important');
   container.style.transition = `all ${anim.duration} ${anim.easing}`;
   container.style.opacity = '0';
   container.style.transform = anim.scaleEntryStart;
@@ -280,8 +286,86 @@ function showNotification(cardName, perkText, theme) {
     }, anim.exitDelayMs);
   });
 
+  // =================================================================
+  // 🧲 High-Performance Drag and Drop with Viewport Snapping (Task E-08)
+  // =================================================================
+  let isDragging = false;
+  let startX = 0;
+  let startY = 0;
+  let startBottom = 0;
+  let startRight = 0;
+
+  container.addEventListener('mousedown', (e) => {
+    // Block dragging when clicking the close button
+    if (e.target === closeBtn || closeBtn.contains(e.target)) return;
+    
+    isDragging = false;
+    startX = e.clientX;
+    startY = e.clientY;
+
+    const computedStyle = window.getComputedStyle(container);
+    startBottom = parseInt(computedStyle.bottom, 10) || 20;
+    startRight = parseInt(computedStyle.right, 10) || 20;
+
+    // Disable transitions during dynamic mouse dragging
+    container.style.transition = 'none';
+    container.style.cursor = 'grabbing';
+
+    window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('mouseup', handleMouseUp);
+  });
+
+  function handleMouseMove(e) {
+    const dx = startX - e.clientX; // Moving left is positive delta on right offset
+    const dy = startY - e.clientY; // Moving up is positive delta on bottom offset
+
+    // Add a 5px gesture delta threshold to filter click vs drag movements
+    if (Math.abs(dx) > 5 || Math.abs(dy) > 5) {
+      isDragging = true;
+    }
+
+    // Keep overlay clamped securely inside viewport boundaries
+    const newBottom = Math.max(10, Math.min(window.innerHeight - 80, startBottom + dy));
+    const newRight = Math.max(10, Math.min(window.innerWidth - 300, startRight + dx));
+
+    container.style.setProperty('bottom', `${newBottom}px`, 'important');
+    container.style.setProperty('right', `${newRight}px`, 'important');
+  }
+
+  function handleMouseUp() {
+    window.removeEventListener('mousemove', handleMouseMove);
+    window.removeEventListener('mouseup', handleMouseUp);
+
+    container.style.transition = `all ${anim.duration} ${anim.easing}`;
+    container.style.cursor = 'grab';
+
+    if (isDragging) {
+      const computedStyle = window.getComputedStyle(container);
+      const finalBottom = computedStyle.bottom;
+      const finalRight = computedStyle.right;
+
+      // Save custom domain coordinates dynamically to Chrome sync/local Storage
+      chrome.storage.local.get(['perkfolio_positions'], (res) => {
+        const currentPositions = res.perkfolio_positions || {};
+        const hostname = window.location.hostname.toLowerCase();
+        currentPositions[hostname] = {
+          bottom: finalBottom,
+          right: finalRight
+        };
+        chrome.storage.local.set({ perkfolio_positions: currentPositions });
+      });
+    }
+  }
+
   // Click redirection back to the central dashboard PWA
-  container.addEventListener('click', () => {
+  container.addEventListener('click', (e) => {
+    // Block redirection if the mouse gesture was a drag/drop operation
+    if (isDragging) {
+      e.preventDefault();
+      e.stopPropagation();
+      isDragging = false; // Reset flag
+      return;
+    }
     if (isExiting) return;
     isExiting = true;
     window.open('https://perkfolio.cc', '_blank');
