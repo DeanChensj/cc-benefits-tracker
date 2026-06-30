@@ -526,7 +526,7 @@ export function WalletCreditCard({
           {/* Benefits preview inline list */}
           <div className="space-y-1 text-left">
             {benefits.map((b) => (
-              <div key={b.id} className={`flex flex-col text-[10px] p-2 rounded border gap-1 ${
+              <div key={b.id} className={`flex flex-col text-[11px] p-1.5 rounded border gap-1 ${
                 themeClass(
                   'bg-slate-955/40 border-white/5 text-slate-200',
                   'bg-slate-50 border-slate-250/60 text-slate-800 font-semibold shadow-sm'
@@ -534,7 +534,7 @@ export function WalletCreditCard({
               }`}>
                 <div className="flex items-center justify-between w-full min-w-0">
                   <span className="truncate pr-2 flex items-center gap-1.5 min-w-0">
-                    <span className={`px-1 py-0.2 rounded text-[7.5px] font-black uppercase tracking-wider shrink-0 ${
+                    <span className={`px-1 py-0.2 rounded text-[8px] font-black uppercase tracking-wider shrink-0 ${
                       b.resetPeriod === 'monthly'
                         ? themeClass('bg-blue-500/20 text-blue-300 border border-blue-500/20', 'bg-blue-50 text-blue-600 border border-blue-200')
                         : b.resetPeriod === 'quarterly'
@@ -599,7 +599,7 @@ export function WalletCreditCard({
                 {instance.instanceOffers.map((offer) => (
                   <div 
                     key={offer.id} 
-                    className={`flex items-center justify-between text-[10px] p-1.5 rounded border ${
+                    className={`flex items-center justify-between text-[11px] p-1.5 rounded border ${
                       themeClass(
                         'bg-teal-500/10 border-teal-500/15 text-slate-200',
                         'bg-teal-50 border-teal-100 text-teal-950 font-bold'

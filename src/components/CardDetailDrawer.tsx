@@ -165,7 +165,7 @@ export function CardDetailDrawer({ isOpen, card, onClose, onAdd, onConfigureAdd,
                   .map(([category, val]) => (
                     <span 
                       key={category}
-                      className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[9.5px] font-black border shadow-sm select-none ${
+                      className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-lg text-[10.5px] font-black border shadow-sm select-none ${
                         themeClass('bg-slate-955 border-slate-850 text-slate-300', 'bg-slate-100 border-slate-250 text-slate-700')
                       }`}
                       title={`${category}: ${val}x`}
@@ -189,10 +189,10 @@ export function CardDetailDrawer({ isOpen, card, onClose, onAdd, onConfigureAdd,
             <div className={`p-3 rounded-xl border text-left space-y-1.5 ${
               themeClass('bg-slate-955/30 border-slate-850', 'bg-slate-50 border-slate-200/60 shadow-sm')
             }`}>
-              <p className={`text-[8.5px] font-black uppercase tracking-widest ${themeClass('text-slate-400', 'text-slate-550')}`}>
+              <p className={`text-[9.5px] font-black uppercase tracking-widest ${themeClass('text-slate-400', 'text-slate-550')}`}>
                 {language === 'zh' ? '积分积累明细' : 'Earning Details'}
               </p>
-              <ul className="list-disc pl-4 space-y-0.5 text-[10px] font-semibold leading-relaxed">
+              <ul className="list-disc pl-4 space-y-0.5 text-[11px] font-semibold leading-relaxed">
                 {card.multiplierNotes.map((note, idx) => (
                   <li key={idx} className={themeClass('text-slate-300', 'text-slate-750')}>
                     {note}
