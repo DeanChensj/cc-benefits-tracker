@@ -1,18 +1,18 @@
-import { DollarSign, CheckCircle2, Clock, Sparkles } from 'lucide-react';
+import { DollarSign, CheckCircle2, CreditCard, Sparkles } from 'lucide-react';
 import { useCardStore } from '../store/useCardStore';
 import { translations } from '../utils/i18n';
 
 interface StatsPanelProps {
   totalPotentialValue: number;
   resolvedValue: number;
-  pendingValue: number;
+  totalAnnualFee: number;
   utilizationRate: number;
 }
 
 export function StatsPanel({
   totalPotentialValue,
   resolvedValue,
-  pendingValue,
+  totalAnnualFee,
   utilizationRate
 }: StatsPanelProps) {
   const theme = useCardStore((s) => s.theme);
@@ -28,7 +28,7 @@ export function StatsPanel({
         themeClass('bg-slate-900/50 border-slate-850/60', 'bg-white border-slate-200 shadow-sm')
       }`}>
         <p className={`text-[10px] sm:text-xs font-medium uppercase tracking-wider flex items-center justify-center sm:justify-start gap-1 ${themeClass('text-slate-400', 'text-slate-555')}`}>
-          <DollarSign className="w-3.5 h-3.5 text-slate-500 hidden sm:inline" />
+          <DollarSign className="w-3.5 h-3.5 text-slate-505 hidden sm:inline" />
           {t('potentialValue')}
         </p>
         <p className={`text-xs sm:text-xl font-black ${themeClass('text-white', 'text-slate-900')}`}>${totalPotentialValue}</p>
@@ -45,15 +45,15 @@ export function StatsPanel({
         <p className={`text-xs sm:text-xl font-black text-emerald-500`}>${resolvedValue}</p>
       </div>
 
-      {/* Card 3: Remaining */}
+      {/* Card 3: Total Annual Fee */}
       <div className={`border rounded-xl p-1.5 sm:p-4 transition duration-300 text-center sm:text-left flex flex-col justify-between min-h-[55px] sm:min-h-0 sm:block ${
         themeClass('bg-slate-900/50 border-slate-850/60', 'bg-white border-slate-200 shadow-sm')
       }`}>
         <p className={`text-[10px] sm:text-xs font-medium uppercase tracking-wider flex items-center justify-center sm:justify-start gap-1 ${themeClass('text-slate-400', 'text-slate-555')}`}>
-          <Clock className="w-3.5 h-3.5 text-amber-500 hidden sm:inline" />
-          {t('remaining')}
+          <CreditCard className="w-3.5 h-3.5 text-purple-500 hidden sm:inline" />
+          {t('totalAnnualFee')}
         </p>
-        <p className={`text-xs sm:text-xl font-black text-amber-500`}>${pendingValue}</p>
+        <p className={`text-xs sm:text-xl font-black ${themeClass('text-white', 'text-slate-900')}`}>${totalAnnualFee}</p>
       </div>
 
       {/* Card 4: Maximized */}

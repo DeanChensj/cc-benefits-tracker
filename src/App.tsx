@@ -131,8 +131,15 @@ function App() {
   const totalPotentialValue = activeBenefits.reduce((sum, ab) => sum + ab.benefit.value, 0);
   const resolvedValue = Math.round(activeBenefits.reduce((sum, ab) => sum + getResolvedValue(ab, logs), 0) * 100) / 100;
   const expiredValue = Math.round(activeBenefits.reduce((sum, ab) => sum + getExpiredValue(ab), 0) * 100) / 100;
-  const pendingValue = Math.round((totalPotentialValue - resolvedValue - expiredValue) * 100) / 100;
   const utilizationRate = totalPotentialValue > 0 ? Math.round((resolvedValue / totalPotentialValue) * 100) : 0;
+
+  const totalAnnualFee = useMemo(() => {
+    return ownedCards.reduce((sum, card) => {
+      const template = CARDS_DB.find((t) => t.id === card.templateId);
+      const fee = card.annualFee !== undefined ? card.annualFee : (template?.annualFee || 0);
+      return sum + fee;
+    }, 0);
+  }, [ownedCards]);
 
   // Calculate the Annual Fee Anniversary Warnings (within 30 days)
   const annualFeeWarnings = useMemo(() => {
@@ -210,7 +217,7 @@ function App() {
           <StatsPanel
             totalPotentialValue={totalPotentialValue}
             resolvedValue={resolvedValue}
-            pendingValue={pendingValue}
+            totalAnnualFee={totalAnnualFee}
             utilizationRate={utilizationRate}
           />
         )}
