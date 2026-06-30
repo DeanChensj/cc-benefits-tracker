@@ -449,6 +449,7 @@ const translationsEn = {
   curr_aa_miles: 'AA Miles',
   curr_ua_miles: 'UA Miles',
   curr_delta_miles: 'Delta Miles',
+  curr_bilt: 'Bilt Points',
   curr_cash: 'Cashback',
 
   // 17. Empty Wallet placeholder keys
@@ -933,6 +934,7 @@ const translationsZh: typeof translationsEn = {
   curr_aa_miles: '美航 AA 里程',
   curr_ua_miles: '美联航 UA 里程',
   curr_delta_miles: '达美里程',
+  curr_bilt: 'Bilt 点数',
   curr_cash: '现金返现',
 
   // 17. Empty Wallet placeholder keys

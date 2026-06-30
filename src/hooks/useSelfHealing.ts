@@ -59,7 +59,8 @@ export function useSelfHealing(currentDate: Date) {
         'hilton': 0.5,
         'aa-miles': 1.5,
         'ua-miles': 1.3,
-        'delta-miles': 1.2
+        'delta-miles': 1.2,
+        'bilt': 1.6
       };
       Object.entries(newDefaults).forEach(([currency, defVal]) => {
         if (storedValuations[currency] === undefined) {

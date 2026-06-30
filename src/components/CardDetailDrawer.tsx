@@ -184,6 +184,23 @@ export function CardDetailDrawer({ isOpen, card, onClose, onAdd, onConfigureAdd,
               </div>
             </div>
           )}
+          {/* Detailed Earning Rules (Multiplier Notes) */}
+          {card.multiplierNotes && card.multiplierNotes.length > 0 && (
+            <div className={`p-3 rounded-xl border text-left space-y-1.5 ${
+              themeClass('bg-slate-955/30 border-slate-850', 'bg-slate-50 border-slate-200/60 shadow-sm')
+            }`}>
+              <p className={`text-[8.5px] font-black uppercase tracking-widest ${themeClass('text-slate-400', 'text-slate-550')}`}>
+                {language === 'zh' ? '积分积累明细' : 'Earning Details'}
+              </p>
+              <ul className="list-disc pl-4 space-y-0.5 text-[10px] font-semibold leading-relaxed">
+                {card.multiplierNotes.map((note, idx) => (
+                  <li key={idx} className={themeClass('text-slate-300', 'text-slate-750')}>
+                    {note}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
 
           {/* 📋 Built-in Perks List */}
           <div className="space-y-3">

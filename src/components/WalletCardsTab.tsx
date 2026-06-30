@@ -198,12 +198,12 @@ export function WalletCardsTab({
             <div className={isCompactView ? "space-y-2" : "space-y-8"}>
               {
                 // Group by Bank
-                (['Amex', 'Chase', 'Citi', 'Other'] as const).map((bankName) => {
+                (['Amex', 'Chase', 'Citi', 'Bilt', 'Other'] as const).map((bankName) => {
                   const bankCards = searchedCards.filter((c) => {
                     const template = CARDS_DB.find((t) => t.id === c.templateId);
                     const b = c.bank || template?.bank || '';
                     if (bankName === 'Other') {
-                      return b !== 'Amex' && b !== 'Chase' && b !== 'Citi';
+                      return b !== 'Amex' && b !== 'Chase' && b !== 'Citi' && b !== 'Bilt';
                     }
                     return b === bankName;
                   });

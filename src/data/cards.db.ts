@@ -14,18 +14,19 @@ export interface Benefit {
   isSubscription?: boolean; // True if user enabled subscription Auto-Claim!
 }
 
-export type PointCurrency = 'amex-mr' | 'chase-ur' | 'citi-typ' | 'capitalone-miles' | 'hyatt' | 'marriott' | 'ihg' | 'hilton' | 'aa-miles' | 'ua-miles' | 'delta-miles' | 'cash';
+export type PointCurrency = 'amex-mr' | 'chase-ur' | 'citi-typ' | 'capitalone-miles' | 'hyatt' | 'marriott' | 'ihg' | 'hilton' | 'aa-miles' | 'ua-miles' | 'delta-miles' | 'bilt' | 'cash';
 
 export interface CardTemplate {
   id: string;
   name: string;
-  bank: 'Amex' | 'Chase' | 'Citi' | 'Other';
+  bank: 'Amex' | 'Chase' | 'Citi' | 'Bilt' | 'Other';
   color: string; // Tailwind gradient classes
   annualFee: number; // USD Annual Fee of the card
   pointCurrency?: PointCurrency; // Associated reward currency (defaults to cash)
   benefits: Benefit[];
   officialUrl?: string; // Official card application / detail landing page URL
   signupBonusValue?: number; // Pre-populated signup bonus value in USD
+  multiplierNotes?: string[]; // Optional descriptions of custom multipliers!
 }
 
 export interface StaticAwardTemplate {
@@ -1209,6 +1210,215 @@ export const CARDS_DB: CardTemplate[] = [
         category: 'travel'
       }
     ]
+  },
+  {
+    id: 'chase-sapphire-reserve-business',
+    name: 'Chase Sapphire Reserve for Business',
+    bank: 'Chase',
+    color: 'from-slate-900 via-blue-900 to-indigo-950',
+    annualFee: 795,
+    pointCurrency: 'chase-ur',
+    officialUrl: 'https://creditcards.chase.com/a1/Business/ReserveBusiness0626',
+    signupBonusValue: 3200,
+    multiplierNotes: [
+      '8x points on all purchases through Chase Travel (including The Edit)',
+      '5x total points on Lyft (through 9/30/27)',
+      '4x points on flights & hotels booked direct',
+      '3x points on social media & search engine advertising'
+    ],
+    benefits: [
+      {
+        id: 'csrf-travel-credit',
+        name: 'Travel Credit',
+        description: '$300 annual travel statement credit for flights, hotels, transit, and tolls',
+        value: 300,
+        resetPeriod: 'annual-anniversary',
+        category: 'travel',
+        spendingLimit: 300
+      },
+      {
+        id: 'csrf-hotel-credit',
+        name: 'Chase Travel Hotels Credit',
+        description: '$250 statement credit on prepaid Chase Travel hotel bookings for select hotel brands (min 2 nights)',
+        value: 250,
+        resetPeriod: 'annual-calendar',
+        category: 'travel',
+        spendingLimit: 250
+      },
+      {
+        id: 'csrf-edit-credit',
+        name: 'The Edit Credit',
+        description: 'Up to $500 annual statement credit for bookings made with The Edit (max $250 per transaction, min 2 nights)',
+        value: 500,
+        resetPeriod: 'annual-calendar',
+        category: 'travel',
+        spendingLimit: 500
+      },
+      {
+        id: 'csrf-ge-credit',
+        name: 'Global Entry/TSA Pre/NEXUS Fee Credit',
+        description: 'Up to $120 statement credit every 4 years for Trusted Traveler program application fees',
+        value: 120,
+        resetPeriod: 'fixed',
+        category: 'travel'
+      },
+      {
+        id: 'csrf-giftcard-credit',
+        name: 'Curated Gift Card Credit',
+        description: '$100/year statement credit at giftcards.com/reservebusiness ($50 Jan-Jun, $50 Jul-Dec)',
+        value: 100,
+        resetPeriod: 'annual-calendar',
+        category: 'shopping',
+        spendingLimit: 100
+      },
+      {
+        id: 'csrf-workspace-credit',
+        name: 'Google Workspace Credit',
+        description: '$200 annual statement credit on purchases made directly with Google Workspace',
+        value: 200,
+        resetPeriod: 'annual-calendar',
+        category: 'other',
+        spendingLimit: 200
+      },
+      {
+        id: 'csrf-ziprecruiter-credit',
+        name: 'ZipRecruiter Credit',
+        description: '$400/year statement credit at ZipRecruiter ($200 Jan-Jun, $200 Jul-Dec)',
+        value: 400,
+        resetPeriod: 'annual-calendar',
+        category: 'other',
+        spendingLimit: 400
+      },
+      {
+        id: 'csrf-doordash-credit',
+        name: 'DoorDash Promos',
+        description: 'Up to $25 monthly DoorDash promos ($5 restaurant + two $10 grocery/retail promos)',
+        value: 25,
+        resetPeriod: 'monthly',
+        category: 'dining'
+      },
+      {
+        id: 'csrf-lyft-credit',
+        name: 'Lyft Credit',
+        description: '$10 monthly in-app Lyft credit',
+        value: 10,
+        resetPeriod: 'monthly',
+        category: 'travel'
+      }
+    ]
+  },
+  {
+    id: 'bilt-blue',
+    name: 'Bilt Blue Card',
+    bank: 'Bilt',
+    color: 'from-blue-600 to-indigo-800',
+    annualFee: 0,
+    pointCurrency: 'bilt',
+    officialUrl: 'https://www.bilt.com/card',
+    multiplierNotes: [
+      '4x points at Bilt Neighborhood Dining partners',
+      '3x points on Lyft rides (after linking Bilt and Lyft accounts)',
+      '3x points on hotels booked through Bilt Travel',
+      '2x points on flights booked through Bilt Travel',
+      '1x points on rent/mortgage (up to 1.25x with Housing-only selection)'
+    ],
+    benefits: [
+      {
+        id: 'bilt-blue-rent',
+        name: 'Housing Rewards',
+        description: 'Earn up to 1.25x points on rent, mortgage, and HOA payments with no transaction fee',
+        value: 0,
+        resetPeriod: 'monthly',
+        category: 'other'
+      }
+    ]
+  },
+  {
+    id: 'bilt-obsidian',
+    name: 'Bilt Obsidian Card',
+    bank: 'Bilt',
+    color: 'from-neutral-800 via-neutral-900 to-black',
+    annualFee: 95,
+    pointCurrency: 'bilt',
+    officialUrl: 'https://www.bilt.com/card',
+    multiplierNotes: [
+      'Up to 6x points at Bilt Neighborhood Dining partners',
+      '4x points on hotels booked through Bilt Travel',
+      '3x points on flights booked through Bilt Travel',
+      '3x points on dining or grocery (grocery up to $25k/yr)',
+      '3x points on Lyft rides (after linking Bilt and Lyft accounts)',
+      '2x points on other travel',
+      '1x points on rent/mortgage (up to 1.25x with Housing-only selection)'
+    ],
+    benefits: [
+      {
+        id: 'bilt-obsidian-hotel-credit',
+        name: 'Bilt Travel Hotel Credit',
+        description: '$100 annual credit for hotel bookings made through Bilt Travel',
+        value: 100,
+        resetPeriod: 'annual-calendar',
+        category: 'travel'
+      },
+      {
+        id: 'bilt-obsidian-rent',
+        name: 'Housing Rewards',
+        description: 'Earn up to 1.25x points on rent, mortgage, and HOA payments with no transaction fee',
+        value: 0,
+        resetPeriod: 'monthly',
+        category: 'other'
+      }
+    ]
+  },
+  {
+    id: 'bilt-palladium',
+    name: 'Bilt Palladium Card',
+    bank: 'Bilt',
+    color: 'from-slate-300 via-slate-400 to-zinc-500',
+    annualFee: 495,
+    pointCurrency: 'bilt',
+    officialUrl: 'https://www.bilt.com/card',
+    multiplierNotes: [
+      'Up to 5x points on Bilt Neighborhood Dining',
+      '4x points on hotels booked through Bilt Travel',
+      '4x points on Lyft rides (after linking Bilt and Lyft accounts)',
+      '3x points on flights booked through Bilt Travel',
+      '2x points on all everyday purchases',
+      '1x points on rent/mortgage (up to 1.25x with Housing-only selection)'
+    ],
+    benefits: [
+      {
+        id: 'bilt-palladium-cash',
+        name: 'Annual Bilt Cash',
+        description: '$200 annual Bilt Cash credit for partner bookings, Bilt Collection, or fitness',
+        value: 200,
+        resetPeriod: 'annual-calendar',
+        category: 'other'
+      },
+      {
+        id: 'bilt-palladium-hotel-credit',
+        name: 'Bilt Travel Hotel Credit',
+        description: '$400 annual credit for hotel bookings made through Bilt Travel',
+        value: 400,
+        resetPeriod: 'annual-calendar',
+        category: 'travel'
+      },
+      {
+        id: 'bilt-palladium-priority-pass',
+        name: 'Priority Pass Select',
+        description: 'Complimentary airport lounge access at 1,300+ lounges worldwide',
+        value: 300,
+        resetPeriod: 'annual-calendar',
+        category: 'travel'
+      },
+      {
+        id: 'bilt-palladium-rent',
+        name: 'Housing Rewards',
+        description: 'Earn up to 1.25x points on rent, mortgage, and HOA payments with no transaction fee',
+        value: 0,
+        resetPeriod: 'monthly',
+        category: 'other'
+      }
+    ]
   }
 ];
 
@@ -1248,7 +1458,11 @@ export const CARD_MULTIPLIERS: Record<string, { dining?: number; travel?: number
   'capone-venture': { dining: 2, travel: 2, shopping: 2, entertainment: 2 },
   'amex-green': { travel: 3, dining: 3 },
   'chase-amazon-prime': { shopping: 5, dining: 2 },
-  'chase-southwest-priority': { travel: 2 }
+  'chase-southwest-priority': { travel: 2 },
+  'chase-sapphire-reserve-business': { travel: 4 },
+  'bilt-blue': { dining: 3, travel: 3 },
+  'bilt-obsidian': { dining: 3, shopping: 3, travel: 3 },
+  'bilt-palladium': { dining: 5, travel: 4, shopping: 2, entertainment: 2 }
 };
 
 
@@ -1265,5 +1479,6 @@ export const DEFAULT_VALUATIONS: Record<PointCurrency, number> = {
   'aa-miles': 1.5,
   'ua-miles': 1.3,
   'delta-miles': 1.2,
-  'cash': 1.0,
+  'bilt': 1.6,
+  'cash': 1.0
 };

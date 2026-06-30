@@ -137,10 +137,10 @@ export function CardTemplatesCatalog({
       </div>
 
       <div className="space-y-8 mt-6">
-        {(['Amex', 'Chase', 'Citi', 'Other'] as const).map((bankName) => {
+        {(['Amex', 'Chase', 'Citi', 'Bilt', 'Other'] as const).map((bankName) => {
           const bankCards = filteredTemplates.filter((c) => {
             if (bankName === 'Other') {
-              return c.bank !== 'Amex' && c.bank !== 'Chase' && c.bank !== 'Citi';
+              return c.bank !== 'Amex' && c.bank !== 'Chase' && c.bank !== 'Citi' && c.bank !== 'Bilt';
             }
             return c.bank === bankName;
           });
