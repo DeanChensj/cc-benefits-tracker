@@ -111,7 +111,7 @@ export function ChurningStatsDrawer({ isOpen, onClose, ownedCards, theme, curren
         <div className="flex-grow overflow-y-auto p-5 space-y-6 scrollbar-thin">
           {/* 1. CHASE 5/24 GAUGE DASHBOARD */}
           <div className="space-y-3.5">
-            <h5 className={`text-[10px] font-extrabold uppercase tracking-widest ${themeClass('text-slate-450', 'text-slate-550')}`}>
+            <h5 className={`text-[11px] font-extrabold uppercase tracking-widest ${themeClass('text-slate-450', 'text-slate-550')}`}>
               {t('churnChaseStatusHeader')}
             </h5>
 
@@ -122,7 +122,7 @@ export function ChurningStatsDrawer({ isOpen, onClose, ownedCards, theme, curren
               themeClass('bg-slate-950/30 border-slate-850/60', 'bg-white border-slate-200 shadow-sm')
             }`}>
               <div className="space-y-1.5">
-                <span className={`text-[10px] px-2 py-0.5 rounded font-black uppercase tracking-widest border ${
+                <span className={`text-[10.5px] px-2 py-0.5 rounded font-black uppercase tracking-widest border ${
                   chaseCount >= 5
                     ? 'bg-rose-500/10 text-rose-500 border-rose-500/20 dark:bg-rose-500/5 animate-pulse'
                     : 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20 dark:bg-emerald-500/5'
@@ -142,7 +142,7 @@ export function ChurningStatsDrawer({ isOpen, onClose, ownedCards, theme, curren
                 }`}>
                   {chaseCount}
                 </span>
-                <span className="text-[8px] font-bold tracking-widest uppercase text-slate-500 opacity-80 mt-0.5">/ 24</span>
+                <span className="text-[9.5px] font-bold tracking-widest uppercase text-slate-500 opacity-80 mt-0.5">/ 24</span>
               </div>
             </div>
           </div>

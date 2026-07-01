@@ -130,7 +130,7 @@ export function WalletCardsTab({
                     <button
                       type="button"
                       onClick={() => setIsChurningDrawerOpen(true)}
-                      className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[9.5px] font-extrabold border transition active:scale-95 hover:scale-[1.02] cursor-pointer mt-0.5 md:mt-0 ${
+                      className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10.5px] font-extrabold border transition active:scale-95 hover:scale-[1.02] cursor-pointer mt-0.5 md:mt-0 ${
                         chase524Count >= 5
                           ? 'bg-rose-500/10 text-rose-500 border-rose-500/20 dark:bg-rose-500/5 animate-pulse'
                           : 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20 dark:bg-emerald-500/5'

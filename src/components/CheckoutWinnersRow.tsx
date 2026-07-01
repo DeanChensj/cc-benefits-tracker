@@ -33,14 +33,14 @@ export function CheckoutWinnersRow({ checkoutWinners, activeTab, deckSubTab }: C
   };
 
   return (
-    <div className={`flex items-center gap-3 overflow-x-auto px-2 py-1.5 mb-3 no-scrollbar shrink-0 text-[8px] font-black uppercase tracking-widest select-none w-full border rounded-xl ${
-      themeClass('bg-slate-950 border-slate-800 text-slate-400', 'bg-white border-slate-200 text-slate-550 shadow-sm')
+    <div className={`flex items-center gap-3.5 overflow-x-auto px-3 py-2 mb-3 no-scrollbar shrink-0 text-[10px] font-black uppercase tracking-widest select-none w-full border rounded-xl ${
+      themeClass('bg-slate-950 border-slate-850 text-slate-400', 'bg-white border-slate-200 text-slate-550 shadow-sm')
     }`}>
       {/* Prefix Visual Anchor Badge */}
-      <div className={`flex items-center gap-1 px-1.5 py-0.5 rounded-lg shrink-0 ${
+      <div className={`flex items-center gap-1.5 px-1.5 py-0.5 rounded-lg shrink-0 ${
         themeClass('bg-purple-500/10 text-purple-400', 'bg-purple-50 text-purple-600')
       }`}>
-        <Zap className="w-3 h-3 fill-current" />
+        <Zap className="w-3.5 h-3.5 fill-current" />
         <span>BEST</span>
       </div>
 
@@ -53,7 +53,7 @@ export function CheckoutWinnersRow({ checkoutWinners, activeTab, deckSubTab }: C
 
         return (
           <div key={category} className="flex items-center gap-1.5 shrink-0">
-            {idx > 0 && <span className="opacity-35 text-[7px] mr-1">•</span>}
+            {idx > 0 && <span className="opacity-35 text-[9px] mr-1.5">•</span>}
             
             {/* Subtle organic color dot anchor */}
             <span className={`w-2 h-2 rounded-full shrink-0 ${getCategoryDotColor(category)}`} />
