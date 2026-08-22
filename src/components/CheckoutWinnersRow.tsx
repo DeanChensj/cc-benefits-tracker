@@ -33,12 +33,12 @@ export function CheckoutWinnersRow({ checkoutWinners, activeTab, deckSubTab }: C
   };
 
   return (
-    <div className={`flex items-center gap-3.5 overflow-x-auto px-3 py-2 mb-3 no-scrollbar shrink-0 text-[10px] font-black uppercase tracking-widest select-none w-full border rounded-xl ${
-      themeClass('bg-slate-950 border-slate-850 text-slate-400', 'bg-white border-slate-200 text-slate-550 shadow-sm')
+    <div className={`flex items-center gap-3.5 overflow-x-auto px-3.5 py-2.5 mb-3 no-scrollbar shrink-0 text-xs font-medium uppercase tracking-wider select-none w-full border rounded-2xl ${
+      themeClass('bg-slate-950/60 border-slate-850 text-slate-400', 'bg-white border-slate-200 text-slate-600 shadow-sm')
     }`}>
       {/* Prefix Visual Anchor Badge */}
-      <div className={`flex items-center gap-1.5 px-1.5 py-0.5 rounded-lg shrink-0 ${
-        themeClass('bg-purple-500/10 text-purple-400', 'bg-purple-50 text-purple-600')
+      <div className={`flex items-center gap-1.5 px-2 py-0.5 rounded-md shrink-0 font-semibold text-[11px] ${
+        themeClass('bg-amber-500/10 text-amber-300 border border-amber-500/20', 'bg-amber-50 text-amber-700 border border-amber-200')
       }`}>
         <Zap className="w-3.5 h-3.5 fill-current" />
         <span>BEST</span>
@@ -52,15 +52,15 @@ export function CheckoutWinnersRow({ checkoutWinners, activeTab, deckSubTab }: C
                         category === 'shopping' ? t('catShopping') : t('catEntertainment');
 
         return (
-          <div key={category} className="flex items-center gap-1.5 shrink-0">
-            {idx > 0 && <span className="opacity-35 text-[9px] mr-1.5">•</span>}
+          <div key={category} className="flex items-center gap-1.5 shrink-0 text-xs">
+            {idx > 0 && <span className="opacity-35 text-[10px] mr-1.5">•</span>}
             
             {/* Subtle organic color dot anchor */}
             <span className={`w-2 h-2 rounded-full shrink-0 ${getCategoryDotColor(category)}`} />
             
-            <span>{catName}:</span>
-            <span className={`font-black ${themeClass('text-slate-105', 'text-slate-900')}`}>{bestCard.cardName}</span>
-            <span className={`font-black font-mono ${themeClass('text-emerald-400', 'text-emerald-600')}`}>
+            <span className="font-normal">{catName}:</span>
+            <span className={`font-semibold ${themeClass('text-slate-100', 'text-slate-900')}`}>{bestCard.cardName}</span>
+            <span className={`font-bold font-mono tabular-nums ${themeClass('text-emerald-400', 'text-emerald-600')}`}>
               {bestCard.ros.toFixed(1)}%
             </span>
           </div>

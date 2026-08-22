@@ -370,54 +370,54 @@ export function WalletCreditCard({
               <div className="col-span-5 flex items-center gap-2.5 min-w-0">
                 {cardFee > 0 ? (
                   <>
-                    <div className="relative w-9 h-9 shrink-0 flex items-center justify-center">
-                      <svg className="w-9 h-9 transform -rotate-90">
+                    <div className="relative w-10 h-10 shrink-0 flex items-center justify-center">
+                      <svg className="w-10 h-10 transform -rotate-90">
                         <circle
-                          cx="18"
-                          cy="18"
-                          r="13.5"
+                          cx="20"
+                          cy="20"
+                          r="15"
                           className={`fill-none stroke-current ${themeClass('text-white/10', 'text-slate-250')}`}
                           strokeWidth="2.5"
                         />
                         <circle
-                          cx="18"
-                          cy="18"
-                          r="13.5"
+                          cx="20"
+                          cy="20"
+                          r="15"
                           className={`fill-none stroke-current transition-all duration-500 ${
                             isRecouped 
                               ? 'text-emerald-500 dark:text-emerald-400 drop-shadow-[0_0_2px_rgba(52,211,153,0.25)]' 
-                              : themeClass('text-purple-400', 'text-slate-700')
+                              : themeClass('text-amber-400', 'text-slate-700')
                           }`}
                           strokeWidth="2.5"
-                          strokeDasharray="84.82"
-                          strokeDashoffset={84.82 - (84.82 * Math.min(recouped / cardFee, 1))}
+                          strokeDasharray="94.24"
+                          strokeDashoffset={94.24 - (94.24 * Math.min(recouped / cardFee, 1))}
                           strokeLinecap="round"
                         />
                       </svg>
-                      <div className="absolute inset-0 flex items-center justify-center text-[8.2px] font-black">
+                      <div className="absolute inset-0 flex items-center justify-center text-[10px] font-bold font-mono">
                         {isRecouped ? (
                           <span className="text-emerald-500 dark:text-emerald-400">✓</span>
                         ) : (
-                          <span className={themeClass('text-slate-300', 'text-slate-750')}>
+                          <span className={themeClass('text-slate-200', 'text-slate-700')}>
                             {Math.round((recouped / cardFee) * 100)}%
                           </span>
                         )}
                       </div>
                     </div>
                     <div className="min-w-0 flex-grow">
-                      <p className={`text-[8.2px] font-black uppercase tracking-wider ${themeClass('text-slate-400', 'text-slate-500')}`}>{t('annualFeeRecoup')}</p>
-                      <p className={`text-[10.5px] font-extrabold mt-0.5 leading-none ${themeClass('text-slate-200', 'text-slate-850')}`}>
-                        <span className={isRecouped ? 'text-emerald-600 dark:text-emerald-400 font-black' : ''}>
+                      <p className={`text-[10px] font-semibold uppercase tracking-wider ${themeClass('text-slate-400', 'text-slate-500')}`}>{t('annualFeeRecoup')}</p>
+                      <p className={`text-sm font-bold font-mono mt-0.5 leading-none ${themeClass('text-slate-100', 'text-slate-900')}`}>
+                        <span className={isRecouped ? 'text-emerald-400 font-bold' : ''}>
                           ${recouped}
                         </span>
-                        <span className={`text-[9px] font-bold ml-0.5 ${themeClass('text-slate-455', 'text-slate-500')}`}>/ ${cardFee}</span>
+                        <span className={`text-xs font-medium ml-0.5 ${themeClass('text-slate-400', 'text-slate-500')}`}>/ ${cardFee}</span>
                       </p>
                     </div>
                   </>
                 ) : (
                   <div className="min-w-0 flex-grow">
-                    <p className={`text-[8.2px] font-black uppercase tracking-wider ${themeClass('text-slate-400', 'text-slate-500')}`}>{t('annualFeeRecoup')}</p>
-                    <p className={`text-[9.5px] font-black flex items-center gap-1 mt-1 ${themeClass('text-emerald-400', 'text-emerald-600')}`}>
+                    <p className={`text-[10px] font-semibold uppercase tracking-wider ${themeClass('text-slate-400', 'text-slate-500')}`}>{t('annualFeeRecoup')}</p>
+                    <p className={`text-xs font-bold flex items-center gap-1 mt-1 ${themeClass('text-emerald-400', 'text-emerald-600')}`}>
                       <span>{t('freeCard')}</span>
                     </p>
                   </div>
@@ -432,11 +432,11 @@ export function WalletCreditCard({
                 {hasMultipliers ? (
                   <div className="space-y-1">
                     <div className="flex items-center justify-between min-w-0 gap-1.5">
-                      <p className={`text-[8.2px] font-black uppercase tracking-wider truncate ${themeClass('text-purple-450 dark:text-purple-400', 'text-purple-650')}`}>
+                      <p className={`text-[10.5px] font-semibold uppercase tracking-wider truncate ${themeClass('text-slate-300', 'text-slate-700')}`}>
                         {t(`curr_${currency.replace('-', '_')}` as keyof typeof translations['en'])}
                       </p>
                       {currency !== 'cash' && (
-                        <span className="text-[7.5px] font-black px-1 py-0.2 rounded bg-purple-500/10 dark:bg-purple-500/20 text-purple-450 dark:text-purple-300 border border-purple-500/15 shrink-0">
+                        <span className="text-[9.5px] font-semibold px-1.5 py-0.2 rounded bg-slate-800 text-slate-300 border border-slate-700 shrink-0 font-mono">
                           {cpp} cpp
                         </span>
                       )}
@@ -447,17 +447,17 @@ export function WalletCreditCard({
                         .map(([category, val]) => (
                           <span 
                             key={category}
-                            className={`inline-flex items-center gap-0.5 px-1.5 py-0.2 rounded-md text-[8.5px] font-black border shadow-sm select-none ${
-                              themeClass('bg-slate-955 border-slate-850 text-slate-300', 'bg-slate-100 border-slate-250 text-slate-700')
+                            className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10.5px] font-medium border shadow-sm select-none ${
+                              themeClass('bg-slate-955 border-slate-800 text-slate-200', 'bg-slate-100 border-slate-250 text-slate-700')
                             }`}
                             title={`${category}: ${val}x`}
                           >
-                            <span>
+                            <span className="text-[10px]">
                               {category === 'dining' ? '🍽️' :
                                category === 'travel' ? '✈️' :
                                category === 'shopping' ? '🛒' : '🎬'}
                             </span>
-                            <span className={themeClass('text-purple-400', 'text-purple-650 font-black')}>{val}x</span>
+                            <span className={themeClass('text-amber-400 font-bold font-mono', 'text-amber-600 font-bold font-mono')}>{val}x</span>
                           </span>
                         ))
                       }
@@ -466,16 +466,16 @@ export function WalletCreditCard({
                 ) : (
                   <div className="space-y-0.5">
                     <div className="flex items-center justify-between min-w-0 gap-1.5">
-                      <p className={`text-[8.2px] font-black uppercase tracking-wider truncate ${themeClass('text-purple-450 dark:text-purple-400', 'text-purple-650')}`}>
+                      <p className={`text-[10.5px] font-semibold uppercase tracking-wider truncate ${themeClass('text-slate-300', 'text-slate-700')}`}>
                         {t(`curr_${currency.replace('-', '_')}` as keyof typeof translations['en'])}
                       </p>
                       {currency !== 'cash' && (
-                        <span className="text-[7.5px] font-black px-1 py-0.2 rounded bg-purple-500/10 dark:bg-purple-500/20 text-purple-450 dark:text-purple-300 border border-purple-500/15 shrink-0">
+                        <span className="text-[9.5px] font-semibold px-1.5 py-0.2 rounded bg-slate-800 text-slate-300 border border-slate-700 shrink-0 font-mono">
                           {cpp} cpp
                         </span>
                       )}
                     </div>
-                    <p className={`text-[9px] font-bold italic mt-1 ${themeClass('text-slate-455', 'text-slate-500')}`}>
+                    <p className={`text-[10.5px] font-medium italic mt-1 ${themeClass('text-slate-400', 'text-slate-500')}`}>
                       {t('flatRateCard')}
                     </p>
                   </div>
@@ -488,7 +488,7 @@ export function WalletCreditCard({
               themeClass('bg-white/5 border-white/5', 'bg-slate-955/5 border-slate-800/10')
             }`}>
               <div className="flex items-center justify-between mb-2">
-                <h4 className={`text-[9px] font-black uppercase tracking-wider ${themeClass('text-purple-400', 'text-purple-600')}`}>
+                <h4 className={`text-[10.5px] font-semibold uppercase tracking-wider ${themeClass('text-slate-300', 'text-slate-700')}`}>
                   {t('roiAdvisor')}
                 </h4>
                 <button
@@ -498,7 +498,7 @@ export function WalletCreditCard({
                       ? `分析我的卡片 ${instance.customName || template?.name} 的 ROI。数据如下：年费 $${roi.totalAnnualFee}，已回血 $${roi.totalRecouped}，ROI 为 ${roi.roiPercent}%，有效年费 $${roi.effectiveAnnualFee}。请给出降级或保留的建议。`
                       : `Analyze the ROI for my card ${instance.customName || template?.name}. Data: Annual Fee $${roi.totalAnnualFee}, Recouped $${roi.totalRecouped}, ROI is ${roi.roiPercent}%, Effective Annual Fee $${roi.effectiveAnnualFee}. Please suggest whether to downgrade or keep it.`);
                   }}
-                  className="text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded-md bg-purple-600 text-white hover:bg-purple-500 transition active:scale-95 cursor-pointer"
+                  className="text-[9.5px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-md bg-slate-800 hover:bg-slate-700 text-slate-200 transition active:scale-95 cursor-pointer border border-slate-700"
                 >
                   {t('wakeAi')}
                 </button>
@@ -506,14 +506,14 @@ export function WalletCreditCard({
               
               <div className="grid grid-cols-2 gap-2 text-xs">
                 <div>
-                  <p className={`text-[8px] uppercase font-extrabold ${themeClass('text-slate-400', 'text-slate-500')}`}>{t('roiPercent')}</p>
-                  <p className={`font-mono font-black text-lg mt-0.5 ${roi.roiPercent >= 100 || roi.roiPercent === Infinity ? 'text-emerald-500' : 'text-rose-500'}`}>
+                  <p className={`text-[10px] uppercase font-semibold ${themeClass('text-slate-400', 'text-slate-500')}`}>{t('roiPercent')}</p>
+                  <p className={`font-mono font-bold text-xl mt-0.5 ${roi.roiPercent >= 100 || roi.roiPercent === Infinity ? 'text-emerald-400' : 'text-rose-400'}`}>
                     {roi.roiPercent === Infinity ? t('pureProfit') : `${roi.roiPercent}%`}
                   </p>
                 </div>
                 <div>
-                  <p className={`text-[8px] uppercase font-extrabold ${themeClass('text-slate-400', 'text-slate-500')}`}>{t('effectiveAf')}</p>
-                  <p className={`font-mono font-black text-lg mt-0.5 ${themeClass('text-white', 'text-slate-900')}`}>
+                  <p className={`text-[10px] uppercase font-semibold ${themeClass('text-slate-400', 'text-slate-500')}`}>{t('effectiveAf')}</p>
+                  <p className={`font-mono font-bold text-xl mt-0.5 ${themeClass('text-slate-100', 'text-slate-900')}`}>
                     ${roi.effectiveAnnualFee}
                   </p>
                 </div>
@@ -522,17 +522,17 @@ export function WalletCreditCard({
           </div>
 
           {/* Benefits preview inline list */}
-          <div className="space-y-1 text-left">
+          <div className="space-y-1.5 text-left">
             {benefits.map((b) => (
-              <div key={b.id} className={`flex flex-col text-[11px] p-1.5 rounded border gap-1 ${
+              <div key={b.id} className={`flex flex-col text-xs p-2 rounded-lg border gap-1 ${
                 themeClass(
                   'bg-slate-955/40 border-white/5 text-slate-200',
-                  'bg-slate-50 border-slate-250/60 text-slate-800 font-semibold shadow-sm'
+                  'bg-slate-50 border-slate-250/60 text-slate-800 font-medium shadow-sm'
                 )
               }`}>
                 <div className="flex items-center justify-between w-full min-w-0">
                   <span className="truncate pr-2 flex items-center gap-1.5 min-w-0">
-                    <span className={`px-1 py-0.2 rounded text-[8px] font-black uppercase tracking-wider shrink-0 ${
+                    <span className={`px-1.5 py-0.5 rounded text-[9.5px] font-semibold uppercase tracking-wider shrink-0 ${
                       b.resetPeriod === 'monthly'
                         ? themeClass('bg-blue-500/20 text-blue-300 border border-blue-500/20', 'bg-blue-50 text-blue-600 border border-blue-200')
                         : b.resetPeriod === 'quarterly'
@@ -546,17 +546,17 @@ export function WalletCreditCard({
                        (b.resetPeriod === 'annual-calendar' || b.resetPeriod === 'annual-anniversary') ? t('perkPeriodAnnual') :
                        t('perkPeriodOnce')}
                     </span>
-                    <span className="truncate font-bold">{b.name}</span>
+                    <span className="truncate font-semibold text-xs">{b.name}</span>
                   </span>
-                  <span className={`font-extrabold shrink-0 ${themeClass('text-white', 'text-slate-900')}`}>${b.value}</span>
+                  <span className={`font-mono font-bold text-xs shrink-0 ${themeClass('text-slate-100', 'text-slate-900')}`}>${b.value}</span>
                 </div>
 
                 {/* Sub-categories pill badges for rotating benefits */}
                 {b.subCategories && b.subCategories.length > 0 && (
                   <div className="flex items-center gap-1 flex-wrap pl-6 pt-0.5">
                     {b.subCategories.map((sub, idx) => (
-                      <span key={idx} className={`px-1.5 py-0.2 rounded-[4px] text-[8.5px] font-black tracking-wider uppercase border ${
-                        themeClass('bg-slate-900 text-amber-400 border-slate-800', 'bg-slate-100 text-amber-700 border-slate-200')
+                      <span key={idx} className={`px-1.5 py-0.5 rounded text-[9.5px] font-medium tracking-wide uppercase border ${
+                        themeClass('bg-slate-900 text-amber-300 border-slate-800', 'bg-slate-100 text-amber-800 border-slate-200')
                       }`}>
                         {sub}
                       </span>
@@ -570,8 +570,8 @@ export function WalletCreditCard({
           {/* Active Temporary Offers Block (Always visible, with contextual + Add button!) */}
           <div className="mt-3.5 pt-3.5 border-t border-white/10 dark:border-black/5 text-left">
             <div className="flex items-center justify-between gap-2">
-              <p className={`text-[8px] font-black uppercase tracking-widest ${
-                themeClass('text-teal-400', 'text-teal-800')
+              <p className={`text-[10.5px] font-semibold uppercase tracking-wider ${
+                themeClass('text-teal-400', 'text-teal-700')
               }`}>
                 {t('tempOffers')}
               </p>
@@ -581,7 +581,7 @@ export function WalletCreditCard({
                   e.stopPropagation();
                   setAddOfferInstanceId(instance.id);
                 }}
-                className={`text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded-md border transition active:scale-95 cursor-pointer ${
+                className={`text-[9.5px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-md border transition active:scale-95 cursor-pointer ${
                   themeClass(
                     'bg-white/5 hover:bg-white/10 border-white/10 text-slate-300',
                     'bg-slate-50 hover:bg-slate-100 border-slate-250 text-slate-700'

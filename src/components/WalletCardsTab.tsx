@@ -22,25 +22,25 @@ export function BankHeader({ bankName, count, suffix, themeClass, collapsible, i
   const language = useTranslation().language;
   return (
     <div 
-      className={`flex items-center justify-between mb-2 pb-1 border-b border-dashed ${themeClass('border-slate-800', 'border-slate-200')}`}
+      className={`flex items-center justify-between mb-2 pb-1.5 border-b border-dashed ${themeClass('border-slate-800', 'border-slate-200')}`}
       onClick={collapsible ? onToggle : undefined}
       style={{ cursor: collapsible ? 'pointer' : 'default' }}
     >
-      <div className="flex items-center gap-1.5">
-        <span className={`text-[10px] font-extrabold uppercase tracking-widest ${themeClass('text-slate-400', 'text-slate-600')}`}>
+      <div className="flex items-center gap-2">
+        <span className={`text-xs font-semibold uppercase tracking-wider ${themeClass('text-slate-300', 'text-slate-700')}`}>
           {bankName === 'Amex' ? 'American Express' :
            bankName === 'Chase' ? 'Chase Bank' :
            bankName === 'Citi' ? 'Citibank' :
            bankName === 'Other' ? (language === 'zh' ? '其他银行' : 'Other Banks') : bankName}
         </span>
-        <span className={`text-[9px] px-1 py-0.5 rounded font-bold ${
-          themeClass('bg-slate-800 text-slate-400', 'bg-slate-100 text-slate-600')
+        <span className={`text-[10.5px] px-2 py-0.5 rounded font-mono font-medium ${
+          themeClass('bg-slate-800 text-slate-300', 'bg-slate-100 text-slate-600')
         }`}>
           {count} {suffix}
         </span>
       </div>
       {collapsible && (
-        <span className={`text-[9px] font-extrabold opacity-75 px-1.5 uppercase tracking-widest ${themeClass('text-slate-400', 'text-slate-500')}`}>
+        <span className={`text-[10.5px] font-semibold opacity-85 px-1.5 uppercase tracking-wider ${themeClass('text-slate-400', 'text-slate-500')}`}>
           {isCollapsed ? (language === 'zh' ? '展开' : 'EXPAND') : (language === 'zh' ? '折叠' : 'COLLAPSE')}
         </span>
       )}
@@ -106,7 +106,7 @@ export function WalletCardsTab({
   return (
     <div className="space-y-6 animate-fade-in">
       {/* 1. MY WALLET (Active Cards) */}
-      <div className={`border rounded-xl p-3 sm:p-6 transition duration-300 ${
+      <div className={`border rounded-2xl p-3 sm:p-6 transition duration-300 ${
         themeClass('bg-slate-900/30 border-slate-850', 'bg-white border-slate-200 shadow-sm')
       }`}>
         {ownedCards.length === 0 ? (
@@ -121,8 +121,8 @@ export function WalletCardsTab({
         ) : (
           <>
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-2.5 pb-1.5 border-b border-dashed border-slate-200/60 dark:border-slate-800/60 sm:mb-4 sm:pb-2">
-              <h3 className={`text-xs font-bold uppercase tracking-wider flex items-center gap-x-2 gap-y-1 flex-wrap md:flex-nowrap ${themeClass('text-slate-400', 'text-slate-555')}`}>
-                <CreditCard className="w-4 h-4 text-purple-500" />
+              <h3 className={`text-sm font-semibold uppercase tracking-wider flex items-center gap-x-2 gap-y-1 flex-wrap md:flex-nowrap ${themeClass('text-slate-300', 'text-slate-700')}`}>
+                <CreditCard className="w-4 h-4 text-slate-400" />
                 <span className="whitespace-nowrap">{t('activeCardsTitle')} ({ownedCards.length} {ownedCards.length === 1 ? t('cardSuffix') : t('cardsSuffix')})</span>
                 {ownedCards.length > 0 && (
                   <>
@@ -130,7 +130,7 @@ export function WalletCardsTab({
                     <button
                       type="button"
                       onClick={() => setIsChurningDrawerOpen(true)}
-                      className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10.5px] font-extrabold border transition active:scale-95 hover:scale-[1.02] cursor-pointer mt-0.5 md:mt-0 ${
+                      className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold font-mono border transition active:scale-95 hover:scale-[1.02] cursor-pointer mt-0.5 md:mt-0 ${
                         chase524Count >= 5
                           ? 'bg-rose-500/10 text-rose-500 border-rose-500/20 dark:bg-rose-500/5 animate-pulse'
                           : 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20 dark:bg-emerald-500/5'
@@ -138,7 +138,7 @@ export function WalletCardsTab({
                       title="Audit Churner Cooling application stats"
                     >
                       <span>Chase:</span>
-                      <span className="font-black">{chase524Count}/24</span>
+                      <span className="font-bold">{chase524Count}/24</span>
                       <span className="w-1.5 h-1.5 rounded-full bg-current shrink-0" />
                     </button>
                   </>
@@ -151,7 +151,7 @@ export function WalletCardsTab({
                     setIsCompactView(newValue);
                     localStorage.setItem('cc-tracker-compact-view', String(newValue));
                   }}
-                  className={`w-7 h-7 flex items-center justify-center rounded-full border transition-all duration-250 cursor-pointer shrink-0 ml-1.5 ${
+                  className={`w-7 h-7 flex items-center justify-center rounded-full border transition-all duration-150 cursor-pointer shrink-0 ml-1.5 active:scale-90 ${
                     isCompactView
                       ? themeClass('bg-slate-100 text-slate-955 shadow-md', 'bg-slate-900 text-white shadow-sm')
                       : themeClass('text-slate-300 hover:text-slate-50 hover:bg-slate-800/40', 'text-slate-500 hover:text-slate-900 hover:bg-slate-300/30')
@@ -167,8 +167,8 @@ export function WalletCardsTab({
                   placeholder={t('searchCardsPlaceholder')}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className={`border text-xs rounded-xl px-3 py-1.5 focus:outline-none focus:border-teal-600 focus:ring-2 focus:ring-teal-550/10 w-full md:w-36 font-medium transition ${
-                    themeClass('bg-slate-955 border-slate-850 text-slate-200', 'bg-slate-55 border-slate-255 text-slate-800 shadow-inner')
+                  className={`border text-xs rounded-xl px-3 py-1.5 focus:outline-none focus:border-slate-400 focus:ring-1 focus:ring-slate-400 w-full md:w-36 font-medium transition ${
+                    themeClass('bg-slate-955 border-slate-850 text-slate-200', 'bg-slate-50 border-slate-200 text-slate-800 shadow-inner')
                   }`}
                 />
                 <button
@@ -176,17 +176,17 @@ export function WalletCardsTab({
                     setDeckSubTab('templates');
                     localStorage.setItem('cc-tracker-deck-sub-tab', 'templates');
                   }}
-                  className="flex items-center gap-1 bg-gradient-to-tr from-slate-800 to-slate-900 hover:from-slate-750 hover:to-slate-850 text-white dark:from-slate-100 dark:to-slate-200 dark:hover:from-white dark:hover:to-slate-50 dark:text-slate-950 border border-slate-700/25 font-bold px-3 py-1.5 rounded-lg text-xs transition active:scale-95 shadow shadow-black/5 cursor-pointer"
+                  className="flex items-center gap-1 bg-slate-900 hover:bg-slate-800 text-white dark:bg-slate-100 dark:hover:bg-white dark:text-slate-950 border border-slate-700/25 dark:border-transparent font-semibold px-3 py-1.5 rounded-lg text-xs transition active:scale-95 shadow-sm cursor-pointer"
                   title="Switch to template library catalog to add cards"
                 >
-                  <Plus className="w-3.5 h-3.5 stroke-[3]" />
+                  <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
                   {t('addTemplateBtn')}
                 </button>
                 <button
                   onClick={() => setIsCreateModalOpen(true)}
-                  className="flex items-center gap-1 bg-gradient-to-tr from-slate-800 to-slate-900 hover:from-slate-750 hover:to-slate-850 text-white dark:from-slate-100 dark:to-slate-200 dark:hover:from-white dark:hover:to-slate-50 dark:text-slate-950 border border-slate-700/25 font-bold px-3 py-1.5 rounded-lg text-xs transition active:scale-95 shadow shadow-black/5 cursor-pointer"
+                  className="flex items-center gap-1 bg-slate-900 hover:bg-slate-800 text-white dark:bg-slate-100 dark:hover:bg-white dark:text-slate-950 border border-slate-700/25 dark:border-transparent font-semibold px-3 py-1.5 rounded-lg text-xs transition active:scale-95 shadow-sm cursor-pointer"
                 >
-                  <Plus className="w-3.5 h-3.5 stroke-[3]" />
+                  <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
                   {t('createCustomBtn')}
                 </button>
               </div>
