@@ -196,6 +196,8 @@ export function CreateCardModal({
                   <option value="Amex" />
                   <option value="Chase" />
                   <option value="Citi" />
+                  <option value="Bank of America" />
+                  <option value="BoA" />
                   <option value="Capital One" />
                   <option value="Discover" />
                   <option value="Bilt" />
@@ -300,6 +302,8 @@ export function CreateCardModal({
                   <option value="aa-miles">{t('curr_aa_miles')}</option>
                   <option value="ua-miles">{t('curr_ua_miles')}</option>
                   <option value="delta-miles">{t('curr_delta_miles')}</option>
+                  <option value="alaska-miles">{t('curr_alaska_miles')}</option>
+                  <option value="atmos-points">{t('curr_atmos_points')}</option>
                   <option value="bilt">{t('curr_bilt')}</option>
                 </select>
                </div>

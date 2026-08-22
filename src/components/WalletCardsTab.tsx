@@ -31,6 +31,7 @@ export function BankHeader({ bankName, count, suffix, themeClass, collapsible, i
           {bankName === 'Amex' ? 'American Express' :
            bankName === 'Chase' ? 'Chase Bank' :
            bankName === 'Citi' ? 'Citibank' :
+           bankName === 'BoA' ? 'BOA' :
            bankName === 'Other' ? (language === 'zh' ? '其他银行' : 'Other Banks') : bankName}
         </span>
         <span className={`text-[10.5px] px-2 py-0.5 rounded font-mono font-medium ${
@@ -198,12 +199,12 @@ export function WalletCardsTab({
             <div className={isCompactView ? "space-y-2" : "space-y-8"}>
               {
                 // Group by Bank
-                (['Amex', 'Chase', 'Citi', 'Bilt', 'Other'] as const).map((bankName) => {
+                (['Amex', 'Chase', 'Citi', 'BoA', 'Bilt', 'Other'] as const).map((bankName) => {
                   const bankCards = searchedCards.filter((c) => {
                     const template = CARDS_DB.find((t) => t.id === c.templateId);
                     const b = c.bank || template?.bank || '';
                     if (bankName === 'Other') {
-                      return b !== 'Amex' && b !== 'Chase' && b !== 'Citi' && b !== 'Bilt';
+                      return b !== 'Amex' && b !== 'Chase' && b !== 'Citi' && b !== 'BoA' && b !== 'Bilt';
                     }
                     return b === bankName;
                   });

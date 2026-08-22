@@ -284,17 +284,19 @@ Please provide a detailed description of your feedback, card template request, o
                 {language === 'zh' ? '重置为行业标准估值' : 'Reset to Industry Standards'}
               </button>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                {Object.entries(pointValuations || {}).map(([currency, value]) => (
+                {Object.entries({ ...DEFAULT_VALUATIONS, ...(pointValuations || {}) }).map(([currency, value]) => (
                   <div key={currency} className={`flex items-center justify-between gap-2 p-1.5 rounded-lg border ${
                     themeClass('bg-slate-900/20 border-slate-850', 'bg-white border-slate-200 shadow-sm')
                   }`}>
-                    <span className="text-[10px] font-bold truncate">{currency}</span>
+                    <span className="text-[10px] font-bold truncate">
+                      {t(`curr_${currency.replace('-', '_')}` as keyof typeof translations['en']) || currency}
+                    </span>
                     <div className="flex items-center gap-1 shrink-0">
                       <input
                         type="number"
                         step="0.1"
                         min="0"
-                        value={value}
+                        value={pointValuations?.[currency] ?? value}
                         onChange={(e) => updatePointValuation(currency, parseFloat(e.target.value))}
                         className={`w-10 p-0.5 text-center text-[10px] font-bold font-mono border rounded focus:outline-none focus:border-purple-500 ${
                           themeClass('bg-slate-955 text-white border-slate-700', 'bg-white text-slate-900 border-slate-250')

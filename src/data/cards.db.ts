@@ -14,12 +14,12 @@ export interface Benefit {
   isSubscription?: boolean; // True if user enabled subscription Auto-Claim!
 }
 
-export type PointCurrency = 'amex-mr' | 'chase-ur' | 'citi-typ' | 'capitalone-miles' | 'hyatt' | 'marriott' | 'ihg' | 'hilton' | 'aa-miles' | 'ua-miles' | 'delta-miles' | 'bilt' | 'cash';
+export type PointCurrency = 'amex-mr' | 'chase-ur' | 'citi-typ' | 'capitalone-miles' | 'hyatt' | 'marriott' | 'ihg' | 'hilton' | 'aa-miles' | 'ua-miles' | 'delta-miles' | 'alaska-miles' | 'atmos-points' | 'bilt' | 'cash';
 
 export interface CardTemplate {
   id: string;
   name: string;
-  bank: 'Amex' | 'Chase' | 'Citi' | 'Bilt' | 'Other';
+  bank: 'Amex' | 'Chase' | 'Citi' | 'BoA' | 'Bilt' | 'Other';
   color: string; // Tailwind gradient classes
   annualFee: number; // USD Annual Fee of the card
   pointCurrency?: PointCurrency; // Associated reward currency (defaults to cash)
@@ -158,6 +158,30 @@ export const AWARD_TEMPLATES: Record<string, StaticAwardTemplate> = {
     awardType: 'companion',
     value: 500,
     description: 'Designate a companion to fly with you free of airline charges (does not include taxes/fees).'
+  },
+  'atmos-companion-99': {
+    name: 'Atmos $99 Companion Fare',
+    brand: 'Alaska',
+    programType: 'airline',
+    awardType: 'companion',
+    value: 250,
+    description: '$99 companion ticket (plus taxes & fees from $23) on Alaska Airlines and Hawaiian Airlines.'
+  },
+  'atmos-companion-25k': {
+    name: 'Atmos 25K Global Companion Award',
+    brand: 'Alaska',
+    programType: 'airline',
+    awardType: 'companion',
+    value: 375,
+    description: '25,000 points discount on a companion award ticket on Alaska, Hawaiian, and oneworld partners.'
+  },
+  'alaska-lounge-pass': {
+    name: 'Alaska Lounge Day Pass',
+    brand: 'Alaska',
+    programType: 'airline',
+    awardType: 'other',
+    value: 60,
+    description: 'One-day pass to Alaska Airlines lounges for cardholder and up to 2 children.'
   },
   'custom': {
     name: 'Custom Voucher',
@@ -926,7 +950,7 @@ export const CARDS_DB: CardTemplate[] = [
         id: 'strata-premier-hotel',
         name: '$100 Annual Hotel Benefit',
         description: '$100 off a single hotel stay of $500 or more (excluding taxes/fees) booked through CitiTravel.com each calendar year.',
-        value: 100,
+        value: 50,
         resetPeriod: 'annual-calendar',
         category: 'travel'
       }
@@ -945,7 +969,7 @@ export const CARDS_DB: CardTemplate[] = [
         id: 'citi-aa-flight-discount',
         name: '$125 Flight Discount',
         description: 'Earn a $125 American Airlines Flight Discount after spending $20,000 or more during your cardmembership year.',
-        value: 125,
+        value: 50,
         resetPeriod: 'annual-anniversary',
         category: 'travel',
         spendingLimit: 20000
@@ -1442,10 +1466,166 @@ export const CARDS_DB: CardTemplate[] = [
         category: 'other'
       }
     ]
+  },
+  {
+    id: 'boa-atmos-ascent',
+    name: 'Atmos™ Rewards Ascent Visa Signature® card',
+    bank: 'BoA',
+    color: 'from-sky-950 via-teal-900 to-slate-900',
+    annualFee: 95,
+    pointCurrency: 'atmos-points',
+    officialUrl: 'https://www.alaskaair.com/atmosrewards/content/credit-cards/online-offer',
+    signupBonusValue: 1300,
+    benefits: [
+      {
+        id: 'atmos-ascent-companion',
+        name: 'Annual $99 Companion Fare',
+        description: 'Celebrate account anniversary with a $99 Companion Fare (plus taxes and fees from $23) every year you spend $6,000+ on purchases. Valid on Alaska Airlines and Hawaiian Airlines.',
+        value: 250,
+        resetPeriod: 'annual-anniversary',
+        category: 'travel'
+      },
+      {
+        id: 'atmos-ascent-checked-bag',
+        name: 'Free Checked Bag (Self + 6 Guests)',
+        description: 'First checked bag free and preferred boarding for cardholder and up to 6 guests on the same reservation when paying with card',
+        value: 70,
+        resetPeriod: 'annual-calendar',
+        category: 'travel'
+      },
+      {
+        id: 'atmos-ascent-lounge-discount',
+        name: '$100 Off Alaska Lounge+ Membership',
+        description: '$100 off an annual Alaska Lounge+ Membership ($650/yr retail) purchased with your card',
+        value: 20,
+        resetPeriod: 'annual-anniversary',
+        category: 'travel'
+      },
+      {
+        id: 'atmos-ascent-inflight',
+        name: '20% Inflight Food & Beverage Rebate',
+        description: '20% back on all Alaska Airlines and Hawaiian Airlines inflight purchases paid with your card',
+        value: 20,
+        resetPeriod: 'annual-calendar',
+        category: 'dining'
+      }
+    ]
+  },
+  {
+    id: 'boa-atmos-summit',
+    name: 'Atmos™ Rewards Summit Visa Infinite® card',
+    bank: 'BoA',
+    color: 'from-slate-950 via-indigo-950 to-teal-950',
+    annualFee: 395,
+    pointCurrency: 'atmos-points',
+    officialUrl: 'https://www.alaskaair.com/atmosrewards/content/credit-cards/online-offer',
+    signupBonusValue: 1575,
+    benefits: [
+      {
+        id: 'atmos-summit-lounge-passes',
+        name: '8 Alaska Lounge Day Passes (2/Quarter)',
+        description: '8 Alaska Lounge day passes ($500+ value) every year (2 per quarter). Valid for entire travel day and includes entry for up to 2 accompanying children.',
+        value: 240,
+        resetPeriod: 'quarterly',
+        category: 'travel'
+      },
+      {
+        id: 'atmos-summit-wifi-passes',
+        name: '8 Inflight Wi-Fi Passes (2/Quarter)',
+        description: '8 Wi-Fi passes per year (2 per quarter) for Alaska Airlines and Hawaiian Airlines flights',
+        value: 64,
+        resetPeriod: 'quarterly',
+        category: 'travel'
+      },
+      {
+        id: 'atmos-summit-companion-award',
+        name: '25,000-Point Global Companion Award',
+        description: 'Annual 25,000-point Global Companion Award upon renewal to cover up to 25,000 points off a companion award ticket on Alaska, Hawaiian, and oneworld partners',
+        value: 375,
+        resetPeriod: 'annual-anniversary',
+        category: 'travel'
+      },
+      {
+        id: 'atmos-summit-tsa-global-entry',
+        name: 'TSA PreCheck / Global Entry Statement Credit',
+        description: 'Up to $120 statement credit every 4 years for TSA PreCheck, Global Entry, or NEXUS',
+        value: 30,
+        resetPeriod: 'annual-calendar',
+        category: 'travel'
+      },
+      {
+        id: 'atmos-summit-delay-protection',
+        name: '$50 Travel Delay Meal & Drink Voucher',
+        description: '$50 airport meal/drink voucher for same-day delays of 2+ hours or cancellations on Alaska Airlines flights',
+        value: 25,
+        resetPeriod: 'annual-calendar',
+        category: 'travel'
+      },
+      {
+        id: 'atmos-summit-checked-bag',
+        name: 'Free Checked Bag & Preferred Boarding',
+        description: 'First checked bag free and preferred boarding for cardholder and up to 6 guests on same reservation',
+        value: 70,
+        resetPeriod: 'annual-calendar',
+        category: 'travel'
+      },
+      {
+        id: 'atmos-summit-inflight',
+        name: '20% Inflight Food & Beverage Rebate',
+        description: '20% back on all Alaska Airlines and Hawaiian Airlines inflight purchases paid with your card',
+        value: 20,
+        resetPeriod: 'annual-calendar',
+        category: 'dining'
+      }
+    ]
+  },
+  {
+    id: 'boa-atmos-business',
+    name: 'Atmos™ Rewards Visa® Business card',
+    bank: 'BoA',
+    color: 'from-slate-900 via-blue-950 to-slate-950',
+    annualFee: 95,
+    pointCurrency: 'atmos-points',
+    officialUrl: 'https://www.alaskaair.com/atmosrewards/content/credit-cards/online-offer',
+    signupBonusValue: 1300,
+    benefits: [
+      {
+        id: 'atmos-biz-companion',
+        name: 'Annual $99 Companion Fare',
+        description: 'Celebrate account anniversary with a $99 Companion Fare (plus taxes and fees from $23) every year you spend $6,000+ on purchases. Valid on Alaska Airlines and Hawaiian Airlines.',
+        value: 250,
+        resetPeriod: 'annual-anniversary',
+        category: 'travel'
+      },
+      {
+        id: 'atmos-biz-checked-bag',
+        name: 'Free Checked Bag (Self + 6 Guests)',
+        description: 'First checked bag free and preferred boarding for cardholder and up to 6 guests on the same reservation when paying with card',
+        value: 70,
+        resetPeriod: 'annual-calendar',
+        category: 'travel'
+      },
+      {
+        id: 'atmos-biz-lounge-discount',
+        name: '$100 Off Alaska Lounge+ Membership',
+        description: '$100 off an annual Alaska Lounge+ Membership ($650/yr retail) purchased with your card',
+        value: 20,
+        resetPeriod: 'annual-anniversary',
+        category: 'travel'
+      },
+      {
+        id: 'atmos-biz-inflight',
+        name: '20% Inflight Food & Beverage Rebate',
+        description: '20% back on all Alaska Airlines and Hawaiian Airlines inflight purchases paid with your card',
+        value: 20,
+        resetPeriod: 'annual-calendar',
+        category: 'dining'
+      }
+    ]
   }
 ];
 
-export const CARD_MULTIPLIERS: Record<string, { dining?: number; travel?: number; shopping?: number; entertainment?: number }> = {
+export const CARD_MULTIPLIERS: Record<string, { dining?: number; travel?: number; shopping?: number; entertainment?: number; gas?: number; transit?: number }> = {
   'amex-gold': { dining: 4, shopping: 4 }, // 4x Dining, 4x Groceries
   'amex-bbp': { dining: 2, travel: 2, shopping: 2, entertainment: 2 }, // 2x on everything
   'chase-ink-preferred': { travel: 3 },
@@ -1454,7 +1634,7 @@ export const CARD_MULTIPLIERS: Record<string, { dining?: number; travel?: number
   'amex-delta-blue': { travel: 2, dining: 2 },
   'usbank-altitude-go': { dining: 4, shopping: 2, entertainment: 2 },
   'amex-platinum': { travel: 5 }, // 5x Flights
-  'amex-bcp': { shopping: 6, entertainment: 6 }, // 6% Groceries, 6% Streaming
+  'amex-bcp': { shopping: 6, entertainment: 6, transit: 3, gas: 3 }, // 6% Groceries, 6% Streaming, 3% Transit, 3% Gas
   'amex-delta-reserve': { travel: 3 }, // 3x Delta
   'amex-delta-platinum': { travel: 3, dining: 2, shopping: 2 }, // 3x Delta, 2x Dining, 2x Groceries
   'amex-biz-platinum': { travel: 5 }, // 5x Flights
@@ -1471,21 +1651,24 @@ export const CARD_MULTIPLIERS: Record<string, { dining?: number; travel?: number
   'amex-biz-gold': { travel: 4, shopping: 4 }, // 4x transit/office
   'chase-ink-cash': { shopping: 5 }, // 5x office/telecom
   'chase-freedom-unlimited': { dining: 3, travel: 1.5, shopping: 1.5 }, // 3x dining, 1.5x flat
-  'amex-bce': { shopping: 3 }, // 3x groceries/online
+  'amex-bce': { shopping: 3, gas: 3 }, // 3x groceries/online, 3% gas
   'citi-premier': { travel: 3, dining: 3, shopping: 3 }, // 3x travel/dining/supermarket
-  'citi-aa-platinum-select': { travel: 2, dining: 2, shopping: 2 }, // 2x AA Flights/Dining/Gas Stations
-  'citibusiness-aa-platinum-select': { travel: 2, shopping: 1, dining: 1 }, // 2x AA, Telecom, Car Rental, Gas
+  'citi-aa-platinum-select': { travel: 2, dining: 2, gas: 2 }, // 2x AA Flights/Dining/Gas Stations
+  'citibusiness-aa-platinum-select': { travel: 2, shopping: 1, dining: 1, gas: 2 }, // 2x AA, Telecom, Car Rental, Gas
   'citi-double-cash': { dining: 2, travel: 2, shopping: 2, entertainment: 2 },
   'capone-savorone': { dining: 3, shopping: 3, entertainment: 3 },
   'apple-card': { shopping: 2, dining: 2 },
   'capone-venture': { dining: 2, travel: 2, shopping: 2, entertainment: 2 },
-  'amex-green': { travel: 3, dining: 3 },
-  'chase-amazon-prime': { shopping: 5, dining: 2 },
+  'amex-green': { travel: 3, dining: 3, transit: 3 },
+  'chase-amazon-prime': { shopping: 5, dining: 2, gas: 2 },
   'chase-southwest-priority': { travel: 2 },
   'chase-sapphire-reserve-business': { travel: 4 },
   'bilt-blue': { dining: 3, travel: 3 },
   'bilt-obsidian': { dining: 3, shopping: 3, travel: 3 },
-  'bilt-palladium': { dining: 5, travel: 4, shopping: 2, entertainment: 2 }
+  'bilt-palladium': { dining: 5, travel: 4, shopping: 2, entertainment: 2 },
+  'boa-atmos-ascent': { travel: 3, gas: 2, entertainment: 2, transit: 2 },
+  'boa-atmos-summit': { travel: 3, dining: 3, shopping: 3, gas: 3 },
+  'boa-atmos-business': { travel: 3, gas: 2, transit: 2 }
 };
 
 
@@ -1502,6 +1685,8 @@ export const DEFAULT_VALUATIONS: Record<PointCurrency, number> = {
   'aa-miles': 1.5,
   'ua-miles': 1.3,
   'delta-miles': 1.2,
+  'alaska-miles': 1.5,
+  'atmos-points': 1.5,
   'bilt': 1.6,
   'cash': 1.0
 };

@@ -145,6 +145,8 @@ export function EditCardModal({
                   <option value="aa-miles">{t('curr_aa_miles')}</option>
                   <option value="ua-miles">{t('curr_ua_miles')}</option>
                   <option value="delta-miles">{t('curr_delta_miles')}</option>
+                  <option value="alaska-miles">{t('curr_alaska_miles')}</option>
+                  <option value="atmos-points">{t('curr_atmos_points')}</option>
                   <option value="bilt">{t('curr_bilt')}</option>
                 </select>
               </div>

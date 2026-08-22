@@ -391,7 +391,9 @@ const translationsEn = {
   catDiningBadge: 'Dining',
   catTravelBadge: 'Travel',
   catShoppingBadge: 'Groceries / Shopping',
-  catEntertainmentBadge: 'Entertainment',
+  catEntertainmentBadge: 'Streaming / Cable',
+  catGasBadge: 'Gas & EV',
+  catTransitBadge: 'Transit & Rideshare',
   catOtherBadge: 'Other / Flat',
 
   // 15. Advanced settings & valuations editor keys
@@ -450,6 +452,8 @@ const translationsEn = {
   curr_aa_miles: 'AA Miles',
   curr_ua_miles: 'UA Miles',
   curr_delta_miles: 'Delta Miles',
+  curr_alaska_miles: 'Alaska Miles',
+  curr_atmos_points: 'Atmos™ Points',
   curr_bilt: 'Bilt Points',
   curr_cash: 'Cashback',
 
@@ -877,7 +881,9 @@ const translationsZh: typeof translationsEn = {
   catDiningBadge: '餐饮吃饭',
   catTravelBadge: '旅行出行',
   catShoppingBadge: '超市/网购',
-  catEntertainmentBadge: '娱乐/流媒体',
+  catEntertainmentBadge: '流媒体/有线电视',
+  catGasBadge: '加油/EV充电',
+  catTransitBadge: '本地交通/打车',
   catOtherBadge: '其他/无门槛',
 
   // 15. Advanced settings & valuations editor keys
@@ -936,6 +942,8 @@ const translationsZh: typeof translationsEn = {
   curr_aa_miles: '美航 AA 里程',
   curr_ua_miles: '美联航 UA 里程',
   curr_delta_miles: '达美里程',
+  curr_alaska_miles: '阿拉斯加里程',
+  curr_atmos_points: 'Atmos™ 奖励积分',
   curr_bilt: 'Bilt 点数',
   curr_cash: '现金返现',
 
@@ -1015,7 +1023,16 @@ export const resolveCardNetwork = (
   if (bankLower.includes('discover') || tempLower.startsWith('discover')) {
     return 'DISCOVER';
   }
-  if (bankLower.includes('chase') || currLower === 'chase-ur') {
+  if (
+    bankLower.includes('chase') || 
+    currLower === 'chase-ur' ||
+    tempLower.includes('visa') ||
+    tempLower.includes('atmos') ||
+    bankLower.includes('boa') ||
+    bankLower.includes('bank of america') ||
+    currLower === 'atmos-points' ||
+    currLower === 'alaska-miles'
+  ) {
     return 'VISA';
   }
   return 'MC';

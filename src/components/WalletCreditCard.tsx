@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Trash2, ExternalLink, Edit3, ChevronDown } from 'lucide-react';
-import { CARDS_DB, CARD_MULTIPLIERS } from '../data/cards.db';
+import { CARDS_DB, CARD_MULTIPLIERS, DEFAULT_VALUATIONS } from '../data/cards.db';
+import type { PointCurrency } from '../data/cards.db';
 import type { OwnedCardInstance } from '../store/useCardStore';
 import { useCardStore } from '../store/useCardStore';
 import { translations, formatCardName, resolveCardNetwork } from '../utils/i18n';
@@ -136,7 +137,7 @@ export function WalletCreditCard({
   const hasMultipliers = multipliers && Object.values(multipliers).some((v) => typeof v === 'number' && v > 1);
   const currency = instance.pointCurrency || (template?.pointCurrency || 'cash');
   const pointValuations = useCardStore((state) => state.pointValuations);
-  const cpp = pointValuations?.[currency] || 1.0;
+  const cpp = pointValuations?.[currency] ?? DEFAULT_VALUATIONS[currency as PointCurrency] ?? 1.0;
 
 
   if (isCompactView) {
@@ -444,22 +445,30 @@ export function WalletCreditCard({
                     <div className="flex flex-wrap gap-1 pt-0.5">
                       {multipliers && Object.entries(multipliers)
                         .filter(([, val]) => val && val > 1)
-                        .map(([category, val]) => (
-                          <span 
-                            key={category}
-                            className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10.5px] font-medium border shadow-sm select-none ${
-                              themeClass('bg-slate-955 border-slate-800 text-slate-200', 'bg-slate-100 border-slate-250 text-slate-700')
-                            }`}
-                            title={`${category}: ${val}x`}
-                          >
-                            <span className="text-[10px]">
-                              {category === 'dining' ? '🍽️' :
-                               category === 'travel' ? '✈️' :
-                               category === 'shopping' ? '🛒' : '🎬'}
+                        .map(([category, val]) => {
+                          const icon = 
+                            category === 'dining' ? '🍽️' :
+                            category === 'travel' ? '✈️' :
+                            category === 'shopping' ? '🛒' :
+                            category === 'gas' ? '⛽' :
+                            category === 'transit' ? '🚇' :
+                            category === 'entertainment' ? '🎬' : '✨';
+                          const label = t(`cat${category.charAt(0).toUpperCase() + category.slice(1)}Badge` as keyof typeof translations['en']) || category;
+                          
+                          return (
+                            <span 
+                              key={category}
+                              className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10.5px] font-medium border shadow-sm select-none ${
+                                themeClass('bg-slate-955 border-slate-800 text-slate-200', 'bg-slate-100 border-slate-250 text-slate-700')
+                              }`}
+                              title={`${label}: ${val}x`}
+                            >
+                              <span className="text-[10px]">{icon}</span>
+                              <span className="text-[10px] font-semibold opacity-90 hidden sm:inline">{label}</span>
+                              <span className={themeClass('text-amber-400 font-bold font-mono', 'text-amber-600 font-bold font-mono')}>{val}x</span>
                             </span>
-                            <span className={themeClass('text-amber-400 font-bold font-mono', 'text-amber-600 font-bold font-mono')}>{val}x</span>
-                          </span>
-                        ))
+                          );
+                        })
                       }
                     </div>
                   </div>
