@@ -195,7 +195,7 @@ export const ChecklistCardRow = React.memo(function ChecklistCardRow({
         
         {/* Left Details block */}
         <div className="flex items-start gap-3 min-w-0 flex-1">
-          {/* Checkbox hit target wrapper wrapper (Task 1) */}
+          {/* Checkbox hit target wrapper */}
           <div 
             onClick={(e) => {
               e.stopPropagation(); // Prevent row expansion toggle
@@ -214,43 +214,43 @@ export const ChecklistCardRow = React.memo(function ChecklistCardRow({
             className="p-2.5 -m-2.5 shrink-0 select-none flex items-center justify-center"
           >
             <div
-              className={`w-5 h-5 flex items-center justify-center rounded-md border transition-all duration-200 shrink-0 ${
-                benefit.isSubscription ? 'cursor-default opacity-90' : 'cursor-pointer active:scale-[0.95]'
+              className={`w-5 h-5 flex items-center justify-center rounded-md border transition-all duration-150 shrink-0 ${
+                benefit.isSubscription ? 'cursor-default opacity-90' : 'cursor-pointer active:scale-[0.88]'
               } ${localUsed ? 'animate-bounce-subtle' : ''} ${
                 isExpired
                   ? 'border-red-900 bg-red-950/10 text-red-500'
                   : isUsed 
                   ? 'bg-emerald-500 border-emerald-500 text-slate-955' 
-                  : themeClass('border-slate-500 hover:border-purple-500 bg-slate-900/60 text-transparent hover:bg-purple-500/5', 'border-slate-400 hover:border-purple-500 bg-white text-transparent hover:bg-purple-50/30')
+                  : themeClass('border-slate-600 hover:border-emerald-400 bg-slate-900/60 text-transparent hover:bg-emerald-500/5', 'border-slate-300 hover:border-emerald-500 bg-white text-transparent hover:bg-emerald-50/30')
               }`}
             >
               {isExpired ? (
                 <span className="text-[10px] font-bold">✕</span>
               ) : (
-                <CheckCircle2 className={`w-4 h-4 stroke-[3] transition-all duration-250 transform origin-center ${isUsed ? 'scale-100 rotate-0' : 'scale-0 -rotate-12 opacity-0'}`} />
+                <CheckCircle2 className={`w-4 h-4 stroke-[2.5] transition-all duration-250 transform origin-center ${isUsed ? 'scale-100 rotate-0' : 'scale-0 -rotate-12 opacity-0'}`} />
               )}
             </div>
           </div>
 
           {/* Title & Duet Metadata Stack */}
-          <div className="w-full min-w-0 flex flex-col text-left gap-2 py-0.5">
+          <div className="w-full min-w-0 flex flex-col text-left gap-1.5 py-0.5">
             <div className="relative min-w-full flex items-baseline gap-1.5">
 
-              <span className={`text-sm font-extrabold mt-0.5 leading-tight ${
-                isExpired ? 'text-slate-455 line-through opacity-60' :
-                isUsed ? 'text-slate-500 line-through opacity-65' : themeClass('text-slate-105', 'text-slate-800')
+              <span className={`text-sm font-bold mt-0.5 leading-tight ${
+                isExpired ? 'text-slate-500 line-through opacity-60' :
+                isUsed ? 'text-slate-500 line-through opacity-65' : themeClass('text-slate-100', 'text-slate-800')
               }`}>
                 {benefit.name}
               </span>
               {benefit.type === 'welcome-offer' && (
-                <span className={`ml-1.5 px-1.5 py-0.5 text-[9px] font-black uppercase rounded-md tracking-wider shrink-0 ${
+                <span className={`ml-1.5 px-1.5 py-0.5 text-[9.5px] font-semibold uppercase rounded-md tracking-wider shrink-0 ${
                   themeClass('bg-purple-500/20 text-purple-300', 'bg-purple-500/10 text-purple-600')
                 }`}>
                   {t('subBadge')}
                 </span>
               )}
               {benefit.isSubscription && (
-                <span className={`ml-1.5 px-1.5 py-0.5 text-[8.5px] font-black uppercase rounded-md tracking-wider shrink-0 select-none ${
+                <span className={`ml-1.5 px-1.5 py-0.5 text-[9px] font-semibold uppercase rounded-md tracking-wider shrink-0 select-none ${
                   themeClass('bg-indigo-500/20 text-indigo-300 border border-indigo-500/30', 'bg-indigo-50/80 text-indigo-600 border border-indigo-200')
                 }`}>
                   {language === 'zh' ? '自动打卡' : 'Auto'}
@@ -263,8 +263,8 @@ export const ChecklistCardRow = React.memo(function ChecklistCardRow({
             {benefit.subCategories && benefit.subCategories.length > 0 && (
               <div className="flex items-center gap-1 flex-wrap -mt-0.5">
                 {benefit.subCategories.map((sub, idx) => (
-                  <span key={idx} className={`px-1.5 py-0.2 rounded-[4px] text-[9px] font-black tracking-wider uppercase border ${
-                    themeClass('bg-slate-900 text-amber-400 border-slate-800', 'bg-slate-100 text-amber-700 border-slate-200')
+                  <span key={idx} className={`px-1.5 py-0.5 rounded text-[9.5px] font-medium tracking-wide uppercase border ${
+                    themeClass('bg-slate-900 text-amber-300 border-slate-800', 'bg-slate-100 text-amber-800 border-slate-200')
                   }`}>
                     {sub}
                   </span>
@@ -277,11 +277,11 @@ export const ChecklistCardRow = React.memo(function ChecklistCardRow({
         </div>
 
         {/* Right amount value & period ($50 / 月) */}
-        <div className={`text-right flex flex-col items-end justify-start shrink-0 w-[140px] py-0.5 select-none gap-1 pl-2 border-l ${themeClass('border-slate-800/30', 'border-slate-200/60')}`}>
+        <div className={`text-right flex flex-col items-end justify-start shrink-0 w-[140px] py-0.5 select-none gap-0.5 pl-2 border-l ${themeClass('border-slate-800/40', 'border-slate-200/80')}`}>
           {/* Row 1: Amount & Period combined */}
-          <div className={`flex items-baseline gap-0.5 font-mono leading-none ${isExpired || isUsed ? 'text-slate-500 opacity-60' : themeClass('text-emerald-400', 'text-emerald-600')}`}>
-            <span className="text-[13px] font-black">+${benefit.value}</span>
-            <span className="text-[8px] font-black uppercase tracking-widest opacity-75 ml-0.5">
+          <div className={`flex items-baseline gap-1 font-mono leading-none ${isExpired || isUsed ? 'text-slate-500 opacity-60' : themeClass('text-emerald-400', 'text-emerald-600')}`}>
+            <span className="text-sm font-bold tabular-nums tracking-tight">+${benefit.value}</span>
+            <span className="text-[9.5px] font-medium uppercase tracking-wider opacity-75 font-sans">
               / {benefit.resetPeriod === 'monthly' ? t('perMonth') :
                  benefit.resetPeriod === 'quarterly' ? t('perQuarter') :
                  benefit.resetPeriod === 'semi-annual' ? t('perHalfYear') :
@@ -293,12 +293,12 @@ export const ChecklistCardRow = React.memo(function ChecklistCardRow({
 
           {/* Row 2: Expiration Warning (Middle!) */}
           {(!isUsed && !isExpired && urgencyLevel > 0 && daysLeft !== null) && (
-            <span className={`text-[9px] font-black uppercase tracking-widest mt-0.5 ${
+            <span className={`text-[9.5px] font-semibold uppercase tracking-wider font-mono tabular-nums mt-0.5 ${
               urgencyLevel === 3
-                ? 'text-red-500 dark:text-red-400 animate-pulse'
+                ? 'text-red-400 animate-pulse'
                 : urgencyLevel === 2
-                ? 'text-orange-500 dark:text-orange-400'
-                : 'text-amber-600 dark:text-amber-400'
+                ? 'text-orange-400'
+                : 'text-amber-400'
             }`}>
               {daysLeft <= 0 
                 ? t('todayExpires') 
@@ -308,7 +308,7 @@ export const ChecklistCardRow = React.memo(function ChecklistCardRow({
 
           {/* Row 3: Expiration Date (Bottom!) */}
           {benefit.expirationDate && (
-            <span className="text-[9px] font-bold uppercase tracking-widest text-slate-500 dark:text-slate-505 mt-0.5">
+            <span className="text-[9px] font-medium uppercase tracking-wider font-mono tabular-nums text-slate-500 dark:text-slate-400 mt-0.5">
               {t('expiresLabel')}: {benefit.expirationDate}
             </span>
           )}

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Search, Filter, Sparkles, CreditCard, Layers } from 'lucide-react';
+import { Search, Filter, Sparkles, CreditCard, Layers, CheckCircle2 } from 'lucide-react';
 import { FilterHubPanel } from './FilterHubPanel';
 import { ChecklistCardRow } from './ChecklistCardRow';
 import { CARDS_DB, AWARD_TEMPLATES } from '../data/cards.db';
@@ -259,7 +259,9 @@ export function ActiveChecklistTab({
             <div className={`p-8 rounded-2xl text-center border border-dashed max-w-md mx-auto ${
               themeClass('border-slate-850 bg-slate-950/20', 'border-slate-250 bg-slate-50/50')
             }`}>
-              <p className="text-xl">🎯</p>
+              <div className="w-10 h-10 rounded-full bg-emerald-500/10 text-emerald-400 flex items-center justify-center mx-auto mb-2">
+                <CheckCircle2 className="w-5 h-5" strokeWidth={2} />
+              </div>
               <h4 className={`text-xs font-bold mt-2 ${themeClass('text-slate-300', 'text-slate-700')}`}>{t('allClaimed')}</h4>
               <p className={`text-[10px] mt-1 leading-normal ${themeClass('text-slate-455', 'text-slate-500')}`}>
                 {t('noPending')}

@@ -1,4 +1,4 @@
-import { DollarSign, CheckCircle2, CreditCard, Sparkles } from 'lucide-react';
+import { DollarSign, CheckCircle2, CreditCard, Sparkles, Target } from 'lucide-react';
 import { useCardStore } from '../store/useCardStore';
 import { translations } from '../utils/i18n';
 
@@ -22,74 +22,78 @@ export function StatsPanel({
   const t = (key: keyof typeof translations['en']) => translations[language][key] || translations['en'][key];
 
   return (
-    <section className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3 mb-4 sm:mb-6">
-      {/* Card 1: Potential Value */}
-      <div className={`border rounded-xl p-1.5 sm:p-4 transition duration-300 text-center sm:text-left flex flex-col justify-between min-h-[55px] sm:min-h-0 sm:block ${
-        themeClass('bg-slate-900/50 border-slate-850/60', 'bg-white border-slate-200 shadow-sm')
-      }`}>
-        <p className={`text-[10px] sm:text-xs font-medium uppercase tracking-wider flex items-center justify-center sm:justify-start gap-1 ${themeClass('text-slate-400', 'text-slate-555')}`}>
-          <DollarSign className="w-3.5 h-3.5 text-slate-505 hidden sm:inline" />
-          {t('potentialValue')}
-        </p>
-        <p className={`text-xs sm:text-xl font-black ${themeClass('text-white', 'text-slate-900')}`}>${totalPotentialValue}</p>
-      </div>
-
-      {/* Card 2: Resolved */}
-      <div className={`border rounded-xl p-1.5 sm:p-4 transition duration-300 text-center sm:text-left flex flex-col justify-between min-h-[55px] sm:min-h-0 sm:block ${
-        themeClass('bg-slate-900/50 border-slate-850/60', 'bg-white border-slate-200 shadow-sm')
-      }`}>
-        <p className={`text-[10px] sm:text-xs font-medium uppercase tracking-wider flex items-center justify-center sm:justify-start gap-1 ${themeClass('text-slate-400', 'text-slate-555')}`}>
-          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 hidden sm:inline" />
-          {t('resolved')}
-        </p>
-        <p className={`text-xs sm:text-xl font-black text-emerald-500`}>${resolvedValue}</p>
-      </div>
-
-      {/* Card 3: Total Annual Fee */}
-      <div className={`border rounded-xl p-1.5 sm:p-4 transition duration-300 text-center sm:text-left flex flex-col justify-between min-h-[55px] sm:min-h-0 sm:block ${
-        themeClass('bg-slate-900/50 border-slate-850/60', 'bg-white border-slate-200 shadow-sm')
-      }`}>
-        <p className={`text-[10px] sm:text-xs font-medium uppercase tracking-wider flex items-center justify-center sm:justify-start gap-1 ${themeClass('text-slate-400', 'text-slate-555')}`}>
-          <CreditCard className="w-3.5 h-3.5 text-purple-500 hidden sm:inline" />
-          {t('totalAnnualFee')}
-        </p>
-        <p className={`text-xs sm:text-xl font-black ${themeClass('text-white', 'text-slate-900')}`}>${totalAnnualFee}</p>
-      </div>
-
-      {/* Card 4: Maximized */}
-      <div className={`border rounded-xl p-1.5 sm:p-4 transition duration-300 flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 sm:gap-3 min-h-[55px] sm:min-h-0 ${
-        themeClass('bg-slate-900/50 border-slate-850/60', 'bg-white border-slate-200 shadow-sm')
-      }`}>
-        <div className="text-center sm:text-left flex-grow flex flex-col justify-between sm:justify-start">
-          <p className={`text-[10px] sm:text-xs font-medium uppercase tracking-wider flex items-center justify-center sm:justify-start gap-1 ${themeClass('text-slate-400', 'text-slate-555')}`}>
-            <Sparkles className="w-3.5 h-3.5 text-purple-500 hidden sm:inline" />
-            {t('maximized')}
+    <section className={`border rounded-2xl p-2.5 sm:p-4 mb-4 sm:mb-6 transition-all duration-300 backdrop-blur-md shadow-sm ${
+      themeClass('bg-slate-900/60 border-slate-800/80', 'bg-white border-slate-200/80')
+    }`}>
+      <div className="grid grid-cols-2 sm:grid-cols-4 divide-y sm:divide-y-0 sm:divide-x divide-slate-800/40 dark:divide-slate-800/40 divide-slate-100">
+        {/* Metric 1: Potential Value */}
+        <div className="p-2 sm:px-4 sm:py-1 flex flex-col justify-between">
+          <p className={`text-[10.5px] sm:text-xs font-semibold tracking-wider uppercase flex items-center gap-1.5 ${themeClass('text-slate-400', 'text-slate-500')}`}>
+            <DollarSign className="w-3.5 h-3.5 text-slate-400 shrink-0" strokeWidth={1.75} />
+            <span>{t('potentialValue')}</span>
           </p>
-          <p className={`text-xs sm:text-xl font-black ${themeClass('text-white', 'text-slate-900')}`}>{utilizationRate}%</p>
+          <p className={`text-base sm:text-2xl font-bold font-mono tabular-nums tracking-tight mt-1 ${themeClass('text-slate-100', 'text-slate-900')}`}>
+            ${totalPotentialValue.toLocaleString()}
+          </p>
         </div>
-        
-        <div className="relative w-8 h-8 shrink-0 items-center justify-center hidden sm:flex">
-          <svg className="w-8 h-8 transform -rotate-90">
-            <circle
-              cx="16"
-              cy="16"
-              r="12"
-              className={`fill-none stroke-current ${themeClass('text-white/10', 'text-slate-100')}`}
-              strokeWidth="3"
-            />
-            <circle
-              cx="16"
-              cy="16"
-              r="12"
-              className="fill-none stroke-current text-purple-500 dark:text-purple-400 transition-all duration-500 ease-out"
-              strokeWidth="3"
-              strokeDasharray="75.39"
-              strokeDashoffset={75.39 - (75.39 * Math.min(utilizationRate / 100, 1))}
-              strokeLinecap="round"
-            />
-          </svg>
-          <div className="absolute inset-0 flex items-center justify-center text-[8px] font-black text-purple-500 dark:text-purple-400">
-            🎯
+
+        {/* Metric 2: Resolved */}
+        <div className="p-2 sm:px-4 sm:py-1 flex flex-col justify-between">
+          <p className={`text-[10.5px] sm:text-xs font-semibold tracking-wider uppercase flex items-center gap-1.5 ${themeClass('text-slate-400', 'text-slate-500')}`}>
+            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" strokeWidth={1.75} />
+            <span>{t('resolved')}</span>
+          </p>
+          <p className="text-base sm:text-2xl font-bold font-mono tabular-nums tracking-tight mt-1 text-emerald-400">
+            ${resolvedValue.toLocaleString()}
+          </p>
+        </div>
+
+        {/* Metric 3: Total Annual Fee */}
+        <div className="p-2 sm:px-4 sm:py-1 flex flex-col justify-between">
+          <p className={`text-[10.5px] sm:text-xs font-semibold tracking-wider uppercase flex items-center gap-1.5 ${themeClass('text-slate-400', 'text-slate-500')}`}>
+            <CreditCard className="w-3.5 h-3.5 text-amber-400 shrink-0" strokeWidth={1.75} />
+            <span>{t('totalAnnualFee')}</span>
+          </p>
+          <p className={`text-base sm:text-2xl font-bold font-mono tabular-nums tracking-tight mt-1 ${themeClass('text-slate-100', 'text-slate-900')}`}>
+            ${totalAnnualFee.toLocaleString()}
+          </p>
+        </div>
+
+        {/* Metric 4: Maximized */}
+        <div className="p-2 sm:px-4 sm:py-1 flex items-center justify-between gap-2">
+          <div className="flex flex-col justify-between">
+            <p className={`text-[10.5px] sm:text-xs font-semibold tracking-wider uppercase flex items-center gap-1.5 ${themeClass('text-slate-400', 'text-slate-500')}`}>
+              <Sparkles className="w-3.5 h-3.5 text-emerald-400 shrink-0" strokeWidth={1.75} />
+              <span>{t('maximized')}</span>
+            </p>
+            <p className={`text-base sm:text-2xl font-bold font-mono tabular-nums tracking-tight mt-1 ${themeClass('text-slate-100', 'text-slate-900')}`}>
+              {utilizationRate}%
+            </p>
+          </div>
+          
+          <div className="relative w-9 h-9 shrink-0 items-center justify-center flex">
+            <svg className="w-9 h-9 transform -rotate-90">
+              <circle
+                cx="18"
+                cy="18"
+                r="14"
+                className={`fill-none stroke-current ${themeClass('text-slate-800', 'text-slate-100')}`}
+                strokeWidth="2.5"
+              />
+              <circle
+                cx="18"
+                cy="18"
+                r="14"
+                className="fill-none stroke-current text-emerald-400 transition-all duration-500 ease-out"
+                strokeWidth="2.5"
+                strokeDasharray="87.96"
+                strokeDashoffset={87.96 - (87.96 * Math.min(utilizationRate / 100, 1))}
+                strokeLinecap="round"
+              />
+            </svg>
+            <div className="absolute inset-0 flex items-center justify-center text-emerald-400">
+              <Target className="w-3.5 h-3.5" strokeWidth={2} />
+            </div>
           </div>
         </div>
       </div>

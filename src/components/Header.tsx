@@ -133,10 +133,10 @@ export function Header({
 
           <button
             onClick={toggleTheme}
-            className={`p-1.5 sm:p-2 rounded-xl border transition duration-300 active:scale-90 cursor-pointer ${
+            className={`p-1.5 sm:p-2 rounded-xl border transition-all duration-150 active:scale-95 cursor-pointer ${
               themeClass(
                 'bg-slate-900 border-slate-800 hover:bg-slate-800 text-amber-400',
-                'bg-white border-slate-250 hover:bg-slate-100 text-amber-505 shadow-sm'
+                'bg-white border-slate-200 hover:bg-slate-100 text-amber-500 shadow-sm'
               )
             }`}
             title={theme === 'dark' ? t('toggleLightMode') : t('toggleDarkMode')}
@@ -151,10 +151,10 @@ export function Header({
           {/* Settings Gear Button */}
           <button
             onClick={() => setActiveModal('settings')}
-            className={`p-1.5 sm:p-2 rounded-xl border transition duration-300 active:scale-90 cursor-pointer ${
+            className={`p-1.5 sm:p-2 rounded-xl border transition-all duration-150 active:scale-95 cursor-pointer ${
               themeClass(
-                'bg-slate-900 border-slate-800 hover:bg-slate-800 text-purple-400',
-                'bg-white border-slate-250 hover:bg-slate-100 text-purple-600 shadow-sm'
+                'bg-slate-900 border-slate-800 hover:bg-slate-800 text-slate-300 hover:text-white',
+                'bg-white border-slate-200 hover:bg-slate-100 text-slate-600 shadow-sm'
               )
             }`}
             title={language === 'zh' ? '设置' : 'Settings'}
