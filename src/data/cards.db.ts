@@ -646,14 +646,26 @@ export const CARDS_DB: CardTemplate[] = [
       {
         id: 'cff-rotating',
         name: '5% Rotating Category',
-        description: 'Q2 2026 (Apr-Jun): Amazon.com and Chase Travel (5% cash back on up to $1,500 spend)',
+        description: 'Q3 2026 (Jul-Sep): Gas Stations & EV Charging, Select Live Entertainment, Movie Theaters (5% cash back on up to $1,500 spend)',
         value: 75, // $1500 * 5%
         resetPeriod: 'quarterly',
         category: 'rotating',
         spendingLimit: 1500,
-        subCategories: ['Amazon.com', 'Chase Travel'],
-        activeCoreCategories: ['shopping'],
-        matchedDomains: ['amazon.com', 'wholefoodsmarket.com', 'chasetravel.com']
+        subCategories: ['Gas Stations', 'EV Charging', 'Live Entertainment', 'Movie Theaters'],
+        activeCoreCategories: ['entertainment', 'other'],
+        matchedDomains: [
+          'chevron.com',
+          'shell.us',
+          'exxon.com',
+          'bp.com',
+          'chargepoint.com',
+          'evgo.com',
+          'ticketmaster.com',
+          'livenation.com',
+          'fandango.com',
+          'amctheatres.com',
+          'regmovies.com'
+        ]
       },
 
     ]
@@ -757,13 +769,24 @@ export const CARDS_DB: CardTemplate[] = [
       {
         id: 'discover-it-rotating',
         name: '5% Rotating Category',
-        description: 'Q2 2026 (Apr-Jun): Restaurants and Home Improvement Stores (5% cash back on up to $1,500 spend)',
+        description: 'Q3 2026 (Jul-Sep): Grocery Stores and Walmart (5% cash back on up to $1,500 spend)',
         value: 75,
         resetPeriod: 'quarterly',
         category: 'rotating',
         spendingLimit: 1500,
-        subCategories: ['Restaurants', 'Home Improvement'],
-        activeCoreCategories: ['dining', 'shopping']
+        subCategories: ['Grocery Stores', 'Walmart'],
+        activeCoreCategories: ['shopping'],
+        matchedDomains: [
+          'walmart.com',
+          'kroger.com',
+          'safeway.com',
+          'traderjoes.com',
+          'wholefoodsmarket.com',
+          'instacart.com',
+          'heb.com',
+          'publix.com',
+          'aldi.us'
+        ]
       }
     ]
   },
