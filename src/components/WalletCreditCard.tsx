@@ -340,16 +340,14 @@ export function WalletCreditCard({
               e.stopPropagation();
               toggleCardExpanded(instance.id);
             }}
-            className={`w-full px-4.5 py-2.5 rounded-xl border text-[9.5px] font-black tracking-widest uppercase flex items-center justify-between transition active:scale-[0.98] cursor-pointer ${
+            className={`w-full px-4.5 py-2.5 rounded-xl border text-[9.5px] font-semibold tracking-widest uppercase flex items-center justify-between transition-all duration-150 active:scale-[0.98] cursor-pointer ${
               themeClass(
-                'bg-white/5 hover:bg-white/10 border-white/10 text-slate-100',
-                'bg-slate-50 hover:bg-slate-100 border-slate-250 text-slate-800 shadow-sm'
+                'bg-white/5 hover:bg-white/10 border-white/10 text-slate-200',
+                'bg-slate-50 hover:bg-slate-100 border-slate-200 text-slate-800 shadow-sm'
               )
             }`}
           >
-            <span className="flex items-center gap-1">
-              <span>📊 {isCardExpanded ? t('hideDetails') : t('showDetails')}</span>
-            </span>
+            <span>{isCardExpanded ? t('hideDetails') : t('showDetails')}</span>
             <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-300 transform ${
               isCardExpanded ? 'rotate-180' : 'rotate-0'
             }`} />

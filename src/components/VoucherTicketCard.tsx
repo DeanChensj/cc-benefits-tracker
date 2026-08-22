@@ -111,16 +111,14 @@ export function VoucherTicketCard({
               {award.notes}
             </p>
           )}
-        </div>
-
-        <div className={`mt-2 text-[8px] font-bold flex items-baseline gap-1 select-none ${themeClass('text-slate-400', 'text-slate-600')}`}>
+        </div>        <div className={`mt-2 text-[8.5px] font-medium flex items-baseline gap-1 select-none ${themeClass('text-slate-400', 'text-slate-500')}`}>
           <span>{t('voucherValue')}</span>
-          <span className={`font-black text-[13px] font-mono leading-none ${
+          <span className={`font-bold text-sm font-mono tabular-nums leading-none ${
             isCompleted 
               ? 'text-slate-500 opacity-60 line-through' 
               : themeClass('text-emerald-400', 'text-emerald-600')
           }`}>${award.value}</span>
-          <span className="opacity-50 text-[7.5px] uppercase tracking-wider">{t('each')}</span>
+          <span className="opacity-60 text-[8px] uppercase tracking-wider font-sans">{t('each')}</span>
         </div>
       </div>
 
@@ -144,7 +142,7 @@ export function VoucherTicketCard({
 
         {/* Stub Micro Barcode Centerpiece (Centered vertically for optimal balance) */}
         <div className="w-full flex-grow flex flex-col items-center justify-center gap-1 select-none pt-4">
-          <span className={`text-[6px] font-black uppercase tracking-[0.25em] opacity-60 ${themeClass('text-slate-400', 'text-slate-500')}`}>
+          <span className={`text-[6.5px] font-bold uppercase tracking-[0.25em] opacity-60 ${themeClass('text-slate-400', 'text-slate-500')}`}>
             TICKET STUB
           </span>
           
@@ -163,7 +161,7 @@ export function VoucherTicketCard({
             <span className="w-[3px] h-full bg-current shrink-0"></span>
           </div>
           
-          <span className={`text-[5.5px] font-black font-mono tracking-widest opacity-50 ${themeClass('text-slate-400', 'text-slate-600')}`}>
+          <span className={`text-[6px] font-semibold font-mono tracking-widest opacity-60 ${themeClass('text-slate-400', 'text-slate-500')}`}>
             #{award.id?.substring(0, 5).toUpperCase() || '00000'}
           </span>
         </div>
@@ -171,7 +169,7 @@ export function VoucherTicketCard({
         {/* Interactive Use Toggle Button (Restored to full width) */}
         {isStaticPreview ? (
           /* Inert Preview Mode Capsule Button */
-          <div className={`w-full py-1.5 rounded-xl text-[7.5px] font-black uppercase tracking-widest text-center select-none border mt-auto ${
+          <div className={`w-full py-1.5 rounded-xl text-[7.5px] font-semibold uppercase tracking-widest text-center select-none border mt-auto ${
             themeClass('bg-slate-950/50 border-slate-850 text-slate-600', 'bg-slate-50 border-slate-250 text-slate-400 shadow-sm')
           }`}>
             {t('claimBtn')}
@@ -183,12 +181,12 @@ export function VoucherTicketCard({
               e.stopPropagation();
               if (onClaimToggle) onClaimToggle();
             }}
-            className={`w-full py-1.5 rounded-xl text-[7.5px] font-black uppercase tracking-widest transition z-30 cursor-pointer active:scale-95 mt-auto ${
+            className={`w-full py-1.5 rounded-xl text-[7.5px] font-bold uppercase tracking-wider transition-all duration-150 z-30 cursor-pointer active:scale-95 mt-auto shadow-sm ${
               isCompleted
                 ? 'bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-500 border border-emerald-500/20'
                 : themeClass(
-                    'bg-gradient-to-tr from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-550 text-white shadow-md shadow-purple-500/10',
-                    'bg-gradient-to-tr from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-550 text-white shadow-md shadow-purple-500/10'
+                    'bg-slate-100 hover:bg-white text-slate-950 border border-white/20',
+                    'bg-slate-900 hover:bg-slate-800 text-white border border-slate-900'
                   )
             }`}
           >

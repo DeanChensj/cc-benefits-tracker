@@ -11,13 +11,13 @@ export function Footer() {
     <footer className="mt-auto pt-8 pb-24 sm:pb-8 px-4 text-center space-y-3 shrink-0">
       {/* Trust Badges for Local-First reassurance */}
       <div className="flex flex-wrap justify-center items-center gap-2 max-w-2xl mx-auto">
-        <div className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[9.5px] font-extrabold border shadow-sm ${
-          themeClass('bg-slate-900/50 border-slate-850/60 text-slate-400', 'bg-slate-100/80 border-slate-200 text-slate-600')
+        <div className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[9.5px] font-semibold border shadow-sm ${
+          themeClass('bg-slate-900/50 border-slate-800 text-slate-400', 'bg-slate-100/80 border-slate-200 text-slate-600')
         }`}>
           <span>{t('footerLocalData')}</span>
         </div>
-        <div className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[9.5px] font-extrabold border shadow-sm ${
-          themeClass('bg-slate-900/50 border-slate-850/60 text-slate-400', 'bg-slate-100/80 border-slate-200 text-slate-600')
+        <div className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[9.5px] font-semibold border shadow-sm ${
+          themeClass('bg-slate-900/50 border-slate-800 text-slate-400', 'bg-slate-100/80 border-slate-200 text-slate-600')
         }`}>
           <span>{t('footerNoPlaid')}</span>
         </div>
@@ -25,19 +25,19 @@ export function Footer() {
           href="https://github.com/DeanChensj/cc-benefits-tracker"
           target="_blank"
           rel="noopener noreferrer"
-          className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[9.5px] font-extrabold border shadow-sm transition hover:scale-[1.02] cursor-pointer ${
-            themeClass('bg-slate-900/50 border-slate-850/60 text-slate-400 hover:text-purple-400 hover:border-purple-900/30', 'bg-slate-100/80 border-slate-200 text-slate-600 hover:text-purple-600 hover:border-purple-300')
+          className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[9.5px] font-semibold border shadow-sm transition hover:scale-[1.02] cursor-pointer ${
+            themeClass('bg-slate-900/50 border-slate-800 text-slate-400 hover:text-slate-200 hover:border-slate-700', 'bg-slate-100/80 border-slate-200 text-slate-600 hover:text-slate-900 hover:border-slate-300')
           }`}
         >
           <span>{t('footerGithub')}</span>
         </a>
       </div>
 
-      <p className={`text-[9px] font-bold tracking-wider uppercase ${themeClass('text-slate-500/80', 'text-slate-455')}`}>
+      <p className={`text-[9.5px] font-semibold tracking-wider uppercase ${themeClass('text-slate-500', 'text-slate-400')}`}>
         {t('footerPassion')}
       </p>
 
-      <p className="text-[8.5px] leading-relaxed max-w-md mx-auto opacity-70 text-slate-500 dark:text-slate-450 font-medium">
+      <p className="text-[9px] leading-relaxed max-w-md mx-auto text-slate-500 dark:text-slate-400 font-medium">
         {t('footerPruneDesc')}
       </p>
     </footer>
